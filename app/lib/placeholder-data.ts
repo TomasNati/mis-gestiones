@@ -1,4 +1,4 @@
-import { Categoria, Subcategoria, TipoDeGasto } from './definitions';
+import { Categoria, DetalleSubcategoria, Subcategoria, TipoDeGasto } from './definitions';
 
 export const categorias: Categoria[] = [
   {
@@ -55,7 +55,7 @@ export const categorias: Categoria[] = [
   },
 ];
 
-const subcategorias: Subcategoria[] = [
+export const subcategorias: Subcategoria[] = [
   {
     id: 'B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D6A',
     categoria: categorias[1], // Hijos
@@ -625,5 +625,18 @@ const subcategorias: Subcategoria[] = [
     categoria: categorias[12], // Other
     tipoDeGasto: TipoDeGasto.Variable,
     nombre: 'Otros',
+  },
+];
+
+export const detalleSubcategorias: DetalleSubcategoria[] = [
+  {
+    id: 'B734C8E2-6D78-4A8F-9C36-AD2F0F1E982',
+    subcategoria: subcategorias[4],
+    nombre: 'Escuela-kiosco',
+  },
+  {
+    id: 'B734C8E2-6D78-4A8F-9C36-AD2F1F1E982',
+    subcategoria: subcategorias[4],
+    nombre: 'Escuela-extras',
   },
 ];

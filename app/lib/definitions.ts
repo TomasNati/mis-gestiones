@@ -33,6 +33,7 @@ export type Gasto = {
 
 export type DetalleSubcategoria = {
   id: string;
+  nombre: string;
   comentarios?: string;
   subcategoria: Subcategoria;
 };
