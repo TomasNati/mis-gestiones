@@ -3,7 +3,7 @@ export enum TipoDeGasto {
   Variable = 'VARIABLE',
 }
 
-export enum TipoDeGasto {
+export enum TipoDeMovimientoGasto {
   Credito = 'CREDITO',
   Debito = 'DEBITO',
   Efectivo = 'EFECTIVO',
@@ -20,6 +20,7 @@ export type Subcategoria = {
   comentarios?: string;
   categoria: Categoria;
   tipoDeGasto: TipoDeGasto;
+  nombre: string;
 };
 
 export type Gasto = {
@@ -42,6 +43,6 @@ export type MovimientoGasto = {
   fecha: Date;
   subcategoria: Subcategoria;
   detalleSubcategoria?: DetalleSubcategoria;
-  tipoDeGasto: TipoDeGasto;
+  tipoDeGasto: TipoDeMovimientoGasto;
   monto: number;
 };
