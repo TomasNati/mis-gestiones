@@ -13,7 +13,12 @@
     "@vercel/postgres": "^0.5.1",
     "next": "14.0.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "@emotion/cache": "latest",
+    "@emotion/react": "latest",
+    "@emotion/styled": "latest",
+    "@mui/icons-material": "latest",
+    "@mui/material": "latest"
   },
   "devDependencies": {
     "@types/node": "^20",
