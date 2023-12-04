@@ -1,4 +1,11 @@
-import { Categoria, DetalleSubcategoria, Subcategoria, TipoDeGasto } from './definitions';
+import {
+  Categoria,
+  DetalleSubcategoria,
+  MovimientoGasto,
+  Subcategoria,
+  TipoDeGasto,
+  TipoDeMovimientoGasto,
+} from './definitions';
 
 export const categorias: Categoria[] = [
   {
@@ -638,5 +645,32 @@ export const detalleSubcategorias: DetalleSubcategoria[] = [
     id: 'B734C8E2-6D78-4A8F-9C36-AD2F1F1E982',
     subcategoria: subcategorias[4],
     nombre: 'Escuela-extras',
+  },
+];
+
+export const movimientos: MovimientoGasto[] = [
+  {
+    id: 'B734C8E2-6D78-4A8F-9C36-AD2F0F1E982',
+    fecha: new Date(2023, 11, 2),
+    monto: 19880.36,
+    subcategoria: subcategorias.find((c) => c.nombre == 'Comida') || subcategorias[0],
+    tipoDeGasto: TipoDeMovimientoGasto.Debito,
+    comentarios: 'Vea',
+  },
+  {
+    id: 'B734C8E2-6D78-4A8F-9C36-AD2F0F1E983',
+    fecha: new Date(2023, 11, 2),
+    monto: 1738.6,
+    subcategoria: subcategorias.find((c) => c.nombre == 'Gaseosas') || subcategorias[0],
+    tipoDeGasto: TipoDeMovimientoGasto.Debito,
+    comentarios: 'Vea',
+  },
+  {
+    id: 'B734C8E2-6D78-4A8F-9C36-AD2F0F1E984',
+    fecha: new Date(2023, 11, 1),
+    monto: 5090.03,
+    subcategoria:
+      subcategorias.find((c) => c.nombre == 'Aguas de Santiago') || subcategorias[0],
+    tipoDeGasto: TipoDeMovimientoGasto.Debito,
   },
 ];

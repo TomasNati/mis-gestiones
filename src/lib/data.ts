@@ -1,6 +1,11 @@
 // import { sql } from '@vercel/postgres';
 import { Categoria, DetalleSubcategoria, Subcategoria } from './definitions';
-import { categorias, detalleSubcategorias, subcategorias } from './placeholder-data';
+import {
+  categorias,
+  detalleSubcategorias,
+  subcategorias,
+  movimientos,
+} from './placeholder-data';
 
 export const obtenerCategorias = (): Categoria[] => {
   // noStore();
@@ -26,4 +31,8 @@ export const obtenerSubCategorias = (): Subcategoria[] => {
 
 export const obtenerDetalleSubCategorias = (): DetalleSubcategoria[] => {
   return detalleSubcategorias;
+};
+
+export const obtenerUltimosMovimientos = () => {
+  return movimientos;
 };

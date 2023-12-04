@@ -36,16 +36,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <ThemeRegistry>
-          <AppBar position="fixed" sx={{ zIndex: 2000 }}>
-            <Toolbar sx={{ backgroundColor: 'background.paper' }}>
-              <DashboardIcon
-                sx={{ color: '#444', mr: 2, transform: 'translateY(-2px)' }}
-              />
-              <Typography variant="h6" color="text.primary">
-                Mis gestiones
-              </Typography>
-            </Toolbar>
-          </AppBar>
           <Drawer
             sx={{
               width: DRAWER_WIDTH,
@@ -53,7 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               '& .MuiDrawer-paper': {
                 width: DRAWER_WIDTH,
                 boxSizing: 'border-box',
-                top: ['48px', '56px', '64px'],
                 height: 'auto',
                 bottom: 0,
               },
@@ -94,7 +83,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               flexGrow: 1,
               bgcolor: 'background.default',
               ml: `${DRAWER_WIDTH}px`,
-              mt: ['48px', '56px', '64px'],
               p: 3,
             }}
           >
