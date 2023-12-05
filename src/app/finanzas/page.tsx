@@ -11,7 +11,14 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Link,
+  Icon,
+  IconButton,
+  Button,
 } from '@mui/material';
+import TableRowsIcon from '@mui/icons-material/TableRows';
+import AddIcon from '@mui/icons-material/Add';
+import NextLink from 'next/link';
 
 export default function StarredPage() {
   const movimientosDashboard = obtenerUltimosMovimientos();
@@ -31,6 +38,9 @@ export default function StarredPage() {
         </Typography>
       </Box>
       <Box>
+        <Typography color="primary" variant="h6">
+          Movimientos recientes
+        </Typography>
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
             <TableHead>
@@ -58,6 +68,27 @@ export default function StarredPage() {
             </TableBody>
           </Table>
         </TableContainer>
+        <Box sx={{ display: 'flex', marginTop: 3 }}>
+          <Button
+            component={NextLink}
+            variant="outlined"
+            startIcon={<TableRowsIcon />}
+            href="/finanzas/movimientos"
+            color="primary"
+            sx={{ marginRight: 2 }}
+          >
+            Ver todos los movimientos
+          </Button>
+          <Button
+            component={NextLink}
+            variant="outlined"
+            startIcon={<AddIcon />}
+            href="/finanzas/movimientos/crear"
+            color="secondary"
+          >
+            Crear movimiento
+          </Button>
+        </Box>
       </Box>
     </Container>
   );
