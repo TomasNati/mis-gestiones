@@ -1,0 +1,1 @@
+[ ] Ver el formulario de crear movimientos. Tuve que poner use client en la vista de crear movimientos para que me funcionara el select de los clientes.

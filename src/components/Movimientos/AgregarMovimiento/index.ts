@@ -1,0 +1,1 @@
+export { AgregarMovimiento } from './AgregarMovimiento';

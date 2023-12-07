@@ -36,3 +36,8 @@ export const obtenerDetalleSubCategorias = (): DetalleSubcategoria[] => {
 export const obtenerUltimosMovimientos = () => {
   return movimientos;
 };
+
+export const obtenerMovimientosDelMes = (fecha: Date) => {
+  console.log('fecha', fecha);
+  return movimientos;
+};
