@@ -4,9 +4,9 @@ export enum TipoDeGasto {
 }
 
 export enum TipoDeMovimientoGasto {
-  Credito = 'CREDITO',
-  Debito = 'DEBITO',
-  Efectivo = 'EFECTIVO',
+  Credito = 'Crédito',
+  Debito = 'Débito',
+  Efectivo = 'Efectivo',
 }
 
 export type Categoria = {

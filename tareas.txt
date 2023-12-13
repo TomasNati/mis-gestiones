@@ -1,1 +1,3 @@
 [ ] Ver el formulario de crear movimientos. Tuve que poner use client en la vista de crear movimientos para que me funcionara el select de los clientes.
+[ ] Tal vez el agregarMovimiento debería estar en su propia "página", para no necesitar usar el useState en Movimientos.tsx. 
+[ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main

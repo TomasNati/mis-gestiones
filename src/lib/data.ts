@@ -25,8 +25,8 @@ export const obtenerCategorias = (): Categoria[] => {
   return categorias;
 };
 
-export const obtenerSubCategorias = (): Subcategoria[] => {
-  return subcategorias;
+export const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
+  return Promise.resolve(subcategorias);
 };
 
 export const obtenerDetalleSubCategorias = (): DetalleSubcategoria[] => {
