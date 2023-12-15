@@ -7,14 +7,21 @@ import {
 
 interface Styles {
   container: SxProps;
+  movimiento: SxProps;
 }
 
 const styles: Styles = {
   container: {
     display: 'flex',
+    flexDirection: 'column',
+  },
+  movimiento: {
+    display: 'flex',
+    minWidth: 1200,
+    overflowX: 'auto',
     flexDirection: 'row',
     '> div': {
-      margin: '0 5px',
+      margin: '2px',
     },
     [`& .${inputBaseClasses.input}`]: {
       padding: '8px',
@@ -29,7 +36,7 @@ const styles: Styles = {
         width: '250px',
       },
       [`& .${autocompleteClasses.input}`]: {
-        padding: 0,
+        padding: '0 !important',
       },
       [`& .${outlinedInputClasses.root}`]: {
         padding: '8px',
@@ -40,7 +47,7 @@ const styles: Styles = {
         width: '150px',
       },
       [`& .${autocompleteClasses.input}`]: {
-        padding: 0,
+        padding: '0 !important',
       },
       [`& .${outlinedInputClasses.root}`]: {
         padding: '8px',
@@ -49,6 +56,11 @@ const styles: Styles = {
     '& .input-monto': {
       '> div': {
         width: '180px',
+      },
+    },
+    '& .input-detalle': {
+      '> div': {
+        width: '380px',
       },
     },
   },

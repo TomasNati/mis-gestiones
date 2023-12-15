@@ -95,64 +95,76 @@ const AgregarMovimiento = () => {
   // };
 
   return (
-    <Box sx={styles.container}>
-      <TextField
-        className="input-fecha"
-        id="fecha"
-        name="fecha"
-        label="Día"
-        type="date"
-        value={fecha}
-        onChange={handleFechaChange}
-      />
-      <Autocomplete
-        id="concepto"
-        className="input-concepto"
-        options={subcategorias}
-        groupBy={(option: Subcategoria) => option.categoria.nombre}
-        getOptionLabel={(option: Subcategoria) => option.nombre}
-        value={concepto}
-        onChange={handleConceptoChange}
-        renderInput={(params) => <TextField {...params} label="Concepto" />}
-      />
-      <Autocomplete
-        id="tipoDePago"
-        className="input-tipo-de-pago"
-        options={tipoDeMovimientoGastoArray}
-        getOptionLabel={(option) => option.label}
-        value={tipoDePago}
-        onChange={handleTipoDePagoChange}
-        renderInput={(params) => (
-          <TextField {...params} label="Tipo de Pago" name="tipoDePago" />
-        )}
-      />
-      <TextField
-        label="Monto"
-        id="monto"
-        name="monto"
-        className="input-monto"
-        value={monto}
-        type="number"
-        inputProps={{ min: '0', step: '0.01' }}
-        onChange={handleAmountChange}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Typography variant="body1">$</Typography>
-            </InputAdornment>
-          ),
-        }}
-      />
-      <TextField
-        label="Detalle"
-        id="detalle"
-        name="detalle"
-        value={detalle}
-        onChange={handleDetalleChange}
-      />
-      <Button>+</Button>
+    <Box>
+      <Box sx={styles.movimiento}>
+        <TextField
+          className="input-fecha"
+          id="fecha"
+          name="fecha"
+          type="date"
+          value={fecha}
+          onChange={handleFechaChange}
+        />
+        <Autocomplete
+          id="concepto"
+          className="input-concepto"
+          options={subcategorias}
+          groupBy={(option: Subcategoria) => option.categoria.nombre}
+          getOptionLabel={(option: Subcategoria) => option.nombre}
+          value={concepto}
+          onChange={handleConceptoChange}
+          renderInput={(params) => <TextField {...params} />}
+        />
+        <Autocomplete
+          id="tipoDePago"
+          className="input-tipo-de-pago"
+          options={tipoDeMovimientoGastoArray}
+          getOptionLabel={(option) => option.label}
+          value={tipoDePago}
+          onChange={handleTipoDePagoChange}
+          renderInput={(params) => <TextField {...params} name="tipoDePago" />}
+        />
+        <TextField
+          id="monto"
+          name="monto"
+          className="input-monto"
+          value={monto}
+          type="number"
+          inputProps={{ min: '0', step: '0.01' }}
+          onChange={handleAmountChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Typography variant="body1">$</Typography>
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          id="detalle"
+          name="detalle"
+          className="input-detalle"
+          value={detalle}
+          onChange={handleDetalleChange}
+        />
+      </Box>
     </Box>
   );
 };
 
-export { AgregarMovimiento };
+const AgregarMovimientos = () => {
+  return (
+    <Box sx={styles.container}>
+      <AgregarMovimiento />
+      <AgregarMovimiento />
+      <AgregarMovimiento />
+      <AgregarMovimiento />
+      <AgregarMovimiento />
+      <Button variant="contained" color="primary">
+        Agregar
+      </Button>
+    </Box>
+  );
+};
+
+export { AgregarMovimientos };
