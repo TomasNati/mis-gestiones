@@ -1,14 +1,11 @@
-'use client';
 import { obtenerMovimientosDelMes } from '@/lib/data';
 import { Movimientos } from '@/components/Movimientos';
 import { Box, Button, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
-import { AgregarMovimiento } from '@/components/Movimientos/AgregarMovimiento';
-import { useState } from 'react';
+import NextLink from 'next/link';
 
-const MovimientosDelMes = () => {
-  const [agregarMovimiento, setAgregarMovimiento] = useState(false);
-  const movimientos = obtenerMovimientosDelMes(new Date());
+const MovimientosDelMes = async () => {
+  const movimientos = await obtenerMovimientosDelMes(new Date());
 
   return (
     <Box>
@@ -26,16 +23,16 @@ const MovimientosDelMes = () => {
       </Box>
       <Box sx={{ display: 'flex', marginTop: 3, marginBottom: 3 }}>
         <Button
+          component={NextLink}
           variant="outlined"
           startIcon={<PlaylistAdd />}
           color="primary"
           sx={{ marginRight: 2 }}
-          onClick={() => setAgregarMovimiento(true)}
+          href="/finanzas/movimientosDelMes/agregar"
         >
           Agregar
         </Button>
       </Box>
-      {agregarMovimiento && <AgregarMovimiento />}
       <Movimientos movimientos={movimientos} />
     </Box>
   );

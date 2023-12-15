@@ -1,5 +1,10 @@
 // import { sql } from '@vercel/postgres';
-import { Categoria, DetalleSubcategoria, Subcategoria } from './definitions';
+import {
+  Categoria,
+  DetalleSubcategoria,
+  MovimientoGasto,
+  Subcategoria,
+} from './definitions';
 import {
   categorias,
   detalleSubcategorias,
@@ -37,7 +42,9 @@ export const obtenerUltimosMovimientos = () => {
   return movimientos;
 };
 
-export const obtenerMovimientosDelMes = (fecha: Date) => {
+export const obtenerMovimientosDelMes = async (
+  fecha: Date,
+): Promise<MovimientoGasto[]> => {
   console.log('fecha', fecha);
-  return movimientos;
+  return Promise.resolve(movimientos);
 };

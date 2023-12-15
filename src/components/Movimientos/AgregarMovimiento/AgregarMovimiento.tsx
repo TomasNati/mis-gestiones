@@ -1,11 +1,10 @@
 'use client';
-import { styles } from './Styles';
+import { styles } from './AgregarMovimiento.styles';
 import React, { useEffect, useState } from 'react';
 import {
   TextField,
   Autocomplete,
   InputAdornment,
-  Grid,
   Typography,
   Box,
   Button,
@@ -58,11 +57,11 @@ const AgregarMovimiento = () => {
   const handleFechaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFecha(event.target.value);
   };
-  const handleConceptoChange = (event: any, newValue: Subcategoria | null) => {
+  const handleConceptoChange = (_: any, newValue: Subcategoria | null) => {
     setConcepto(newValue);
   };
 
-  const handleTipoDePagoChange = (event: any, newValue: ValorLista | null) => {
+  const handleTipoDePagoChange = (_: any, newValue: ValorLista | null) => {
     setTipoDePago(newValue);
   };
 
@@ -96,81 +95,63 @@ const AgregarMovimiento = () => {
   // };
 
   return (
-    <form action={crearMovimiento}>
-      <Box>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              //margin="normal"
-              id="fecha"
-              name="fecha"
-              label="Día"
-              type="date"
-              value={fecha}
-              onChange={handleFechaChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Autocomplete
-              fullWidth
-              id="concepto"
-              options={subcategorias}
-              groupBy={(option: Subcategoria) => option.categoria.nombre}
-              getOptionLabel={(option: Subcategoria) => option.nombre}
-              value={concepto}
-              onChange={handleConceptoChange}
-              renderInput={(params) => <TextField {...params} label="Concepto" />}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Autocomplete
-              fullWidth
-              id="tipoDePago"
-              options={tipoDeMovimientoGastoArray}
-              getOptionLabel={(option) => option.label}
-              value={tipoDePago}
-              onChange={handleTipoDePagoChange}
-              renderInput={(params) => (
-                <TextField {...params} label="Tipo de Pago" name="tipoDePago" />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Monto"
-              id="monto"
-              name="monto"
-              value={monto}
-              type="number"
-              inputProps={{ min: '0', step: '0.01' }}
-              onChange={handleAmountChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography variant="body1">$</Typography>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Detalle"
-              id="detalle"
-              name="detalle"
-              value={detalle}
-              onChange={handleDetalleChange}
-              multiline
-              rows={4}
-            />
-          </Grid>
-          <Button type="submit">Agregar</Button>
-        </Grid>
-      </Box>
-    </form>
+    <Box sx={styles.container}>
+      <TextField
+        className="input-fecha"
+        id="fecha"
+        name="fecha"
+        label="Día"
+        type="date"
+        value={fecha}
+        onChange={handleFechaChange}
+      />
+      <Autocomplete
+        id="concepto"
+        className="input-concepto"
+        options={subcategorias}
+        groupBy={(option: Subcategoria) => option.categoria.nombre}
+        getOptionLabel={(option: Subcategoria) => option.nombre}
+        value={concepto}
+        onChange={handleConceptoChange}
+        renderInput={(params) => <TextField {...params} label="Concepto" />}
+      />
+      <Autocomplete
+        id="tipoDePago"
+        className="input-tipo-de-pago"
+        options={tipoDeMovimientoGastoArray}
+        getOptionLabel={(option) => option.label}
+        value={tipoDePago}
+        onChange={handleTipoDePagoChange}
+        renderInput={(params) => (
+          <TextField {...params} label="Tipo de Pago" name="tipoDePago" />
+        )}
+      />
+      <TextField
+        label="Monto"
+        id="monto"
+        name="monto"
+        className="input-monto"
+        value={monto}
+        type="number"
+        inputProps={{ min: '0', step: '0.01' }}
+        onChange={handleAmountChange}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Typography variant="body1">$</Typography>
+            </InputAdornment>
+          ),
+        }}
+      />
+      <TextField
+        label="Detalle"
+        id="detalle"
+        name="detalle"
+        value={detalle}
+        onChange={handleDetalleChange}
+      />
+      <Button>+</Button>
+    </Box>
   );
 };
 

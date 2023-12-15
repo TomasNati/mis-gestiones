@@ -8,8 +8,8 @@ import TableRowsIcon from '@mui/icons-material/TableRows';
 import NextLink from 'next/link';
 import { Movimientos } from '@/components/Movimientos';
 
-export default function StarredPage() {
-  const movimientosDashboard = obtenerUltimosMovimientos();
+const Finanzas = async () => {
+  const movimientosDashboard = await obtenerUltimosMovimientos();
 
   return (
     <Container>
@@ -35,7 +35,7 @@ export default function StarredPage() {
             component={NextLink}
             variant="outlined"
             startIcon={<TableRowsIcon />}
-            href="/finanzas/movimientosdelmes"
+            href="/finanzas/movimientosDelMes"
             color="primary"
             sx={{ marginRight: 2 }}
           >
@@ -45,4 +45,6 @@ export default function StarredPage() {
       </Box>
     </Container>
   );
-}
+};
+
+export default Finanzas;
