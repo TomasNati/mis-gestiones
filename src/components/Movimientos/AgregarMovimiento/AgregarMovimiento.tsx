@@ -153,13 +153,17 @@ const AgregarMovimiento = () => {
 };
 
 const AgregarMovimientos = () => {
+  const [nuevosMovimientos, setNuevosMovimientos] = useState([1,2,3,4,5])
+
+  const onNuevaFila = () => {
+    const maxNumber = Math.max(...nuevosMovimientos);
+    setNuevosMovimientos([...nuevosMovimientos, maxNumber + 1]);
+  }
+
   return (
     <Box sx={styles.container}>
-      <AgregarMovimiento />
-      <AgregarMovimiento />
-      <AgregarMovimiento />
-      <AgregarMovimiento />
-      <AgregarMovimiento />
+      <Button onClick={() => onNuevaFila()}>+</Button>
+      {nuevosMovimientos.map((id) => <AgregarMovimiento key={id} />)}
       <Button variant="contained" color="primary">
         Agregar
       </Button>
