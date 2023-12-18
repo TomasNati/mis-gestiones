@@ -155,7 +155,11 @@ const AgregarMovimiento = ({
           value={detalle}
           onChange={handleDetalleChange}
         />
-        <IconButton onClick={() => eliminarFila(id)} sx={styles.iconButton}>
+        <IconButton
+          color="secondary"
+          onClick={() => eliminarFila(id)}
+          sx={styles.iconButton}
+        >
           <Delete />
         </IconButton>
       </Box>
@@ -177,13 +181,13 @@ const AgregarMovimientos = () => {
 
   return (
     <Box sx={styles.container}>
-      <IconButton onClick={() => onNuevaFila()} sx={styles.iconButton}>
+      <IconButton onClick={() => onNuevaFila()} sx={styles.iconButton} color="secondary">
         <Add />
       </IconButton>
       {nuevosMovimientos.map((id) => (
         <AgregarMovimiento key={id} id={id} eliminarFila={onEliminarFila} />
       ))}
-      <Button variant="contained" color="primary">
+      <Button variant="contained" color="secondary">
         Agregar
       </Button>
     </Box>

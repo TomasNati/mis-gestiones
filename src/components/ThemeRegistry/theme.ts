@@ -11,7 +11,7 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#9ba4d4',
+      main: 'rgba(61,167,214,0.86)',
     },
     secondary: {
       main: '#42a5f5',
@@ -25,6 +25,19 @@ const theme = createTheme({
     fontFamily: roboto.style.fontFamily,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: `
+      body {
+        padding: 0;
+        margin: 0;
+      }
+
+      *::-webkit-calendar-picker-indicator {
+        color: 'white'
+      }
+     
+      `,
+    },
     MuiAlert: {
       styleOverrides: {
         root: ({ ownerState }) => ({

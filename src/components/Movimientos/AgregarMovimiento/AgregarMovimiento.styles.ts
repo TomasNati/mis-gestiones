@@ -15,6 +15,10 @@ const styles: Styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
+    //TODO: not working yet
+    '::-webkit-calendar-picker-indicator': {
+      color: 'white',
+    },
     '> button:last-child': {
       marginTop: '20px',
     },
