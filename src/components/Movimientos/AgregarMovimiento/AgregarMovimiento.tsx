@@ -8,18 +8,26 @@ import {
   Typography,
   Box,
   Button,
+  IconButton,
 } from '@mui/material';
 
 import { crearMovimiento } from '@/lib/actions';
 import { obtenerSubCategorias } from '@/lib/data';
 import { Subcategoria, TipoDeMovimientoGasto } from '@/lib/definitions';
+import { Add, Delete } from '@mui/icons-material';
 
 type ValorLista = {
   id: string;
   label: string;
 };
 
-const AgregarMovimiento = () => {
+const AgregarMovimiento = ({
+  id,
+  eliminarFila,
+}: {
+  id: number;
+  eliminarFila: (id: number) => void;
+}) => {
   const [fecha, setFecha] = useState<Date | string>(
     new Date().toISOString().split('T')[0],
   );
@@ -147,23 +155,34 @@ const AgregarMovimiento = () => {
           value={detalle}
           onChange={handleDetalleChange}
         />
+        <IconButton onClick={() => eliminarFila(id)} sx={styles.iconButton}>
+          <Delete />
+        </IconButton>
       </Box>
     </Box>
   );
 };
 
 const AgregarMovimientos = () => {
-  const [nuevosMovimientos, setNuevosMovimientos] = useState([1,2,3,4,5])
+  const [nuevosMovimientos, setNuevosMovimientos] = useState([1, 2, 3, 4, 5]);
 
   const onNuevaFila = () => {
-    const maxNumber = Math.max(...nuevosMovimientos);
+    const maxNumber = nuevosMovimientos.length == 0 ? 0 : Math.max(...nuevosMovimientos);
     setNuevosMovimientos([...nuevosMovimientos, maxNumber + 1]);
-  }
+  };
+
+  const onEliminarFila = (id: number) => {
+    setNuevosMovimientos(nuevosMovimientos.filter((n) => n !== id));
+  };
 
   return (
     <Box sx={styles.container}>
-      <Button onClick={() => onNuevaFila()}>+</Button>
-      {nuevosMovimientos.map((id) => <AgregarMovimiento key={id} />)}
+      <IconButton onClick={() => onNuevaFila()} sx={styles.iconButton}>
+        <Add />
+      </IconButton>
+      {nuevosMovimientos.map((id) => (
+        <AgregarMovimiento key={id} id={id} eliminarFila={onEliminarFila} />
+      ))}
       <Button variant="contained" color="primary">
         Agregar
       </Button>

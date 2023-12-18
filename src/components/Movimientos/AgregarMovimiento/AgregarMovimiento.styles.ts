@@ -8,23 +8,40 @@ import {
 interface Styles {
   container: SxProps;
   movimiento: SxProps;
+  iconButton: SxProps;
 }
 
 const styles: Styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
+    '> button:last-child': {
+      marginTop: '20px',
+    },
+  },
+  iconButton: {
+    width: '20px',
+    height: '20px',
+    marginBottom: '5px',
   },
   movimiento: {
     display: 'flex',
+    alignItems: 'center',
     minWidth: 1200,
     overflowX: 'auto',
     flexDirection: 'row',
     '> div': {
-      margin: '2px',
+      margin: '0px',
     },
     [`& .${inputBaseClasses.input}`]: {
       padding: '8px',
+    },
+    [`& .${inputBaseClasses.root}`]: {
+      borderRadius: '0px',
+      // TODO: avoid applying it to fieldsets on the top-level
+      // '> fieldset': {
+      //   borderTop: 'none',
+      // },
     },
     '& .input-fecha': {
       '> div': {
