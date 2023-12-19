@@ -32,10 +32,9 @@ const theme = createTheme({
         margin: 0;
       }
 
-      *::-webkit-calendar-picker-indicator {
-        color: 'white'
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        background-color: #FFFFFF;
       }
-     
       `,
     },
     MuiAlert: {

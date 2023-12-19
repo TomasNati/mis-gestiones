@@ -1,6 +1,6 @@
 import { obtenerSubCategorias } from '@/lib/data';
 import { TipoDeMovimientoGasto, Subcategoria } from '@/lib/definitions';
-import { Delete } from '@mui/icons-material';
+import { Delete, Error, Check } from '@mui/icons-material';
 import {
   Box,
   TextField,
@@ -9,7 +9,7 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { styles } from './FilaMovimiento.styles';
 import { styles as agregarStyles } from './AgregarMovimiento.styles';
 
@@ -45,8 +45,23 @@ const FilaMovimiento = ({
   const [tipoDePago, setTipoDePago] = useState<ValorLista | null>(
     tipoDeMovimientoGastoDefault,
   );
-  const [monto, setMonto] = useState<number>(0);
+  const [monto, setMonto] = useState<number | null>(null);
   const [detalle, setDetalle] = useState('');
+  const [filaInvalida, setFilaInvalida] = useState(false);
+
+  useEffect(() => {
+    if (
+      fecha == '' ||
+      concepto == null ||
+      tipoDePago == null ||
+      monto == null ||
+      monto < 0.01
+    ) {
+      setFilaInvalida(true);
+    } else {
+      setFilaInvalida(false);
+    }
+  }, [fecha, concepto, tipoDePago, monto]);
 
   const handleFechaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFecha(event.target.value);
@@ -140,6 +155,7 @@ const FilaMovimiento = ({
         value={detalle}
         onChange={handleDetalleChange}
       />
+      {filaInvalida ? <Error color="error" /> : <Check color="success" />}
       <IconButton
         color="secondary"
         onClick={() => eliminarFila(id)}
