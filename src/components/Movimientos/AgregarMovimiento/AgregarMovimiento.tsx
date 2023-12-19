@@ -1,40 +1,16 @@
 'use client';
 import { styles } from './AgregarMovimiento.styles';
 import React, { useEffect, useState } from 'react';
-import {
-  TextField,
-  Autocomplete,
-  InputAdornment,
-  Typography,
-  Box,
-  Button,
-  IconButton,
-} from '@mui/material';
+import { Box, Button, IconButton } from '@mui/material';
 
 import { crearMovimiento } from '@/lib/actions';
 import { obtenerSubCategorias } from '@/lib/data';
-import { Subcategoria, TipoDeMovimientoGasto } from '@/lib/definitions';
-import { Add, Delete } from '@mui/icons-material';
+import { Subcategoria } from '@/lib/definitions';
+import { Add } from '@mui/icons-material';
+import { FilaMovimiento } from './FilaMovimiento';
 
-type ValorLista = {
-  id: string;
-  label: string;
-};
-
-const AgregarMovimiento = ({
-  id,
-  eliminarFila,
-}: {
-  id: number;
-  eliminarFila: (id: number) => void;
-}) => {
-  const [fecha, setFecha] = useState<Date | string>(
-    new Date().toISOString().split('T')[0],
-  );
-  const [concepto, setConcepto] = useState<Subcategoria | null>(null);
-  const [tipoDePago, setTipoDePago] = useState<ValorLista | null>(null);
-  const [monto, setMonto] = useState<number>(0);
-  const [detalle, setDetalle] = useState('');
+const AgregarMovimientos = () => {
+  const [nuevosMovimientos, setNuevosMovimientos] = useState([1, 2, 3, 4, 5]);
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
 
   useEffect(() => {
@@ -55,121 +31,6 @@ const AgregarMovimiento = ({
     fetchConceptos();
   }, []);
 
-  const tipoDeMovimientoGastoArray: ValorLista[] = Object.keys(TipoDeMovimientoGasto).map(
-    (key) => ({
-      id: key,
-      label: TipoDeMovimientoGasto[key as keyof typeof TipoDeMovimientoGasto],
-    }),
-  );
-
-  const handleFechaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFecha(event.target.value);
-  };
-  const handleConceptoChange = (_: any, newValue: Subcategoria | null) => {
-    setConcepto(newValue);
-  };
-
-  const handleTipoDePagoChange = (_: any, newValue: ValorLista | null) => {
-    setTipoDePago(newValue);
-  };
-
-  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = parseFloat(event.target.value);
-
-    // Check if the input is a positive number
-    if (!isNaN(inputValue) && inputValue >= 0) {
-      setMonto(inputValue);
-    } else {
-      setMonto(0);
-    }
-  };
-
-  const handleDetalleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDetalle(event.target.value);
-  };
-
-  // const handleOnSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault();
-  //   const formData = new FormData();
-
-  //   // Append custom values to the FormData
-  //   formData.append('fecha', fecha);
-  //   formData.append('concepto', concepto?.id || '');
-  //   formData.append('tipoDePago', tipoDePago);
-  //   formData.append('amount', amount);
-  //   formData.append('detalle', detalle);
-
-  //   await crearMovimiento(formData);
-  // };
-
-  return (
-    <Box>
-      <Box sx={styles.movimiento}>
-        <TextField
-          className="input-fecha"
-          id="fecha"
-          name="fecha"
-          type="date"
-          value={fecha}
-          onChange={handleFechaChange}
-        />
-        <Autocomplete
-          id="concepto"
-          className="input-concepto"
-          options={subcategorias}
-          groupBy={(option: Subcategoria) => option.categoria.nombre}
-          getOptionLabel={(option: Subcategoria) => option.nombre}
-          value={concepto}
-          onChange={handleConceptoChange}
-          renderInput={(params) => <TextField {...params} />}
-        />
-        <Autocomplete
-          id="tipoDePago"
-          className="input-tipo-de-pago"
-          options={tipoDeMovimientoGastoArray}
-          getOptionLabel={(option) => option.label}
-          value={tipoDePago}
-          onChange={handleTipoDePagoChange}
-          renderInput={(params) => <TextField {...params} name="tipoDePago" />}
-        />
-        <TextField
-          id="monto"
-          name="monto"
-          className="input-monto"
-          value={monto}
-          type="number"
-          inputProps={{ min: '0', step: '0.01' }}
-          onChange={handleAmountChange}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Typography variant="body1">$</Typography>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          id="detalle"
-          name="detalle"
-          className="input-detalle"
-          value={detalle}
-          onChange={handleDetalleChange}
-        />
-        <IconButton
-          color="secondary"
-          onClick={() => eliminarFila(id)}
-          sx={styles.iconButton}
-        >
-          <Delete />
-        </IconButton>
-      </Box>
-    </Box>
-  );
-};
-
-const AgregarMovimientos = () => {
-  const [nuevosMovimientos, setNuevosMovimientos] = useState([1, 2, 3, 4, 5]);
-
   const onNuevaFila = () => {
     const maxNumber = nuevosMovimientos.length == 0 ? 0 : Math.max(...nuevosMovimientos);
     setNuevosMovimientos([...nuevosMovimientos, maxNumber + 1]);
@@ -185,7 +46,12 @@ const AgregarMovimientos = () => {
         <Add />
       </IconButton>
       {nuevosMovimientos.map((id) => (
-        <AgregarMovimiento key={id} id={id} eliminarFila={onEliminarFila} />
+        <FilaMovimiento
+          key={id}
+          id={id}
+          eliminarFila={onEliminarFila}
+          subcategorias={subcategorias}
+        />
       ))}
       <Button variant="contained" color="secondary">
         Agregar
