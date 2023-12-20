@@ -1,14 +1,6 @@
-import { obtenerSubCategorias } from '@/lib/data';
-import { TipoDeMovimientoGasto, Subcategoria } from '@/lib/definitions';
+import { TipoDeMovimientoGasto, Subcategoria, CategoriaUIMovimiento } from '@/lib/definitions';
 import { Delete, Error, Check } from '@mui/icons-material';
-import {
-  Box,
-  TextField,
-  Autocomplete,
-  InputAdornment,
-  Typography,
-  IconButton,
-} from '@mui/material';
+import { Box, TextField, Autocomplete, InputAdornment, Typography, IconButton } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { styles } from './FilaMovimiento.styles';
 import { styles as agregarStyles } from './AgregarMovimiento.styles';
@@ -18,45 +10,32 @@ type ValorLista = {
   label: string;
 };
 
-const tipoDeMovimientoGastoArray: ValorLista[] = Object.keys(TipoDeMovimientoGasto).map(
-  (key) => ({
-    id: key,
-    label: TipoDeMovimientoGasto[key as keyof typeof TipoDeMovimientoGasto],
-  }),
-);
+const tipoDeMovimientoGastoArray: ValorLista[] = Object.keys(TipoDeMovimientoGasto).map((key) => ({
+  id: key,
+  label: TipoDeMovimientoGasto[key as keyof typeof TipoDeMovimientoGasto],
+}));
 
 const tipoDeMovimientoGastoDefault =
-  tipoDeMovimientoGastoArray.find((mov) => mov.label == TipoDeMovimientoGasto.Debito) ||
-  null;
+  tipoDeMovimientoGastoArray.find((mov) => mov.label == TipoDeMovimientoGasto.Debito) || null;
 
 const FilaMovimiento = ({
   id,
   eliminarFila,
-  subcategorias,
+  categoriasMovimiento,
 }: {
   id: number;
   eliminarFila: (id: number) => void;
-  subcategorias: Subcategoria[];
+  categoriasMovimiento: CategoriaUIMovimiento[];
 }) => {
-  const [fecha, setFecha] = useState<Date | string>(
-    new Date().toISOString().split('T')[0],
-  );
-  const [concepto, setConcepto] = useState<Subcategoria | null>(null);
-  const [tipoDePago, setTipoDePago] = useState<ValorLista | null>(
-    tipoDeMovimientoGastoDefault,
-  );
+  const [fecha, setFecha] = useState<Date | string>(new Date().toISOString().split('T')[0]);
+  const [concepto, setConcepto] = useState<CategoriaUIMovimiento | null>(null);
+  const [tipoDePago, setTipoDePago] = useState<ValorLista | null>(tipoDeMovimientoGastoDefault);
   const [monto, setMonto] = useState<number | null>(null);
   const [detalle, setDetalle] = useState('');
   const [filaInvalida, setFilaInvalida] = useState(false);
 
   useEffect(() => {
-    if (
-      fecha == '' ||
-      concepto == null ||
-      tipoDePago == null ||
-      monto == null ||
-      monto < 0.01
-    ) {
+    if (fecha == '' || concepto == null || tipoDePago == null || monto == null || monto < 0.01) {
       setFilaInvalida(true);
     } else {
       setFilaInvalida(false);
@@ -66,7 +45,7 @@ const FilaMovimiento = ({
   const handleFechaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFecha(event.target.value);
   };
-  const handleConceptoChange = (_: any, newValue: Subcategoria | null) => {
+  const handleConceptoChange = (_: any, newValue: CategoriaUIMovimiento | null) => {
     setConcepto(newValue);
   };
 
@@ -81,27 +60,13 @@ const FilaMovimiento = ({
     if (!isNaN(inputValue) && inputValue >= 0) {
       setMonto(inputValue);
     } else {
-      setMonto(0);
+      setMonto(null);
     }
   };
 
   const handleDetalleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDetalle(event.target.value);
   };
-
-  // const handleOnSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault();
-  //   const formData = new FormData();
-
-  //   // Append custom values to the FormData
-  //   formData.append('fecha', fecha);
-  //   formData.append('concepto', concepto?.id || '');
-  //   formData.append('tipoDePago', tipoDePago);
-  //   formData.append('amount', amount);
-  //   formData.append('detalle', detalle);
-
-  //   await crearMovimiento(formData);
-  // };
 
   return (
     <Box sx={styles.movimiento}>
@@ -116,9 +81,9 @@ const FilaMovimiento = ({
       <Autocomplete
         id="concepto"
         className="input-concepto"
-        options={subcategorias}
-        groupBy={(option: Subcategoria) => option.categoria.nombre}
-        getOptionLabel={(option: Subcategoria) => option.nombre}
+        options={categoriasMovimiento}
+        groupBy={(option: CategoriaUIMovimiento) => option.categoriaNombre}
+        getOptionLabel={(option: CategoriaUIMovimiento) => option.nombre}
         value={concepto}
         onChange={handleConceptoChange}
         renderInput={(params) => <TextField {...params} />}
@@ -148,19 +113,9 @@ const FilaMovimiento = ({
           ),
         }}
       />
-      <TextField
-        id="detalle"
-        name="detalle"
-        className="input-detalle"
-        value={detalle}
-        onChange={handleDetalleChange}
-      />
+      <TextField id="detalle" name="detalle" className="input-detalle" value={detalle} onChange={handleDetalleChange} />
       {filaInvalida ? <Error color="error" /> : <Check color="success" />}
-      <IconButton
-        color="secondary"
-        onClick={() => eliminarFila(id)}
-        sx={agregarStyles.iconButton}
-      >
+      <IconButton color="secondary" onClick={() => eliminarFila(id)} sx={agregarStyles.iconButton}>
         <Delete />
       </IconButton>
     </Box>

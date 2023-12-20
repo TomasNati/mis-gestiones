@@ -47,3 +47,11 @@ export type MovimientoGasto = {
   tipoDeGasto: TipoDeMovimientoGasto;
   monto: number;
 };
+
+export type CategoriaUIMovimiento = {
+  id: string;
+  nombre: string;
+  categoriaNombre: string;
+  subcategoriaId: string;
+  detalleSubcategoriaId?: string;
+};

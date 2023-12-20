@@ -4,29 +4,29 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, IconButton } from '@mui/material';
 
 import { crearMovimiento } from '@/lib/actions';
-import { obtenerSubCategorias } from '@/lib/data';
-import { Subcategoria } from '@/lib/definitions';
+import { obtenerCategoriasDeMovimientos } from '@/lib/data';
+import { CategoriaUIMovimiento } from '@/lib/definitions';
 import { Add } from '@mui/icons-material';
 import { FilaMovimiento } from './FilaMovimiento';
 
 const AgregarMovimientos = () => {
   const [nuevosMovimientos, setNuevosMovimientos] = useState([1, 2, 3, 4, 5]);
-  const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
+  const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
 
   useEffect(() => {
     const fetchConceptos = async () => {
-      const subcategorias = await obtenerSubCategorias();
+      const categoriasMovimiento = await obtenerCategoriasDeMovimientos();
       //sort subcategorias by categoria
-      subcategorias.sort((a, b) => {
-        if (a.categoria.nombre < b.categoria.nombre) {
+      categoriasMovimiento.sort((a, b) => {
+        if (a.categoriaNombre < b.categoriaNombre) {
           return -1;
         }
-        if (a.categoria.nombre > b.categoria.nombre) {
+        if (a.categoriaNombre > b.categoriaNombre) {
           return 1;
         }
         return 0;
       });
-      setSubcategorias(subcategorias);
+      setCategoriasMovimiento(categoriasMovimiento);
     };
     fetchConceptos();
   }, []);
@@ -46,12 +46,7 @@ const AgregarMovimientos = () => {
         <Add />
       </IconButton>
       {nuevosMovimientos.map((id) => (
-        <FilaMovimiento
-          key={id}
-          id={id}
-          eliminarFila={onEliminarFila}
-          subcategorias={subcategorias}
-        />
+        <FilaMovimiento key={id} id={id} eliminarFila={onEliminarFila} categoriasMovimiento={categoriasMovimiento} />
       ))}
       <Button variant="contained" color="secondary">
         Agregar
