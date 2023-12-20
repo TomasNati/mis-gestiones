@@ -48,6 +48,18 @@ export type MovimientoGasto = {
   monto: number;
 };
 
+export type MovimientoUI = {
+  id?: string;
+  comentarios?: string;
+  fecha: Date;
+  subcategoriaId: string;
+  detalleSubcategoriaId?: string;
+  tipoDeGasto: TipoDeMovimientoGasto;
+  monto: number;
+  valido: boolean;
+  filaId: number;
+};
+
 export type CategoriaUIMovimiento = {
   id: string;
   nombre: string;

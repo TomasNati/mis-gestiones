@@ -5,13 +5,14 @@ import { Box, Button, IconButton } from '@mui/material';
 
 import { crearMovimiento } from '@/lib/actions';
 import { obtenerCategoriasDeMovimientos } from '@/lib/data';
-import { CategoriaUIMovimiento } from '@/lib/definitions';
+import { CategoriaUIMovimiento, MovimientoUI } from '@/lib/definitions';
 import { Add } from '@mui/icons-material';
 import { FilaMovimiento } from './FilaMovimiento';
 
 const AgregarMovimientos = () => {
   const [nuevosMovimientos, setNuevosMovimientos] = useState([1, 2, 3, 4, 5]);
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
+  const [movimientosValidos, setMovimientosValidos] = useState<MovimientoUI[]>([]);
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -38,6 +39,13 @@ const AgregarMovimientos = () => {
 
   const onEliminarFila = (id: number) => {
     setNuevosMovimientos(nuevosMovimientos.filter((n) => n !== id));
+    setMovimientosValidos(movimientosValidos.filter((m) => m.filaId !== id));
+  };
+
+  const onFilaActualizada = (movimiento: MovimientoUI) => {
+    const movimientosValidosActualizados = movimientosValidos.filter((m) => m.filaId !== movimiento.filaId);
+    movimientosValidosActualizados.push(movimiento);
+    setMovimientosValidos(movimientosValidosActualizados);
   };
 
   return (
@@ -46,9 +54,15 @@ const AgregarMovimientos = () => {
         <Add />
       </IconButton>
       {nuevosMovimientos.map((id) => (
-        <FilaMovimiento key={id} id={id} eliminarFila={onEliminarFila} categoriasMovimiento={categoriasMovimiento} />
+        <FilaMovimiento
+          key={id}
+          id={id}
+          eliminarFila={onEliminarFila}
+          categoriasMovimiento={categoriasMovimiento}
+          filaActualizada={onFilaActualizada}
+        />
       ))}
-      <Button variant="contained" color="secondary">
+      <Button variant="contained" color="secondary" onClick={() => console.log(movimientosValidos)}>
         Agregar
       </Button>
     </Box>
