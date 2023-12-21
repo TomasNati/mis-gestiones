@@ -1,6 +1,4 @@
 [ ] Mejorar FilaMovimiento:
-      * Para los textos y numéricos, que llame al effect solo cuando se pierda el foco
-      * el flag de válido se puede sacar derecho del objeto del movimiento, no tener aparte
-      * Tal vez pueda sacar el effect directamente, y su código meterlo en un método privado que se llame con cada handler
+    
       * AgregarMmovimieno podría manejar directamente un arreglo de MovimientoUI, y sacar el array aparte con los ids
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main

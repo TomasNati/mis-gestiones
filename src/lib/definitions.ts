@@ -54,7 +54,7 @@ export type MovimientoUI = {
   fecha: Date;
   subcategoriaId: string;
   detalleSubcategoriaId?: string;
-  tipoDeGasto: TipoDeMovimientoGasto;
+  tipoDeGasto?: TipoDeMovimientoGasto;
   monto: number;
   valido: boolean;
   filaId: number;

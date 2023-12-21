@@ -1,10 +1,9 @@
 import { TipoDeMovimientoGasto, CategoriaUIMovimiento, MovimientoUI } from '@/lib/definitions';
 import { Delete, Error, Check } from '@mui/icons-material';
 import { Box, TextField, Autocomplete, InputAdornment, Typography, IconButton } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { styles } from './FilaMovimiento.styles';
 import { styles as agregarStyles } from './AgregarMovimiento.styles';
-import { set } from 'zod';
 
 type ValorLista = {
   id: string;
@@ -44,51 +43,43 @@ const FilaMovimiento = ({
   const [tipoDePago, setTipoDePago] = useState<ValorLista | null>(tipoDeMovimientoGastoDefault);
   const [monto, setMonto] = useState<number | null>(null);
   const [detalle, setDetalle] = useState('');
-  const [filaInvalida, setFilaInvalida] = useState(false);
   const [movimiento, setMovimiento] = useState<MovimientoUI>({ ...movimientoVacio, filaId: id });
 
-  useEffect(() => {
-    const movimientoValido = fecha != '' && concepto != null && tipoDePago != null && monto != null && monto > 0.01;
-    setFilaInvalida(!movimientoValido);
-    const nuevoMovimiento = {
-      ...movimiento,
-      valido: movimientoValido,
-      fecha: new Date(fecha),
-      subcategoriaId: concepto?.subcategoriaId || '',
-      detalleSubcategoriaId: concepto?.detalleSubcategoriaId || '',
-      tipoDeGasto: (tipoDePago?.id as TipoDeMovimientoGasto) || TipoDeMovimientoGasto.Debito,
-      monto: monto || 0,
-      comentarios: detalle,
-    };
+  const actualizarMovimiento = (nuevoMovimiento: MovimientoUI, actualizarFila: boolean = true) => {
+    const { fecha, subcategoriaId, tipoDeGasto, monto } = nuevoMovimiento;
+    nuevoMovimiento.valido = fecha && !!subcategoriaId && tipoDeGasto != null && monto > 0.01;
     setMovimiento(nuevoMovimiento);
-    filaActualizada(nuevoMovimiento);
-  }, [fecha, concepto, tipoDePago, monto, detalle]);
+    if (actualizarFila) filaActualizada(nuevoMovimiento);
+  };
 
   const handleFechaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFecha(event.target.value);
-    setMovimiento({ ...movimiento, fecha: new Date(event.target.value) });
+    actualizarMovimiento({ ...movimiento, fecha: new Date(event.target.value) });
   };
   const handleConceptoChange = (_: any, newValue: CategoriaUIMovimiento | null) => {
     setConcepto(newValue);
+    actualizarMovimiento({
+      ...movimiento,
+      subcategoriaId: newValue?.subcategoriaId || '',
+      detalleSubcategoriaId: newValue?.detalleSubcategoriaId || '',
+    });
   };
 
   const handleTipoDePagoChange = (_: any, newValue: ValorLista | null) => {
     setTipoDePago(newValue);
+    actualizarMovimiento({ ...movimiento, tipoDeGasto: newValue?.id as TipoDeMovimientoGasto });
   };
 
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = parseFloat(event.target.value);
-
-    // Check if the input is a positive number
-    if (!isNaN(inputValue) && inputValue >= 0) {
-      setMonto(inputValue);
-    } else {
-      setMonto(null);
-    }
+    const nuevoMonto = !isNaN(inputValue) && inputValue >= 0 ? inputValue : null;
+    setMonto(nuevoMonto);
+    actualizarMovimiento({ ...movimiento, monto: nuevoMonto || 0 }, false);
   };
 
   const handleDetalleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDetalle(event.target.value);
+    actualizarMovimiento({ ...movimiento, comentarios: event.target.value }, false);
   };
 
   return (
@@ -124,9 +115,10 @@ const FilaMovimiento = ({
         id="monto"
         name="monto"
         className="input-monto"
-        value={monto}
+        value={monto || ''}
         type="number"
         inputProps={{ min: '0', step: '0.01' }}
+        onBlur={() => filaActualizada(movimiento)}
         onChange={handleAmountChange}
         InputProps={{
           startAdornment: (
@@ -136,8 +128,15 @@ const FilaMovimiento = ({
           ),
         }}
       />
-      <TextField id="detalle" name="detalle" className="input-detalle" value={detalle} onChange={handleDetalleChange} />
-      {filaInvalida ? <Error color="error" /> : <Check color="success" />}
+      <TextField
+        id="detalle"
+        name="detalle"
+        className="input-detalle"
+        value={detalle}
+        onChange={handleDetalleChange}
+        onBlur={() => filaActualizada(movimiento)}
+      />
+      {movimiento.valido ? <Check color="success" /> : <Error color="error" />}
       <IconButton color="secondary" onClick={() => eliminarFila(id)} sx={agregarStyles.iconButton}>
         <Delete />
       </IconButton>
