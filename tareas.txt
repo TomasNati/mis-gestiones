@@ -1,4 +1,2 @@
-[ ] Mejorar FilaMovimiento:
-    
-      * AgregarMmovimieno podría manejar directamente un arreglo de MovimientoUI, y sacar el array aparte con los ids
+
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main

@@ -15,35 +15,23 @@ const tipoDeMovimientoGastoArray: ValorLista[] = Object.keys(TipoDeMovimientoGas
   label: TipoDeMovimientoGasto[key as keyof typeof TipoDeMovimientoGasto],
 }));
 
-const tipoDeMovimientoGastoDefault =
-  tipoDeMovimientoGastoArray.find((mov) => mov.label == TipoDeMovimientoGasto.Debito) || null;
-
-const movimientoVacio: MovimientoUI = {
-  fecha: new Date(),
-  tipoDeGasto: TipoDeMovimientoGasto.Debito,
-  monto: 0,
-  subcategoriaId: '',
-  valido: false,
-  filaId: 0,
-};
-
 const FilaMovimiento = ({
-  id,
+  movimientoVacio,
   eliminarFila,
   categoriasMovimiento,
   filaActualizada,
 }: {
-  id: number;
+  movimientoVacio: MovimientoUI;
   eliminarFila: (id: number) => void;
   categoriasMovimiento: CategoriaUIMovimiento[];
   filaActualizada: (movimiento: MovimientoUI) => void;
 }) => {
-  const [fecha, setFecha] = useState<Date | string>(new Date().toISOString().split('T')[0]);
+  const [fecha, setFecha] = useState<Date | string>(movimientoVacio.fecha.toISOString().split('T')[0]);
   const [concepto, setConcepto] = useState<CategoriaUIMovimiento | null>(null);
-  const [tipoDePago, setTipoDePago] = useState<ValorLista | null>(tipoDeMovimientoGastoDefault);
+  const [tipoDePago, setTipoDePago] = useState<ValorLista | null>(null);
   const [monto, setMonto] = useState<number | null>(null);
   const [detalle, setDetalle] = useState('');
-  const [movimiento, setMovimiento] = useState<MovimientoUI>({ ...movimientoVacio, filaId: id });
+  const [movimiento, setMovimiento] = useState<MovimientoUI>(movimientoVacio);
 
   const actualizarMovimiento = (nuevoMovimiento: MovimientoUI, actualizarFila: boolean = true) => {
     const { fecha, subcategoriaId, tipoDeGasto, monto } = nuevoMovimiento;
@@ -137,7 +125,7 @@ const FilaMovimiento = ({
         onBlur={() => filaActualizada(movimiento)}
       />
       {movimiento.valido ? <Check color="success" /> : <Error color="error" />}
-      <IconButton color="secondary" onClick={() => eliminarFila(id)} sx={agregarStyles.iconButton}>
+      <IconButton color="secondary" onClick={() => eliminarFila(movimiento.filaId)} sx={agregarStyles.iconButton}>
         <Delete />
       </IconButton>
     </Box>
