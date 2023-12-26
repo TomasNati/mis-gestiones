@@ -67,3 +67,8 @@ export type CategoriaUIMovimiento = {
   subcategoriaId: string;
   detalleSubcategoriaId?: string;
 };
+
+export type ResultadoAPI = {
+  errores: string[];
+  exitoso: boolean;
+};

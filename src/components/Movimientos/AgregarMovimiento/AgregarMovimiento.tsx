@@ -3,11 +3,12 @@ import { styles } from './AgregarMovimiento.styles';
 import React, { useEffect, useState } from 'react';
 import { Box, Button, IconButton } from '@mui/material';
 
-import { crearMovimiento } from '@/lib/actions';
+import { crearMovimientos } from '@/lib/actions';
 import { obtenerCategoriasDeMovimientos } from '@/lib/data';
 import { CategoriaUIMovimiento, MovimientoUI, TipoDeMovimientoGasto } from '@/lib/definitions';
 import { Add } from '@mui/icons-material';
 import { FilaMovimiento } from './FilaMovimiento';
+import { useRouter } from 'next/navigation';
 
 const movimientoVacio: MovimientoUI = {
   fecha: new Date(),
@@ -22,6 +23,8 @@ const nuevosMovimientosDefault = [1, 2, 3, 4, 5].map((id) => ({ ...movimientoVac
 const AgregarMovimientos = () => {
   const [nuevosMovimientos, setNuevosMovimientos] = useState(nuevosMovimientosDefault);
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
+  const [agregarMovimientos, setAgregarMovimientos] = useState(false);
+  const { push } = useRouter();
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -40,6 +43,19 @@ const AgregarMovimientos = () => {
     };
     fetchConceptos();
   }, []);
+
+  useEffect(() => {
+    const agregarMovimientosNuevos = async () => {
+      const movimientosValidos = nuevosMovimientos.filter((n) => n.valido);
+      if (agregarMovimientos && movimientosValidos.length > 0) {
+        const resultado = await crearMovimientos(movimientosValidos);
+        console.log(resultado);
+        setAgregarMovimientos(false);
+        push('/finanzas/movimientosDelMes');
+      }
+    };
+    agregarMovimientosNuevos();
+  }, [agregarMovimientos]);
 
   const onNuevaFila = () => {
     const maxNumber = nuevosMovimientos.length == 0 ? 0 : Math.max(...nuevosMovimientos.map((n) => n.filaId));
@@ -71,7 +87,7 @@ const AgregarMovimientos = () => {
           filaActualizada={onFilaActualizada}
         />
       ))}
-      <Button variant="contained" color="secondary" onClick={() => console.log(nuevosMovimientos)}>
+      <Button variant="contained" color="secondary" onClick={() => setAgregarMovimientos(true)}>
         Agregar
       </Button>
     </Box>
