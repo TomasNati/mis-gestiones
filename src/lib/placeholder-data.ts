@@ -673,3 +673,23 @@ export const movimientos: MovimientoGasto[] = [
     tipoDeGasto: TipoDeMovimientoGasto.Debito,
   },
 ];
+
+/*
+scripts usados para insertar datos en la base de datos
+
+INSERT INTO misgestiones.finanzas_categoria (id, nombre) VALUES 
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D6A', 'Educación'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D6B', 'Hijos'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D6C', 'Entretenimiento'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D6D', 'Diario'),
+  ('3F2504E0-4F89-11D3-9A0C-0305E82C3301', 'Regalos'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D6E', 'Salud'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D6F', 'Hogar'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D60', 'Seguros'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D61', 'Tecnologia'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D62', 'Transporte'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D63', 'Viajes'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D64', 'Servicios'),
+  ('B734C8E2-6D78-4A8F-9C36-AD2F0F1E9D65', 'Other');
+
+*/

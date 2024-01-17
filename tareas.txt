@@ -1,2 +1,3 @@
-
+[ ] En AgregarMovimiento.tsx, mostrar algún mensaje de error si la respuesta da errores
+[ ] Crear un script de PostgreSQl para inicializar categorías, subcategorías, etc.
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main

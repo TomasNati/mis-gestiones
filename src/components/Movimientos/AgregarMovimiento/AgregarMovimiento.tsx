@@ -2,10 +2,9 @@
 import { styles } from './AgregarMovimiento.styles';
 import React, { useEffect, useState } from 'react';
 import { Box, Button, IconButton } from '@mui/material';
-
 import { crearMovimientos } from '@/lib/actions';
 import { obtenerCategoriasDeMovimientos } from '@/lib/data';
-import { CategoriaUIMovimiento, MovimientoUI, TipoDeMovimientoGasto } from '@/lib/definitions';
+import { CategoriaUIMovimiento, MovimientoUI } from '@/lib/definitions';
 import { Add } from '@mui/icons-material';
 import { FilaMovimiento } from './FilaMovimiento';
 import { useRouter } from 'next/navigation';
