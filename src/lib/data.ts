@@ -1,31 +1,92 @@
-// import { sql } from '@vercel/postgres';
-import { Categoria, CategoriaUIMovimiento, DetalleSubcategoria, MovimientoGasto, Subcategoria } from './definitions';
-import { categorias, detalleSubcategorias, subcategorias, movimientos } from './placeholder-data';
+'use server';
 
-export const obtenerCategorias = (): Categoria[] => {
+import { sql } from '@vercel/postgres';
+// import { unstable_noStore as noStore } from 'next/cache';
+import {
+  Categoria,
+  CategoriaUIMovimiento,
+  DetalleSubcategoria,
+  DetalleSubcategoriaDB,
+  MovimientoGasto,
+  Subcategoria,
+  SubcategoriaDB,
+  TipoDeGasto,
+} from './definitions';
+import { movimientos } from './placeholder-data';
+
+export const obtenerCategorias = async (): Promise<Categoria[]> => {
   // noStore();
-  // try {
-  //   const data = await sql<Categoria>`
-  //   select * from  misgestiones.finanzas_categoria order by nombre asc`;
+  try {
+    const data = await sql<Categoria>`
+      select fc.id , fc.nombre 
+      from misgestiones.finanzas_categoria fc 
+      where fc.active = true`;
 
-  //   const categorias = data.rows.map((categoria) => ({
-  //     ...categoria,
-  //   }));
-  //   return categorias;
-  // } catch (error) {
-  //   console.error('Database Error:', error);
-  //   throw new Error('Failed to fetch the latest invoices.');
-  // }
-
-  return categorias;
+    const categorias = data.rows.map((categoria) => ({
+      ...categoria,
+    }));
+    return categorias;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener las categorias');
+  }
 };
 
 export const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
-  return Promise.resolve(subcategorias);
+  // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
+  // For this method, caching data seems to be a good idea, so this is commented out
+  // noStore();
+  try {
+    const categorias = await obtenerCategorias();
+    const data = await sql<SubcategoriaDB>`
+      select fs2.id , fs2.nombre, fs2.categoria, fs2.tipodegasto  
+      from misgestiones.finanzas_subcategoria fs2  
+      where fs2.active = true`;
+
+    const subcategorias = data.rows.map((subcategoria) => ({
+      ...subcategoria,
+      categoria: categorias.find((categoria) => categoria.id === subcategoria.categoria) || {
+        id: '0',
+        nombre: 'Sin categoria',
+      },
+    }));
+
+    return subcategorias;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener las subcategorias');
+  }
 };
 
 export const obtenerDetalleSubCategorias = async (): Promise<DetalleSubcategoria[]> => {
-  return Promise.resolve(detalleSubcategorias);
+  // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
+  // For this method, caching data seems to be a good idea, so this is commented out
+  // noStore();
+  try {
+    const subcategorias = await obtenerSubCategorias();
+    const data = await sql<DetalleSubcategoriaDB>`
+      select fd.id , fd.nombre , fd.subcategoria 
+      from misgestiones.finanzas_detallesubcategoria fd 
+      where fd.active = true`;
+
+    const detalleSubcategorias = data.rows.map((detalleSubcategoria) => ({
+      ...detalleSubcategoria,
+      subcategoria: subcategorias.find((subcategoria) => subcategoria.id === detalleSubcategoria.subcategoria) || {
+        id: '0',
+        nombre: 'Sin subcategoria',
+        tipoDeGasto: TipoDeGasto.Fijo,
+        categoria: {
+          id: '0',
+          nombre: 'Sin categoria',
+        },
+      },
+    }));
+
+    return detalleSubcategorias;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener los detalles de las subcategorias');
+  }
 };
 
 export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovimiento[]> => {
@@ -68,6 +129,5 @@ export const obtenerUltimosMovimientos = () => {
 };
 
 export const obtenerMovimientosDelMes = async (fecha: Date): Promise<MovimientoGasto[]> => {
-  console.log('fecha', fecha);
   return Promise.resolve(movimientos);
 };

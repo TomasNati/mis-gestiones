@@ -23,6 +23,14 @@ export type Subcategoria = {
   nombre: string;
 };
 
+export type SubcategoriaDB = {
+  id: string;
+  comentarios?: string;
+  categoria: string;
+  tipoDeGasto: TipoDeGasto;
+  nombre: string;
+};
+
 export type Gasto = {
   id: string;
   comentarios?: string;
@@ -36,6 +44,13 @@ export type DetalleSubcategoria = {
   nombre: string;
   comentarios?: string;
   subcategoria: Subcategoria;
+};
+
+export type DetalleSubcategoriaDB = {
+  id: string;
+  nombre: string;
+  comentarios?: string;
+  subcategoria: string;
 };
 
 export type MovimientoGasto = {
