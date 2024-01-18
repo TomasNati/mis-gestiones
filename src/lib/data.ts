@@ -37,17 +37,21 @@ export const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
   // For this method, caching data seems to be a good idea, so this is commented out
   // noStore();
   try {
-    const categorias = await obtenerCategorias();
     const data = await sql<SubcategoriaDB>`
-      select fs2.id , fs2.nombre, fs2.categoria, fs2.tipodegasto  
+      select fs2.id , fs2.nombre, fs2.tipodegasto as "tipoDeGasto",
+      fc.id as "categoriaId", fc.nombre as "categoriaNombre"
       from misgestiones.finanzas_subcategoria fs2  
+      inner join misgestiones.finanzas_categoria fc on fs2.categoria  = fc.id
+         and fc.active = true
       where fs2.active = true`;
 
-    const subcategorias = data.rows.map((subcategoria) => ({
-      ...subcategoria,
-      categoria: categorias.find((categoria) => categoria.id === subcategoria.categoria) || {
-        id: '0',
-        nombre: 'Sin categoria',
+    const subcategorias = data.rows.map((subcategoriaDB) => ({
+      id: subcategoriaDB.id,
+      nombre: subcategoriaDB.nombre,
+      tipoDeGasto: subcategoriaDB.tipoDeGasto,
+      categoria: {
+        id: subcategoriaDB.categoriaId,
+        nombre: subcategoriaDB.categoriaNombre,
       },
     }));
 
@@ -65,19 +69,26 @@ export const obtenerDetalleSubCategorias = async (): Promise<DetalleSubcategoria
   try {
     const subcategorias = await obtenerSubCategorias();
     const data = await sql<DetalleSubcategoriaDB>`
-      select fd.id , fd.nombre , fd.subcategoria 
+     select fd.id , fd.nombre,
+      fs2.id as "subCategoriaId" , fs2.nombre as "subCategoriaNombre", fs2.tipodegasto as "subCategoriaTipoDeGasto" ,
+      fc.id as "categoriaId", fc.nombre as "categoriaNombre"
       from misgestiones.finanzas_detallesubcategoria fd 
+      inner join misgestiones.finanzas_subcategoria fs2 on fs2.id = fd.subcategoria
+         and fs2.active = true
+      inner join misgestiones.finanzas_categoria fc on fs2.categoria  = fc.id
+         and fc.active = true
       where fd.active = true`;
 
-    const detalleSubcategorias = data.rows.map((detalleSubcategoria) => ({
-      ...detalleSubcategoria,
-      subcategoria: subcategorias.find((subcategoria) => subcategoria.id === detalleSubcategoria.subcategoria) || {
-        id: '0',
-        nombre: 'Sin subcategoria',
-        tipoDeGasto: TipoDeGasto.Fijo,
+    const detalleSubcategorias = data.rows.map((detalleSubcategoriaDB) => ({
+      id: detalleSubcategoriaDB.id,
+      nombre: detalleSubcategoriaDB.nombre,
+      subcategoria: {
+        id: detalleSubcategoriaDB.subCategoriaId,
+        nombre: detalleSubcategoriaDB.subCategoriaNombre,
+        tipoDeGasto: detalleSubcategoriaDB.subCategoriaTipoDeGasto,
         categoria: {
-          id: '0',
-          nombre: 'Sin categoria',
+          id: detalleSubcategoriaDB.categoriaId,
+          nombre: detalleSubcategoriaDB.categoriaNombre,
         },
       },
     }));
