@@ -1,3 +1,4 @@
 [ ] En AgregarMovimiento.tsx, mostrar algún mensaje de error si la respuesta da errores
-[ ] Agregar el código para hacer una inserción
+[ ] Ver si puedo reemplazar el sql con llamadas a Stored Procedures. No se si vale la pena
+[ ] Que las grillas de movimientos traigan datos reales de la base.
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main

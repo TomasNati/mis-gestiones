@@ -2,6 +2,9 @@
 
 import { z } from 'zod';
 import { MovimientoUI, ResultadoAPI } from './definitions';
+import { sql } from '@vercel/postgres';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -42,8 +45,22 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
     console.log(errores);
     return Promise.resolve(false);
   } else {
-    const movimiento = camposValidados.data;
-    console.log(movimiento);
-    return Promise.resolve(true);
+    const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
+    const fechaString = fecha.toISOString().split('T')[0];
+    const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
+    try {
+      await sql`
+      INSERT INTO misgestiones.finanzas_movimientogasto 
+        (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios)
+      VALUES (${fechaString}, ${subcategoriaId}, ${detalleSubcategoriaIdFinal}, ${tipoDeGasto}, ${monto}, ${comentarios})
+    `;
+    } catch (error) {
+      console.error('Database Error:', error);
+      return Promise.resolve(false);
+    }
+
+    //Revalidate the cache
+    revalidatePath('/finanzas');
+    revalidatePath('/finanzas/movimientosDelMes');
   }
 }
