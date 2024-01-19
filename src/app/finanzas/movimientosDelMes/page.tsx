@@ -1,11 +1,11 @@
-import { obtenerMovimientosDelMes } from '@/lib/data';
+import { obtenerMovimientos } from '@/lib/data';
 import { Movimientos } from '@/components/Movimientos';
 import { Box, Button, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 
 const MovimientosDelMes = async () => {
-  const movimientos = await obtenerMovimientosDelMes(new Date());
+  const movimientos = await obtenerMovimientos(); //(new Date());
 
   return (
     <Box>

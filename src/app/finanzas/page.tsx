@@ -2,14 +2,14 @@ import * as React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { obtenerUltimosMovimientos } from '@/lib/data';
+import { obtenerMovimientos } from '@/lib/data';
 import { Button } from '@mui/material';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import NextLink from 'next/link';
 import { Movimientos } from '@/components/Movimientos';
 
 const Finanzas = async () => {
-  const movimientosDashboard = await obtenerUltimosMovimientos();
+  const movimientosDashboard = await obtenerMovimientos();
 
   return (
     <Container>

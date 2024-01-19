@@ -8,11 +8,63 @@ import {
   DetalleSubcategoria,
   DetalleSubcategoriaDB,
   MovimientoGasto,
+  MovimientoGastoDB,
   Subcategoria,
   SubcategoriaDB,
-  TipoDeGasto,
 } from './definitions';
 import { movimientos } from './placeholder-data';
+
+export const obtenerMovimientos = async (): Promise<MovimientoGasto[]> => {
+  // noStore();
+  try {
+    const data = await sql<MovimientoGastoDB>`
+      select fmg.id , fmg.fecha , fmg.tipodepago as "tipoDeGasto" , fmg.monto , fmg.comentarios ,
+	    fd.id as "detalleSubCategoriaId", fd.nombre as "detalleSubCategoriaNombre",
+      fs.id as "subCategoriaId" , fs.nombre as "subCategoriaNombre", fs.tipodegasto as "subCategoriaTipoDeGasto" ,
+      fc.id as "categoriaId", fc.nombre as "categoriaNombre"
+      from misgestiones.finanzas_movimientogasto fmg 
+      inner join misgestiones.finanzas_subcategoria fs on fs.id = fmg.subcategoria
+         and fs.active = true
+      inner join misgestiones.finanzas_categoria fc on fs.categoria  = fc.id
+         and fc.active = true
+      left join misgestiones.finanzas_detallesubcategoria fd on fd.subcategoria = fs.id
+      	and fd.active = true
+      where fmg.active = true`;
+
+    const movimientos = data.rows.map((movimientoDB) => {
+      const movimiento: MovimientoGasto = {
+        id: movimientoDB.id,
+        fecha: movimientoDB.fecha,
+        tipoDeGasto: movimientoDB.tipoDeGasto,
+        monto: movimientoDB.monto,
+        comentarios: movimientoDB.comentarios,
+        subcategoria: {
+          id: movimientoDB.subCategoriaId,
+          nombre: movimientoDB.subCategoriaNombre,
+          tipoDeGasto: movimientoDB.subCategoriaTipoDeGasto,
+          categoria: {
+            id: movimientoDB.categoriaId,
+            nombre: movimientoDB.categoriaNombre,
+          },
+        },
+      };
+      if (movimientoDB.detalleSubCategoriaId) {
+        movimiento.detalleSubcategoria = {
+          id: movimientoDB.detalleSubCategoriaId,
+          nombre: movimientoDB.detalleSubCategoriaNombre || '',
+          subcategoria: movimiento.subcategoria,
+        };
+      }
+
+      return movimiento;
+    });
+
+    return movimientos;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener los movimientos');
+  }
+};
 
 export const obtenerCategorias = async (): Promise<Categoria[]> => {
   // noStore();

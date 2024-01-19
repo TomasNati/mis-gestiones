@@ -68,6 +68,21 @@ export type MovimientoGasto = {
   monto: number;
 };
 
+export type MovimientoGastoDB = {
+  id: string;
+  comentarios?: string;
+  fecha: Date;
+  tipoDeGasto: TipoDeMovimientoGasto;
+  monto: number;
+  subCategoriaId: string;
+  subCategoriaNombre: string;
+  subCategoriaTipoDeGasto: TipoDeGasto;
+  categoriaId: string;
+  categoriaNombre: string;
+  detalleSubCategoriaId?: string;
+  detalleSubCategoriaNombre?: string;
+};
+
 export type MovimientoUI = {
   id?: string;
   comentarios?: string;

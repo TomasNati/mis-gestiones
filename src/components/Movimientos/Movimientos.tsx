@@ -1,13 +1,5 @@
 import { MovimientoGasto } from '@/lib/definitions';
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from '@mui/material';
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 const Movimientos = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
   return (
@@ -23,18 +15,20 @@ const Movimientos = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {movimientos.map((movimiento) => (
-            <TableRow
-              key={movimiento.id}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell>{movimiento.fecha.toLocaleDateString()}</TableCell>
-              <TableCell>{movimiento.subcategoria.nombre}</TableCell>
-              <TableCell>{movimiento.tipoDeGasto}</TableCell>
-              <TableCell>{movimiento.monto}</TableCell>
-              <TableCell>{movimiento.comentarios}</TableCell>
-            </TableRow>
-          ))}
+          {movimientos.map((movimiento) => {
+            const concepto = movimiento.detalleSubcategoria
+              ? `(${movimiento.detalleSubcategoria.subcategoria.nombre}) ${movimiento.detalleSubcategoria.nombre}`
+              : movimiento.subcategoria.nombre;
+            return (
+              <TableRow key={movimiento.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                <TableCell>{movimiento.fecha.toLocaleDateString()}</TableCell>
+                <TableCell>{concepto}</TableCell>
+                <TableCell>{movimiento.tipoDeGasto}</TableCell>
+                <TableCell>{movimiento.monto}</TableCell>
+                <TableCell>{movimiento.comentarios}</TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>

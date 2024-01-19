@@ -1,4 +1,4 @@
 [ ] En AgregarMovimiento.tsx, mostrar algún mensaje de error si la respuesta da errores
-[ ] Ver si puedo reemplazar el sql con llamadas a Stored Procedures. No se si vale la pena
-[ ] Que las grillas de movimientos traigan datos reales de la base.
+[ ] Que  los métodos que traen movimientos filtren para los más recientes (finanzas) 
+    y los movimientos del mes actual (gastos)
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main
