@@ -43,36 +43,14 @@ const mapearMovimientoDBaMovimiento = (movimientoDB: MovimientoGastoDB): Movimie
 };
 
 export const obtenerUltimosMovimientos = async (): Promise<MovimientoGasto[]> => {
-  noStore();
-  try {
-    const data = await sql<MovimientoGastoDB>`
-     select fmg.id , fmg.fecha , fmg.tipodepago as "tipoDeGasto" , fmg.monto , fmg.comentarios ,
-	    fd.id as "detalleSubCategoriaId", fd.nombre as "detalleSubCategoriaNombre",
-      fs.id as "subCategoriaId" , fs.nombre as "subCategoriaNombre", fs.tipodegasto as "subCategoriaTipoDeGasto" ,
-      fc.id as "categoriaId", fc.nombre as "categoriaNombre"
-      from misgestiones.finanzas_movimientogasto fmg 
-      inner join misgestiones.finanzas_subcategoria fs on fs.id = fmg.subcategoria
-         and fs.active = true
-      inner join misgestiones.finanzas_categoria fc on fs.categoria  = fc.id
-         and fc.active = true
-      left join misgestiones.finanzas_detallesubcategoria fd on fd.subcategoria = fmg.detallesubcategoria
-      	and fd.active = true
-      where fmg.active = true
-      order by fmg.fecha desc
-      limit '5'`;
-
-    const movimientos = data.rows.map((movimientoDB) => mapearMovimientoDBaMovimiento(movimientoDB));
-
-    return movimientos;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Error al obtener los movimientos');
-  }
+  return await obtenerMovimientos(5);
 };
 
-export const obtenerMovimientos = async (): Promise<MovimientoGasto[]> => {
+export const obtenerMovimientos = async (limiteDeMovimientos?: number): Promise<MovimientoGasto[]> => {
   noStore();
   try {
+    const limite = limiteDeMovimientos ? limiteDeMovimientos : 500;
+
     const data = await sql<MovimientoGastoDB>`
      select fmg.id , fmg.fecha , fmg.tipodepago as "tipoDeGasto" , fmg.monto , fmg.comentarios ,
 	    fd.id as "detalleSubCategoriaId", fd.nombre as "detalleSubCategoriaNombre",
@@ -87,7 +65,7 @@ export const obtenerMovimientos = async (): Promise<MovimientoGasto[]> => {
       	and fd.active = true
       where fmg.active = true
       order by fmg.fecha desc
-      limit '500'`;
+      limit ${limite};`;
 
     const movimientos = data.rows.map((movimientoDB) => mapearMovimientoDBaMovimiento(movimientoDB));
 
