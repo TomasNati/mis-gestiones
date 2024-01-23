@@ -1,7 +1,7 @@
 'use server';
 
 import { sql } from '@vercel/postgres';
-// import { unstable_noStore as noStore } from 'next/cache';
+import { unstable_noStore as noStore } from 'next/cache';
 import {
   Categoria,
   CategoriaUIMovimiento,
@@ -14,11 +14,39 @@ import {
 } from './definitions';
 import { movimientos } from './placeholder-data';
 
-export const obtenerMovimientos = async (): Promise<MovimientoGasto[]> => {
-  // noStore();
+const mapearMovimientoDBaMovimiento = (movimientoDB: MovimientoGastoDB): MovimientoGasto => {
+  const movimiento: MovimientoGasto = {
+    id: movimientoDB.id,
+    fecha: movimientoDB.fecha,
+    tipoDeGasto: movimientoDB.tipoDeGasto,
+    monto: movimientoDB.monto,
+    comentarios: movimientoDB.comentarios,
+    subcategoria: {
+      id: movimientoDB.subCategoriaId,
+      nombre: movimientoDB.subCategoriaNombre,
+      tipoDeGasto: movimientoDB.subCategoriaTipoDeGasto,
+      categoria: {
+        id: movimientoDB.categoriaId,
+        nombre: movimientoDB.categoriaNombre,
+      },
+    },
+  };
+  if (movimientoDB.detalleSubCategoriaId) {
+    movimiento.detalleSubcategoria = {
+      id: movimientoDB.detalleSubCategoriaId,
+      nombre: movimientoDB.detalleSubCategoriaNombre || '',
+      subcategoria: movimiento.subcategoria,
+    };
+  }
+
+  return movimiento;
+};
+
+export const obtenerUltimosMovimientos = async (): Promise<MovimientoGasto[]> => {
+  noStore();
   try {
     const data = await sql<MovimientoGastoDB>`
-      select fmg.id , fmg.fecha , fmg.tipodepago as "tipoDeGasto" , fmg.monto , fmg.comentarios ,
+     select fmg.id , fmg.fecha , fmg.tipodepago as "tipoDeGasto" , fmg.monto , fmg.comentarios ,
 	    fd.id as "detalleSubCategoriaId", fd.nombre as "detalleSubCategoriaNombre",
       fs.id as "subCategoriaId" , fs.nombre as "subCategoriaNombre", fs.tipodegasto as "subCategoriaTipoDeGasto" ,
       fc.id as "categoriaId", fc.nombre as "categoriaNombre"
@@ -27,37 +55,41 @@ export const obtenerMovimientos = async (): Promise<MovimientoGasto[]> => {
          and fs.active = true
       inner join misgestiones.finanzas_categoria fc on fs.categoria  = fc.id
          and fc.active = true
-      left join misgestiones.finanzas_detallesubcategoria fd on fd.subcategoria = fs.id
+      left join misgestiones.finanzas_detallesubcategoria fd on fd.subcategoria = fmg.detallesubcategoria
       	and fd.active = true
-      where fmg.active = true`;
+      where fmg.active = true
+      order by fmg.fecha desc
+      limit '5'`;
 
-    const movimientos = data.rows.map((movimientoDB) => {
-      const movimiento: MovimientoGasto = {
-        id: movimientoDB.id,
-        fecha: movimientoDB.fecha,
-        tipoDeGasto: movimientoDB.tipoDeGasto,
-        monto: movimientoDB.monto,
-        comentarios: movimientoDB.comentarios,
-        subcategoria: {
-          id: movimientoDB.subCategoriaId,
-          nombre: movimientoDB.subCategoriaNombre,
-          tipoDeGasto: movimientoDB.subCategoriaTipoDeGasto,
-          categoria: {
-            id: movimientoDB.categoriaId,
-            nombre: movimientoDB.categoriaNombre,
-          },
-        },
-      };
-      if (movimientoDB.detalleSubCategoriaId) {
-        movimiento.detalleSubcategoria = {
-          id: movimientoDB.detalleSubCategoriaId,
-          nombre: movimientoDB.detalleSubCategoriaNombre || '',
-          subcategoria: movimiento.subcategoria,
-        };
-      }
+    const movimientos = data.rows.map((movimientoDB) => mapearMovimientoDBaMovimiento(movimientoDB));
 
-      return movimiento;
-    });
+    return movimientos;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener los movimientos');
+  }
+};
+
+export const obtenerMovimientos = async (): Promise<MovimientoGasto[]> => {
+  noStore();
+  try {
+    const data = await sql<MovimientoGastoDB>`
+     select fmg.id , fmg.fecha , fmg.tipodepago as "tipoDeGasto" , fmg.monto , fmg.comentarios ,
+	    fd.id as "detalleSubCategoriaId", fd.nombre as "detalleSubCategoriaNombre",
+      fs.id as "subCategoriaId" , fs.nombre as "subCategoriaNombre", fs.tipodegasto as "subCategoriaTipoDeGasto" ,
+      fc.id as "categoriaId", fc.nombre as "categoriaNombre"
+      from misgestiones.finanzas_movimientogasto fmg 
+      inner join misgestiones.finanzas_subcategoria fs on fs.id = fmg.subcategoria
+         and fs.active = true
+      inner join misgestiones.finanzas_categoria fc on fs.categoria  = fc.id
+         and fc.active = true
+      left join misgestiones.finanzas_detallesubcategoria fd on fd.subcategoria = fmg.detallesubcategoria
+      	and fd.active = true
+      where fmg.active = true
+      order by fmg.fecha desc
+      limit '500'`;
+
+    const movimientos = data.rows.map((movimientoDB) => mapearMovimientoDBaMovimiento(movimientoDB));
 
     return movimientos;
   } catch (error) {
@@ -185,10 +217,6 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
   });
 
   return Promise.resolve(categoriasUIMovimiento);
-};
-
-export const obtenerUltimosMovimientos = () => {
-  return movimientos;
 };
 
 export const obtenerMovimientosDelMes = async (fecha: Date): Promise<MovimientoGasto[]> => {
