@@ -1,11 +1,17 @@
-import { obtenerMovimientos } from '@/lib/data';
+import { obtenerMovimientosPorFecha } from '@/lib/data';
 import { Movimientos } from '@/components/Movimientos';
 import { Box, Button, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 
 const MovimientosDelMes = async () => {
-  const movimientos = await obtenerMovimientos(); //(new Date());
+  const obtenerMovimientos = async () => {
+    const hoy = new Date();
+    const primerDiaDelMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const movimientos = await obtenerMovimientosPorFecha(primerDiaDelMesActual);
+    return movimientos;
+  };
+  const movimientos = await obtenerMovimientos();
 
   return (
     <Box>

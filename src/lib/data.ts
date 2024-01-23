@@ -42,14 +42,11 @@ const mapearMovimientoDBaMovimiento = (movimientoDB: MovimientoGastoDB): Movimie
   return movimiento;
 };
 
-export const obtenerUltimosMovimientos = async (): Promise<MovimientoGasto[]> => {
-  return await obtenerMovimientos(5);
-};
-
-export const obtenerMovimientos = async (limiteDeMovimientos?: number): Promise<MovimientoGasto[]> => {
+const obtenerMovimientos = async (limiteDeMovimientos?: number, fechaDesde?: Date): Promise<MovimientoGasto[]> => {
   noStore();
   try {
     const limite = limiteDeMovimientos ? limiteDeMovimientos : 500;
+    const fechaDesdeString = fechaDesde ? fechaDesde.toISOString().split('T')[0] : '1900-01-01';
 
     const data = await sql<MovimientoGastoDB>`
      select fmg.id , fmg.fecha , fmg.tipodepago as "tipoDeGasto" , fmg.monto , fmg.comentarios ,
@@ -64,6 +61,7 @@ export const obtenerMovimientos = async (limiteDeMovimientos?: number): Promise<
       left join misgestiones.finanzas_detallesubcategoria fd on fd.subcategoria = fmg.detallesubcategoria
       	and fd.active = true
       where fmg.active = true
+        and fmg.fecha >= ${fechaDesdeString}
       order by fmg.fecha desc
       limit ${limite};`;
 
@@ -74,6 +72,14 @@ export const obtenerMovimientos = async (limiteDeMovimientos?: number): Promise<
     console.error('Database Error:', error);
     throw new Error('Error al obtener los movimientos');
   }
+};
+
+export const obtenerUltimosMovimientos = async (): Promise<MovimientoGasto[]> => {
+  return await obtenerMovimientos(5);
+};
+
+export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<MovimientoGasto[]> => {
+  return await obtenerMovimientos(undefined, fecha);
 };
 
 export const obtenerCategorias = async (): Promise<Categoria[]> => {
