@@ -1,4 +1,3 @@
 [ ] En AgregarMovimiento.tsx, mostrar algún mensaje de error si la respuesta da errores
-[ ] Que  los métodos que traen movimientos filtren para los más recientes (finanzas) 
-    y los movimientos del mes actual (gastos)
+[ ] Agregar formulario de edit
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main
