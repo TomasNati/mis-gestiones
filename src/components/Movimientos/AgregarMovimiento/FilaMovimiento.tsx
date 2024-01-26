@@ -4,6 +4,7 @@ import { Box, TextField, Autocomplete, InputAdornment, Typography, IconButton } 
 import { useState } from 'react';
 import { styles } from './FilaMovimiento.styles';
 import { styles as agregarStyles } from './AgregarMovimiento.styles';
+import { addTimeToDateString } from '@/lib/helpers';
 
 type ValorLista = {
   id: string;
@@ -42,7 +43,7 @@ const FilaMovimiento = ({
 
   const handleFechaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFecha(event.target.value);
-    actualizarMovimiento({ ...movimiento, fecha: new Date(event.target.value) });
+    actualizarMovimiento({ ...movimiento, fecha: new Date(addTimeToDateString(event.target.value)) });
   };
   const handleConceptoChange = (_: any, newValue: CategoriaUIMovimiento | null) => {
     setConcepto(newValue);

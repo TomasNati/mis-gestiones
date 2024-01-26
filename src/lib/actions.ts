@@ -52,7 +52,7 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
     resultadoMensaje = 'Hubo errores de validación.';
   } else {
     const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
-    const fechaString = fecha.toISOString();
+    const fechaString = fecha.toISOString().replace('T', ' ');
     const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
     try {
       await sql`

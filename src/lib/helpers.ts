@@ -29,3 +29,16 @@ export const formatDate = (date: Date, showHour: boolean = false): string => {
 
   return date.toLocaleString('es-AR', options).replace(/, /, ' ');
 };
+
+export const addTimeToDateString = (date: string) => {
+  // Get the current date and time
+  const currentDatetime = new Date();
+
+  // Format the time as HH:mm:ss
+  const formattedTime = currentDatetime.toTimeString().slice(0, 8);
+
+  // Combine the date and time
+  const extendedDateString = `${date} ${formattedTime}`;
+
+  return extendedDateString;
+};
