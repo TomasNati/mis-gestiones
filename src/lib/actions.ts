@@ -5,6 +5,7 @@ import { MovimientoUI, ResultadoAPI } from './definitions';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { logMessage } from './helpers';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -27,40 +28,43 @@ export async function crearMovimientos(nuevosMovimientos: MovimientoUI[]) {
     exitoso: true,
     errores: [],
   };
-  nuevosMovimientos.forEach(async (movimiento: MovimientoUI) => {
-    const resultado = await crearMovimiento(movimiento);
-    if (!resultado) {
-      resultadoFinal.errores.push(`Error al crear el movimiento ${movimiento.filaId}`);
+
+  for (const movimiento of nuevosMovimientos) {
+    const mensajeError = await crearMovimiento(movimiento);
+    if (mensajeError) {
+      resultadoFinal.errores.push(`Error al crear el movimiento ${movimiento.filaId}. 
+        Detalle: ${mensajeError}`);
       resultadoFinal.exitoso = false;
     }
-  });
-
+  }
+  //Revalidate the cache
+  revalidatePath('/finanzas');
+  revalidatePath('/finanzas/movimientosDelMes');
   return resultadoFinal;
 }
 
 export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
+  let resultadoMensaje = '';
+
   const camposValidados = CrearMovimiento.safeParse(nuevoMovimiento);
   if (!camposValidados.success) {
     const errores = camposValidados.error.flatten().fieldErrors;
-    console.log(errores);
-    return Promise.resolve(false);
+    resultadoMensaje = 'Hubo errores de validación.';
   } else {
     const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
-    const fechaString = fecha.toISOString().split('T')[0];
+    const fechaString = fecha.toISOString();
     const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
     try {
       await sql`
       INSERT INTO misgestiones.finanzas_movimientogasto 
-        (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios)
+        (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) 
       VALUES (${fechaString}, ${subcategoriaId}, ${detalleSubcategoriaIdFinal}, ${tipoDeGasto}, ${monto}, ${comentarios})
     `;
     } catch (error) {
-      console.error('Database Error:', error);
-      return Promise.resolve(false);
+      resultadoMensaje = `Error al insertar en base de datos: ${error}`;
     }
+    resultadoMensaje && logMessage(resultadoMensaje, 'error');
 
-    //Revalidate the cache
-    revalidatePath('/finanzas');
-    revalidatePath('/finanzas/movimientosDelMes');
+    return resultadoMensaje;
   }
 }

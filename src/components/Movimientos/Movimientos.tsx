@@ -1,4 +1,5 @@
 import { MovimientoGasto } from '@/lib/definitions';
+import { formatDate } from '@/lib/helpers';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 const Movimientos = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
@@ -21,7 +22,7 @@ const Movimientos = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
               : movimiento.subcategoria.nombre;
             return (
               <TableRow key={movimiento.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                <TableCell>{movimiento.fecha.toLocaleDateString()}</TableCell>
+                <TableCell>{formatDate(movimiento.fecha)}</TableCell>
                 <TableCell>{concepto}</TableCell>
                 <TableCell>{movimiento.tipoDeGasto}</TableCell>
                 <TableCell>{movimiento.monto}</TableCell>

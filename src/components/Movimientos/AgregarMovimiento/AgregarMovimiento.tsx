@@ -1,7 +1,7 @@
 'use client';
 import { styles } from './AgregarMovimiento.styles';
 import React, { useEffect, useState } from 'react';
-import { Box, Button, IconButton } from '@mui/material';
+import { Alert, Box, Button, IconButton, Snackbar } from '@mui/material';
 import { crearMovimientos } from '@/lib/actions';
 import { obtenerCategoriasDeMovimientos } from '@/lib/data';
 import { CategoriaUIMovimiento, MovimientoUI } from '@/lib/definitions';
@@ -19,7 +19,18 @@ const movimientoVacio: MovimientoUI = {
 
 const nuevosMovimientosDefault = [1, 2, 3, 4, 5].map((id) => ({ ...movimientoVacio, filaId: id }));
 
+type ConfiguracionNotificacion = {
+  open: boolean;
+  severity: 'success' | 'info' | 'warning' | 'error';
+  mensaje: string;
+};
+
 const AgregarMovimientos = () => {
+  const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
+    open: false,
+    severity: 'success',
+    mensaje: '',
+  });
   const [nuevosMovimientos, setNuevosMovimientos] = useState(nuevosMovimientosDefault);
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [agregarMovimientos, setAgregarMovimientos] = useState(false);
@@ -50,7 +61,15 @@ const AgregarMovimientos = () => {
         const resultado = await crearMovimientos(movimientosValidos);
         console.log(resultado);
         setAgregarMovimientos(false);
-        push('/finanzas/movimientosDelMes');
+        if (!resultado.exitoso) {
+          setConfigNotificacion({
+            open: true,
+            severity: 'error',
+            mensaje: resultado.errores.join('\n'),
+          });
+        } else {
+          push('/finanzas/movimientosDelMes');
+        }
       }
     };
     agregarMovimientosNuevos();
@@ -72,6 +91,13 @@ const AgregarMovimientos = () => {
     setNuevosMovimientos(nuevosMovimientos);
   };
 
+  const onOcultarMensaje = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setConfigNotificacion({ ...configNotificacion, open: false });
+  };
+
   return (
     <Box sx={styles.container}>
       <IconButton onClick={() => onNuevaFila()} sx={styles.iconButton} color="secondary">
@@ -89,6 +115,21 @@ const AgregarMovimientos = () => {
       <Button variant="contained" color="secondary" onClick={() => setAgregarMovimientos(true)}>
         Agregar
       </Button>
+      <Snackbar
+        open={configNotificacion.open}
+        autoHideDuration={6000}
+        onClose={onOcultarMensaje}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={onOcultarMensaje}
+          severity={configNotificacion.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {configNotificacion.mensaje}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
