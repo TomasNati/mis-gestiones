@@ -68,3 +68,11 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
     return resultadoMensaje;
   }
 }
+
+export async function importarMovimientos(formData: FormData) {
+  const textoAImportar = formData.get('textoAImportar') as string;
+  textoAImportar.split('\n').forEach((linea, index) => {
+    const secciones = linea.split('\t');
+    console.log(secciones);
+  });
+}
