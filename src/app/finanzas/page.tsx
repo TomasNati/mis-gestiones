@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { obtenerUltimosMovimientos } from '@/lib/data';
 import { Button } from '@mui/material';
 import TableRowsIcon from '@mui/icons-material/TableRows';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
 import NextLink from 'next/link';
 import { Movimientos } from '@/components/Movimientos';
 
@@ -40,6 +41,16 @@ const Finanzas = async () => {
             sx={{ marginRight: 2 }}
           >
             Ver todos los movimientos
+          </Button>
+          <Button
+            component={NextLink}
+            variant="outlined"
+            startIcon={<ImportExportIcon />}
+            href="/finanzas/importar"
+            color="primary"
+            sx={{ marginRight: 2 }}
+          >
+            Importar movimientos
           </Button>
         </Box>
       </Box>
