@@ -107,3 +107,68 @@ export type ResultadoAPI = {
   errores: string[];
   exitoso: boolean;
 };
+
+export type ImportarMovimientoUI = {
+  anio: number;
+  mes: number;
+  textoAImportar: string;
+};
+
+export interface MovimientoGastoExcel {
+  dia: number;
+  concepto: TiposDeConceptoExcel;
+  tipoDePago: TipoDeMovimientoGasto;
+  monto: number;
+  comentarios?: string;
+}
+
+export enum TiposDeConceptoExcel {
+  Taxi = 'taxi',
+  Comida = 'comida',
+  Kiosco = 'kiosco',
+  Ropa = 'ropa',
+  TecnologíaHardware = 'Tecnología-hardware',
+  Coca = 'coca',
+  CosasCasa = 'cosas casa',
+  Deporte = 'deporte',
+  Doctores = 'doctores',
+  Emilio = 'Emilio',
+  Escuela = 'escuela',
+  EscuelaKiosco = 'escuela-kiosco',
+  LibreParaUsar = 'Libre para usar',
+  Regalos = 'regalos',
+  Otras = 'otras',
+  Psicologa = 'psicologa',
+  ProductosPersonales = 'productos personales',
+  RopaHijos = 'ropa-hijos',
+  ExtrasClaudia = 'extras Claudia',
+  HijosHigiene = 'hijos-higiene',
+  Juguetes = 'juguetes',
+  MedicamentosHijos = 'medicamentos-hijos',
+  TransportePublico = 'Transporte publico',
+  Mantenimiento = 'Mantenimiento',
+  Restaurant = 'Restaurant',
+  Farmacia = 'Farmacia',
+  SueldoClaudia = 'Sueldo Claudia',
+  Supermercado = 'Supermercado',
+  Mejoras = 'Mejoras',
+  Servicios = 'Servicios',
+  HijosOtros = 'Hijos-otros',
+  EscuelaExtras = 'Escuela-extras',
+  CosasParaElAuto = 'Cosas para el auto',
+  Taller = 'Taller',
+  TecnologiaOtros = 'Tecnología-otros',
+  LentesOptica = 'Lentes - Óptica',
+  ViajeHotel = 'Viaje-hotel',
+  SaludOptica = 'Salud-Òptica',
+  HogarOtras = 'Hogar-otras',
+  EntretenimientoLibros = 'Entretenimiento - libros',
+  ColegioMateriales = 'Colegio - Materiales',
+  Nafta = 'Nafta',
+  HijosDepYJuegos = 'Hijos - Dep y juegos',
+  ViajeAvion = 'Viaje-avión',
+  Teatro = 'Teatro',
+  Alcohol = 'Alcohol',
+  Peluqueria_belleza = 'Peluquería/belleza',
+  ViajeTransporte = 'Viaje-transporte',
+}

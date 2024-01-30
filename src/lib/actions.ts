@@ -1,11 +1,18 @@
 'use server';
 
 import { z } from 'zod';
-import { MovimientoUI, ResultadoAPI } from './definitions';
+import {
+  ImportarMovimientoUI,
+  MovimientoGastoExcel,
+  MovimientoUI,
+  ResultadoAPI,
+  TipoDeMovimientoGasto,
+  TiposDeConceptoExcel,
+} from './definitions';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { logMessage } from './helpers';
+import { logMessage, transformCurrencyToNumber } from './helpers';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -69,10 +76,30 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
   }
 }
 
-export async function importarMovimientos(formData: FormData) {
-  const textoAImportar = formData.get('textoAImportar') as string;
-  textoAImportar.split('\n').forEach((linea, index) => {
+export async function importarMovimientos(datos: ImportarMovimientoUI) {
+  const movimientosExcel: MovimientoGastoExcel[] = [];
+  const textoAImportar = datos.textoAImportar;
+  const lineasInválidas: string[] = [];
+
+  textoAImportar.split('\n').forEach((linea: string) => {
     const secciones = linea.split('\t');
-    console.log(secciones);
+    if (secciones.length != 5) {
+      lineasInválidas.push(linea);
+    } else {
+      movimientosExcel.push({
+        dia: parseInt(secciones[0]),
+        concepto: Object.keys(TiposDeConceptoExcel)[
+          Object.values(TiposDeConceptoExcel).indexOf(secciones[1] as unknown as TiposDeConceptoExcel)
+        ] as TiposDeConceptoExcel,
+        tipoDePago: Object.keys(TipoDeMovimientoGasto)[
+          Object.values(TipoDeMovimientoGasto).indexOf(secciones[2] as unknown as TipoDeMovimientoGasto)
+        ] as TipoDeMovimientoGasto,
+        monto: transformCurrencyToNumber(secciones[3]) || 0,
+        comentarios: secciones[4],
+      });
+    }
   });
+
+  console.log(lineasInválidas);
+  console.log(movimientosExcel);
 }

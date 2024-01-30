@@ -42,3 +42,18 @@ export const addTimeToDateString = (date: string) => {
 
   return extendedDateString;
 };
+
+export const transformCurrencyToNumber = (currencyString: string): number | null => {
+  // Remove non-numeric characters except for '.' to handle decimal values
+  const numericString = currencyString.replace(/[^0-9.]/g, '');
+
+  // Parse the numeric string to a float
+  const numericValue = parseFloat(numericString);
+
+  // Check if the parsing was successful
+  if (!isNaN(numericValue)) {
+    return numericValue;
+  } else {
+    return null; // Parsing failed
+  }
+};
