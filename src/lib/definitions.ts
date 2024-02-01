@@ -172,3 +172,23 @@ export enum TiposDeConceptoExcel {
   Peluqueria_belleza = 'Peluquería/belleza',
   ViajeTransporte = 'Viaje-transporte',
 }
+
+export type TipoDeServicioExcel =
+  | 'Aguas de Santiago'
+  | 'Cablevision'
+  | 'Contadora'
+  | 'Personal'
+  | 'Edese'
+  | 'Gasnor'
+  | 'Santiago - Inmobiliario municipal'
+  | 'Santiago - Rentas provincial'
+  | 'Dto. Tuc-Cór - SAT'
+  | 'Dto. Tuc-Cór - Gasnor'
+  | 'Dto. Tuc-Cór - Edet'
+  | 'Dto. Tuc-Cór - DGR'
+  | 'Dto. Tuc-Cór - CISI'
+  | 'Dto. Tuc-Mar - DGR'
+  | 'Bahía - ABSA'
+  | 'Bahía - Municipal'
+  | 'Bahía - ARBA'
+  | 'Monotributo Nati';
