@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { importarMovimientos } from '@/lib/actions';
 import { useEffect, useState } from 'react';
+import { ImportarMovimientosResult } from '@/lib/definitions';
 
 const years = [2022, 2023, 2024];
 const months = [
@@ -39,11 +40,12 @@ const Importar = () => {
   useEffect(() => {
     const importarMovimientosNuevos = async () => {
       if (importar) {
-        await importarMovimientos({
+        const resultado: ImportarMovimientosResult = await importarMovimientos({
           anio,
           mes: months.indexOf(mes) + 1,
           textoAImportar,
         });
+        console.log(resultado);
         setImportar(false);
       }
     };

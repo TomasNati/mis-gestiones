@@ -3,7 +3,8 @@
 import { z } from 'zod';
 import {
   ImportarMovimientoUI,
-  MovimientoGastoExcel,
+  ImportarMovimientosResult,
+  MovimientoGastoAImportar,
   MovimientoUI,
   ResultadoAPI,
   TipoDeMovimientoGasto,
@@ -12,7 +13,7 @@ import {
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { logMessage, transformCurrencyToNumber } from './helpers';
+import { logMessage, mapearTiposDeConceptoExcelASubcategorias, transformCurrencyToNumber } from './helpers';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -76,30 +77,68 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
   }
 }
 
-export async function importarMovimientos(datos: ImportarMovimientoUI) {
-  const movimientosExcel: MovimientoGastoExcel[] = [];
+export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<ImportarMovimientosResult> => {
+  const resultadoFinal: ImportarMovimientosResult = {
+    lineasInvalidas: [],
+    exitoso: true,
+  };
+  const movimientosExcel: MovimientoGastoAImportar[] = [];
   const textoAImportar = datos.textoAImportar;
-  const lineasInválidas: string[] = [];
+  const lineas = textoAImportar.split('\n');
 
-  textoAImportar.split('\n').forEach((linea: string) => {
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i];
     const secciones = linea.split('\t');
     if (secciones.length != 5) {
-      lineasInválidas.push(linea);
-    } else {
-      movimientosExcel.push({
-        dia: parseInt(secciones[0]),
-        concepto: Object.keys(TiposDeConceptoExcel)[
-          Object.values(TiposDeConceptoExcel).indexOf(secciones[1] as unknown as TiposDeConceptoExcel)
-        ] as TiposDeConceptoExcel,
-        tipoDePago: Object.keys(TipoDeMovimientoGasto)[
-          Object.values(TipoDeMovimientoGasto).indexOf(secciones[2] as unknown as TipoDeMovimientoGasto)
-        ] as TipoDeMovimientoGasto,
-        monto: transformCurrencyToNumber(secciones[3]) || 0,
-        comentarios: secciones[4],
+      resultadoFinal.lineasInvalidas.push({
+        linea: linea,
+        razon: 'La línea no tiene 5 columnas',
       });
+      continue;
     }
+
+    const { subcategoriaId, detalleSubcategoriaId } = mapearTiposDeConceptoExcelASubcategorias(
+      secciones[1],
+      secciones[4],
+    );
+    if (!subcategoriaId) {
+      resultadoFinal.lineasInvalidas.push({
+        linea: linea,
+        razon: 'No se encontró la subcategoría',
+      });
+      continue;
+    }
+
+    movimientosExcel.push({
+      dia: parseInt(secciones[0]),
+      subcategoria: subcategoriaId,
+      detalleSubcategoria: detalleSubcategoriaId,
+      tipoDePago: Object.keys(TipoDeMovimientoGasto)[
+        Object.values(TipoDeMovimientoGasto).indexOf(secciones[2] as unknown as TipoDeMovimientoGasto)
+      ] as TipoDeMovimientoGasto,
+      monto: transformCurrencyToNumber(secciones[3]) || 0,
+      comentarios: secciones[4],
+    });
+  }
+
+  console.log(resultadoFinal.lineasInvalidas);
+
+  if (resultadoFinal.lineasInvalidas.length > 0) {
+    resultadoFinal.exitoso = false;
+    return Promise.resolve(resultadoFinal);
+  }
+
+  let insertScriptSQL = `INSERT INTO misgestiones.finanzas_movimientogasto (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) VALUES `;
+  movimientosExcel.forEach((movimiento, index) => {
+    const fecha = new Date(datos.anio, datos.mes - 1, movimiento.dia);
+    const fechaString = fecha.toISOString().replace('T', ' ');
+    insertScriptSQL += `('${fechaString}', '${movimiento.subcategoria}', ${
+      movimiento.detalleSubcategoria ? `'${movimiento.detalleSubcategoria}'` : 'NULL'
+    }, '${movimiento.tipoDePago}', ${movimiento.monto}, '${movimiento.comentarios}')${
+      index < movimientosExcel.length - 1 ? ',' : ''
+    }`;
   });
 
-  console.log(lineasInválidas);
-  console.log(movimientosExcel);
-}
+  console.log(insertScriptSQL);
+  return Promise.resolve(resultadoFinal);
+};

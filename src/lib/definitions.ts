@@ -114,9 +114,10 @@ export type ImportarMovimientoUI = {
   textoAImportar: string;
 };
 
-export interface MovimientoGastoExcel {
+export interface MovimientoGastoAImportar {
   dia: number;
-  concepto: TiposDeConceptoExcel;
+  subcategoria: string;
+  detalleSubcategoria?: string;
   tipoDePago: TipoDeMovimientoGasto;
   monto: number;
   comentarios?: string;
@@ -191,4 +192,19 @@ export type TipoDeServicioExcel =
   | 'Bahía - ABSA'
   | 'Bahía - Municipal'
   | 'Bahía - ARBA'
-  | 'Monotributo Nati';
+  | 'Monotributo Nati'
+  | 'Lawn Tennis'
+  | 'TIC'
+  | 'Readers & Digest'
+  | 'HBO Max'
+  | 'Netflix'
+  | 'Spotify'
+  | 'Aportes Claudia';
+
+export interface ImportarMovimientosResult {
+  lineasInvalidas: {
+    linea: string;
+    razon: string;
+  }[];
+  exitoso: boolean;
+}

@@ -2,3 +2,19 @@
 [ ] Formulario de import: Ahora que es use Client, tendré que usar un effect para llamar al método del servidor con los datos
 [ ] Agregar formulario de edit
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main
+
+Query útil:
+select mg.fecha ,
+fc.nombre as "Categoria", fs2.nombre as "Subcategoria", fd.nombre as "Detalle Subcategoria", 
+mg.tipodepago , mg.monto, mg.comentarios 
+from misgestiones.finanzas_movimientogasto mg
+join misgestiones.finanzas_subcategoria fs2 on fs2.id  = mg.subcategoria  and fs2.active = true
+left join misgestiones.finanzas_detallesubcategoria fd on fd.id = mg.detallesubcategoria and fd.active = true
+join misgestiones.finanzas_categoria fc on fc.id = fs2.categoria and fc.active = true
+
+/*
+
+delete from misgestiones.finanzas_movimientogasto
+*/
+
+ive = true

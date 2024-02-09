@@ -65,7 +65,7 @@ export interface ConceptoExcelASubcategoria {
   detalleSubcategoriaId?: string;
 }
 export const mapearTiposDeConceptoExcelASubcategorias = (
-  tipoDeConcepto: TiposDeConceptoExcel,
+  tipoDeConcepto: string,
   comentario: string,
 ): ConceptoExcelASubcategoria => {
   const resultado: {
@@ -220,6 +220,27 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
           break;
         case 'Monotributo Nati':
           resultado.subcategoriaId = '46916604-b612-43fd-bf9c-61d83e178a34';
+          break;
+        case 'Lawn Tennis':
+          resultado.subcategoriaId = '6f5f4346-fc38-489e-a4ff-59d0a0c9804b';
+          break;
+        case 'TIC':
+          resultado.subcategoriaId = '76689e72-971b-4755-8e3c-a2eab25a64f2';
+          break;
+        case 'Readers & Digest':
+          resultado.subcategoriaId = '3d5cd77d-653c-491d-a944-3b6a33770c90';
+          break;
+        case 'HBO Max':
+          resultado.subcategoriaId = 'e96cdf6c-1d0b-4fcf-92bd-e7e23df359fa';
+          break;
+        case 'Netflix':
+          resultado.subcategoriaId = '66911a27-4e5f-445e-b124-c981817265e0';
+          break;
+        case 'Spotify':
+          resultado.subcategoriaId = 'cd31d1d9-7b6b-485e-b967-583c955927da';
+          break;
+        case 'Aportes Claudia':
+          resultado.subcategoriaId = '4ff1671a-6bfc-4dff-82c0-3e7b88359d3a';
           break;
       }
       break;
