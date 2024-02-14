@@ -97,7 +97,7 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
       continue;
     }
 
-    const { subcategoriaId, detalleSubcategoriaId } = mapearTiposDeConceptoExcelASubcategorias(
+    const { subcategoriaId, detalleSubcategoriaId, sinComentarios } = mapearTiposDeConceptoExcelASubcategorias(
       secciones[1],
       secciones[4],
     );
@@ -117,7 +117,7 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
         Object.values(TipoDeMovimientoGasto).indexOf(secciones[2] as unknown as TipoDeMovimientoGasto)
       ] as TipoDeMovimientoGasto,
       monto: transformCurrencyToNumber(secciones[3]) || 0,
-      comentarios: secciones[4],
+      comentarios: sinComentarios ? '' : secciones[4],
     });
   }
 
@@ -128,7 +128,9 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
     return Promise.resolve(resultadoFinal);
   }
 
-  let insertScriptSQL = `INSERT INTO misgestiones.finanzas_movimientogasto (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) VALUES `;
+  let insertScriptSQL =
+    //'';
+    `INSERT INTO misgestiones.finanzas_movimientogasto (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) VALUES `;
   movimientosExcel.forEach((movimiento, index) => {
     const fecha = new Date(datos.anio, datos.mes - 1, movimiento.dia);
     const fechaString = fecha.toISOString().replace('T', ' ');
@@ -140,5 +142,20 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
   });
 
   console.log(insertScriptSQL);
+  // try {
+  //   await sql`INSERT INTO misgestiones.finanzas_movimientogasto
+  //   (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) VALUES
+  //   ${insertScriptSQL}`;
+  // } catch (error) {
+  //   resultadoFinal.exitoso = false;
+  //   resultadoFinal.lineasInvalidas.push({
+  //     linea: '',
+  //     razon: `Error al insertar en base de datos: ${error}`,
+  //   });
+  // }
+
+  //Revalidate the cache
+  revalidatePath('/finanzas');
+  revalidatePath('/finanzas/movimientosDelMes');
   return Promise.resolve(resultadoFinal);
 };

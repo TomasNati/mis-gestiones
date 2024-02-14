@@ -63,6 +63,7 @@ export const transformCurrencyToNumber = (currencyString: string): number | null
 export interface ConceptoExcelASubcategoria {
   subcategoriaId: string;
   detalleSubcategoriaId?: string;
+  sinComentarios?: boolean;
 }
 export const mapearTiposDeConceptoExcelASubcategorias = (
   tipoDeConcepto: string,
@@ -71,9 +72,11 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
   const resultado: {
     subcategoriaId: string;
     detalleSubcategoriaId?: string;
+    sinComentarios?: boolean;
   } = {
     subcategoriaId: '',
     detalleSubcategoriaId: undefined,
+    sinComentarios: false,
   };
 
   switch (tipoDeConcepto) {
@@ -166,6 +169,7 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
       resultado.subcategoriaId = '8a962fce-890e-4cc8-8065-6eeb0b7db638';
       break;
     case TiposDeConceptoExcel.Servicios:
+      resultado.sinComentarios = true;
       switch (comentario) {
         case 'Aguas de Santiago':
           resultado.subcategoriaId = '8b326350-cbe9-4633-9bfd-f67ed9a8c638';

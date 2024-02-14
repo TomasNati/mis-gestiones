@@ -1,5 +1,11 @@
 [ ] En AgregarMovimiento.tsx, mostrar algún mensaje de error si la respuesta da errores
-[ ] Formulario de import: Ahora que es use Client, tendré que usar un effect para llamar al método del servidor con los datos
+[ ] Formulario de import: 
+    1. Tratar de correr el insert en el backend. Para eso, debería construir el string dentro del sql``, y reemplazar
+       cada linea del Values por los parámetros correspondientes, como está en el de agregar movimientos desde la UI
+    2. Una notificación con el resultado.
+    3. Si no puedo hacer el insert, retornar el sql con un botón que permitar copiar el texto, o al menos mostrarlo en la pantalla
+[ ] Cuando muestro los movimientos ordenados, primero deberia ordenar por los de crédito, para que se muestren 'abajo', y luego
+     por fecha. Así queda como en el excel
 [ ] Agregar formulario de edit
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main
 
@@ -16,5 +22,3 @@ join misgestiones.finanzas_categoria fc on fc.id = fs2.categoria and fc.active =
 
 delete from misgestiones.finanzas_movimientogasto
 */
-
-ive = true

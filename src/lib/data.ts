@@ -135,7 +135,6 @@ export const obtenerDetalleSubCategorias = async (): Promise<DetalleSubcategoria
   // For this method, caching data seems to be a good idea, so this is commented out
   // noStore();
   try {
-    const subcategorias = await obtenerSubCategorias();
     const data = await sql<DetalleSubcategoriaDB>`
      select fd.id , fd.nombre,
       fs2.id as "subCategoriaId" , fs2.nombre as "subCategoriaNombre", fs2.tipodegasto as "subCategoriaTipoDeGasto" ,
