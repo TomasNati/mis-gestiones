@@ -3,16 +3,21 @@ import { Movimientos } from '@/components/Movimientos';
 import { Box, Button, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
+import { TipoDeMovimientoGasto } from '@/lib/definitions';
 
 const MovimientosDelMes = async () => {
   const obtenerMovimientos = async () => {
     const hoy = new Date();
     const primerDiaDelMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const movimientos = await obtenerMovimientosPorFecha(primerDiaDelMesActual);
-    return movimientos;
+
+    const movimientosNoCredito = movimientos.filter((movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito');
+    const movimientosCredito = movimientos.filter((movimiento) => movimiento.tipoDeGasto.toString() === 'Credito');
+    return [...movimientosNoCredito, ...movimientosCredito];
   };
   const movimientos = await obtenerMovimientos();
 
+  console.log(movimientos.length);
   return (
     <Box>
       <Box
