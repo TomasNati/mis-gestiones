@@ -3,7 +3,6 @@
     1. Tratar de correr el insert en el backend. Para eso, debería construir el string dentro del sql``, y reemplazar
        cada linea del Values por los parámetros correspondientes, como está en el de agregar movimientos desde la UI
     2. Una notificación con el resultado.
-    3. Si no puedo hacer el insert, retornar el sql con un botón que permitar copiar el texto, o al menos mostrarlo en la pantalla
 [ ] Cuando muestro los movimientos ordenados, primero deberia ordenar por los de crédito, para que se muestren 'abajo', y luego
      por fecha. Así queda como en el excel
 [ ] Agregar formulario de edit

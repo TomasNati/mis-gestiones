@@ -207,4 +207,5 @@ export interface ImportarMovimientosResult {
     razon: string;
   }[];
   exitoso: boolean;
+  script?: string;
 }

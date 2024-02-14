@@ -14,6 +14,7 @@ import {
 import { importarMovimientos } from '@/lib/actions';
 import { useEffect, useState } from 'react';
 import { ImportarMovimientosResult } from '@/lib/definitions';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 
 const years = [2022, 2023, 2024];
 const months = [
@@ -36,16 +37,21 @@ const Importar = () => {
   const [mes, setMes] = useState('Enero');
   const [textoAImportar, setTextoAImportar] = useState('');
   const [importar, setImportar] = useState(false);
+  const [script, setScript] = useState('');
 
   useEffect(() => {
     const importarMovimientosNuevos = async () => {
       if (importar) {
+        setScript('');
         const resultado: ImportarMovimientosResult = await importarMovimientos({
           anio,
           mes: months.indexOf(mes) + 1,
           textoAImportar,
         });
         console.log(resultado);
+        if (resultado.exitoso) {
+          setScript(resultado.script || '');
+        }
         setImportar(false);
       }
     };
@@ -127,19 +133,38 @@ const Importar = () => {
           value={textoAImportar}
           onChange={(e) => setTextoAImportar(e.target.value)}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{
-            width: 'fit-content',
-            marginTop: '5px',
-          }}
-          onClick={() => {
-            setImportar(true);
-          }}
-        >
-          Import
-        </Button>
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{
+              width: 'fit-content',
+              marginTop: '5px',
+            }}
+            onClick={() => {
+              setImportar(true);
+            }}
+          >
+            Import
+          </Button>
+          {script && (
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                width: 'fit-content',
+                marginTop: '5px',
+                marginLeft: '5px',
+              }}
+              startIcon={<ContentPasteIcon />}
+              onClick={() => {
+                navigator.clipboard.writeText(script);
+              }}
+            >
+              Copiar script
+            </Button>
+          )}
+        </Box>
       </Box>
     </Container>
   );

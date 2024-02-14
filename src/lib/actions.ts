@@ -141,7 +141,7 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
     }`;
   });
 
-  console.log(insertScriptSQL);
+  resultadoFinal.script = insertScriptSQL;
   // try {
   //   await sql`INSERT INTO misgestiones.finanzas_movimientogasto
   //   (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) VALUES
