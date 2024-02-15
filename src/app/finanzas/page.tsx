@@ -2,7 +2,7 @@ import * as React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { obtenerUltimosMovimientos } from '@/lib/data';
+import { obtenerUltimosMovimientos } from '@/lib/orm/data';
 import { Button } from '@mui/material';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import ImportExportIcon from '@mui/icons-material/ImportExport';

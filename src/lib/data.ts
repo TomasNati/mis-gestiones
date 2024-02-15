@@ -20,7 +20,7 @@ const mapearMovimientoDBaMovimiento = (movimientoDB: MovimientoGastoDB): Movimie
     fecha: movimientoDB.fecha,
     tipoDeGasto: movimientoDB.tipoDeGasto,
     monto: movimientoDB.monto,
-    comentarios: movimientoDB.comentarios,
+    comentarios: movimientoDB.comentarios || undefined,
     subcategoria: {
       id: movimientoDB.subCategoriaId,
       nombre: movimientoDB.subCategoriaNombre,

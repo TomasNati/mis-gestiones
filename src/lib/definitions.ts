@@ -70,7 +70,7 @@ export type MovimientoGasto = {
 
 export type MovimientoGastoDB = {
   id: string;
-  comentarios?: string;
+  comentarios: string | null;
   fecha: Date;
   tipoDeGasto: TipoDeMovimientoGasto;
   monto: number;

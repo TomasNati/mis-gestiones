@@ -1,4 +1,4 @@
-import { obtenerMovimientosPorFecha } from '@/lib/data';
+import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
 import { Movimientos } from '@/components/Movimientos';
 import { Box, Button, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
