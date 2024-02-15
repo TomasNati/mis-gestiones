@@ -14,6 +14,7 @@ import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { logMessage, mapearTiposDeConceptoExcelASubcategorias, transformCurrencyToNumber } from './helpers';
+import { obtenerCategorias } from './orm/data';
 
 const FormSchema = z.object({
   id: z.string(),

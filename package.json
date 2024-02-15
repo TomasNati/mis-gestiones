@@ -16,6 +16,7 @@
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
     "@vercel/postgres": "^0.5.1",
+    "drizzle-orm": "^0.29.3",
     "next": "14.0.0",
     "react": "^18",
     "react-dom": "^18",
