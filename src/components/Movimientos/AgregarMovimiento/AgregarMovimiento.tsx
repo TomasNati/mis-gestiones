@@ -3,7 +3,7 @@ import { styles } from './AgregarMovimiento.styles';
 import React, { useEffect, useState } from 'react';
 import { Alert, Box, Button, IconButton, Snackbar } from '@mui/material';
 import { crearMovimientos } from '@/lib/actions';
-import { obtenerCategoriasDeMovimientos } from '@/lib/data';
+import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { CategoriaUIMovimiento, MovimientoUI } from '@/lib/definitions';
 import { Add } from '@mui/icons-material';
 import { FilaMovimiento } from './FilaMovimiento';

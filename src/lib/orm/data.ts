@@ -1,14 +1,131 @@
 'use server';
 
-import { MovimientoGasto, TipoDeGasto, TipoDeMovimientoGasto } from '../definitions';
+import {
+  CategoriaUIMovimiento,
+  DetalleSubcategoria,
+  MovimientoGasto,
+  Subcategoria,
+  TipoDeGasto,
+  TipoDeMovimientoGasto,
+} from '../definitions';
 import { db } from './database';
 import { CategoriaDB, categorias, detalleSubcategorias, movimientosGasto, subcategorias } from './tables';
 import { unstable_noStore as noStore } from 'next/cache';
 import { eq, and, gte, desc } from 'drizzle-orm';
 
-export const obtenerCategorias = async (): Promise<CategoriaDB[]> => {
-  const selectResult = await db.select().from(categorias);
-  return selectResult;
+const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
+  // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
+  // For this method, caching data seems to be a good idea, so this is commented out
+  // noStore();
+  try {
+    const result = await db
+      .select({
+        id: subcategorias.id,
+        nombre: subcategorias.nombre,
+        tipoDeGasto: subcategorias.tipoDeGasto,
+        categoriaId: categorias.id,
+        categoriaNombre: categorias.nombre,
+      })
+      .from(subcategorias)
+      .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
+      .where(eq(subcategorias.active, true))
+      .orderBy(subcategorias.nombre);
+
+    const subcategoriasUI = result.map((subcategoriaDB) => ({
+      id: subcategoriaDB.id,
+      nombre: subcategoriaDB.nombre,
+      tipoDeGasto: subcategoriaDB.tipoDeGasto as TipoDeGasto,
+      categoria: {
+        id: subcategoriaDB.categoriaId,
+        nombre: subcategoriaDB.categoriaNombre,
+      },
+    }));
+
+    return subcategoriasUI;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener las subcategorias');
+  }
+};
+
+const obtenerDetalleSubCategorias = async (): Promise<DetalleSubcategoria[]> => {
+  // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
+  // For this method, caching data seems to be a good idea, so this is commented out
+  // noStore();
+  try {
+    const result = await db
+      .select({
+        id: detalleSubcategorias.id,
+        nombre: detalleSubcategorias.nombre,
+        subCategoriaId: subcategorias.id,
+        subCategoriaNombre: subcategorias.nombre,
+        subCategoriaTipoDeGasto: subcategorias.tipoDeGasto,
+        categoriaId: categorias.id,
+        categoriaNombre: categorias.nombre,
+      })
+      .from(detalleSubcategorias)
+      .innerJoin(
+        subcategorias,
+        and(eq(detalleSubcategorias.subcategoria, subcategorias.id), eq(subcategorias.active, true)),
+      )
+      .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
+      .where(eq(detalleSubcategorias.active, true))
+      .orderBy(detalleSubcategorias.nombre);
+
+    const detalleSubcategoriasUI = result.map((detalleSubcategoriaDB) => ({
+      id: detalleSubcategoriaDB.id,
+      nombre: detalleSubcategoriaDB.nombre,
+      subcategoria: {
+        id: detalleSubcategoriaDB.subCategoriaId,
+        nombre: detalleSubcategoriaDB.subCategoriaNombre,
+        tipoDeGasto: detalleSubcategoriaDB.subCategoriaTipoDeGasto as TipoDeGasto,
+        categoria: {
+          id: detalleSubcategoriaDB.categoriaId,
+          nombre: detalleSubcategoriaDB.categoriaNombre,
+        },
+      },
+    }));
+
+    return detalleSubcategoriasUI;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener las subcategorias');
+  }
+};
+
+export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovimiento[]> => {
+  const [subcategorias, detalleSubcategorias] = await Promise.all([
+    obtenerSubCategorias(),
+    obtenerDetalleSubCategorias(),
+  ]);
+
+  const categoriasUIMovimiento: CategoriaUIMovimiento[] = [];
+
+  subcategorias
+    .filter(
+      (subcategoria) =>
+        !detalleSubcategorias.find((detalleSubcategoria) => detalleSubcategoria.subcategoria.id === subcategoria.id),
+    )
+    .forEach((subcategoria) => {
+      categoriasUIMovimiento.push({
+        id: subcategoria.id,
+        nombre: subcategoria.nombre,
+        subcategoriaId: subcategoria.id,
+        categoriaNombre: subcategoria.categoria.nombre,
+      });
+    });
+
+  detalleSubcategorias.forEach((detalleSubcategoria) => {
+    categoriasUIMovimiento.push({
+      id: detalleSubcategoria.id,
+      nombre: `(${detalleSubcategoria.subcategoria.nombre}) ${detalleSubcategoria.nombre}`,
+      subcategoriaId: detalleSubcategoria.subcategoria.id,
+      detalleSubcategoriaId: detalleSubcategoria.id,
+      categoriaNombre: detalleSubcategoria.subcategoria.categoria.nombre,
+    });
+  });
+
+  return Promise.resolve(categoriasUIMovimiento);
 };
 
 const obtenerMovimientos = async (limiteDeMovimientos?: number, fechaDesde?: Date): Promise<MovimientoGasto[]> => {
