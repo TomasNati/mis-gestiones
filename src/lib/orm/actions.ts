@@ -8,10 +8,11 @@ import {
   MovimientoUI,
   ResultadoAPI,
   TipoDeMovimientoGasto,
-} from './definitions';
-import { sql } from '@vercel/postgres';
+} from '../definitions';
 import { revalidatePath } from 'next/cache';
-import { logMessage, mapearTiposDeConceptoExcelASubcategorias, transformCurrencyToNumber } from './helpers';
+import { logMessage, mapearTiposDeConceptoExcelASubcategorias, transformCurrencyToNumber } from '../helpers';
+import { db } from './database';
+import { movimientosGasto } from './tables';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -60,14 +61,22 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
     const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
     const fechaString = fecha.toISOString().replace('T', ' ');
     const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
+
     try {
-      await sql`
-      INSERT INTO misgestiones.finanzas_movimientogasto 
-        (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) 
-      VALUES (${fechaString}, ${subcategoriaId}, ${detalleSubcategoriaIdFinal}, ${tipoDeGasto}, ${monto}, ${comentarios})
-    `;
-    } catch (error) {
-      resultadoMensaje = `Error al insertar en base de datos: ${error}`;
+      await db.insert(movimientosGasto).values({
+        fecha: new Date(fechaString),
+        monto: monto.toString(),
+        subcategoria: subcategoriaId,
+        detallesubcategoria: detalleSubcategoriaIdFinal,
+        tipodepago: tipoDeGasto,
+        comentarios: comentarios || null,
+      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        resultadoMensaje = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+      } else {
+        resultadoMensaje = ` Error al insertar en base de datos: ${error}.\n`;
+      }
     }
     resultadoMensaje && logMessage(resultadoMensaje, 'error');
 

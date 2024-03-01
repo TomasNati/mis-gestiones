@@ -1,5 +1,6 @@
 import { InferSelectModel } from 'drizzle-orm';
 import { text, uuid, varchar, boolean, pgSchema, numeric, timestamp } from 'drizzle-orm/pg-core';
+import { generateUUID } from '../helpers';
 
 export const misgestiones = pgSchema('misgestiones');
 
@@ -38,7 +39,9 @@ export const detalleSubcategorias = misgestiones.table('finanzas_detallesubcateg
 export type DetalleSubcategoriaDB = InferSelectModel<typeof detalleSubcategorias>;
 
 export const movimientosGasto = misgestiones.table('finanzas_movimientogasto', {
-  id: uuid('id').primaryKey(),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => generateUUID()),
   fecha: timestamp('fecha', { withTimezone: true }).notNull(),
   subcategoria: uuid('subcategoria')
     .references(() => subcategorias.id)

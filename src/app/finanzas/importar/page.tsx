@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { importarMovimientos } from '@/lib/actions';
+import { importarMovimientos } from '@/lib/orm/actions';
 import { useEffect, useState } from 'react';
 import { ImportarMovimientosResult } from '@/lib/definitions';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';

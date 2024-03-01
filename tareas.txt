@@ -1,7 +1,5 @@
-[ ] Seguir reemplazando los accesos a la base con el orm.
 [ ] Formulario de import: 
-    1. Tratar de correr el insert en el backend. Para eso, debería construir el string dentro del sql``, y reemplazar
-       cada linea del Values por los parámetros correspondientes, como está en el de agregar movimientos desde la UI
+    1. Tratar de correr el insert en el backend usando el ORM
     2. Una notificación con el resultado.
 [ ] Agregar formulario de edit
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main
