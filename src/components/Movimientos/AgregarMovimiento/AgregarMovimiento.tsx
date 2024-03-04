@@ -8,6 +8,7 @@ import { CategoriaUIMovimiento, MovimientoUI } from '@/lib/definitions';
 import { Add } from '@mui/icons-material';
 import { FilaMovimiento } from './FilaMovimiento';
 import { useRouter } from 'next/navigation';
+import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
 
 const movimientoVacio: MovimientoUI = {
   fecha: new Date(),
@@ -18,12 +19,6 @@ const movimientoVacio: MovimientoUI = {
 };
 
 const nuevosMovimientosDefault = [1, 2, 3, 4, 5].map((id) => ({ ...movimientoVacio, filaId: id }));
-
-type ConfiguracionNotificacion = {
-  open: boolean;
-  severity: 'success' | 'info' | 'warning' | 'error';
-  mensaje: string;
-};
 
 const AgregarMovimientos = () => {
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
@@ -68,6 +63,11 @@ const AgregarMovimientos = () => {
             mensaje: resultado.errores.join('\n'),
           });
         } else {
+          setConfigNotificacion({
+            open: true,
+            severity: 'success',
+            mensaje: 'Movimientos agregados correctamente',
+          });
           push('/finanzas/movimientosDelMes');
         }
       }
@@ -91,13 +91,6 @@ const AgregarMovimientos = () => {
     setNuevosMovimientos(nuevosMovimientos);
   };
 
-  const onOcultarMensaje = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setConfigNotificacion({ ...configNotificacion, open: false });
-  };
-
   return (
     <Box sx={styles.container}>
       <IconButton onClick={() => onNuevaFila()} sx={styles.iconButton} color="secondary">
@@ -115,21 +108,7 @@ const AgregarMovimientos = () => {
       <Button variant="contained" color="secondary" onClick={() => setAgregarMovimientos(true)}>
         Agregar
       </Button>
-      <Snackbar
-        open={configNotificacion.open}
-        autoHideDuration={6000}
-        onClose={onOcultarMensaje}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={onOcultarMensaje}
-          severity={configNotificacion.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {configNotificacion.mensaje}
-        </Alert>
-      </Snackbar>
+      <Notificacion configuracionProp={configNotificacion} />
     </Box>
   );
 };
