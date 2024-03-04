@@ -8,6 +8,7 @@ import {
   MovimientoUI,
   ResultadoAPI,
   TipoDeMovimientoGasto,
+  MovimientoGastoInsertarDB,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import { logMessage, mapearTiposDeConceptoExcelASubcategorias, transformCurrencyToNumber } from '../helpers';
@@ -104,9 +105,11 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
       continue;
     }
 
+    const [dia, tipoDeConcepto, tipoDePago, monto, comentario] = secciones;
+
     const { subcategoriaId, detalleSubcategoriaId, sinComentarios } = mapearTiposDeConceptoExcelASubcategorias(
-      secciones[1],
-      secciones[4],
+      tipoDeConcepto,
+      comentario,
     );
     if (!subcategoriaId) {
       resultadoFinal.lineasInvalidas.push({
@@ -117,49 +120,41 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
     }
 
     movimientosExcel.push({
-      dia: parseInt(secciones[0]),
+      dia: parseInt(dia),
       subcategoria: subcategoriaId,
       detalleSubcategoria: detalleSubcategoriaId,
       tipoDePago: Object.keys(TipoDeMovimientoGasto)[
-        Object.values(TipoDeMovimientoGasto).indexOf(secciones[2] as unknown as TipoDeMovimientoGasto)
+        Object.values(TipoDeMovimientoGasto).indexOf(tipoDePago as unknown as TipoDeMovimientoGasto)
       ] as TipoDeMovimientoGasto,
-      monto: transformCurrencyToNumber(secciones[3]) || 0,
-      comentarios: sinComentarios ? '' : secciones[4],
+      monto: transformCurrencyToNumber(monto) || 0,
+      comentarios: sinComentarios ? '' : comentario,
     });
   }
-
-  console.log(resultadoFinal.lineasInvalidas);
 
   if (resultadoFinal.lineasInvalidas.length > 0) {
     resultadoFinal.exitoso = false;
     return Promise.resolve(resultadoFinal);
   }
 
-  let insertScriptSQL =
-    //'';
-    `INSERT INTO misgestiones.finanzas_movimientogasto (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) VALUES `;
-  movimientosExcel.forEach((movimiento, index) => {
-    const fecha = new Date(datos.anio, datos.mes - 1, movimiento.dia);
-    const fechaString = fecha.toISOString().replace('T', ' ');
-    insertScriptSQL += `('${fechaString}', '${movimiento.subcategoria}', ${
-      movimiento.detalleSubcategoria ? `'${movimiento.detalleSubcategoria}'` : 'NULL'
-    }, '${movimiento.tipoDePago}', ${movimiento.monto}, '${movimiento.comentarios}')${
-      index < movimientosExcel.length - 1 ? ',' : ''
-    }`;
-  });
+  const movimientosAInsertar: MovimientoGastoInsertarDB[] = movimientosExcel.map((movimiento) => ({
+    fecha: new Date(datos.anio, datos.mes - 1, movimiento.dia),
+    monto: movimiento.monto.toString(),
+    subcategoria: movimiento.subcategoria,
+    detallesubcategoria: movimiento.detalleSubcategoria || null,
+    tipodepago: movimiento.tipoDePago,
+    comentarios: movimiento.comentarios || null,
+  }));
 
-  resultadoFinal.script = insertScriptSQL;
-  // try {
-  //   await sql`INSERT INTO misgestiones.finanzas_movimientogasto
-  //   (fecha, subcategoria, detallesubcategoria, tipodepago, monto, comentarios) VALUES
-  //   ${insertScriptSQL}`;
-  // } catch (error) {
-  //   resultadoFinal.exitoso = false;
-  //   resultadoFinal.lineasInvalidas.push({
-  //     linea: '',
-  //     razon: `Error al insertar en base de datos: ${error}`,
-  //   });
-  // }
+  try {
+    await db.insert(movimientosGasto).values(movimientosAInsertar);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultadoFinal.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+    } else {
+      resultadoFinal.error = ` Error al insertar en base de datos: ${error}.\n`;
+    }
+  }
+  resultadoFinal.error && logMessage(resultadoFinal.error, 'error');
 
   //Revalidate the cache
   revalidatePath('/finanzas');

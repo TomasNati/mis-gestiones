@@ -83,6 +83,15 @@ export type MovimientoGastoDB = {
   detalleSubCategoriaNombre?: string;
 };
 
+export type MovimientoGastoInsertarDB = {
+  fecha: Date;
+  monto: string;
+  subcategoria: string;
+  detallesubcategoria: string | null;
+  tipodepago: string;
+  comentarios: string | null;
+};
+
 export type MovimientoUI = {
   id?: string;
   comentarios?: string;
@@ -207,5 +216,5 @@ export interface ImportarMovimientosResult {
     razon: string;
   }[];
   exitoso: boolean;
-  script?: string;
+  error?: string;
 }
