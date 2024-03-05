@@ -1,3 +1,6 @@
+[ ] Breadcrumb
+[ ] Por ahora los movimientos del mes llama dos veces cuando se carga por primera vez (al setear el anio, y luego al setear el mes)
+    Corregir
 [ ] Agregar formulario de edit
 [ ] Otra opción para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main
 [ ] En AgregarMovimiento.tsx, mostrar algún mensaje de error si la respuesta da errores

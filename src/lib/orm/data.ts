@@ -9,9 +9,9 @@ import {
   TipoDeMovimientoGasto,
 } from '../definitions';
 import { db } from './database';
-import { CategoriaDB, categorias, detalleSubcategorias, movimientosGasto, subcategorias } from './tables';
+import { categorias, detalleSubcategorias, movimientosGasto, subcategorias } from './tables';
 import { unstable_noStore as noStore } from 'next/cache';
-import { eq, and, gte, desc } from 'drizzle-orm';
+import { eq, and, desc, between } from 'drizzle-orm';
 
 const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
   // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
@@ -128,12 +128,18 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
   return Promise.resolve(categoriasUIMovimiento);
 };
 
-const obtenerMovimientos = async (limiteDeMovimientos?: number, fechaDesde?: Date): Promise<MovimientoGasto[]> => {
+const obtenerMovimientos = async (
+  limiteDeMovimientos?: number,
+  fechaDesde?: Date,
+  fechaHasta?: Date,
+): Promise<MovimientoGasto[]> => {
   noStore();
   try {
     const limite = limiteDeMovimientos ? limiteDeMovimientos : 500;
     const fechaDesdeString = fechaDesde ? fechaDesde.toISOString().split('T')[0] : '1900-01-01';
-    const fechaFiltro = new Date(fechaDesdeString);
+    const fechaDesdeFiltro = new Date(fechaDesdeString);
+    const fechaHastaString = fechaHasta ? fechaHasta.toISOString().split('T')[0] : '2100-01-01';
+    const fechaHastaFiltro = new Date(fechaHastaString);
 
     const result = await db
       .select({
@@ -160,7 +166,9 @@ const obtenerMovimientos = async (limiteDeMovimientos?: number, fechaDesde?: Dat
         detalleSubcategorias,
         and(eq(movimientosGasto.detallesubcategoria, detalleSubcategorias.id), eq(detalleSubcategorias.active, true)),
       )
-      .where(and(eq(movimientosGasto.active, true), gte(movimientosGasto.fecha, fechaFiltro)))
+      .where(
+        and(eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesdeFiltro, fechaHastaFiltro)),
+      )
       .limit(limite)
       .orderBy(desc(movimientosGasto.fecha));
 
@@ -204,5 +212,7 @@ export const obtenerUltimosMovimientos = async (): Promise<MovimientoGasto[]> =>
 };
 
 export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<MovimientoGasto[]> => {
-  return await obtenerMovimientos(undefined, fecha);
+  const fechaDesde = new Date(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0);
+  const fechaHasta = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59);
+  return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);
 };
