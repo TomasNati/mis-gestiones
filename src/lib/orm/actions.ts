@@ -116,6 +116,12 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
         linea: linea,
         razon: 'No se encontró la subcategoría',
       });
+      logMessage(
+        `No se encontró la subcategoría para la línea ${
+          i + 1
+        }. Tipo de concepto: ${tipoDeConcepto}. Comentario: ${comentario}`,
+        'error',
+      );
       continue;
     }
 
@@ -133,6 +139,7 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
 
   if (resultadoFinal.lineasInvalidas.length > 0) {
     resultadoFinal.exitoso = false;
+    logMessage(`Hubo ${resultadoFinal.lineasInvalidas.length} líneas inválidas`, 'error');
     return Promise.resolve(resultadoFinal);
   }
 
@@ -154,7 +161,10 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
       resultadoFinal.error = ` Error al insertar en base de datos: ${error}.\n`;
     }
   }
-  resultadoFinal.error && logMessage(resultadoFinal.error, 'error');
+  if (resultadoFinal.error) {
+    logMessage(resultadoFinal.error, 'error');
+    resultadoFinal.exitoso = false;
+  }
 
   //Revalidate the cache
   revalidatePath('/finanzas');

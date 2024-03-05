@@ -187,7 +187,12 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
       break;
     case TiposDeConceptoExcel.Servicios:
       resultado.sinComentarios = true;
-      switch (comentario) {
+
+      let comentarioAjustado = comentario;
+      if (comentarioAjustado.startsWith('Patente')) {
+        comentarioAjustado = 'Patente';
+      }
+      switch (comentarioAjustado) {
         case 'Aguas de Santiago':
           resultado.subcategoriaId = '8b326350-cbe9-4633-9bfd-f67ed9a8c638';
           break;
@@ -263,6 +268,16 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
         case 'Aportes Claudia':
           resultado.subcategoriaId = '4ff1671a-6bfc-4dff-82c0-3e7b88359d3a';
           break;
+        case 'Terapia ocupacional':
+          resultado.subcategoriaId = 'e2079bb3-6264-4e72-a77f-02751847930d';
+          break;
+        case 'Auto':
+          resultado.subcategoriaId = '495b62c6-921b-4c3f-9ab3-3fde8f9b88e2';
+          break;
+        case 'Patente':
+          resultado.sinComentarios = false;
+          resultado.subcategoriaId = '8d18954a-a5de-40be-8515-5bcca231bb9c';
+          break;
       }
       break;
     case TiposDeConceptoExcel.HijosOtros:
@@ -318,7 +333,11 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
     case TiposDeConceptoExcel.ViajeTransporte:
       resultado.subcategoriaId = '79a56cbf-78e7-4300-9519-26769b1ef66a';
       break;
+    case TiposDeConceptoExcel.MaestraDeApoyo:
+      resultado.subcategoriaId = '2dd77fcd-8478-44d7-9c46-bb53f3e3425c';
+      break;
     default:
+      logMessage('Tipo de concepto no mapeado: ' + tipoDeConcepto, 'error');
       resultado.subcategoriaId = '';
       break;
   }

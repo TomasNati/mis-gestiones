@@ -181,6 +181,7 @@ export enum TiposDeConceptoExcel {
   Alcohol = 'Alcohol',
   Peluqueria_belleza = 'Peluquería/belleza',
   ViajeTransporte = 'Viaje-transporte',
+  MaestraDeApoyo = 'Maestra de apoyo',
 }
 
 export type TipoDeServicioExcel =

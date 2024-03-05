@@ -17,7 +17,6 @@ const MovimientosDelMes = async () => {
   };
   const movimientos = await obtenerMovimientos();
 
-  console.log(movimientos.length);
   return (
     <Box>
       <Box
