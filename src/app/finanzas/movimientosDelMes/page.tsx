@@ -2,7 +2,7 @@
 
 import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
 import { Movimientos } from '@/components/Movimientos';
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Box, Button, FormControl,  MenuItem, Select, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
@@ -25,7 +25,7 @@ const months = [
 const years = [2024, 2023, 2022];
 
 const MovimientosDelMes = () => {
-  const [anio, setAnio] = useState<number | undefined>(new Date().getFullYear());
+  const [anio, setAnio] = useState<number | undefined>(0);
   const [mes, setMes] = useState(months[new Date().getMonth()]);
   const [movimientos, setMovimientos] = useState<MovimientoGasto[]>([]);
 
@@ -51,6 +51,10 @@ const MovimientosDelMes = () => {
     };
     obtenerMovimientos();
   }, [mes, anio]);
+
+  useEffect(() => {
+    setAnio(new Date().getFullYear())
+  }, [])
 
   return (
     <Box>
