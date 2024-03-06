@@ -2,7 +2,7 @@
 
 import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
 import { Movimientos } from '@/components/Movimientos';
-import { Box, Button, FormControl,  MenuItem, Select, Typography } from '@mui/material';
+import { Box, Breadcrumbs, Button, FormControl,  Link,  MenuItem, Select, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
@@ -66,9 +66,12 @@ const MovimientosDelMes = () => {
           alignItems: 'center',
         }}
       >
-        <Typography variant="body1" gutterBottom>
-          Movimientos del mes
-        </Typography>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link underline="hover" color="inherit" href="/finanzas">
+            Finanzas
+          </Link>
+          <Typography color="text.primary">Movimientos del mes</Typography>
+        </Breadcrumbs>
       </Box>
       <Box sx={{ display: 'flex', marginTop: 3, marginBottom: 3 }}>
         <Button
