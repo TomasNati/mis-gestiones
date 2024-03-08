@@ -97,7 +97,7 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
   for (let i = 0; i < lineas.length; i++) {
     const linea = lineas[i];
     const secciones = linea.split('\t');
-    if (secciones.length != 5) {
+    if (secciones.length !== 5) {
       resultadoFinal.lineasInvalidas.push({
         linea: linea,
         razon: 'La línea no tiene 5 columnas',
@@ -144,7 +144,7 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
   }
 
   const movimientosAInsertar: MovimientoGastoInsertarDB[] = movimientosExcel.map((movimiento) => ({
-    fecha: new Date(datos.anio, datos.mes - 1, movimiento.dia),
+    fecha: new Date(Date.UTC(datos.anio, datos.mes - 1, movimiento.dia, 0, 0, 0, 0)),
     monto: movimiento.monto.toString(),
     subcategoria: movimiento.subcategoria,
     detallesubcategoria: movimiento.detalleSubcategoria || null,

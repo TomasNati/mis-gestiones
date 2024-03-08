@@ -42,7 +42,7 @@ export const movimientosGasto = misgestiones.table('finanzas_movimientogasto', {
   id: uuid('id')
     .primaryKey()
     .$defaultFn(() => generateUUID()),
-  fecha: timestamp('fecha', { withTimezone: true }).notNull(),
+  fecha: timestamp('fecha', { withTimezone: false }).notNull(),
   subcategoria: uuid('subcategoria')
     .references(() => subcategorias.id)
     .notNull(),
