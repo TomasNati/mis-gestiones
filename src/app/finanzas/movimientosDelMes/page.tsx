@@ -2,7 +2,7 @@
 
 import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
 import { Movimientos } from '@/components/Movimientos';
-import { Box, Breadcrumbs, Button, FormControl,  Link,  MenuItem, Select, Typography } from '@mui/material';
+import { Box, Breadcrumbs, Button, FormControl, Link, MenuItem, Select, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
@@ -36,6 +36,7 @@ const MovimientosDelMes = () => {
           const fecha = new Date(anio, months.indexOf(mes), 1);
           const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
           const movimientos = await obtenerMovimientosPorFecha(primerDiaDelMesActual);
+          console.log(movimientos);
 
           const movimientosNoCredito = movimientos.filter(
             (movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito',
@@ -43,7 +44,16 @@ const MovimientosDelMes = () => {
           const movimientosCredito = movimientos.filter(
             (movimiento) => movimiento.tipoDeGasto.toString() === 'Credito',
           );
-          return [...movimientosNoCredito, ...movimientosCredito];
+          const movimientosOrdenados = [...movimientosNoCredito, ...movimientosCredito];
+          movimientosOrdenados.forEach((mov) => {
+            // Get the timezone offset in minutes
+            const timezoneOffset = mov.fecha.getTimezoneOffset();
+            // Adjust the date by adding the timezone offset
+            mov.fecha.setMinutes(mov.fecha.getMinutes() + timezoneOffset);
+            // Convert the adjusted date to UTC
+            mov.fecha = new Date(mov.fecha.toUTCString());
+          });
+          return movimientosOrdenados;
         };
         const movimientos = await obtenerMovimientos();
         setMovimientos(movimientos);
@@ -53,8 +63,8 @@ const MovimientosDelMes = () => {
   }, [mes, anio]);
 
   useEffect(() => {
-    setAnio(new Date().getFullYear())
-  }, [])
+    setAnio(new Date().getFullYear());
+  }, []);
 
   return (
     <Box>
