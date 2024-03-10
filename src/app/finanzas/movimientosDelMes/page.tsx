@@ -8,6 +8,7 @@ import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 import { MovimientoGasto } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
+import { Movimientos2 } from '@/components/Movimientos/Movimientos2';
 
 const months = [
   'Enero',
@@ -131,7 +132,7 @@ const MovimientosDelMes = () => {
           ))}
         </Box>
       </Box>
-      <Movimientos movimientos={movimientos} />
+      <Movimientos2 movimientos={movimientos} />
     </Box>
   );
 };
