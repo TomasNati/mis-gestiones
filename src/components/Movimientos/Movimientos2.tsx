@@ -12,6 +12,7 @@ const columns: GridColDef[] = [
   {
     field: 'concepto',
     headerName: 'Concepto',
+    width: 180,
     valueGetter: (params: GridValueGetterParams) => {
       const movimiento = params.row as MovimientoGasto;
       return movimiento.detalleSubcategoria
@@ -28,10 +29,12 @@ const columns: GridColDef[] = [
     field: 'monto',
     headerName: 'Monto',
     type: 'number',
+    valueFormatter: (params) => params.value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }),
   },
   {
     field: 'comentarios',
     headerName: 'Detalle',
+    flex: 1,
   },
 ];
 
@@ -41,14 +44,15 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
       <DataGrid
         rows={movimientos}
         columns={columns}
+        density="compact"
         initialState={{
           pagination: {
             paginationModel: {
-              pageSize: 15,
+              pageSize: 100,
             },
           },
         }}
-        pageSizeOptions={[15]}
+        pageSizeOptions={[100]}
         checkboxSelection
         disableRowSelectionOnClick
       />
