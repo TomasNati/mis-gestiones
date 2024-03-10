@@ -7,6 +7,7 @@ import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 import { MovimientoGasto } from '@/lib/definitions';
+import { setDateAsUTC } from '@/lib/helpers';
 
 const months = [
   'Enero',
@@ -36,7 +37,6 @@ const MovimientosDelMes = () => {
           const fecha = new Date(anio, months.indexOf(mes), 1);
           const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
           const movimientos = await obtenerMovimientosPorFecha(primerDiaDelMesActual);
-          console.log(movimientos);
 
           const movimientosNoCredito = movimientos.filter(
             (movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito',
@@ -46,12 +46,7 @@ const MovimientosDelMes = () => {
           );
           const movimientosOrdenados = [...movimientosNoCredito, ...movimientosCredito];
           movimientosOrdenados.forEach((mov) => {
-            // Get the timezone offset in minutes
-            const timezoneOffset = mov.fecha.getTimezoneOffset();
-            // Adjust the date by adding the timezone offset
-            mov.fecha.setMinutes(mov.fecha.getMinutes() + timezoneOffset);
-            // Convert the adjusted date to UTC
-            mov.fecha = new Date(mov.fecha.toUTCString());
+            mov.fecha = setDateAsUTC(mov.fecha);
           });
           return movimientosOrdenados;
         };

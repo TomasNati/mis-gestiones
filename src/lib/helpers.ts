@@ -45,6 +45,15 @@ export const addTimeToDateString = (date: string) => {
   return extendedDateString;
 };
 
+export const setDateAsUTC = (fecha: Date): Date => {
+  // Get the timezone offset in minutes
+  const timezoneOffset = fecha.getTimezoneOffset();
+  // Adjust the date by adding the timezone offset
+  fecha.setMinutes(fecha.getMinutes() + timezoneOffset);
+  // Convert the adjusted date to UTC
+  return new Date(fecha.toUTCString());
+};
+
 export const transformCurrencyToNumber = (currencyString: string): number | null => {
   // Remove non-numeric characters except for '.' to handle decimal values
   const numericString = currencyString.replace(/[^0-9.]/g, '');
