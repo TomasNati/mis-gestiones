@@ -35,6 +35,14 @@ const theme = createTheme({
       input[type="date"]::-webkit-calendar-picker-indicator {
         background-color: #FFFFFF;
       }
+
+      .MuiDataGrid-root {
+        background-color: #424749
+      }
+
+      .MuiDataGrid-columnHeaders {
+        background-color: #303335
+      }
       `,
     },
     MuiAlert: {

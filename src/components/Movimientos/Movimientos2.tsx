@@ -40,7 +40,7 @@ const columns: GridColDef[] = [
 
 const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
   return (
-    <Box sx={{ height: 400, width: '100%', minWidth: 650 }}>
+    <Box sx={{ width: '100%', minWidth: 650 }}>
       <DataGrid
         rows={movimientos}
         columns={columns}
