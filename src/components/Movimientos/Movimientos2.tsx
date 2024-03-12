@@ -8,6 +8,7 @@ const columns: GridColDef[] = [
     field: 'fecha',
     headerName: 'Fecha',
     valueFormatter: (params) => formatDate(params.value),
+    width: 150,
   },
   {
     field: 'concepto',
@@ -23,12 +24,13 @@ const columns: GridColDef[] = [
   {
     field: 'tipoDeGasto',
     headerName: 'Tipo De Pago',
-    width: 110,
+    width: 180,
   },
   {
     field: 'monto',
     headerName: 'Monto',
     type: 'number',
+    width: 120,
     valueFormatter: (params) => params.value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }),
   },
   {
