@@ -1,11 +1,7 @@
-[ ] Import: ya guardo sin timezone y corrijo al traer las fechas para sacar el timezone de argentina.
-   Probar un poco más local y desde el servidor
+
 [ ] Grilla de movimientos:
-    .Corregir fonts
-    .Mejorar colores de fondo
-    .Usar versión dense
-    .Más filas por página, tal vez sacar el paginado
-    .Corregir el ancho por filas
+    .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes
+[ ] Probar la edición inline
 [ ] Un skeleton o loader al menos cuando se carguen los movimientos
 [ ] Agregar formulario de edit
 [ ] Otra para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main

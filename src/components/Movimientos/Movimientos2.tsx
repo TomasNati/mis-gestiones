@@ -42,6 +42,11 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
       <DataGrid
+        sx={{
+          '& .MuiDataGrid-main': {
+            height: 'calc(99vh - 253px)',
+          },
+        }}
         rows={movimientos}
         columns={columns}
         density="compact"
