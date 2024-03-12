@@ -1,7 +1,10 @@
 
 [ ] Grilla de movimientos:
     .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes
-[ ] Probar la edición inline
+[ ] Edición inline  
+    -> Agregar editores para Concepto y Tipo de pago
+    -> Persistir cambios al terminar de editar una fila
+    -> Permiter agregar nuevas filas, y eliminar existentes
 [ ] Un skeleton o loader al menos cuando se carguen los movimientos
 [ ] Agregar formulario de edit
 [ ] Otra para formularios es esta: https://github.com/AlexStack/nextjs-materia-mui-typescript-hook-form-scaffold-boilerplate-starter/tree/main

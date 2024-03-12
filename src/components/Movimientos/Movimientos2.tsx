@@ -7,8 +7,10 @@ const columns: GridColDef[] = [
   {
     field: 'fecha',
     headerName: 'Fecha',
-    valueFormatter: (params) => formatDate(params.value),
-    width: 150,
+    type: 'date',
+    valueFormatter: (params) => (params.value as Date).getDate(),
+    width: 100,
+    editable: true,
   },
   {
     field: 'concepto',
@@ -24,18 +26,20 @@ const columns: GridColDef[] = [
   {
     field: 'tipoDeGasto',
     headerName: 'Tipo De Pago',
-    width: 180,
+    width: 150,
   },
   {
     field: 'monto',
     headerName: 'Monto',
     type: 'number',
+    editable: true,
     width: 120,
     valueFormatter: (params) => params.value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }),
   },
   {
     field: 'comentarios',
     headerName: 'Detalle',
+    editable: true,
     flex: 1,
   },
 ];
@@ -62,6 +66,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
         pageSizeOptions={[100]}
         checkboxSelection
         disableRowSelectionOnClick
+        editMode="row"
       />
     </Box>
   );
