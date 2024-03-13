@@ -26,7 +26,7 @@ const columns: GridColDef[] = [
   {
     field: 'tipoDeGasto',
     headerName: 'Tipo De Pago',
-    width: 150,
+    width: 130,
   },
   {
     field: 'monto',
@@ -43,6 +43,15 @@ const columns: GridColDef[] = [
     flex: 1,
   },
 ];
+
+const onMovimientoActualizado = (movimiento: MovimientoGasto) => {
+  console.log('Movimiento actualizado', movimiento);
+  return movimiento;
+};
+
+const handleProcesarMovimientoUpdateError = (params: any) => {
+  console.error('Error al actualizar el movimiento', params);
+};
 
 const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
   return (
@@ -67,6 +76,8 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
         checkboxSelection
         disableRowSelectionOnClick
         editMode="row"
+        processRowUpdate={(updatedRow, _originalrow) => onMovimientoActualizado(updatedRow)}
+        onProcessRowUpdateError={handleProcesarMovimientoUpdateError}
       />
     </Box>
   );
