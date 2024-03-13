@@ -9,17 +9,17 @@ const TipoDePagoVista = ({ tipoDePago }: { tipoDePago: TipoDeMovimientoGasto }) 
   return (
     <Box>
       {tipoDePago === TipoDeMovimientoGasto.Efectivo && (
-        <Tooltip title="Efectivo">
+        <Tooltip title="Efectivo" placement="right-start">
           <LocalAtmIcon color="primary" />
         </Tooltip>
       )}
       {tipoDePago === TipoDeMovimientoGasto.Debito && (
-        <Tooltip title="Débito">
+        <Tooltip title="Débito" placement="right-start">
           <AccountBalanceIcon color="warning" />
         </Tooltip>
       )}
       {tipoDePago === TipoDeMovimientoGasto.Credito && (
-        <Tooltip title="Crédito">
+        <Tooltip title="Crédito" placement="right-start">
           <CreditCardIcon color="success" />
         </Tooltip>
       )}
