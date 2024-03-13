@@ -3,14 +3,36 @@ import { useState } from 'react';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Tooltip } from '@mui/material';
 
-interface TipoDePagoProps {
+const TipoDePagoVista = ({ tipoDePago }: { tipoDePago: TipoDeMovimientoGasto }) => {
+  return (
+    <Box>
+      {tipoDePago === TipoDeMovimientoGasto.Efectivo && (
+        <Tooltip title="Efectivo">
+          <LocalAtmIcon color="primary" />
+        </Tooltip>
+      )}
+      {tipoDePago === TipoDeMovimientoGasto.Debito && (
+        <Tooltip title="Débito">
+          <AccountBalanceIcon color="warning" />
+        </Tooltip>
+      )}
+      {tipoDePago === TipoDeMovimientoGasto.Credito && (
+        <Tooltip title="Crédito">
+          <CreditCardIcon color="success" />
+        </Tooltip>
+      )}
+    </Box>
+  );
+};
+
+interface TipoDePagoEdicionProps {
   tipoDepagoInicial?: TipoDeMovimientoGasto;
   onTipoDePagoChange: (tipoDePago: TipoDeMovimientoGasto) => void;
 }
 
-const TipoDePago = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePagoProps) => {
+const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePagoEdicionProps) => {
   const [tipoDePago, setTipoDePago] = useState<TipoDeMovimientoGasto | undefined>(tipoDepagoInicial);
 
   const colorEfectivo = tipoDePago === TipoDeMovimientoGasto.Efectivo ? 'primary' : 'default';
@@ -49,4 +71,4 @@ const TipoDePago = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePagoProps) 
   );
 };
 
-export { TipoDePago };
+export { TipoDePagoEdicion, TipoDePagoVista };

@@ -1,7 +1,7 @@
 import { MovimientoGasto, TipoDeMovimientoGasto } from '@/lib/definitions';
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetterParams, useGridApiContext } from '@mui/x-data-grid';
-import { TipoDePago } from './TipoDePago/TipoDePago';
+import { TipoDePagoEdicion, TipoDePagoVista } from './TipoDePago/TipoDePago';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -13,7 +13,7 @@ const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimien
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
-      <TipoDePago onTipoDePagoChange={handleChange} tipoDepagoInicial={value as TipoDeMovimientoGasto} />
+      <TipoDePagoEdicion onTipoDePagoChange={handleChange} tipoDepagoInicial={value as TipoDeMovimientoGasto} />
     </Box>
   );
 };
@@ -21,6 +21,10 @@ const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimien
 const renderTipoDePagoEditInputCell: GridColDef['renderCell'] = (params) => {
   return <TipoDePagoEditInputCell {...params} />;
 };
+
+function renderTipoDePago(params: GridRenderCellParams<any, TipoDeMovimientoGasto>) {
+  return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
+}
 
 const columns: GridColDef[] = [
   {
@@ -47,6 +51,7 @@ const columns: GridColDef[] = [
     headerName: 'Tipo De Pago',
     width: 130,
     renderEditCell: renderTipoDePagoEditInputCell,
+    renderCell: renderTipoDePago,
     editable: true,
   },
   {
