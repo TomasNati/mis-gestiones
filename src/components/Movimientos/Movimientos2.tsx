@@ -1,7 +1,26 @@
-import { MovimientoGasto } from '@/lib/definitions';
-import { formatDate } from '@/lib/helpers';
+import { MovimientoGasto, TipoDeMovimientoGasto } from '@/lib/definitions';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetterParams, useGridApiContext } from '@mui/x-data-grid';
+import { TipoDePago } from './TipoDePago/TipoDePago';
+
+const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
+  const { id, value, field } = props;
+  const apiRef = useGridApiContext();
+
+  const handleChange = (newValue: TipoDeMovimientoGasto) => {
+    apiRef.current.setEditCellValue({ id, field, value: newValue });
+  };
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+      <TipoDePago onTipoDePagoChange={handleChange} tipoDepagoInicial={value as TipoDeMovimientoGasto} />
+    </Box>
+  );
+};
+
+const renderTipoDePagoEditInputCell: GridColDef['renderCell'] = (params) => {
+  return <TipoDePagoEditInputCell {...params} />;
+};
 
 const columns: GridColDef[] = [
   {
@@ -27,6 +46,8 @@ const columns: GridColDef[] = [
     field: 'tipoDeGasto',
     headerName: 'Tipo De Pago',
     width: 130,
+    renderEditCell: renderTipoDePagoEditInputCell,
+    editable: true,
   },
   {
     field: 'monto',
@@ -44,16 +65,16 @@ const columns: GridColDef[] = [
   },
 ];
 
-const onMovimientoActualizado = (movimiento: MovimientoGasto) => {
-  console.log('Movimiento actualizado', movimiento);
-  return movimiento;
-};
-
-const handleProcesarMovimientoUpdateError = (params: any) => {
-  console.error('Error al actualizar el movimiento', params);
-};
-
 const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
+  const onMovimientoActualizado = (movimiento: MovimientoGasto) => {
+    console.log('Movimiento actualizado', movimiento);
+    return movimiento;
+  };
+
+  const handleProcesarMovimientoUpdateError = (params: any) => {
+    console.error('Error al actualizar el movimiento', params);
+  };
+
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
       <DataGrid
