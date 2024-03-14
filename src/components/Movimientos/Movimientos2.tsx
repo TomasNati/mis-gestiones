@@ -3,9 +3,7 @@ import Box from '@mui/material/Box';
 import {
   DataGrid,
   GridColDef,
-  GridEditSingleSelectCellProps,
   GridRenderCellParams,
-  GridSingleSelectColDef,
   GridValueFormatterParams,
   useGridApiContext,
   GridEditCellProps,
@@ -30,47 +28,9 @@ const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimien
   );
 };
 
-// const ConceptoEditInputCell = (props: GridEditSingleSelectCellProps) => {
-//   const { id, value, field } = props;
-//   const apiRef = useGridApiContext();
-
-//   const handleChange = (newValue: CategoriaUIMovimiento) => {
-//     apiRef.current.setEditCellValue({ id, field, value: newValue });
-//   };
-
-//   return (
-//     <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
-//       <Concepto
-//         onConceptoModificado={handleChange}
-//         conceptoInicial={value}
-//         categoriasMovimiento={props.colDef.valueOptions as CategoriaUIMovimiento[]}
-//       />
-//     </Box>
-//   );
-// };
-
 const renderTipoDePagoEditInputCell: GridColDef['renderCell'] = (params) => {
   return <TipoDePagoEditInputCell {...params} />;
 };
-
-// const renderConceptoEditInputCell: GridSingleSelectColDef['renderCell'] = (params) => {
-//   console.log(params);
-//   return <ConceptoEditInputCell {...params} categoriasMovimiento={params.colDef.valueOptions} />;
-// };
-
-// function CustomTypeEditComponent(props: GridEditSingleSelectCellProps) {
-//   const apiRef = useGridApiContext();
-
-//    const handleChange = (newValue: CategoriaUIMovimiento) => {
-//      apiRef.current.setEditCellValue({
-//       id: props.id,
-//       field: props.field,
-//       value: newValue
-//     });
-//    };
-
-//   return <GridEditSingleSelectCell onValueChange={handleValueChange} {...props} />;
-// }
 
 const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
@@ -106,10 +66,6 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
       width: 100,
       editable: true,
     },
-    /*
-    // valueOptions: categoriasMovimiento,
-    type: 'singleSelect',
-    */
     {
       field: 'concepto',
       headerName: 'Concepto',
