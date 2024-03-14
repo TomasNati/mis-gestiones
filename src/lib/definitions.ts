@@ -184,6 +184,38 @@ export enum TiposDeConceptoExcel {
   MaestraDeApoyo = 'Maestra de apoyo',
 }
 
+export enum TiposDeServicioExcel {
+  AguasDeSantiago = 'Aguas de Santiago',
+  Cablevision = 'Cablevision',
+  Contadora = 'Contadora',
+  Personal = 'Personal',
+  Edese = 'Edese',
+  Gasnor = 'Gasnor',
+  SantiagoInmobiliarioMunicipal = 'Santiago - Inmobiliario municipal',
+  SantiagoRentasProvincial = 'Santiago - Rentas provincial',
+  DtoTucCorSAT = 'Dto. Tuc-Cór - SAT',
+  DtoTucCorGasnor = 'Dto. Tuc-Cór - Gasnor',
+  DtoTucCorEdet = 'Dto. Tuc-Cór - Edet',
+  DtoTucCorDGR = 'Dto. Tuc-Cór - DGR',
+  DtoTucCorCISI = 'Dto. Tuc-Cór - CISI',
+  DtoTucMarDGR = 'Dto. Tuc-Mar - DGR',
+  BahiaABSA = 'Bahía - ABSA',
+  BahiaMunicipal = 'Bahía - Municipal',
+  BahiaARBA = 'Bahía - ARBA',
+  MonotributoNati = 'Monotributo Nati',
+  LawnTennis = 'Lawn Tennis',
+  TIC = 'TIC',
+  ReadersDigest = 'Readers & Digest',
+  HBOMax = 'HBO Max',
+  Netflix = 'Netflix',
+  Spotify = 'Spotify',
+  AportesClaudia = 'Aportes Claudia',
+  TerapiaOcupacional = 'Terapia Ocupacional',
+  Auto = 'Auto',
+  Colegio = 'Colegio',
+  Patente = 'Patente',
+}
+
 export type TipoDeServicioExcel =
   | 'Aguas de Santiago'
   | 'Cablevision'

@@ -1,4 +1,4 @@
-import { TiposDeConceptoExcel } from './definitions';
+import { TipoDeMovimientoGasto, TiposDeConceptoExcel, TiposDeServicioExcel } from './definitions';
 
 export const logMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info'): void => {
   const timestamp = new Date().toLocaleString();
@@ -90,6 +90,19 @@ export interface ConceptoExcelASubcategoria {
   detalleSubcategoriaId?: string;
   sinComentarios?: boolean;
 }
+
+export const obtenerTipoDeMovimientoGasto = (tipoDePago: string): TipoDeMovimientoGasto => {
+  switch (tipoDePago) {
+    case 'Efectivo':
+      return TipoDeMovimientoGasto.Efectivo;
+    case 'Crédito':
+      return TipoDeMovimientoGasto.Credito;
+    case 'Débito':
+      return TipoDeMovimientoGasto.Debito;
+    default:
+      return TipoDeMovimientoGasto.Efectivo;
+  }
+};
 
 export const mapearTiposDeConceptoExcelASubcategorias = (
   tipoDeConcepto: string,
@@ -202,88 +215,91 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
         comentarioAjustado = 'Patente';
       }
       switch (comentarioAjustado) {
-        case 'Aguas de Santiago':
+        case TiposDeServicioExcel.AguasDeSantiago:
           resultado.subcategoriaId = '8b326350-cbe9-4633-9bfd-f67ed9a8c638';
           break;
-        case 'Cablevision':
+        case TiposDeServicioExcel.Cablevision:
           resultado.subcategoriaId = '2df913d3-c627-4ac6-b6fb-210afa9aa8ea';
           break;
-        case 'Contadora':
+        case TiposDeServicioExcel.Contadora:
           resultado.subcategoriaId = '3351b34b-b8e0-45ce-bea8-acec4fa8e49b';
           break;
-        case 'Personal':
+        case TiposDeServicioExcel.Personal:
           resultado.subcategoriaId = '2a16dabd-0600-4767-a713-d1bb6ba627fb';
           break;
-        case 'Edese':
+        case TiposDeServicioExcel.Edese:
           resultado.subcategoriaId = '44d7d98e-8ce8-4a93-868a-2d7bd51f8cdf';
           break;
-        case 'Gasnor':
+        case TiposDeServicioExcel.Gasnor:
           resultado.subcategoriaId = '77d6eb72-e3a8-4417-9ce8-ba59123c69f3';
           break;
-        case 'Santiago - Inmobiliario municipal':
+        case TiposDeServicioExcel.SantiagoInmobiliarioMunicipal:
           resultado.subcategoriaId = '752ae6bf-b486-4033-b92f-ffef9e4a271c';
           break;
-        case 'Santiago - Rentas provincial':
+        case TiposDeServicioExcel.SantiagoRentasProvincial:
           resultado.subcategoriaId = 'b7c53d13-1af1-4de4-8315-61f47bee318f';
           break;
-        case 'Dto. Tuc-Cór - SAT':
+        case TiposDeServicioExcel.DtoTucCorSAT:
           resultado.subcategoriaId = 'cf9994c2-5a8d-4f30-8797-e6ff9fa2654c';
           break;
-        case 'Dto. Tuc-Cór - Gasnor':
+        case TiposDeServicioExcel.DtoTucCorGasnor:
           resultado.subcategoriaId = '671e440e-5c4a-4a15-806d-441f38f9b24c';
           break;
-        case 'Dto. Tuc-Cór - Edet':
+        case TiposDeServicioExcel.DtoTucCorEdet:
           resultado.subcategoriaId = 'b66eb6bc-4bc9-49db-bdaa-9d2b79c2e2e0';
           break;
-        case 'Dto. Tuc-Cór - DGR':
+        case TiposDeServicioExcel.DtoTucCorDGR:
           resultado.subcategoriaId = 'd9a99882-cc0e-414a-a89f-a83be92a9559';
           break;
-        case 'Dto. Tuc-Cór - CISI':
+        case TiposDeServicioExcel.DtoTucCorCISI:
           resultado.subcategoriaId = 'dbf160e0-cd11-4dfa-ab1b-dc4d3b59ed61';
           break;
-        case 'Dto. Tuc-Mar - DGR':
+        case TiposDeServicioExcel.DtoTucMarDGR:
           resultado.subcategoriaId = '41c4e23d-55f6-4e9b-ae53-046e5ad1096c';
           break;
-        case 'Bahía - ABSA':
+        case TiposDeServicioExcel.BahiaABSA:
           resultado.subcategoriaId = '4092d83a-5170-4616-bb47-f00ae27da710';
           break;
-        case 'Bahía - Municipal':
+        case TiposDeServicioExcel.BahiaMunicipal:
           resultado.subcategoriaId = '15be16e1-fb76-4a13-bdda-2bb589ee8b10';
           break;
-        case 'Bahía - ARBA':
+        case TiposDeServicioExcel.BahiaARBA:
           resultado.subcategoriaId = '886b95de-5739-4a7f-ab37-4365a751224a';
           break;
-        case 'Monotributo Nati':
+        case TiposDeServicioExcel.MonotributoNati:
           resultado.subcategoriaId = '46916604-b612-43fd-bf9c-61d83e178a34';
           break;
-        case 'Lawn Tennis':
+        case TiposDeServicioExcel.LawnTennis:
           resultado.subcategoriaId = '6f5f4346-fc38-489e-a4ff-59d0a0c9804b';
           break;
-        case 'TIC':
+        case TiposDeServicioExcel.TIC:
           resultado.subcategoriaId = '76689e72-971b-4755-8e3c-a2eab25a64f2';
           break;
-        case 'Readers & Digest':
+        case TiposDeServicioExcel.ReadersDigest:
           resultado.subcategoriaId = '3d5cd77d-653c-491d-a944-3b6a33770c90';
           break;
-        case 'HBO Max':
+        case TiposDeServicioExcel.HBOMax:
           resultado.subcategoriaId = 'e96cdf6c-1d0b-4fcf-92bd-e7e23df359fa';
           break;
-        case 'Netflix':
+        case TiposDeServicioExcel.Netflix:
           resultado.subcategoriaId = '66911a27-4e5f-445e-b124-c981817265e0';
           break;
-        case 'Spotify':
+        case TiposDeServicioExcel.Spotify:
           resultado.subcategoriaId = 'cd31d1d9-7b6b-485e-b967-583c955927da';
           break;
-        case 'Aportes Claudia':
+        case TiposDeServicioExcel.AportesClaudia:
           resultado.subcategoriaId = '4ff1671a-6bfc-4dff-82c0-3e7b88359d3a';
           break;
-        case 'Terapia ocupacional':
+        case TiposDeServicioExcel.TerapiaOcupacional:
           resultado.subcategoriaId = 'e2079bb3-6264-4e72-a77f-02751847930d';
           break;
-        case 'Auto':
+        case TiposDeServicioExcel.Auto:
           resultado.subcategoriaId = '495b62c6-921b-4c3f-9ab3-3fde8f9b88e2';
           break;
-        case 'Patente':
+        case TiposDeServicioExcel.Colegio:
+          resultado.subcategoriaId = 'a5618f61-d2f2-4c54-be97-77521e0e905f';
+          break;
+        case TiposDeServicioExcel.Patente:
           resultado.sinComentarios = false;
           resultado.subcategoriaId = '8d18954a-a5de-40be-8515-5bcca231bb9c';
           break;

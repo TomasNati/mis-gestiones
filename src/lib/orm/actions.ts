@@ -11,7 +11,12 @@ import {
   MovimientoGastoInsertarDB,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
-import { logMessage, mapearTiposDeConceptoExcelASubcategorias, transformCurrencyToNumber } from '../helpers';
+import {
+  logMessage,
+  mapearTiposDeConceptoExcelASubcategorias,
+  obtenerTipoDeMovimientoGasto,
+  transformCurrencyToNumber,
+} from '../helpers';
 import { db } from './database';
 import { movimientosGasto } from './tables';
 
@@ -129,9 +134,7 @@ export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<
       dia: parseInt(dia),
       subcategoria: subcategoriaId,
       detalleSubcategoria: detalleSubcategoriaId,
-      tipoDePago: Object.keys(TipoDeMovimientoGasto)[
-        Object.values(TipoDeMovimientoGasto).indexOf(tipoDePago as unknown as TipoDeMovimientoGasto)
-      ] as TipoDeMovimientoGasto,
+      tipoDePago: obtenerTipoDeMovimientoGasto(tipoDePago),
       monto: transformCurrencyToNumber(monto) || 0,
       comentarios: sinComentarios ? '' : comentario,
     });
