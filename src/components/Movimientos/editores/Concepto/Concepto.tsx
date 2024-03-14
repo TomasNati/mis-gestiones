@@ -24,3 +24,5 @@ const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado 
     />
   );
 };
+
+export { Concepto };
