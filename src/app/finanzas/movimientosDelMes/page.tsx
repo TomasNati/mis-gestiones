@@ -1,12 +1,11 @@
 'use client';
 
 import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
-import { Movimientos } from '@/components/Movimientos';
 import { Box, Breadcrumbs, Button, FormControl, Link, MenuItem, Select, Typography } from '@mui/material';
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
-import { MovimientoGasto } from '@/lib/definitions';
+import { MovimientoGastoGrilla } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
 import { Movimientos2 } from '@/components/Movimientos/Movimientos2';
 
@@ -29,7 +28,7 @@ const years = [2024, 2023, 2022];
 const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
   const [mes, setMes] = useState(months[new Date().getMonth()]);
-  const [movimientos, setMovimientos] = useState<MovimientoGasto[]>([]);
+  const [movimientos, setMovimientos] = useState<MovimientoGastoGrilla[]>([]);
 
   useEffect(() => {
     const obtenerMovimientos = async () => {

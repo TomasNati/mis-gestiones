@@ -68,6 +68,15 @@ export type MovimientoGasto = {
   monto: number;
 };
 
+export type MovimientoGastoGrilla = {
+  id: string;
+  comentarios?: string;
+  fecha: Date;
+  concepto: CategoriaUIMovimiento;
+  tipoDeGasto: TipoDeMovimientoGasto;
+  monto: number;
+};
+
 export type MovimientoGastoDB = {
   id: string;
   comentarios: string | null;

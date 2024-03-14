@@ -4,6 +4,7 @@ import {
   CategoriaUIMovimiento,
   DetalleSubcategoria,
   MovimientoGasto,
+  MovimientoGastoGrilla,
   Subcategoria,
   TipoDeGasto,
   TipoDeMovimientoGasto,
@@ -12,6 +13,7 @@ import { db } from './database';
 import { categorias, detalleSubcategorias, movimientosGasto, subcategorias } from './tables';
 import { unstable_noStore as noStore } from 'next/cache';
 import { eq, and, desc, between } from 'drizzle-orm';
+import { obtenerCategoriaUIMovimiento } from '../helpers';
 
 const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
   // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
@@ -132,7 +134,7 @@ const obtenerMovimientos = async (
   limiteDeMovimientos?: number,
   fechaDesde?: Date,
   fechaHasta?: Date,
-): Promise<MovimientoGasto[]> => {
+): Promise<MovimientoGastoGrilla[]> => {
   noStore();
   try {
     const limite = limiteDeMovimientos ? limiteDeMovimientos : 500;
@@ -200,18 +202,21 @@ const obtenerMovimientos = async (
       return movimiento;
     });
 
-    return movimientos;
+    return movimientos.map((movimiento) => ({
+      ...movimiento,
+      concepto: obtenerCategoriaUIMovimiento(movimiento),
+    }));
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Error al obtener los movimientos');
   }
 };
 
-export const obtenerUltimosMovimientos = async (): Promise<MovimientoGasto[]> => {
+export const obtenerUltimosMovimientos = async (): Promise<MovimientoGastoGrilla[]> => {
   return await obtenerMovimientos(10);
 };
 
-export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<MovimientoGasto[]> => {
+export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<MovimientoGastoGrilla[]> => {
   const fechaDesde = new Date(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0);
   const fechaHasta = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59);
   return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);

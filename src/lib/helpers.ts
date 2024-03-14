@@ -1,4 +1,10 @@
-import { TipoDeMovimientoGasto, TiposDeConceptoExcel, TiposDeServicioExcel } from './definitions';
+import {
+  CategoriaUIMovimiento,
+  MovimientoGasto,
+  TipoDeMovimientoGasto,
+  TiposDeConceptoExcel,
+  TiposDeServicioExcel,
+} from './definitions';
 
 export const logMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info'): void => {
   const timestamp = new Date().toLocaleString();
@@ -101,6 +107,36 @@ export const obtenerTipoDeMovimientoGasto = (tipoDePago: string): TipoDeMovimien
       return TipoDeMovimientoGasto.Debito;
     default:
       return TipoDeMovimientoGasto.Efectivo;
+  }
+};
+
+export const obtenerCategoriaUIMovimiento = ({
+  subcategoria,
+  detalleSubcategoria,
+}: MovimientoGasto): CategoriaUIMovimiento => {
+  const categoriaUIMovimiento: CategoriaUIMovimiento = {
+    id: detalleSubcategoria?.id || subcategoria.id,
+    nombre: detalleSubcategoria
+      ? `(${detalleSubcategoria.subcategoria.nombre}) ${detalleSubcategoria.nombre}`
+      : subcategoria.nombre,
+    categoriaNombre: subcategoria.categoria.nombre,
+    subcategoriaId: subcategoria.id,
+    detalleSubcategoriaId: detalleSubcategoria?.id,
+  };
+
+  return categoriaUIMovimiento;
+};
+
+export const actualizarSubcategoria = (categoriaUI: CategoriaUIMovimiento, movimiento: MovimientoGasto) => {
+  if (categoriaUI.detalleSubcategoriaId) {
+    //   movimiento.subcategoria =  {
+    //     id: categoriaUI.subcategoriaId,
+    //     nombre: '', categoria: ''}
+    //   movimiento.detalleSubcategoria = categoriaUI.detalleSubcategoriaId;
+    // } else {
+    //   movimiento.subcategoria = categoriaUI.subcategoriaId;
+    //   movimiento.detalleSubcategoria = null;
+    // }
   }
 };
 

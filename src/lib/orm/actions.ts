@@ -7,7 +7,6 @@ import {
   MovimientoGastoAImportar,
   MovimientoUI,
   ResultadoAPI,
-  TipoDeMovimientoGasto,
   MovimientoGastoInsertarDB,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
