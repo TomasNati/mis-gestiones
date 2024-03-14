@@ -1,7 +1,9 @@
-import { MovimientoGasto, TipoDeMovimientoGasto } from '@/lib/definitions';
+import { CategoriaUIMovimiento, MovimientoGasto, TipoDeMovimientoGasto } from '@/lib/definitions';
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetterParams, useGridApiContext } from '@mui/x-data-grid';
-import { TipoDePagoEdicion, TipoDePagoVista } from './TipoDePago/TipoDePago';
+import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
+import { useEffect, useState } from 'react';
+import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -22,9 +24,13 @@ const renderTipoDePagoEditInputCell: GridColDef['renderCell'] = (params) => {
   return <TipoDePagoEditInputCell {...params} />;
 };
 
-function renderTipoDePago(params: GridRenderCellParams<any, TipoDeMovimientoGasto>) {
+const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
-}
+};
+
+const renderConceptoEditInputCell: GridColDef['renderCell'] = (params) => {
+  return <></>;
+};
 
 const columns: GridColDef[] = [
   {
@@ -71,6 +77,26 @@ const columns: GridColDef[] = [
 ];
 
 const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGasto[] }) => {
+  const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
+
+  useEffect(() => {
+    const fetchConceptos = async () => {
+      const categoriasMovimiento = await obtenerCategoriasDeMovimientos();
+      //sort subcategorias by categoria
+      categoriasMovimiento.sort((a, b) => {
+        if (a.categoriaNombre < b.categoriaNombre) {
+          return -1;
+        }
+        if (a.categoriaNombre > b.categoriaNombre) {
+          return 1;
+        }
+        return 0;
+      });
+      setCategoriasMovimiento(categoriasMovimiento);
+    };
+    fetchConceptos();
+  }, []);
+
   const onMovimientoActualizado = (movimiento: MovimientoGasto) => {
     console.log('Movimiento actualizado', movimiento);
     return movimiento;

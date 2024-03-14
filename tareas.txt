@@ -2,7 +2,7 @@
 [ ] Grilla de movimientos:
     .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes
 [ ] Edición inline  
-    -> Agregar editores para Concepto y Tipo de pago
+    -> Agregar editores para Concepto. Agregue Concepto.tsx, hay que ajustarlo para que se maneje bien con la grilla
     -> Persistir cambios al terminar de editar una fila
     -> Permiter agregar nuevas filas, y eliminar existentes
 [ ] Un skeleton o loader al menos cuando se carguen los movimientos
