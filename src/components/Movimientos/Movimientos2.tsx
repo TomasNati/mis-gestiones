@@ -67,6 +67,11 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
       editable: true,
     },
     {
+      field: 'categoria',
+      headerName: 'Categoría',
+      width: 100,
+    },
+    {
       field: 'concepto',
       headerName: 'Concepto',
       width: 250,
@@ -74,9 +79,14 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
         <Concepto
           categoriasMovimiento={categoriasMovimiento}
           conceptoInicial={params.value}
-          onConceptoModificado={(nuevoConcepto) =>
-            params.api?.setEditCellValue({ id: params.id, field: params.field, value: nuevoConcepto })
-          }
+          onConceptoModificado={async (nuevoConcepto) => {
+            await params.api?.setEditCellValue({ id: params.id, field: params.field, value: nuevoConcepto });
+            await params.api?.setEditCellValue({
+              id: params.id,
+              field: 'categoria',
+              value: nuevoConcepto.categoriaNombre,
+            });
+          }}
         />
       ),
       editable: true,

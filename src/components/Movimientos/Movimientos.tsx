@@ -9,6 +9,7 @@ const Movimientos = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] }) 
         <TableHead>
           <TableRow>
             <TableCell>Día</TableCell>
+            <TableCell>Categoria</TableCell>
             <TableCell>Concepto</TableCell>
             <TableCell>Tipo de pago</TableCell>
             <TableCell>Monto</TableCell>
@@ -19,6 +20,7 @@ const Movimientos = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] }) 
           {movimientos.map((movimiento) => (
             <TableRow key={movimiento.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
               <TableCell>{formatDate(movimiento.fecha)}</TableCell>
+              <TableCell>{movimiento.categoria}</TableCell>
               <TableCell>{movimiento.concepto.nombre}</TableCell>
               <TableCell>{movimiento.tipoDeGasto}</TableCell>
               <TableCell>{movimiento.monto}</TableCell>

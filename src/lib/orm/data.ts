@@ -204,6 +204,7 @@ const obtenerMovimientos = async (
 
     return movimientos.map((movimiento) => ({
       ...movimiento,
+      categoria: movimiento.subcategoria.categoria.nombre,
       concepto: obtenerCategoriaUIMovimiento(movimiento),
     }));
   } catch (error) {
