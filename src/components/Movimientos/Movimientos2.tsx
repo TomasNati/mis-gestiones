@@ -9,11 +9,16 @@ import {
   GridEditCellProps,
   GridRowsProp,
   GridRowModesModel,
+  GridToolbarContainer,
+  GridRowModes,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
 import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
+import { generateUUID } from '@/lib/helpers';
+import { Button } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -38,13 +43,22 @@ const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGast
   return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
 };
 
-interface EditToolbarProps {
-  setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
-  setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
+interface ToolbarProps {
+  onNuevoMovimiento: () => void;
 }
+const Toolbar = ({ onNuevoMovimiento }: ToolbarProps) => {
+  return (
+    <GridToolbarContainer>
+      <Button color="primary" startIcon={<AddIcon />} onClick={() => onNuevoMovimiento()}>
+        Agregar movimiento
+      </Button>
+    </GridToolbarContainer>
+  );
+};
 
 const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] }) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
+  const [movimientosGrilla, setMovimientosGrilla] = useState(movimientos);
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -64,7 +78,9 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
     fetchConceptos();
   }, []);
 
-  const movimientosGridRows: GridRowsProp = [...movimientos];
+  useEffect(() => {
+    setMovimientosGrilla(movimientos);
+  }, [movimientos]);
 
   const columns: GridColDef[] = [
     {
@@ -134,6 +150,19 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
     console.error('Error al actualizar el movimiento', params);
   };
 
+  const onNuevoMovimiento = () => {
+    const nuevoMovimiento: MovimientoGastoGrilla = {
+      id: generateUUID(),
+      categoria: categoriasMovimiento[0].categoriaNombre,
+      concepto: categoriasMovimiento[0],
+      fecha: new Date(),
+      monto: 0,
+      tipoDeGasto: TipoDeMovimientoGasto.Efectivo,
+      esNuevo: true,
+    };
+    setMovimientosGrilla([nuevoMovimiento, ...movimientosGrilla]);
+  };
+
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
       <DataGrid
@@ -142,7 +171,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
             height: 'calc(99vh - 253px)',
           },
         }}
-        rows={movimientos}
+        rows={movimientosGrilla}
         columns={columns}
         density="compact"
         initialState={{
@@ -158,6 +187,12 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
         editMode="row"
         processRowUpdate={(updatedRow, _originalrow) => onMovimientoActualizado(updatedRow)}
         onProcessRowUpdateError={handleProcesarMovimientoUpdateError}
+        slots={{
+          toolbar: Toolbar,
+        }}
+        slotProps={{
+          toolbar: { onNuevoMovimiento },
+        }}
       />
     </Box>
   );
