@@ -20,6 +20,12 @@ import { generateUUID } from '@/lib/helpers';
 import { Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
+type DeepNullable<T> = {
+  [K in keyof T]: DeepNullable<T[K]> | null;
+};
+
+type MovimientoGastoGrillaNullable = DeepNullable<MovimientoGastoGrilla>;
+
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
   const apiRef = useGridApiContext();
@@ -58,7 +64,7 @@ const Toolbar = ({ onNuevoMovimiento }: ToolbarProps) => {
 
 const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] }) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
-  const [movimientosGrilla, setMovimientosGrilla] = useState(movimientos);
+  const [movimientosGrilla, setMovimientosGrilla] = useState<MovimientoGastoGrillaNullable[]>(movimientos);
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -87,7 +93,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
       field: 'fecha',
       headerName: 'Fecha',
       type: 'date',
-      valueFormatter: (params: GridValueFormatterParams<Date>) => params.value.getDate(),
+      valueFormatter: (params: GridValueFormatterParams<Date>) => params.value?.getDate(),
       width: 100,
       editable: true,
     },
@@ -115,7 +121,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
         />
       ),
       editable: true,
-      valueFormatter: (params: GridValueFormatterParams<CategoriaUIMovimiento>) => params.value.nombre,
+      valueFormatter: (params: GridValueFormatterParams<CategoriaUIMovimiento>) => params.value?.nombre,
     },
     {
       field: 'tipoDeGasto',
@@ -131,7 +137,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
       type: 'number',
       editable: true,
       width: 120,
-      valueFormatter: (params) => params.value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }),
+      valueFormatter: (params) => params.value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }),
     },
     {
       field: 'comentarios',
@@ -141,7 +147,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
     },
   ];
 
-  const onMovimientoActualizado = (movimiento: MovimientoGastoGrilla) => {
+  const onMovimientoActualizado = (movimiento: MovimientoGastoGrillaNullable) => {
     console.log('Movimiento actualizado', movimiento);
     return movimiento;
   };
@@ -151,14 +157,14 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
   };
 
   const onNuevoMovimiento = () => {
-    const nuevoMovimiento: MovimientoGastoGrilla = {
+    const nuevoMovimiento: MovimientoGastoGrillaNullable = {
       id: generateUUID(),
-      categoria: categoriasMovimiento[0].categoriaNombre,
-      concepto: categoriasMovimiento[0],
-      fecha: new Date(),
-      monto: 0,
-      tipoDeGasto: TipoDeMovimientoGasto.Efectivo,
       esNuevo: true,
+      fecha: null,
+      concepto: null,
+      monto: null,
+      categoria: null,
+      tipoDeGasto: null,
     };
     setMovimientosGrilla([nuevoMovimiento, ...movimientosGrilla]);
   };
