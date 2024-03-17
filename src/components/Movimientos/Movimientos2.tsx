@@ -7,6 +7,8 @@ import {
   GridValueFormatterParams,
   useGridApiContext,
   GridEditCellProps,
+  GridRowsProp,
+  GridRowModesModel,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
@@ -36,6 +38,11 @@ const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGast
   return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
 };
 
+interface EditToolbarProps {
+  setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
+  setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
+}
+
 const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] }) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
 
@@ -56,6 +63,8 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
     };
     fetchConceptos();
   }, []);
+
+  const movimientosGridRows: GridRowsProp = [...movimientos];
 
   const columns: GridColDef[] = [
     {
