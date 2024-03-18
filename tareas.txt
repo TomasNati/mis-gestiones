@@ -1,7 +1,12 @@
 
 [ ] Nueva fila: se agrega en modo edición, pero:
     - Si agrego otra nueva fila, pierdo los cambios. Esto posiblemente se deba a que no persisto la fila agregada
-    - Agregar validación UI tanto para nueva filas como para existentes, antes de llamar al backend
+    - Si edito una fila que acabo de agregar, tira error por key duplicado
+    - Tal vez debería usar el código del demo para agregar filas. Probar
+    - Agregar validación UI tanto para nueva filas como para existentes, antes de llamar al backend. Si no es válido
+      > Si era una edición y se presionó Enter, dejarlo en edición
+      > Si presionó Esc, entonces deshacer
+      > Si era una nueva fila, y presionó Enter, dejarlo en edición. Si presionó Esc, sacar la fila
 [ ] Grilla de movimientos:
     .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes
 [ ] Edición inline  

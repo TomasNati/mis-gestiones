@@ -13,17 +13,14 @@ import {
   useGridApiContext,
   GridEditCellProps,
   GridRowId,
-  GridApi,
   useGridApiRef,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { generateUUID } from '@/lib/helpers';
-import { Button } from '@mui/material';
 import { GrillaToolbar } from './GrillaToolbar';
-import { GridApiCommunity } from '@mui/x-data-grid/internals';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -50,11 +47,12 @@ const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGast
 
 interface MovimientosDelMesGrillaProps {
   movimientos: MovimientoGastoGrilla[];
+  onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => void;
   mes: number;
   anio: number;
 }
 
-const MovimientosDelMesGrilla = ({ movimientos, mes, anio }: MovimientosDelMesGrillaProps) => {
+const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualizado }: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [movimientosGrilla, setMovimientosGrilla] = useState<MovimientoGastoGrillaNullable[]>(movimientos);
   const [nuevaFilaId, setNuevaFilaId] = useState<string | null>(null);
@@ -141,9 +139,27 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio }: MovimientosDelMesGr
     },
   ];
 
-  const onMovimientoActualizado = (movimiento: MovimientoGastoGrillaNullable) => {
-    console.log('Movimiento actualizado', movimiento);
-    return movimiento;
+  const onMovimientoModificadoEnGrilla = (
+    movimientoActualizado: MovimientoGastoGrillaNullable,
+    movimientoOriginal: MovimientoGastoGrillaNullable,
+  ): MovimientoGastoGrillaNullable => {
+    const { id, fecha, concepto, tipoDeGasto, monto } = movimientoActualizado;
+    const valido = id && fecha && !!concepto && tipoDeGasto !== null && monto && monto > 0.01;
+    if (valido) {
+      onMovimientoActualizado({
+        id: movimientoActualizado.id || '',
+        fecha: movimientoActualizado.fecha as Date,
+        concepto: movimientoActualizado.concepto as CategoriaUIMovimiento,
+        tipoDeGasto: movimientoActualizado.tipoDeGasto as TipoDeMovimientoGasto,
+        monto: movimientoActualizado.monto as number,
+        categoria: movimientoActualizado.categoria as string,
+        comentarios: movimientoActualizado.comentarios || undefined,
+        esNuevo: movimientoActualizado.esNuevo || undefined,
+      });
+      return movimientoActualizado;
+    } else {
+      return movimientoOriginal;
+    }
   };
 
   const handleProcesarMovimientoUpdateError = (params: any) => {
@@ -194,7 +210,7 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio }: MovimientosDelMesGr
         checkboxSelection
         disableRowSelectionOnClick
         editMode="row"
-        processRowUpdate={(updatedRow, _originalrow) => onMovimientoActualizado(updatedRow)}
+        processRowUpdate={onMovimientoModificadoEnGrilla}
         onProcessRowUpdateError={handleProcesarMovimientoUpdateError}
         slots={{
           toolbar: GrillaToolbar,

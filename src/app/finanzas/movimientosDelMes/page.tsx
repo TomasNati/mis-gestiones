@@ -5,9 +5,11 @@ import { Box, Breadcrumbs, Button, FormControl, Link, MenuItem, Select, Typograp
 import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
-import { MovimientoGastoGrilla } from '@/lib/definitions';
+import { MovimientoGastoGrilla, MovimientoUI } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
 import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
+import { crearMovimientos } from '@/lib/orm/actions';
+import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 
 const months = [
   'Enero',
@@ -29,6 +31,11 @@ const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
   const [mes, setMes] = useState(months[new Date().getMonth()]);
   const [movimientos, setMovimientos] = useState<MovimientoGastoGrilla[]>([]);
+  const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
+    open: false,
+    severity: 'success',
+    mensaje: '',
+  });
 
   useEffect(() => {
     const obtenerMovimientos = async () => {
@@ -60,6 +67,35 @@ const MovimientosDelMes = () => {
   useEffect(() => {
     setAnio(new Date().getFullYear());
   }, []);
+
+  const onMovimientoActualizado = async (movimiento: MovimientoGastoGrilla) => {
+    const movimientoUI: MovimientoUI = {
+      ...movimiento,
+      subcategoriaId: movimiento.concepto.subcategoriaId,
+      detalleSubcategoriaId: movimiento.concepto.detalleSubcategoriaId,
+      valido: true,
+      filaId: 0,
+    };
+    const resultado = await crearMovimientos([movimientoUI]);
+
+    if (!resultado.exitoso) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: resultado.errores.join('\n'),
+      });
+    } else {
+      setConfigNotificacion({
+        open: true,
+        severity: 'success',
+        mensaje: 'Movimientos agregados correctamente',
+      });
+      const movimientosActualizados = movimiento.esNuevo
+        ? [movimiento, ...movimientos]
+        : movimientos.map((m) => (m.id === movimiento.id ? movimiento : m));
+      setMovimientos(movimientosActualizados);
+    }
+  };
 
   return (
     <Box>
@@ -131,7 +167,15 @@ const MovimientosDelMes = () => {
           ))}
         </Box>
       </Box>
-      {anio && mes && <MovimientosDelMesGrilla movimientos={movimientos} anio={anio} mes={months.indexOf(mes)} />}
+      {anio && mes && (
+        <MovimientosDelMesGrilla
+          movimientos={movimientos}
+          anio={anio}
+          mes={months.indexOf(mes)}
+          onMovimientoActualizado={onMovimientoActualizado}
+        />
+      )}
+      <Notificacion configuracionProp={configNotificacion} />
     </Box>
   );
 };
