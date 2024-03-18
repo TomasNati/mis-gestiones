@@ -1,4 +1,7 @@
 
+[ ] Nueva fila: se agrega en modo edición, pero:
+    - Si agrego otra nueva fila, pierdo los cambios. Esto posiblemente se deba a que no persisto la fila agregada
+    - Agregar validación UI tanto para nueva filas como para existentes, antes de llamar al backend
 [ ] Grilla de movimientos:
     .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes
 [ ] Edición inline  
