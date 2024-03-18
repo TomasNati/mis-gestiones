@@ -12,15 +12,18 @@ import {
   GridValueFormatterParams,
   useGridApiContext,
   GridEditCellProps,
-  GridToolbarContainer,
+  GridRowId,
+  GridApi,
+  useGridApiRef,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { generateUUID } from '@/lib/helpers';
 import { Button } from '@mui/material';
 import { GrillaToolbar } from './GrillaToolbar';
+import { GridApiCommunity } from '@mui/x-data-grid/internals';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -54,6 +57,8 @@ interface MovimientosDelMesGrillaProps {
 const MovimientosDelMesGrilla = ({ movimientos, mes, anio }: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [movimientosGrilla, setMovimientosGrilla] = useState<MovimientoGastoGrillaNullable[]>(movimientos);
+  const [nuevaFilaId, setNuevaFilaId] = useState<string | null>(null);
+  const gridRef = useGridApiRef();
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -156,7 +161,15 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio }: MovimientosDelMesGr
       tipoDeGasto: null,
     };
     setMovimientosGrilla([nuevoMovimiento, ...movimientosGrilla]);
+    setNuevaFilaId(nuevoMovimiento.id);
   };
+
+  useEffect(() => {
+    if (nuevaFilaId) {
+      gridRef.current?.startRowEditMode({ id: nuevaFilaId as GridRowId });
+      setNuevaFilaId(null);
+    }
+  }, [nuevaFilaId, gridRef]);
 
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
@@ -166,6 +179,7 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio }: MovimientosDelMesGr
             height: 'calc(99vh - 253px)',
           },
         }}
+        apiRef={gridRef}
         rows={movimientosGrilla}
         columns={columns}
         density="compact"
