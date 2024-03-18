@@ -7,7 +7,7 @@ import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 import { MovimientoGastoGrilla } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
-import { Movimientos2 } from '@/components/Movimientos/Movimientos2';
+import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
 
 const months = [
   'Enero',
@@ -131,7 +131,7 @@ const MovimientosDelMes = () => {
           ))}
         </Box>
       </Box>
-      <Movimientos2 movimientos={movimientos} />
+      {anio && mes && <MovimientosDelMesGrilla movimientos={movimientos} anio={anio} mes={months.indexOf(mes)} />}
     </Box>
   );
 };

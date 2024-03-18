@@ -262,3 +262,9 @@ export interface ImportarMovimientosResult {
   exitoso: boolean;
   error?: string;
 }
+
+export type DeepNullable<T> = {
+  [K in keyof T]: DeepNullable<T[K]> | null;
+};
+
+export type MovimientoGastoGrillaNullable = DeepNullable<MovimientoGastoGrilla>;

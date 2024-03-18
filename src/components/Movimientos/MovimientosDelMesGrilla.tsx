@@ -1,4 +1,9 @@
-import { CategoriaUIMovimiento, MovimientoGastoGrilla, TipoDeMovimientoGasto } from '@/lib/definitions';
+import {
+  CategoriaUIMovimiento,
+  MovimientoGastoGrilla,
+  TipoDeMovimientoGasto,
+  MovimientoGastoGrillaNullable,
+} from '@/lib/definitions';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
@@ -7,10 +12,7 @@ import {
   GridValueFormatterParams,
   useGridApiContext,
   GridEditCellProps,
-  GridRowsProp,
-  GridRowModesModel,
   GridToolbarContainer,
-  GridRowModes,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
@@ -18,13 +20,7 @@ import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { generateUUID } from '@/lib/helpers';
 import { Button } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-
-type DeepNullable<T> = {
-  [K in keyof T]: DeepNullable<T[K]> | null;
-};
-
-type MovimientoGastoGrillaNullable = DeepNullable<MovimientoGastoGrilla>;
+import { GrillaToolbar } from './GrillaToolbar';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -49,20 +45,13 @@ const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGast
   return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
 };
 
-interface ToolbarProps {
-  onNuevoMovimiento: () => void;
+interface MovimientosDelMesGrillaProps {
+  movimientos: MovimientoGastoGrilla[];
+  mes: number;
+  anio: number;
 }
-const Toolbar = ({ onNuevoMovimiento }: ToolbarProps) => {
-  return (
-    <GridToolbarContainer>
-      <Button color="primary" startIcon={<AddIcon />} onClick={() => onNuevoMovimiento()}>
-        Agregar movimiento
-      </Button>
-    </GridToolbarContainer>
-  );
-};
 
-const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] }) => {
+const MovimientosDelMesGrilla = ({ movimientos, mes, anio }: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [movimientosGrilla, setMovimientosGrilla] = useState<MovimientoGastoGrillaNullable[]>(movimientos);
 
@@ -160,7 +149,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
     const nuevoMovimiento: MovimientoGastoGrillaNullable = {
       id: generateUUID(),
       esNuevo: true,
-      fecha: null,
+      fecha: new Date(anio, mes, new Date().getDate()),
       concepto: null,
       monto: null,
       categoria: null,
@@ -194,7 +183,7 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
         processRowUpdate={(updatedRow, _originalrow) => onMovimientoActualizado(updatedRow)}
         onProcessRowUpdateError={handleProcesarMovimientoUpdateError}
         slots={{
-          toolbar: Toolbar,
+          toolbar: GrillaToolbar,
         }}
         slotProps={{
           toolbar: { onNuevoMovimiento },
@@ -204,4 +193,4 @@ const Movimientos2 = ({ movimientos }: { movimientos: MovimientoGastoGrilla[] })
   );
 };
 
-export { Movimientos2 };
+export { MovimientosDelMesGrilla };
