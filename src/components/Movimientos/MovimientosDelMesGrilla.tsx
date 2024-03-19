@@ -14,6 +14,11 @@ import {
   GridEditCellProps,
   GridRowId,
   useGridApiRef,
+  GridRowsProp,
+  GridRowModesModel,
+  GridRowModel,
+  GridEventListener,
+  GridRowEditStopReasons,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
@@ -55,8 +60,10 @@ interface MovimientosDelMesGrillaProps {
 const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualizado }: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [movimientosGrilla, setMovimientosGrilla] = useState<MovimientoGastoGrillaNullable[]>(movimientos);
-  const [nuevaFilaId, setNuevaFilaId] = useState<string | null>(null);
-  const gridRef = useGridApiRef();
+  // const [nuevaFilaId, setNuevaFilaId] = useState<string | null>(null);
+  // const gridRef = useGridApiRef();
+  const [rows, setRows] = useState<GridRowsProp>(movimientos);
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -77,7 +84,7 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
   }, []);
 
   useEffect(() => {
-    setMovimientosGrilla(movimientos);
+    setRows(movimientos);
   }, [movimientos]);
 
   const columns: GridColDef[] = [
@@ -146,16 +153,16 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
     const { id, fecha, concepto, tipoDeGasto, monto } = movimientoActualizado;
     const valido = id && fecha && !!concepto && tipoDeGasto !== null && monto && monto > 0.01;
     if (valido) {
-      onMovimientoActualizado({
-        id: movimientoActualizado.id || '',
-        fecha: movimientoActualizado.fecha as Date,
-        concepto: movimientoActualizado.concepto as CategoriaUIMovimiento,
-        tipoDeGasto: movimientoActualizado.tipoDeGasto as TipoDeMovimientoGasto,
-        monto: movimientoActualizado.monto as number,
-        categoria: movimientoActualizado.categoria as string,
-        comentarios: movimientoActualizado.comentarios || undefined,
-        esNuevo: movimientoActualizado.esNuevo || undefined,
-      });
+      // onMovimientoActualizado({
+      //   id: movimientoActualizado.id || '',
+      //   fecha: movimientoActualizado.fecha as Date,
+      //   concepto: movimientoActualizado.concepto as CategoriaUIMovimiento,
+      //   tipoDeGasto: movimientoActualizado.tipoDeGasto as TipoDeMovimientoGasto,
+      //   monto: movimientoActualizado.monto as number,
+      //   categoria: movimientoActualizado.categoria as string,
+      //   comentarios: movimientoActualizado.comentarios || undefined,
+      //   esNuevo: movimientoActualizado.esNuevo || undefined,
+      // });
       return movimientoActualizado;
     } else {
       return movimientoOriginal;
@@ -177,15 +184,31 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
       tipoDeGasto: null,
     };
     setMovimientosGrilla([nuevoMovimiento, ...movimientosGrilla]);
-    setNuevaFilaId(nuevoMovimiento.id);
+    // setNuevaFilaId(nuevoMovimiento.id);
   };
 
-  useEffect(() => {
-    if (nuevaFilaId) {
-      gridRef.current?.startRowEditMode({ id: nuevaFilaId as GridRowId });
-      setNuevaFilaId(null);
+  const processRowUpdate = (newRow: GridRowModel) => {
+    const updatedRow = { ...newRow, isNew: false };
+    setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+    return updatedRow;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
+
+  const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
     }
-  }, [nuevaFilaId, gridRef]);
+  };
+
+  // useEffect(() => {
+  //   if (nuevaFilaId) {
+  //     gridRef.current?.startRowEditMode({ id: nuevaFilaId as GridRowId });
+  //     setNuevaFilaId(null);
+  //   }
+  // }, [nuevaFilaId, gridRef]);
 
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
@@ -195,8 +218,8 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
             height: 'calc(99vh - 253px)',
           },
         }}
-        apiRef={gridRef}
-        rows={movimientosGrilla}
+        //apiRef={gridRef}
+        rows={rows}
         columns={columns}
         density="compact"
         initialState={{
@@ -210,13 +233,17 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
         checkboxSelection
         disableRowSelectionOnClick
         editMode="row"
-        processRowUpdate={onMovimientoModificadoEnGrilla}
-        onProcessRowUpdateError={handleProcesarMovimientoUpdateError}
+        // processRowUpdate={onMovimientoModificadoEnGrilla}
+        // onProcessRowUpdateError={handleProcesarMovimientoUpdateError}
+        rowModesModel={rowModesModel}
+        onRowModesModelChange={handleRowModesModelChange}
+        onRowEditStop={handleRowEditStop}
+        processRowUpdate={processRowUpdate}
         slots={{
           toolbar: GrillaToolbar,
         }}
         slotProps={{
-          toolbar: { onNuevoMovimiento },
+          toolbar: { setRows, setRowModesModel, anio, mes },
         }}
       />
     </Box>
