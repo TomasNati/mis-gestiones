@@ -1,31 +1,14 @@
 'use client';
 
 import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
-import { Box, Breadcrumbs, Button, FormControl, Link, MenuItem, Select, Typography } from '@mui/material';
-import PlaylistAdd from '@mui/icons-material/PlaylistAdd';
-import NextLink from 'next/link';
+import { Box, Breadcrumbs, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { MovimientoGastoGrilla, MovimientoUI } from '@/lib/definitions';
+import { MovimientoGastoGrilla, MovimientoUI, ResultadoAPI, months } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
 import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
 import { crearMovimientos } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
-
-const months = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
-const years = [2024, 2023, 2022];
+import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
 
 const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
@@ -97,6 +80,22 @@ const MovimientosDelMes = () => {
     }
   };
 
+  const onMovimientosEliminados = (resultado: ResultadoAPI) => {
+    if (!resultado.exitoso) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: resultado.errores.join('\n'),
+      });
+    } else {
+      setConfigNotificacion({
+        open: true,
+        severity: 'success',
+        mensaje: 'Movimientos eliminados correctamente',
+      });
+    }
+  };
+
   return (
     <Box>
       <Box
@@ -114,65 +113,14 @@ const MovimientosDelMes = () => {
           <Typography color="text.primary">Movimientos del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <Box sx={{ display: 'flex', marginTop: 3, marginBottom: 3 }}>
-        <Button
-          component={NextLink}
-          variant="outlined"
-          startIcon={<PlaylistAdd />}
-          color="primary"
-          sx={{ marginRight: 2 }}
-          href="/finanzas/movimientosDelMes/agregar"
-        >
-          Agregar
-        </Button>
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-        }}
-      >
-        <FormControl sx={{ width: '100px', marginRight: '10px', marginBottom: '5px' }}>
-          <Select
-            sx={{
-              '& .MuiSelect-select': {
-                padding: '2px 0 2px 4px',
-              },
-            }}
-            value={anio}
-            onChange={(e) => setAnio(e.target.value as number)}
-          >
-            {years.map((year) => (
-              <MenuItem key={year} value={year}>
-                {year}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Box>
-          {months.map((month, index) => (
-            <Button
-              key={index}
-              variant="outlined"
-              onClick={() => setMes(month)}
-              color={month === mes ? 'success' : 'secondary'}
-              sx={{
-                marginRight: 1,
-                marginBottom: 2,
-                padding: '0 2px',
-              }}
-            >
-              {month}
-            </Button>
-          ))}
-        </Box>
-      </Box>
+      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} />
       {anio && mes && (
         <MovimientosDelMesGrilla
           movimientos={movimientos}
           anio={anio}
           mes={months.indexOf(mes)}
           onMovimientoActualizado={onMovimientoActualizado}
+          onMovimientosEliminados={onMovimientosEliminados}
         />
       )}
       <Notificacion configuracionProp={configNotificacion} />

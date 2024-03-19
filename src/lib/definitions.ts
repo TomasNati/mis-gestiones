@@ -268,3 +268,20 @@ export type DeepNullable<T> = {
 };
 
 export type MovimientoGastoGrillaNullable = DeepNullable<MovimientoGastoGrilla>;
+
+export const months = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
+
+export const years = [2024, 2023, 2022];

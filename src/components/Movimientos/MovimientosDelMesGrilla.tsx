@@ -3,6 +3,7 @@ import {
   MovimientoGastoGrilla,
   TipoDeMovimientoGasto,
   MovimientoGastoGrillaNullable,
+  ResultadoAPI,
 } from '@/lib/definitions';
 import Box from '@mui/material/Box';
 import {
@@ -19,6 +20,8 @@ import {
   GridRowModel,
   GridEventListener,
   GridRowEditStopReasons,
+  GridRowSelectionModel,
+  GridCallbackDetails,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
@@ -53,17 +56,25 @@ const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGast
 interface MovimientosDelMesGrillaProps {
   movimientos: MovimientoGastoGrilla[];
   onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => void;
+  onMovimientosEliminados: (resultado: ResultadoAPI) => void;
   mes: number;
   anio: number;
 }
 
-const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualizado }: MovimientosDelMesGrillaProps) => {
+const MovimientosDelMesGrilla = ({
+  movimientos,
+  mes,
+  anio,
+  onMovimientoActualizado,
+  onMovimientosEliminados,
+}: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [movimientosGrilla, setMovimientosGrilla] = useState<MovimientoGastoGrillaNullable[]>(movimientos);
   // const [nuevaFilaId, setNuevaFilaId] = useState<string | null>(null);
   // const gridRef = useGridApiRef();
   const [rows, setRows] = useState<GridRowsProp>(movimientos);
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+  const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -203,6 +214,10 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
     }
   };
 
+  const handleSelectionChange = (rowSelectionModel: GridRowSelectionModel) => {
+    setSelectedRows(rowSelectionModel);
+  };
+
   // useEffect(() => {
   //   if (nuevaFilaId) {
   //     gridRef.current?.startRowEditMode({ id: nuevaFilaId as GridRowId });
@@ -215,7 +230,7 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
       <DataGrid
         sx={{
           '& .MuiDataGrid-main': {
-            height: 'calc(99vh - 253px)',
+            height: 'calc(99vh - 215px)',
           },
         }}
         //apiRef={gridRef}
@@ -238,12 +253,13 @@ const MovimientosDelMesGrilla = ({ movimientos, mes, anio, onMovimientoActualiza
         rowModesModel={rowModesModel}
         onRowModesModelChange={handleRowModesModelChange}
         onRowEditStop={handleRowEditStop}
+        onRowSelectionModelChange={handleSelectionChange}
         processRowUpdate={processRowUpdate}
         slots={{
           toolbar: GrillaToolbar,
         }}
         slotProps={{
-          toolbar: { setRows, setRowModesModel, anio, mes },
+          toolbar: { setRows, setRowModesModel, anio, mes, selectedRows, onMovimientosEliminados },
         }}
       />
     </Box>

@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import { inArray } from 'drizzle-orm';
 import {
   ImportarMovimientoUI,
   ImportarMovimientosResult,
@@ -48,6 +49,30 @@ export async function crearMovimientos(nuevosMovimientos: MovimientoUI[]) {
         Detalle: ${mensajeError}`);
       resultadoFinal.exitoso = false;
     }
+  }
+  //Revalidate the cache
+  revalidatePath('/finanzas');
+  revalidatePath('/finanzas/movimientosDelMes');
+  return resultadoFinal;
+}
+
+export async function eliminarMovimientos(ids: string[]) {
+  const resultadoFinal: ResultadoAPI = {
+    exitoso: true,
+    errores: [],
+  };
+
+  let resultadoMensaje = '';
+
+  try {
+    await db.delete(movimientosGasto).where(inArray(movimientosGasto.id, ids));
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultadoMensaje = `Error al eliminar movimientos: ${error.message}.\n ${error.stack}`;
+    } else {
+      resultadoMensaje = ` Error al eliminar movimientos ${error}.\n`;
+    }
+    resultadoFinal.errores.push(resultadoMensaje);
   }
   //Revalidate the cache
   revalidatePath('/finanzas');
