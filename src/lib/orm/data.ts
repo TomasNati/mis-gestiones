@@ -141,8 +141,6 @@ const obtenerMovimientos = async (
     const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
     const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
 
-    console.log(fechaDesdeFiltro, fechaHastaFiltro);
-
     const result = await db
       .select({
         id: movimientosGasto.id,
