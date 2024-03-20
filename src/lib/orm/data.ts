@@ -138,10 +138,10 @@ const obtenerMovimientos = async (
   noStore();
   try {
     const limite = limiteDeMovimientos ? limiteDeMovimientos : 500;
-    const fechaDesdeString = fechaDesde ? fechaDesde.toISOString().split('T')[0] : '1900-01-01';
-    const fechaDesdeFiltro = new Date(fechaDesdeString);
-    const fechaHastaString = fechaHasta ? fechaHasta.toISOString().split('T')[0] : '2100-01-01';
-    const fechaHastaFiltro = new Date(fechaHastaString);
+    const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
+    const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
+
+    console.log(fechaDesdeFiltro, fechaHastaFiltro);
 
     const result = await db
       .select({
@@ -218,7 +218,7 @@ export const obtenerUltimosMovimientos = async (): Promise<MovimientoGastoGrilla
 };
 
 export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<MovimientoGastoGrilla[]> => {
-  const fechaDesde = new Date(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0);
-  const fechaHasta = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59);
+  const fechaDesde = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0));
+  const fechaHasta = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59));
   return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);
 };
