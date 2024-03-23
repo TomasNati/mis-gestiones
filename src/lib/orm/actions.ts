@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import {
   ImportarMovimientoUI,
   ImportarMovimientosResult,
@@ -73,6 +73,56 @@ export async function eliminarMovimientos(ids: string[]) {
       resultadoMensaje = ` Error al eliminar movimientos ${error}.\n`;
     }
     resultadoFinal.errores.push(resultadoMensaje);
+  }
+  //Revalidate the cache
+  revalidatePath('/finanzas');
+  revalidatePath('/finanzas/movimientosDelMes');
+  return resultadoFinal;
+}
+
+export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<ResultadoAPI> {
+  const resultadoFinal: ResultadoAPI = {
+    exitoso: true,
+    errores: [],
+  };
+  let resultadoMensaje = '';
+
+  const camposValidados = CrearMovimiento.safeParse(movimiento);
+  if (!camposValidados.success) {
+    const errores = camposValidados.error.flatten().fieldErrors;
+    resultadoMensaje = 'Hubo errores de validación.';
+  } else if (!movimiento.id) {
+    resultadoMensaje = 'El movimiento a actualizar no tiene id';
+  } else {
+    const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
+    const fechaString = fecha.toISOString().replace('T', ' ');
+    const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
+
+    try {
+      await db
+        .update(movimientosGasto)
+        .set({
+          fecha: new Date(fechaString),
+          monto: monto.toString(),
+          subcategoria: subcategoriaId,
+          detallesubcategoria: detalleSubcategoriaIdFinal,
+          tipodepago: tipoDeGasto,
+          comentarios: comentarios || null,
+        })
+        .where(eq(movimientosGasto.id, movimiento.id));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        resultadoMensaje = `Error al actualizar en base de datos: ${error.message}.\n ${error.stack}`;
+      } else {
+        resultadoMensaje = ` Error al actualizr en base de datos: ${error}.\n`;
+      }
+    }
+    resultadoMensaje && logMessage(resultadoMensaje, 'error');
+
+    if (resultadoMensaje) {
+      resultadoFinal.errores.push(resultadoMensaje);
+      resultadoFinal.exitoso = false;
+    }
   }
   //Revalidate the cache
   revalidatePath('/finanzas');

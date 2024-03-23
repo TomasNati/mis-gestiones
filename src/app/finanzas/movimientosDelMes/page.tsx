@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { MovimientoGastoGrilla, MovimientoUI, ResultadoAPI, months } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
 import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
-import { crearMovimientos } from '@/lib/orm/actions';
+import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
 
@@ -59,7 +59,9 @@ const MovimientosDelMes = () => {
       valido: true,
       filaId: 0,
     };
-    const resultado = await crearMovimientos([movimientoUI]);
+    const resultado = movimiento.isNew
+      ? await crearMovimientos([movimientoUI])
+      : await actualizarMovimiento(movimientoUI);
 
     if (!resultado.exitoso) {
       setConfigNotificacion({
@@ -71,12 +73,8 @@ const MovimientosDelMes = () => {
       setConfigNotificacion({
         open: true,
         severity: 'success',
-        mensaje: 'Movimientos agregados correctamente',
+        mensaje: movimiento.isNew ? 'Movimientos agregados correctamente' : 'Movimiento actualizado correctamente',
       });
-      const movimientosActualizados = movimiento.esNuevo
-        ? [movimiento, ...movimientos]
-        : movimientos.map((m) => (m.id === movimiento.id ? movimiento : m));
-      setMovimientos(movimientosActualizados);
     }
   };
 

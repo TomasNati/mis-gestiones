@@ -76,7 +76,7 @@ export type MovimientoGastoGrilla = {
   concepto: CategoriaUIMovimiento;
   tipoDeGasto: TipoDeMovimientoGasto;
   monto: number;
-  esNuevo?: boolean;
+  isNew?: boolean;
 };
 
 export type MovimientoGastoDB = {

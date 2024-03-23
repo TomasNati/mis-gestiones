@@ -169,6 +169,8 @@ const MovimientosDelMesGrilla = ({
       const newRows = isNew
         ? rows.filter((row) => row.id !== newRow.id)
         : rows.map((row) => (row.id === newRow.id ? originalRow : row));
+
+      onMovimientoActualizado(newRow as MovimientoGastoGrilla);
       setRows(newRows);
       return originalRow;
     }
