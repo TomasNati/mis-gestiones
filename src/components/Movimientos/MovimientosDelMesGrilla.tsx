@@ -69,9 +69,6 @@ const MovimientosDelMesGrilla = ({
   onMovimientosEliminados,
 }: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
-  const [movimientosGrilla, setMovimientosGrilla] = useState<MovimientoGastoGrillaNullable[]>(movimientos);
-  // const [nuevaFilaId, setNuevaFilaId] = useState<string | null>(null);
-  // const gridRef = useGridApiRef();
   const [rows, setRows] = useState<GridRowsProp>(movimientos);
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
   const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
@@ -157,51 +154,24 @@ const MovimientosDelMesGrilla = ({
     },
   ];
 
-  const onMovimientoModificadoEnGrilla = (
-    movimientoActualizado: MovimientoGastoGrillaNullable,
-    movimientoOriginal: MovimientoGastoGrillaNullable,
-  ): MovimientoGastoGrillaNullable => {
-    const { id, fecha, concepto, tipoDeGasto, monto } = movimientoActualizado;
-    const valido = id && fecha && !!concepto && tipoDeGasto !== null && monto && monto > 0.01;
-    if (valido) {
-      // onMovimientoActualizado({
-      //   id: movimientoActualizado.id || '',
-      //   fecha: movimientoActualizado.fecha as Date,
-      //   concepto: movimientoActualizado.concepto as CategoriaUIMovimiento,
-      //   tipoDeGasto: movimientoActualizado.tipoDeGasto as TipoDeMovimientoGasto,
-      //   monto: movimientoActualizado.monto as number,
-      //   categoria: movimientoActualizado.categoria as string,
-      //   comentarios: movimientoActualizado.comentarios || undefined,
-      //   esNuevo: movimientoActualizado.esNuevo || undefined,
-      // });
-      return movimientoActualizado;
-    } else {
-      return movimientoOriginal;
-    }
-  };
-
   const handleProcesarMovimientoUpdateError = (params: any) => {
     console.error('Error al actualizar el movimiento', params);
   };
 
-  const onNuevoMovimiento = () => {
-    const nuevoMovimiento: MovimientoGastoGrillaNullable = {
-      id: generateUUID(),
-      esNuevo: true,
-      fecha: new Date(anio, mes, new Date().getDate()),
-      concepto: null,
-      monto: null,
-      categoria: null,
-      tipoDeGasto: null,
-    };
-    setMovimientosGrilla([nuevoMovimiento, ...movimientosGrilla]);
-    // setNuevaFilaId(nuevoMovimiento.id);
-  };
-
-  const processRowUpdate = (newRow: GridRowModel) => {
-    const updatedRow = { ...newRow, isNew: false };
-    setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-    return updatedRow;
+  const processRowUpdate = (newRow: GridRowModel, originalRow: GridRowModel) => {
+    const { id, fecha, concepto, tipoDeGasto, monto, isNew } = newRow;
+    const valido = id && fecha && !!concepto && tipoDeGasto !== null && monto && monto > 0.01;
+    if (valido) {
+      const updatedRow = { ...newRow, isNew: false };
+      setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+      return updatedRow;
+    } else {
+      const newRows = isNew
+        ? rows.filter((row) => row.id !== newRow.id)
+        : rows.map((row) => (row.id === newRow.id ? originalRow : row));
+      setRows(newRows);
+      return originalRow;
+    }
   };
 
   const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
@@ -218,13 +188,6 @@ const MovimientosDelMesGrilla = ({
     setSelectedRows(rowSelectionModel);
   };
 
-  // useEffect(() => {
-  //   if (nuevaFilaId) {
-  //     gridRef.current?.startRowEditMode({ id: nuevaFilaId as GridRowId });
-  //     setNuevaFilaId(null);
-  //   }
-  // }, [nuevaFilaId, gridRef]);
-
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
       <DataGrid
@@ -233,7 +196,6 @@ const MovimientosDelMesGrilla = ({
             height: 'calc(99vh - 215px)',
           },
         }}
-        //apiRef={gridRef}
         rows={rows}
         columns={columns}
         density="compact"
@@ -248,7 +210,6 @@ const MovimientosDelMesGrilla = ({
         checkboxSelection
         disableRowSelectionOnClick
         editMode="row"
-        // processRowUpdate={onMovimientoModificadoEnGrilla}
         // onProcessRowUpdateError={handleProcesarMovimientoUpdateError}
         rowModesModel={rowModesModel}
         onRowModesModelChange={handleRowModesModelChange}
