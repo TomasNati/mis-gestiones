@@ -162,6 +162,7 @@ const MovimientosDelMesGrilla = ({
     const { id, fecha, concepto, tipoDeGasto, monto, isNew } = newRow;
     const valido = id && fecha && !!concepto && tipoDeGasto !== null && monto && monto > 0.01;
     if (valido) {
+      onMovimientoActualizado(newRow as MovimientoGastoGrilla);
       const updatedRow = { ...newRow, isNew: false };
       setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
       return updatedRow;
@@ -169,8 +170,6 @@ const MovimientosDelMesGrilla = ({
       const newRows = isNew
         ? rows.filter((row) => row.id !== newRow.id)
         : rows.map((row) => (row.id === newRow.id ? originalRow : row));
-
-      onMovimientoActualizado(newRow as MovimientoGastoGrilla);
       setRows(newRows);
       return originalRow;
     }
