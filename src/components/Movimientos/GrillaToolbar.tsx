@@ -2,15 +2,17 @@ import { Button } from '@mui/material';
 import { GridRowModes, GridRowModesModel, GridRowsProp, GridToolbarContainer } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
 import { generateUUID } from '@/lib/helpers';
 import { eliminarMovimientos } from '@/lib/orm/actions';
-import { ConsoleLogWriter } from 'drizzle-orm';
-import { ResultadoAPI } from '@/lib/definitions';
+import { MovimientoGastoGrilla, ResultadoAPI } from '@/lib/definitions';
+import { useState } from 'react';
+import { ExportarMovimiento } from './Exportar/Exportar';
 
 interface GrillaToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
   setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
-  selectedRows: string[];
+  movimientosElegidos: MovimientoGastoGrilla[];
   anio: number;
   mes: number;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
@@ -20,9 +22,11 @@ const GrillaToolbar = ({
   setRowModesModel,
   anio,
   mes,
-  selectedRows,
+  movimientosElegidos,
   onMovimientosEliminados,
 }: GrillaToolbarProps) => {
+  const [abrirDialogoExportar, setAbrirDialogoExportar] = useState(false);
+
   const handleAgregarNuevoMovimiento = () => {
     const id = generateUUID();
     const nuevoMovimiento = {
@@ -42,11 +46,20 @@ const GrillaToolbar = ({
   };
 
   const handleEliminarMovimientos = async () => {
-    const resultadoEliminacion = await eliminarMovimientos(selectedRows);
+    const movimientosAEliminar = movimientosElegidos.map((movimiento) => movimiento.id as string);
+    const resultadoEliminacion = await eliminarMovimientos(movimientosAEliminar);
     if (resultadoEliminacion.exitoso) {
-      setRows((oldRows) => oldRows.filter((row) => !selectedRows.includes(row.id as string)));
+      setRows((oldRows) => oldRows.filter((row) => !movimientosAEliminar.includes(row.id as string)));
     }
     onMovimientosEliminados(resultadoEliminacion);
+  };
+
+  const handleExportarMovimientos = () => {
+    setAbrirDialogoExportar(true);
+  };
+
+  const handleCerrarDialogoExportar = () => {
+    setAbrirDialogoExportar(false);
   };
 
   return (
@@ -57,11 +70,24 @@ const GrillaToolbar = ({
       <Button
         color="primary"
         startIcon={<DeleteIcon />}
-        onClick={() => handleEliminarMovimientos()}
-        disabled={selectedRows.length === 0}
+        onClick={handleEliminarMovimientos}
+        disabled={movimientosElegidos.length === 0}
       >
         Eliminar
       </Button>
+      <Button
+        color="primary"
+        startIcon={<ImportExportIcon />}
+        onClick={handleExportarMovimientos}
+        disabled={movimientosElegidos.length === 0}
+      >
+        Exportar
+      </Button>
+      <ExportarMovimiento
+        open={abrirDialogoExportar}
+        movimientos={movimientosElegidos}
+        onDialogClosed={handleCerrarDialogoExportar}
+      />
     </GridToolbarContainer>
   );
 };

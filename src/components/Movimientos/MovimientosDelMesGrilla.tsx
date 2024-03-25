@@ -71,7 +71,7 @@ const MovimientosDelMesGrilla = ({
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [rows, setRows] = useState<GridRowsProp>(movimientos);
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
-  const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
+  const [movimientosElegidos, setMovimientosElegidos] = useState<MovimientoGastoGrilla[]>([]);
 
   useEffect(() => {
     const fetchConceptos = async () => {
@@ -186,7 +186,8 @@ const MovimientosDelMesGrilla = ({
   };
 
   const handleSelectionChange = (rowSelectionModel: GridRowSelectionModel) => {
-    setSelectedRows(rowSelectionModel);
+    const movimientosElegidos = rows.filter((row) => rowSelectionModel.includes(row.id as GridRowId));
+    setMovimientosElegidos(movimientosElegidos as MovimientoGastoGrilla[]);
   };
 
   return (
@@ -221,7 +222,7 @@ const MovimientosDelMesGrilla = ({
           toolbar: GrillaToolbar,
         }}
         slotProps={{
-          toolbar: { setRows, setRowModesModel, anio, mes, selectedRows, onMovimientosEliminados },
+          toolbar: { setRows, setRowModesModel, anio, mes, movimientosElegidos, onMovimientosEliminados },
         }}
       />
     </Box>
