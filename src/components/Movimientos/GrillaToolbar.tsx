@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import {
   GridRowModes,
   GridRowModesModel,
@@ -58,6 +58,10 @@ const GrillaToolbar = ({
     onMovimientosEliminados(resultadoEliminacion);
   };
 
+  const sumaDeMovimientosElegidos = movimientosElegidos
+    .reduce((acc, movimiento) => acc + movimiento.monto!, 0)
+    .toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={() => handleAgregarNuevoMovimiento()}>
@@ -72,6 +76,10 @@ const GrillaToolbar = ({
         Eliminar
       </Button>
       <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
+      <Box>
+        <span style={{ marginRight: '5px' }}>Suma:</span>
+        <span>{sumaDeMovimientosElegidos}</span>
+      </Box>
     </GridToolbarContainer>
   );
 };

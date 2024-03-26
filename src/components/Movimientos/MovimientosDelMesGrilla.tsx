@@ -201,7 +201,7 @@ const MovimientosDelMesGrilla = ({
             },
           },
         }}
-        pageSizeOptions={[100]}
+        pageSizeOptions={[25, 50, 100]}
         checkboxSelection
         disableRowSelectionOnClick
         editMode="row"
