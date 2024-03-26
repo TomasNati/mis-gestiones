@@ -1,13 +1,17 @@
 import { Button } from '@mui/material';
-import { GridRowModes, GridRowModesModel, GridRowsProp, GridToolbarContainer } from '@mui/x-data-grid';
+import {
+  GridRowModes,
+  GridRowModesModel,
+  GridRowsProp,
+  GridToolbarContainer,
+  GridToolbarExport,
+} from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ImportExportIcon from '@mui/icons-material/ImportExport';
 import { generateUUID } from '@/lib/helpers';
 import { eliminarMovimientos } from '@/lib/orm/actions';
 import { MovimientoGastoGrilla, ResultadoAPI } from '@/lib/definitions';
 import { useState } from 'react';
-import { ExportarMovimiento } from './Exportar/Exportar';
 
 interface GrillaToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -54,14 +58,6 @@ const GrillaToolbar = ({
     onMovimientosEliminados(resultadoEliminacion);
   };
 
-  const handleExportarMovimientos = () => {
-    setAbrirDialogoExportar(true);
-  };
-
-  const handleCerrarDialogoExportar = () => {
-    setAbrirDialogoExportar(false);
-  };
-
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={() => handleAgregarNuevoMovimiento()}>
@@ -75,19 +71,7 @@ const GrillaToolbar = ({
       >
         Eliminar
       </Button>
-      <Button
-        color="primary"
-        startIcon={<ImportExportIcon />}
-        onClick={handleExportarMovimientos}
-        disabled={movimientosElegidos.length === 0}
-      >
-        Exportar
-      </Button>
-      <ExportarMovimiento
-        open={abrirDialogoExportar}
-        movimientos={movimientosElegidos}
-        onDialogClosed={handleCerrarDialogoExportar}
-      />
+      <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
     </GridToolbarContainer>
   );
 };

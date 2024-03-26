@@ -1,10 +1,4 @@
-import {
-  CategoriaUIMovimiento,
-  MovimientoGastoGrilla,
-  TipoDeMovimientoGasto,
-  MovimientoGastoGrillaNullable,
-  ResultadoAPI,
-} from '@/lib/definitions';
+import { CategoriaUIMovimiento, MovimientoGastoGrilla, TipoDeMovimientoGasto, ResultadoAPI } from '@/lib/definitions';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
@@ -14,20 +8,17 @@ import {
   useGridApiContext,
   GridEditCellProps,
   GridRowId,
-  useGridApiRef,
   GridRowsProp,
   GridRowModesModel,
   GridRowModel,
   GridEventListener,
   GridRowEditStopReasons,
   GridRowSelectionModel,
-  GridCallbackDetails,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
 import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
-import { generateUUID } from '@/lib/helpers';
 import { GrillaToolbar } from './GrillaToolbar';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
@@ -108,6 +99,7 @@ const MovimientosDelMesGrilla = ({
       field: 'categoria',
       headerName: 'Categoría',
       width: 100,
+      disableExport: true,
     },
     {
       field: 'concepto',
@@ -144,7 +136,8 @@ const MovimientosDelMesGrilla = ({
       type: 'number',
       editable: true,
       width: 120,
-      valueFormatter: (params) => params.value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }),
+      renderCell: ({ value }) => <span>{value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</span>,
+      valueFormatter: (params) => params.value,
     },
     {
       field: 'comentarios',
@@ -222,7 +215,14 @@ const MovimientosDelMesGrilla = ({
           toolbar: GrillaToolbar,
         }}
         slotProps={{
-          toolbar: { setRows, setRowModesModel, anio, mes, movimientosElegidos, onMovimientosEliminados },
+          toolbar: {
+            setRows,
+            setRowModesModel,
+            anio,
+            mes,
+            movimientosElegidos,
+            onMovimientosEliminados,
+          },
         }}
       />
     </Box>
