@@ -176,6 +176,8 @@ const MovimientosDelMesGrilla = ({
   const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
       event.defaultMuiPrevented = true;
+    } else if (params.reason === GridRowEditStopReasons.escapeKeyDown && params.row.isNew === true) {
+      setRows((oldRows) => oldRows.filter((row) => row.id !== params.id));
     }
   };
 
