@@ -20,6 +20,7 @@ import { Concepto } from './editores/Concepto/Concepto';
 import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
+import { FechaEditInputCell } from './editores/Fecha/Fecha';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -90,7 +91,7 @@ const MovimientosDelMesGrilla = ({
     {
       field: 'fecha',
       headerName: 'Fecha',
-      type: 'date',
+      renderEditCell: FechaEditInputCell,
       valueFormatter: (params: GridValueFormatterParams<Date>) => params.value?.getDate(),
       width: 100,
       editable: true,

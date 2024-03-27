@@ -24,6 +24,59 @@ export const logMessage = (message: string, level: 'info' | 'warning' | 'error' 
   }
 };
 
+function esBisiesto(year: number): boolean {
+  if (year % 4 !== 0) {
+    return false;
+  } else if (year % 100 !== 0) {
+    return true;
+  } else if (year % 400 === 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export const obtenerDiasEnElMes = (fecha: Date) => {
+  const mes = fecha.getMonth();
+  const meses = [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre',
+  ];
+
+  let diasEnElMes = 0;
+  const diasEnFebrero = esBisiesto(fecha.getFullYear()) ? 29 : 28;
+
+  switch (meses[mes]) {
+    case 'enero':
+    case 'marzo':
+    case 'mayo':
+    case 'julio':
+    case 'agosto':
+    case 'octubre':
+    case 'diciembre':
+      diasEnElMes = 31;
+      break;
+    case 'febrero':
+      diasEnElMes = diasEnFebrero;
+      break;
+    default:
+      diasEnElMes = 30;
+      break;
+  }
+
+  return diasEnElMes;
+};
+
 export const formatDate = (date: Date, showHour: boolean = false): string => {
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
