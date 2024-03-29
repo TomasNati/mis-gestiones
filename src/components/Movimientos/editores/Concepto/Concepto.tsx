@@ -1,12 +1,22 @@
 import { CategoriaUIMovimiento } from '@/lib/definitions';
 import { Autocomplete, Box, TextField, autocompleteClasses, outlinedInputClasses } from '@mui/material';
+import { useLayoutEffect, useRef } from 'react';
 
 interface ConceptoProps {
   categoriasMovimiento: CategoriaUIMovimiento[];
   conceptoInicial?: CategoriaUIMovimiento;
   onConceptoModificado: (concepto: CategoriaUIMovimiento) => void;
+  hasFocus: boolean;
 }
-const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado }: ConceptoProps) => {
+const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado, hasFocus }: ConceptoProps) => {
+  const ref = useRef<HTMLElement>();
+
+  useLayoutEffect(() => {
+    if (hasFocus) {
+      ref.current?.focus();
+    }
+  }, [hasFocus]);
+
   return (
     <Box
       sx={{
@@ -26,6 +36,7 @@ const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado 
       <Autocomplete
         id="concepto"
         className="input-concepto"
+        ref={ref}
         options={categoriasMovimiento}
         groupBy={(option: CategoriaUIMovimiento) => option.categoriaNombre}
         getOptionLabel={(option: CategoriaUIMovimiento) => option.nombre}

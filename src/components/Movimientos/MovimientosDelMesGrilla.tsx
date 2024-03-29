@@ -14,6 +14,7 @@ import {
   GridEventListener,
   GridRowEditStopReasons,
   GridRowSelectionModel,
+  GridRenderEditCellParams,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
 import { Concepto } from './editores/Concepto/Concepto';
@@ -40,6 +41,8 @@ const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimien
 const renderTipoDePagoEditInputCell: GridColDef['renderCell'] = (params) => {
   return <TipoDePagoEditInputCell {...params} />;
 };
+
+const renderFechaEditInputCell: GridColDef['renderCell'] = (params) => <FechaEditInputCell {...params} />;
 
 const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
@@ -91,7 +94,7 @@ const MovimientosDelMesGrilla = ({
     {
       field: 'fecha',
       headerName: 'Fecha',
-      renderEditCell: FechaEditInputCell,
+      renderEditCell: renderFechaEditInputCell,
       valueFormatter: (params: GridValueFormatterParams<Date>) => params.value?.getDate(),
       width: 100,
       editable: true,
@@ -106,10 +109,11 @@ const MovimientosDelMesGrilla = ({
       field: 'concepto',
       headerName: 'Concepto',
       width: 250,
-      renderEditCell: (params: GridEditCellProps) => (
+      renderEditCell: (params: GridRenderEditCellParams) => (
         <Concepto
           categoriasMovimiento={categoriasMovimiento}
           conceptoInicial={params.value}
+          hasFocus={params.hasFocus}
           onConceptoModificado={async (nuevoConcepto) => {
             await params.api?.setEditCellValue({ id: params.id, field: params.field, value: nuevoConcepto });
             await params.api?.setEditCellValue({
