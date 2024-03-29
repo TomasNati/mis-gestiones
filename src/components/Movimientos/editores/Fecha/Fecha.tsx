@@ -7,9 +7,10 @@ interface FechaProps {
   initialValue?: number;
   diasDelMes: number;
   onChange: (value?: number) => void;
+  onTabPressed: () => void;
 }
 
-const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes }) => {
+const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, onTabPressed }) => {
   const [value, setValue] = useState<number | undefined>(initialValue);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,11 +25,18 @@ const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes })
     }
   };
 
+  const handleTabPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Tab') {
+      onTabPressed();
+    }
+  };
+
   return (
     <TextField
       type="number"
       value={value}
       onChange={handleChange}
+      onKeyDown={handleTabPress}
       inputProps={{ min: 1, max: diasDelMes, step: 1 }}
       variant="outlined"
     />
@@ -48,5 +56,10 @@ export const FechaEditInputCell = (props: GridRenderCellParams<any, Date>) => {
     apiRef.current.setEditCellValue({ id, field, value: newValue });
   };
 
-  return <Fecha diasDelMes={diasEnMes} onChange={handleChange} initialValue={dia} />;
+  const handleTabPressed = () => {
+    console.log('changing focus');
+    apiRef.current.setCellFocus(id, 'concepto');
+  };
+
+  return <Fecha diasDelMes={diasEnMes} onChange={handleChange} initialValue={dia} onTabPressed={handleTabPressed} />;
 };
