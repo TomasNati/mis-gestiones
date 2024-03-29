@@ -57,8 +57,7 @@ export const FechaEditInputCell = (props: GridRenderCellParams<any, Date>) => {
   };
 
   const handleTabPressed = () => {
-    console.log('changing focus');
-    apiRef.current.setCellFocus(id, 'concepto');
+    (document.querySelector(`[data-id="${id}"] [data-field="concepto"] input`) as HTMLInputElement).focus();
   };
 
   return <Fecha diasDelMes={diasEnMes} onChange={handleChange} initialValue={dia} onTabPressed={handleTabPressed} />;
