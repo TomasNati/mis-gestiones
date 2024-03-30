@@ -8,7 +8,7 @@ import {
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { generateUUID } from '@/lib/helpers';
+import { generateUUID, transformNumberToCurrenty } from '@/lib/helpers';
 import { eliminarMovimientos } from '@/lib/orm/actions';
 import { MovimientoGastoGrilla, ResultadoAPI } from '@/lib/definitions';
 import { useState } from 'react';
@@ -19,6 +19,7 @@ interface GrillaToolbarProps {
   movimientosElegidos: MovimientoGastoGrilla[];
   anio: number;
   mes: number;
+  sumaTotalDelMes: number;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
 }
 const GrillaToolbar = ({
@@ -27,6 +28,7 @@ const GrillaToolbar = ({
   anio,
   mes,
   movimientosElegidos,
+  sumaTotalDelMes,
   onMovimientosEliminados,
 }: GrillaToolbarProps) => {
   const [abrirDialogoExportar, setAbrirDialogoExportar] = useState(false);
@@ -58,9 +60,10 @@ const GrillaToolbar = ({
     onMovimientosEliminados(resultadoEliminacion);
   };
 
-  const sumaDeMovimientosElegidos = movimientosElegidos
-    .reduce((acc, movimiento) => acc + movimiento.monto!, 0)
-    .toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+  const sumaDeMovimientosElegidos = movimientosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
+
+  const sumaFormateada = transformNumberToCurrenty(sumaDeMovimientosElegidos);
+  const totalDeMontosFormateada = transformNumberToCurrenty(sumaTotalDelMes);
 
   return (
     <GridToolbarContainer>
@@ -77,8 +80,12 @@ const GrillaToolbar = ({
       </Button>
       <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
       <Box>
-        <span style={{ marginRight: '5px' }}>Suma:</span>
-        <span>{sumaDeMovimientosElegidos}</span>
+        <span style={{ marginRight: '5px' }}>Suma parcial:</span>
+        <span>{sumaFormateada}</span>
+      </Box>
+      <Box>
+        <span style={{ marginRight: '5px' }}>Suma total:</span>
+        <span>{totalDeMontosFormateada}</span>
       </Box>
     </GridToolbarContainer>
   );

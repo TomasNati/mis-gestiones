@@ -22,7 +22,7 @@ import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
 import { FechaEditInputCell } from './editores/Fecha/Fecha';
-import { focusOnField } from '@/lib/helpers';
+import { focusOnField, transformNumberToCurrenty } from '@/lib/helpers';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -142,7 +142,7 @@ const MovimientosDelMesGrilla = ({
       type: 'number',
       editable: true,
       width: 120,
-      renderCell: ({ value }) => <span>{value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</span>,
+      renderCell: ({ value }) => <span>{transformNumberToCurrenty(value)}</span>,
       valueFormatter: (params) => params.value,
     },
     {
@@ -194,6 +194,8 @@ const MovimientosDelMesGrilla = ({
     setMovimientosElegidos(movimientosElegidos as MovimientoGastoGrilla[]);
   };
 
+  const sumaTotalDelMes = rows.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
+
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
       <DataGrid
@@ -232,6 +234,7 @@ const MovimientosDelMesGrilla = ({
             anio,
             mes,
             movimientosElegidos,
+            sumaTotalDelMes,
             onMovimientosEliminados,
           },
         }}

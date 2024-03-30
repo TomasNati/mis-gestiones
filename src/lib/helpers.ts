@@ -128,6 +128,10 @@ export const transformCurrencyToNumber = (currencyString: string): number | null
   }
 };
 
+export const transformNumberToCurrenty = (value: number): string => {
+  return value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+};
+
 export const generateUUID = (): string => {
   let d = new Date().getTime();
 
