@@ -6,16 +6,16 @@ interface ConceptoProps {
   categoriasMovimiento: CategoriaUIMovimiento[];
   conceptoInicial?: CategoriaUIMovimiento;
   onConceptoModificado: (concepto: CategoriaUIMovimiento) => void;
-  hasFocus: boolean;
+  onTabPressed: () => void;
 }
-const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado, hasFocus }: ConceptoProps) => {
+const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado, onTabPressed }: ConceptoProps) => {
   const ref = useRef<HTMLElement>();
 
-  useLayoutEffect(() => {
-    if (hasFocus) {
-      ref.current?.focus();
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Tab') {
+      onTabPressed();
     }
-  }, [hasFocus]);
+  };
 
   return (
     <Box
@@ -37,6 +37,7 @@ const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado,
         id="concepto"
         className="input-concepto"
         ref={ref}
+        onKeyDown={handleKeyDown}
         options={categoriasMovimiento}
         groupBy={(option: CategoriaUIMovimiento) => option.categoriaNombre}
         getOptionLabel={(option: CategoriaUIMovimiento) => option.nombre}

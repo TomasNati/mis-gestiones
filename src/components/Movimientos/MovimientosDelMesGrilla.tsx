@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
 import { FechaEditInputCell } from './editores/Fecha/Fecha';
+import { focusOnField } from '@/lib/helpers';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -113,7 +114,7 @@ const MovimientosDelMesGrilla = ({
         <Concepto
           categoriasMovimiento={categoriasMovimiento}
           conceptoInicial={params.value}
-          hasFocus={params.hasFocus}
+          onTabPressed={() => focusOnField(params.id as string, 'tipoDeGasto', 'button')}
           onConceptoModificado={async (nuevoConcepto) => {
             await params.api?.setEditCellValue({ id: params.id, field: params.field, value: nuevoConcepto });
             await params.api?.setEditCellValue({
@@ -178,7 +179,10 @@ const MovimientosDelMesGrilla = ({
   };
 
   const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
-    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+    if (
+      params.reason === GridRowEditStopReasons.rowFocusOut ||
+      (params.reason === GridRowEditStopReasons.enterKeyDown && params.field === 'concepto')
+    ) {
       event.defaultMuiPrevented = true;
     } else if (params.reason === GridRowEditStopReasons.escapeKeyDown && params.row.isNew === true) {
       setRows((oldRows) => oldRows.filter((row) => row.id !== params.id));
