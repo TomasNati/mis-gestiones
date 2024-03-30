@@ -44,9 +44,20 @@ const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePago
     onTipoDePagoChange(tipoDePago);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key.toLowerCase() === 'e') {
+      onTipoDePagoModificado(TipoDeMovimientoGasto.Efectivo);
+    } else if (event.key.toLowerCase() === 'd') {
+      onTipoDePagoModificado(TipoDeMovimientoGasto.Debito);
+    } else if (event.key.toLowerCase() === 'c') {
+      onTipoDePagoModificado(TipoDeMovimientoGasto.Credito);
+    }
+  };
+
   return (
     <Box>
       <IconButton
+        onKeyDown={handleKeyDown}
         color={colorEfectivo}
         aria-label="Efectivo"
         onClick={() => onTipoDePagoModificado(TipoDeMovimientoGasto.Efectivo)}
@@ -54,6 +65,7 @@ const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePago
         <LocalAtmIcon />
       </IconButton>
       <IconButton
+        onKeyDown={handleKeyDown}
         color={colorDebito}
         aria-label="Débito"
         onClick={() => onTipoDePagoModificado(TipoDeMovimientoGasto.Debito)}
@@ -61,6 +73,7 @@ const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePago
         <AccountBalanceIcon />
       </IconButton>
       <IconButton
+        onKeyDown={handleKeyDown}
         color={colorCredito}
         aria-label="Crédito"
         onClick={() => onTipoDePagoModificado(TipoDeMovimientoGasto.Credito)}
