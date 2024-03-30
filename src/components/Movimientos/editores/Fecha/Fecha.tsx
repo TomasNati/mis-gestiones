@@ -1,4 +1,4 @@
-import { obtenerDiasEnElMes } from '@/lib/helpers';
+import { focusOnField, obtenerDiasEnElMes } from '@/lib/helpers';
 import { TextField } from '@mui/material';
 import { GridRenderCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { useState } from 'react';
@@ -56,9 +56,7 @@ export const FechaEditInputCell = (props: GridRenderCellParams<any, Date>) => {
     apiRef.current.setEditCellValue({ id, field, value: newValue });
   };
 
-  const handleTabPressed = () => {
-    (document.querySelector(`[data-id="${id}"] [data-field="concepto"] input`) as HTMLInputElement).focus();
-  };
+  const handleTabPressed = () => focusOnField(id as string, 'concepto');
 
   return <Fecha diasDelMes={diasEnMes} onChange={handleChange} initialValue={dia} onTabPressed={handleTabPressed} />;
 };

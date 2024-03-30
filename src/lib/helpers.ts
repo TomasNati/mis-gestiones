@@ -193,6 +193,9 @@ export const actualizarSubcategoria = (categoriaUI: CategoriaUIMovimiento, movim
   }
 };
 
+export const focusOnField = (id: string, field: string, inputSelector: string = 'input') =>
+  (document.querySelector(`[data-id="${id}"] [data-field="${field}"] ${inputSelector}`) as HTMLInputElement)?.focus();
+
 export const mapearTiposDeConceptoExcelASubcategorias = (
   tipoDeConcepto: string,
   comentario: string,
