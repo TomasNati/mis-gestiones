@@ -22,7 +22,7 @@ import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
 import { FechaEditInputCell } from './editores/Fecha/Fecha';
-import { focusOnField, transformNumberToCurrenty } from '@/lib/helpers';
+import { focusOnField, mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -126,7 +126,11 @@ const MovimientosDelMesGrilla = ({
         />
       ),
       editable: true,
-      valueFormatter: (params: GridValueFormatterParams<CategoriaUIMovimiento>) => params.value?.nombre,
+      valueFormatter: (params: GridValueFormatterParams<CategoriaUIMovimiento>) => {
+        const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(params.value?.subcategoriaId);
+        return concepto;
+      },
+      renderCell: ({ value }) => <span>{value?.nombre}</span>,
     },
     {
       field: 'tipoDeGasto',
@@ -134,6 +138,16 @@ const MovimientosDelMesGrilla = ({
       width: 130,
       renderEditCell: renderTipoDePagoEditInputCell,
       renderCell: renderTipoDePago,
+      valueFormatter: (params: GridValueFormatterParams<string>) => {
+        switch (params.value) {
+          case 'Debito':
+            return 'Débito';
+          case 'Credito':
+            return 'Crédito';
+          default:
+            return 'Efectivo';
+        }
+      },
       editable: true,
     },
     {
@@ -150,6 +164,12 @@ const MovimientosDelMesGrilla = ({
       headerName: 'Detalle',
       editable: true,
       flex: 1,
+      valueFormatter: (params: GridValueFormatterParams) => {
+        const row = params.api.getRow(params.id || '') as MovimientoGastoGrilla;
+        const [concepto, comentarios] = mapearSubcategoriasATiposDeConceptoExcel(row.concepto.subcategoriaId);
+        return concepto === 'Servicios' ? comentarios : params.value;
+      },
+      renderCell: ({ value }) => <span>{value}</span>,
     },
   ];
 

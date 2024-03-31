@@ -465,3 +465,239 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
 
   return resultado;
 };
+
+export const mapearSubcategoriasATiposDeConceptoExcel = (subcategoriaId: string): [string, string | undefined] => {
+  let tipoDeConcepto = '';
+  let comentario: string | undefined = undefined;
+  console.log(subcategoriaId);
+
+  switch (subcategoriaId) {
+    case '2f98436d-4f72-4bdd-adf9-6c89507e4439':
+      tipoDeConcepto = TiposDeConceptoExcel.Taxi;
+      break;
+    case '3990f166-fbd5-4227-9480-40064c290689':
+      tipoDeConcepto = TiposDeConceptoExcel.Comida;
+      break;
+    case '3f69985d-ac48-407d-b36d-0c05022697ed':
+      tipoDeConcepto = TiposDeConceptoExcel.Ropa;
+      break;
+    case '50e1ce59-a52e-4185-a487-acf84a584717':
+      tipoDeConcepto = TiposDeConceptoExcel.TecnologíaHardware;
+      break;
+    case 'b2031fc3-be75-4a91-b584-f22436e70a14':
+      tipoDeConcepto = TiposDeConceptoExcel.Coca;
+      break;
+    case '314ee9b4-3488-44be-a681-21dfa859a61c':
+      tipoDeConcepto = TiposDeConceptoExcel.CosasCasa;
+      break;
+    case '1ed7e69b-aa38-405d-b4fd-cb87dcfdbde9':
+      tipoDeConcepto = TiposDeConceptoExcel.Deporte;
+      break;
+    case 'daafa406-1687-4c56-9d2c-3fe7cd5b8269':
+      tipoDeConcepto = TiposDeConceptoExcel.Doctores;
+      break;
+    case 'bb814ac0-ae30-481c-9164-71868798d737':
+      tipoDeConcepto = TiposDeConceptoExcel.Emilio;
+      break;
+    case 'aed07cba-f0e0-4953-9087-f1b7390e5535':
+      tipoDeConcepto = TiposDeConceptoExcel.EscuelaKiosco;
+      break;
+    case '75a61534-9c3c-44dc-a085-a16b2d8866ca':
+      tipoDeConcepto = TiposDeConceptoExcel.EscuelaKiosco; // Assuming this is the detalleSubcategoriaId for EscuelaKiosco
+      break;
+    case '9ca0e67d-db40-4435-85b0-46cf5d607b6a':
+      tipoDeConcepto = TiposDeConceptoExcel.Regalos;
+      break;
+    case '40427b72-ded3-44a5-b166-11f03617f7f9':
+      tipoDeConcepto = TiposDeConceptoExcel.Otras;
+    case 'b6e5694b-f329-4464-8b80-e60306f0fb86':
+      tipoDeConcepto = TiposDeConceptoExcel.Psicologa;
+      break;
+    case '75eab0ce-6248-402d-96e9-2356e3bbcc96':
+      tipoDeConcepto = TiposDeConceptoExcel.ProductosPersonales;
+      break;
+    case 'fc49d0cb-51ee-4628-a019-40240edadbde':
+      tipoDeConcepto = TiposDeConceptoExcel.RopaHijos;
+      break;
+    case 'e8362bf6-66f8-469e-a203-218fd52c9fb6':
+      tipoDeConcepto = TiposDeConceptoExcel.ExtrasClaudia;
+      break;
+    case '9c90e9f1-7262-4f0a-a0ba-e88876b731be':
+      tipoDeConcepto = TiposDeConceptoExcel.HijosHigiene;
+      break;
+    case '9b5875af-913d-4138-b02c-a15c20614a19':
+      tipoDeConcepto = TiposDeConceptoExcel.Juguetes;
+      break;
+    case '0ca9dfa2-7850-4459-b833-6ceb0ff36ac8':
+      tipoDeConcepto = TiposDeConceptoExcel.MedicamentosHijos;
+      break;
+    case 'df112432-ff89-4bf0-8b9a-dda0983b4429':
+      tipoDeConcepto = TiposDeConceptoExcel.TransportePublico;
+      break;
+    case '7263dbb5-b54a-4e18-93f4-96ae29396fda':
+      tipoDeConcepto = TiposDeConceptoExcel.Mantenimiento;
+      break;
+    case '668eeba2-9d52-4ed3-a46d-337d539e94f3':
+      tipoDeConcepto = TiposDeConceptoExcel.Restaurant;
+      break;
+    case '612c7227-3a3e-43e8-ad67-f45fda448582':
+      tipoDeConcepto = TiposDeConceptoExcel.Farmacia;
+      break;
+    case '666a77ac-2035-41bf-a830-f7fd10513d5c':
+      tipoDeConcepto = TiposDeConceptoExcel.SueldoClaudia;
+      break;
+    case 'ede87023-cf7a-4375-bad0-1739e31bf470':
+      tipoDeConcepto = TiposDeConceptoExcel.Supermercado;
+      break;
+    case '8a962fce-890e-4cc8-8065-6eeb0b7db638':
+      tipoDeConcepto = TiposDeConceptoExcel.Mejoras;
+      break;
+    case 'ce16188d-8926-4115-9678-f899ab692337':
+      tipoDeConcepto = TiposDeConceptoExcel.HijosOtros;
+      break;
+    case '11c84e6b-538b-428a-bc12-3ce3b54656eb':
+      tipoDeConcepto = TiposDeConceptoExcel.EscuelaExtras; // Assuming this is the detalleSubcategoriaId for EscuelaExtras
+      break;
+    case '68b2a8e9-4da3-4b2e-9628-0d0eeb629792':
+      tipoDeConcepto = TiposDeConceptoExcel.CosasParaElAuto;
+      break;
+    case '84d3ca73-d9fa-430b-b309-908e268af033':
+      tipoDeConcepto = TiposDeConceptoExcel.Taller;
+      break;
+    case '4f2a831f-f22d-4199-8715-b54de7765d38':
+      tipoDeConcepto = TiposDeConceptoExcel.TecnologiaOtros;
+      break;
+    case '4996faa8-daa5-460c-9377-0e5e92de3bfa':
+      tipoDeConcepto = TiposDeConceptoExcel.SaludOptica;
+      break;
+    case '80827210-6ab0-4325-9979-73ffd73f703f':
+      tipoDeConcepto = TiposDeConceptoExcel.ViajeHotel;
+      break;
+    case 'e4fe4945-4e89-445b-bac0-eb907cdc3245':
+      tipoDeConcepto = TiposDeConceptoExcel.HogarOtras;
+      break;
+    case 'cf5595ac-9079-4345-90de-ccbb5b3b49b3':
+      tipoDeConcepto = TiposDeConceptoExcel.EntretenimientoLibros;
+      break;
+    case '482a3d6d-b067-4181-99bf-9201f6ae2732':
+      tipoDeConcepto = TiposDeConceptoExcel.ColegioMateriales;
+      break;
+    case '0a931bf6-9b13-4855-a586-a57dae0705c7':
+      tipoDeConcepto = TiposDeConceptoExcel.Nafta;
+      break;
+    case '284fc189-3879-4876-b7ca-7e7ffddff12b':
+      tipoDeConcepto = TiposDeConceptoExcel.HijosDepYJuegos;
+      break;
+    case '9ce40e92-3a81-4373-b2db-9f7a74556917':
+      tipoDeConcepto = TiposDeConceptoExcel.ViajeAvion;
+      break;
+    case '317a66ed-af0e-4b84-a77e-efbb31c33948':
+      tipoDeConcepto = TiposDeConceptoExcel.Teatro;
+      break;
+    case 'c4fb8b43-6697-4bc3-84c1-ee0fa34ae3af':
+      tipoDeConcepto = TiposDeConceptoExcel.Alcohol;
+    case 'a544c67b-969b-486c-a859-6e1087da9858':
+      tipoDeConcepto = TiposDeConceptoExcel.Peluqueria_belleza;
+      break;
+    case '79a56cbf-78e7-4300-9519-26769b1ef66a':
+      tipoDeConcepto = TiposDeConceptoExcel.ViajeTransporte;
+    case '2dd77fcd-8478-44d7-9c46-bb53f3e3425c':
+      tipoDeConcepto = TiposDeConceptoExcel.MaestraDeApoyo;
+      break;
+    case '8b326350-cbe9-4633-9bfd-f67ed9a8c638':
+      comentario = TiposDeServicioExcel.AguasDeSantiago;
+      break;
+    case '2df913d3-c627-4ac6-b6fb-210afa9aa8ea':
+      comentario = TiposDeServicioExcel.Cablevision;
+      break;
+    case '3351b34b-b8e0-45ce-bea8-acec4fa8e49b':
+      comentario = TiposDeServicioExcel.Contadora;
+      break;
+    case '2a16dabd-0600-4767-a713-d1bb6ba627fb':
+      comentario = TiposDeServicioExcel.Personal;
+      break;
+    case '44d7d98e-8ce8-4a93-868a-2d7bd51f8cdf':
+      comentario = TiposDeServicioExcel.Edese;
+      break;
+    case '77d6eb72-e3a8-4417-9ce8-ba59123c69f3':
+      comentario = TiposDeServicioExcel.Gasnor;
+      break;
+    case '752ae6bf-b486-4033-b92f-ffef9e4a271c':
+      comentario = TiposDeServicioExcel.SantiagoInmobiliarioMunicipal;
+      break;
+    case 'b7c53d13-1af1-4de4-8315-61f47bee318f':
+      comentario = TiposDeServicioExcel.SantiagoRentasProvincial;
+      break;
+    case 'cf9994c2-5a8d-4f30-8797-e6ff9fa2654c':
+      comentario = TiposDeServicioExcel.DtoTucCorSAT;
+      break;
+    case '671e440e-5c4a-4a15-806d-441f38f9b24c':
+      comentario = TiposDeServicioExcel.DtoTucCorGasnor;
+      break;
+    case 'b66eb6bc-4bc9-49db-bdaa-9d2b79c2e2e0':
+      comentario = TiposDeServicioExcel.DtoTucCorEdet;
+      break;
+    case 'd9a99882-cc0e-414a-a89f-a83be92a9559':
+      comentario = TiposDeServicioExcel.DtoTucCorDGR;
+      break;
+    case 'dbf160e0-cd11-4dfa-ab1b-dc4d3b59ed61':
+      comentario = TiposDeServicioExcel.DtoTucCorCISI;
+      break;
+    case '41c4e23d-55f6-4e9b-ae53-046e5ad1096c':
+      comentario = TiposDeServicioExcel.DtoTucMarDGR;
+      break;
+    case '4092d83a-5170-4616-bb47-f00ae27da710':
+      comentario = TiposDeServicioExcel.BahiaABSA;
+      break;
+    case '15be16e1-fb76-4a13-bdda-2bb589ee8b10':
+      comentario = TiposDeServicioExcel.BahiaMunicipal;
+      break;
+    case '886b95de-5739-4a7f-ab37-4365a751224a':
+      comentario = TiposDeServicioExcel.BahiaARBA;
+      break;
+    case '46916604-b612-43fd-bf9c-61d83e178a34':
+      comentario = TiposDeServicioExcel.MonotributoNati;
+      break;
+    case '6f5f4346-fc38-489e-a4ff-59d0a0c9804b':
+      comentario = TiposDeServicioExcel.LawnTennis;
+      break;
+    case '76689e72-971b-4755-8e3c-a2eab25a64f2':
+      comentario = TiposDeServicioExcel.TIC;
+      break;
+    case '3d5cd77d-653c-491d-a944-3b6a33770c90':
+      comentario = TiposDeServicioExcel.ReadersDigest;
+      break;
+    case 'e96cdf6c-1d0b-4fcf-92bd-e7e23df359fa':
+      comentario = TiposDeServicioExcel.HBOMax;
+      break;
+    case '66911a27-4e5f-445e-b124-c981817265e0':
+      comentario = TiposDeServicioExcel.Netflix;
+      break;
+    case 'cd31d1d9-7b6b-485e-b967-583c955927da':
+      comentario = TiposDeServicioExcel.Spotify;
+      break;
+    case '4ff1671a-6bfc-4dff-82c0-3e7b88359d3a':
+      comentario = TiposDeServicioExcel.AportesClaudia;
+      break;
+    case 'e2079bb3-6264-4e72-a77f-02751847930d':
+      comentario = TiposDeServicioExcel.TerapiaOcupacional;
+      break;
+    case '495b62c6-921b-4c3f-9ab3-3fde8f9b88e2':
+      comentario = TiposDeServicioExcel.Auto;
+      break;
+    case 'a5618f61-d2f2-4c54-be97-77521e0e905f':
+      comentario = TiposDeServicioExcel.Colegio;
+      break;
+    case '8d18954a-a5de-40be-8515-5bcca231bb9c':
+      comentario = TiposDeServicioExcel.Patente;
+      break;
+    default:
+      tipoDeConcepto = 'ERROR';
+  }
+
+  if (tipoDeConcepto === '') {
+    tipoDeConcepto = 'Servicios';
+  }
+
+  return [tipoDeConcepto, comentario];
+};
