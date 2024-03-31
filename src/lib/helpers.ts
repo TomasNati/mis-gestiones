@@ -515,6 +515,7 @@ export const mapearSubcategoriasATiposDeConceptoExcel = (
       break;
     case '40427b72-ded3-44a5-b166-11f03617f7f9':
       tipoDeConcepto = TiposDeConceptoExcel.Otras;
+      break;
     case 'b6e5694b-f329-4464-8b80-e60306f0fb86':
       tipoDeConcepto = TiposDeConceptoExcel.Psicologa;
       break;
@@ -601,11 +602,13 @@ export const mapearSubcategoriasATiposDeConceptoExcel = (
       break;
     case 'c4fb8b43-6697-4bc3-84c1-ee0fa34ae3af':
       tipoDeConcepto = TiposDeConceptoExcel.Alcohol;
+      break;
     case 'a544c67b-969b-486c-a859-6e1087da9858':
       tipoDeConcepto = TiposDeConceptoExcel.Peluqueria_belleza;
       break;
     case '79a56cbf-78e7-4300-9519-26769b1ef66a':
       tipoDeConcepto = TiposDeConceptoExcel.ViajeTransporte;
+      break;
     case '2dd77fcd-8478-44d7-9c46-bb53f3e3425c':
       tipoDeConcepto = TiposDeConceptoExcel.MaestraDeApoyo;
       break;
