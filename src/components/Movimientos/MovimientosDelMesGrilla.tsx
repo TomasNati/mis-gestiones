@@ -166,7 +166,7 @@ const MovimientosDelMesGrilla = ({
       flex: 1,
       valueFormatter: (params: GridValueFormatterParams) => {
         const row = params.api.getRow(params.id || '') as MovimientoGastoGrilla;
-        const [concepto, comentarios] = mapearSubcategoriasATiposDeConceptoExcel(row.concepto.subcategoriaId);
+        const [concepto, comentarios] = mapearSubcategoriasATiposDeConceptoExcel(row.concepto?.subcategoriaId);
         return concepto === 'Servicios' ? comentarios : params.value;
       },
       renderCell: ({ value }) => <span>{value}</span>,

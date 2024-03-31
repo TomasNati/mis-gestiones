@@ -128,8 +128,8 @@ export const transformCurrencyToNumber = (currencyString: string): number | null
   }
 };
 
-export const transformNumberToCurrenty = (value: number): string => {
-  return value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+export const transformNumberToCurrenty = (value?: number): string | undefined => {
+  return value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
 };
 
 export const generateUUID = (): string => {
@@ -466,7 +466,12 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
   return resultado;
 };
 
-export const mapearSubcategoriasATiposDeConceptoExcel = (subcategoriaId: string): [string, string | undefined] => {
+export const mapearSubcategoriasATiposDeConceptoExcel = (
+  subcategoriaId?: string,
+): [string | undefined, string | undefined] => {
+  if (!subcategoriaId) {
+    return [undefined, undefined];
+  }
   let tipoDeConcepto = '';
   let comentario: string | undefined = undefined;
   console.log(subcategoriaId);
