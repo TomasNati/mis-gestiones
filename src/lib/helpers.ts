@@ -474,7 +474,6 @@ export const mapearSubcategoriasATiposDeConceptoExcel = (
   }
   let tipoDeConcepto = '';
   let comentario: string | undefined = undefined;
-  console.log(subcategoriaId);
 
   switch (subcategoriaId) {
     case '2f98436d-4f72-4bdd-adf9-6c89507e4439':

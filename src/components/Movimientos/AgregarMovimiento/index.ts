@@ -1,1 +1,0 @@
-export { AgregarMovimientos } from './AgregarMovimiento';
