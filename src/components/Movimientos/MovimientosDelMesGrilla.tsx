@@ -23,6 +23,7 @@ import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
 import { FechaEditInputCell } from './editores/Fecha/Fecha';
 import { focusOnField, mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
+import NumberInput from './NumberInput';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -218,6 +219,7 @@ const MovimientosDelMesGrilla = ({
 
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
+      {/* <NumberInput /> */}
       <DataGrid
         sx={{
           '& .MuiDataGrid-main': {
