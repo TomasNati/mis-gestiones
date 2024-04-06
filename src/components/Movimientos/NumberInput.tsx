@@ -1,49 +1,44 @@
 import React, { useState, ChangeEvent } from 'react';
 import { TextField, Tooltip } from '@mui/material';
+import Mexp from 'math-expression-evaluator';
 
-const NumberInput: React.FC = () => {
+const mexp = new Mexp();
+
+interface NumberInputProps {
+  onBlur: (value?: number) => void;
+}
+
+const NumberInput = ({ onBlur }: NumberInputProps) => {
   const [inputValue, setInputValue] = useState<string>('');
   const [formulaValue, setFormulaValue] = useState<string>('');
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value: string = event.target.value;
-    setInputValue(value);
-    if (inputValue.startsWith('=')) {
-      try {
-        const result = eval(inputValue.slice(1)); // Evaluate the expression
-        if (!isNaN(result)) {
-          setFormulaValue(result.toString()); // Update input value with result
-        }
-      } catch (error) {
-        setFormulaValue(''); // Display error if evaluation fails
+    const valueToEval = event.target.value.startsWith('=') ? event.target.value.slice(1) : event.target.value;
+    try {
+      const result = mexp.eval(valueToEval); // Evaluate the expression
+      if (!isNaN(result)) {
+        setFormulaValue(result.toString()); // Update input value with result
       }
-    } else {
-      setFormulaValue('');
+    } catch (error) {
+      setFormulaValue(''); // Display error if evaluation fails
     }
+    setInputValue(event.target.value);
   };
 
   const handleBlur = () => {
-    if (inputValue.startsWith('=')) {
-      try {
-        const result = eval(inputValue.slice(1)); // Evaluate the expression
-        if (!isNaN(result)) {
-          setInputValue(result.toString()); // Update input value with result
-        } else {
-          setInputValue('');
-        }
-      } catch (error) {
-        setInputValue(''); // Display error if evaluation fails
-      }
-    }
+    onBlur(1);
   };
+  console.log('Formula value:', formulaValue);
 
-  return formulaValue ? (
-    <Tooltip title={formulaValue} arrow>
-      <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
-    </Tooltip>
-  ) : (
-    <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
-  );
+  // return formulaValue ? (
+  //   <Tooltip title={formulaValue} arrow>
+  //     <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
+  //   </Tooltip>
+  // ) : (
+  //   <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
+  // );
+
+  return <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />;
 };
 
 export default NumberInput;

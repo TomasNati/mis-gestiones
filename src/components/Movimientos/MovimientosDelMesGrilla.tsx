@@ -219,7 +219,7 @@ const MovimientosDelMesGrilla = ({
 
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
-      {/* <NumberInput /> */}
+      {/* <NumberInput onBlur={(value) => console.log('value returned:', value)} /> */}
       <DataGrid
         sx={{
           '& .MuiDataGrid-main': {
