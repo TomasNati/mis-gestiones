@@ -23,7 +23,7 @@ import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
 import { FechaEditInputCell } from './editores/Fecha/Fecha';
 import { focusOnField, mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
-import NumberInput from './NumberInput';
+import { renderMontoEditInputCell } from './editores/Monto/Monto';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -157,6 +157,7 @@ const MovimientosDelMesGrilla = ({
       type: 'number',
       editable: true,
       width: 120,
+      // renderEditCell: renderMontoEditInputCell,
       renderCell: ({ value }) => <span>{transformNumberToCurrenty(value)}</span>,
       valueFormatter: (params) => params.value,
     },
