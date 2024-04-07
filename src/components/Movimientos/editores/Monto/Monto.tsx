@@ -28,6 +28,7 @@ const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
   };
 
   const handleBlur = () => {
+    setInputValue(formulaValue || '');
     onBlur(formulaValue ? parseFloat(formulaValue) : undefined);
   };
 

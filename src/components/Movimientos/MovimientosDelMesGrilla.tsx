@@ -157,7 +157,7 @@ const MovimientosDelMesGrilla = ({
       type: 'number',
       editable: true,
       width: 120,
-      // renderEditCell: renderMontoEditInputCell,
+      renderEditCell: renderMontoEditInputCell,
       renderCell: ({ value }) => <span>{transformNumberToCurrenty(value)}</span>,
       valueFormatter: (params) => params.value,
     },
