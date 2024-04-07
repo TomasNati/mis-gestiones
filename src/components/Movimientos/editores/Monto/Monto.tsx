@@ -13,6 +13,7 @@ interface NumberInputProps {
 const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
   const [inputValue, setInputValue] = useState<string>(valorInicial || '');
   const [formulaValue, setFormulaValue] = useState<string>(valorInicial || '');
+  const [previousInputValue, setPreviousInputValue] = useState<string>(valorInicial || '');
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const valueToEval = event.target.value.startsWith('=') ? event.target.value.slice(1) : event.target.value;
@@ -28,8 +29,13 @@ const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
   };
 
   const handleBlur = () => {
+    setPreviousInputValue(inputValue);
     setInputValue(formulaValue || '');
     onBlur(formulaValue ? parseFloat(formulaValue) : undefined);
+  };
+
+  const handleFocus = () => {
+    setInputValue(previousInputValue);
   };
 
   // return formulaValue ? (
@@ -40,7 +46,7 @@ const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
   //   <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
   // );
 
-  return <TextField value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />;
+  return <TextField value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} onFocus={handleFocus} />;
 };
 
 const MontoEditInputCell = (props: GridRenderCellParams<any, number>) => {

@@ -30,9 +30,10 @@ const TipoDePagoVista = ({ tipoDePago }: { tipoDePago: TipoDeMovimientoGasto }) 
 interface TipoDePagoEdicionProps {
   tipoDepagoInicial?: TipoDeMovimientoGasto;
   onTipoDePagoChange: (tipoDePago: TipoDeMovimientoGasto) => void;
+  onTabPressed: () => void;
 }
 
-const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePagoEdicionProps) => {
+const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange, onTabPressed }: TipoDePagoEdicionProps) => {
   const [tipoDePago, setTipoDePago] = useState<TipoDeMovimientoGasto | undefined>(tipoDepagoInicial);
 
   const colorEfectivo = tipoDePago === TipoDeMovimientoGasto.Efectivo ? 'primary' : 'default';
@@ -51,6 +52,8 @@ const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange }: TipoDePago
       onTipoDePagoModificado(TipoDeMovimientoGasto.Debito);
     } else if (event.key.toLowerCase() === 'c') {
       onTipoDePagoModificado(TipoDeMovimientoGasto.Credito);
+    } else if (event.key === 'Tab') {
+      onTabPressed();
     }
   };
 

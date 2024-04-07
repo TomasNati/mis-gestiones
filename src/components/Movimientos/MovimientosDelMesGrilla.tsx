@@ -35,7 +35,11 @@ const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimien
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
-      <TipoDePagoEdicion onTipoDePagoChange={handleChange} tipoDepagoInicial={value as TipoDeMovimientoGasto} />
+      <TipoDePagoEdicion
+        onTipoDePagoChange={handleChange}
+        tipoDepagoInicial={value as TipoDeMovimientoGasto}
+        onTabPressed={() => focusOnField(id as string, 'monto')}
+      />
     </Box>
   );
 };
