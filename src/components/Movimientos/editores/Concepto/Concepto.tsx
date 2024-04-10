@@ -1,6 +1,7 @@
-import { CategoriaUIMovimiento } from '@/lib/definitions';
+import { CategoriaUIMovimiento, MovimientoGastoGrilla } from '@/lib/definitions';
 import { Autocomplete, Box, TextField, autocompleteClasses, outlinedInputClasses } from '@mui/material';
-import { useLayoutEffect, useRef } from 'react';
+import { GridFilterInputValueProps, GridFilterOperator } from '@mui/x-data-grid';
+import { useRef, useState } from 'react';
 
 interface ConceptoProps {
   categoriasMovimiento: CategoriaUIMovimiento[];
@@ -53,4 +54,50 @@ const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado,
   );
 };
 
-export { Concepto };
+function ConceptoFilterInput(props: GridFilterInputValueProps) {
+  const { item, applyValue, focusElementRef } = props;
+  const [value, setValue] = useState('');
+
+  // const ratingRef: React.Ref<any> = React.useRef(null);
+  // React.useImperativeHandle(focusElementRef, () => ({
+  //   focus: () => {
+  //     ratingRef.current
+  //       .querySelector(`input[value="${Number(item.value) || ''}"]`)
+  //       .focus();
+  //   },
+  // }));
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+    applyValue({ ...item, value: event.target.value });
+  };
+
+  return (
+    <TextField
+      // ref={focusElementRef}
+      value={value}
+      onChange={handleInputChange}
+    />
+  );
+}
+
+const conceptoOperators: GridFilterOperator<any, MovimientoGastoGrilla>[] = [
+  {
+    label: 'Contains',
+    value: 'contains',
+    getApplyFilterFn: (filterItem, column) => {
+      if (!filterItem.field || !filterItem.value || !filterItem.operator) {
+        return null;
+      }
+
+      return (value) => {
+        const movimiento = value.row as MovimientoGastoGrilla;
+        return movimiento.concepto?.nombre?.toLowerCase().includes(filterItem.value.toLowerCase());
+      };
+    },
+    InputComponent: ConceptoFilterInput,
+    // InputComponentProps: {},
+  },
+];
+
+export { Concepto, conceptoOperators };

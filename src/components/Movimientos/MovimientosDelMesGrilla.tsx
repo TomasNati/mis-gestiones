@@ -6,7 +6,6 @@ import {
   GridRenderCellParams,
   GridValueFormatterParams,
   useGridApiContext,
-  GridEditCellProps,
   GridRowId,
   GridRowsProp,
   GridRowModesModel,
@@ -17,7 +16,7 @@ import {
   GridRenderEditCellParams,
 } from '@mui/x-data-grid';
 import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
-import { Concepto } from './editores/Concepto/Concepto';
+import { Concepto, conceptoOperators } from './editores/Concepto/Concepto';
 import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
@@ -131,6 +130,7 @@ const MovimientosDelMesGrilla = ({
         />
       ),
       editable: true,
+      filterOperators: conceptoOperators,
       valueFormatter: (params: GridValueFormatterParams<CategoriaUIMovimiento>) => {
         const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(params.value?.subcategoriaId);
         return concepto;
