@@ -609,7 +609,7 @@ export const mapearSubcategoriasATiposDeConceptoExcel = (
       tipoDeConcepto = TiposDeConceptoExcel.ViajeTransporte;
       break;
     case '2dd77fcd-8478-44d7-9c46-bb53f3e3425c':
-      tipoDeConcepto = TiposDeConceptoExcel.MaestraDeApoyo;
+      comentario = TiposDeConceptoExcel.MaestraDeApoyo;
       break;
     case '8b326350-cbe9-4633-9bfd-f67ed9a8c638':
       comentario = TiposDeServicioExcel.AguasDeSantiago;
