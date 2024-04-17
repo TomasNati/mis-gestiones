@@ -9,6 +9,7 @@ import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDel
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
+import { LineChart, Line } from 'recharts';
 
 const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
@@ -93,6 +94,12 @@ const MovimientosDelMes = () => {
       });
     }
   };
+
+  // const renderLineChart = (
+  //   <LineChart width={400} height={400} data={movimientos}>
+  //     <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+  //   </LineChart>
+  // );
 
   return (
     <Box>

@@ -1,4 +1,4 @@
-
+[ ] Gráficos: https://recharts.org/en-US/guide/getting-started 
 [ ] Grilla de movimientos:
     .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes
 [ ] Un skeleton o loader al menos cuando se carguen los movimientos
