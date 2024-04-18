@@ -1,7 +1,6 @@
 import { MovimientoGastoGrilla } from '@/lib/definitions';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import { PieChart, Pie, Cell, Tooltip, TooltipProps } from 'recharts';
-// import { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
@@ -47,7 +46,7 @@ const TipoDeGastoPorMes = ({ movimientos }: { movimientos: MovimientoGastoGrilla
   );
 
   return (
-    <PieChart width={400} height={400}>
+    <PieChart width={400} height={350}>
       <Pie
         data={gastosPorTipoDeGasto}
         cx={200}

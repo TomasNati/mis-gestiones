@@ -228,7 +228,7 @@ const MovimientosDelMesGrilla = ({
       <DataGrid
         sx={{
           '& .MuiDataGrid-main': {
-            height: 'calc(99vh - 215px)',
+            height: 'calc(99vh - 250px)',
           },
         }}
         rows={rows}

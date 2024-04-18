@@ -1,7 +1,7 @@
 'use client';
 
 import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
-import { Box, Breadcrumbs, Link, Typography } from '@mui/material';
+import { Box, Breadcrumbs, Divider, IconButton, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { MovimientoGastoGrilla, MovimientoUI, ResultadoAPI, months } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
@@ -9,12 +9,15 @@ import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDel
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
-// import { TipoDeGastoPorMes } from '@/components/graficos/TipoDeGastoPorMes';
+import { TipoDeGastoPorMes } from '@/components/graficos/TipoDeGastoPorMes';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import ExpandLess from '@mui/icons-material/ExpandLess';
 
 const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
   const [mes, setMes] = useState(months[new Date().getMonth()]);
   const [movimientos, setMovimientos] = useState<MovimientoGastoGrilla[]>([]);
+  const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
@@ -95,6 +98,13 @@ const MovimientosDelMes = () => {
     }
   };
 
+  const onDividerClicked = () => {
+    setMostrandoGrilla(!mostrandoGrilla);
+  };
+
+  const mostrarInformacion = !!(anio && mes);
+  const mostrandoGrafico = !mostrandoGrilla;
+
   return (
     <Box>
       <Box
@@ -112,16 +122,25 @@ const MovimientosDelMes = () => {
           <Typography color="text.primary">Movimientos del mes</Typography>
         </Breadcrumbs>
       </Box>
-      {/* <TipoDeGastoPorMes movimientos={movimientos} /> */}
       <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} />
-      {anio && mes && (
-        <MovimientosDelMesGrilla
-          movimientos={movimientos}
-          anio={anio}
-          mes={months.indexOf(mes)}
-          onMovimientoActualizado={onMovimientoActualizado}
-          onMovimientosEliminados={onMovimientosEliminados}
-        />
+      {mostrarInformacion && (
+        <>
+          <Box sx={{ height: mostrandoGrafico ? '100%' : 0 }}>
+            <TipoDeGastoPorMes movimientos={movimientos} />
+          </Box>
+          <Divider>
+            <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>
+          </Divider>
+          <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
+            <MovimientosDelMesGrilla
+              movimientos={movimientos}
+              anio={anio}
+              mes={months.indexOf(mes)}
+              onMovimientoActualizado={onMovimientoActualizado}
+              onMovimientosEliminados={onMovimientosEliminados}
+            />
+          </Box>
+        </>
       )}
       <Notificacion configuracionProp={configNotificacion} />
     </Box>
