@@ -9,7 +9,7 @@ import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDel
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
-import { LineChart, Line } from 'recharts';
+// import { TipoDeGastoPorMes } from '@/components/graficos/TipoDeGastoPorMes';
 
 const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
@@ -95,12 +95,6 @@ const MovimientosDelMes = () => {
     }
   };
 
-  // const renderLineChart = (
-  //   <LineChart width={400} height={400} data={movimientos}>
-  //     <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-  //   </LineChart>
-  // );
-
   return (
     <Box>
       <Box
@@ -118,6 +112,7 @@ const MovimientosDelMes = () => {
           <Typography color="text.primary">Movimientos del mes</Typography>
         </Breadcrumbs>
       </Box>
+      {/* <TipoDeGastoPorMes movimientos={movimientos} /> */}
       <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} />
       {anio && mes && (
         <MovimientosDelMesGrilla
