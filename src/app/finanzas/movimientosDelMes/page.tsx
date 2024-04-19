@@ -9,9 +9,40 @@ import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDel
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
-import { TipoDeGastoPorMes } from '@/components/graficos/TipoDeGastoPorMes';
+import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graficos/';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
+
+const getTotalEstimadoPorMes = (mes: string) => {
+  switch (mes) {
+    case 'Enero':
+      return 1146279.72;
+    case 'Febrero':
+      return 1800856;
+    case 'Marzo':
+      return 1840851.46;
+    case 'Abril':
+      return 2887940.98;
+    case 'Mayo':
+      return 18000;
+    case 'Junio':
+      return 20000;
+    case 'Julio':
+      return 22000;
+    case 'Agosto':
+      return 24000;
+    case 'Septiembre':
+      return 26000;
+    case 'Octubre':
+      return 28000;
+    case 'Noviembre':
+      return 30000;
+    case 'Diciembre':
+      return 32000;
+    default:
+      return 0;
+  }
+};
 
 const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
@@ -125,8 +156,16 @@ const MovimientosDelMes = () => {
       <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} />
       {mostrarInformacion && (
         <>
-          <Box sx={{ height: mostrandoGrafico ? '100%' : 0 }}>
+          <Box
+            sx={{
+              height: mostrandoGrafico ? '100%' : 0,
+              display: 'flex',
+              justifyContent: 'space-evenly',
+              alignItems: 'center',
+            }}
+          >
             <TipoDeGastoPorMes movimientos={movimientos} />
+            <CrecimientoDeGastosEnElMes movimientos={movimientos} totalEstimado={getTotalEstimadoPorMes(mes)} />
           </Box>
           <Divider>
             <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>

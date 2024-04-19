@@ -4,11 +4,6 @@ import { PieChart, Pie, Cell, Tooltip, TooltipProps } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
-type PieChartItem = {
-  name: string;
-  value: number;
-};
-
 const MontoTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
