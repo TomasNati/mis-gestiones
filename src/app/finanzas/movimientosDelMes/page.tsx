@@ -162,6 +162,7 @@ const MovimientosDelMes = () => {
               display: 'flex',
               justifyContent: 'space-evenly',
               alignItems: 'center',
+              overflow: 'hidden',
             }}
           >
             <TipoDeGastoPorMes movimientos={movimientos} />

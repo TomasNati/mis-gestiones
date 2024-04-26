@@ -41,7 +41,7 @@ const TipoDeGastoPorMes = ({ movimientos }: { movimientos: MovimientoGastoGrilla
   );
 
   return (
-    <PieChart width={400} height={350}>
+    <PieChart width={400} height={300}>
       <Pie
         data={gastosPorTipoDeGasto}
         cx={200}
