@@ -1,7 +1,16 @@
+import { MovimientoGastoGrilla } from '@/lib/definitions';
 import { focusOnField, obtenerDiasEnElMes } from '@/lib/helpers';
 import { TextField } from '@mui/material';
-import { GridRenderCellParams, useGridApiContext } from '@mui/x-data-grid';
-import { useState } from 'react';
+import {
+  GridCellParams,
+  GridFilterInputValueProps,
+  GridFilterItem,
+  GridFilterOperator,
+  GridRenderCellParams,
+  GridTreeNode,
+  useGridApiContext,
+} from '@mui/x-data-grid';
+import { useImperativeHandle, useRef, useState } from 'react';
 
 interface FechaProps {
   initialValue?: number;
@@ -43,7 +52,7 @@ const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, o
   );
 };
 
-export const FechaEditInputCell = (props: GridRenderCellParams<any, Date>) => {
+const FechaEditInputCell = (props: GridRenderCellParams<any, Date>) => {
   const { id, value, field } = props;
   const anio = value?.getFullYear() || new Date().getFullYear();
   const mes = value?.getMonth() || new Date().getMonth();
@@ -60,3 +69,100 @@ export const FechaEditInputCell = (props: GridRenderCellParams<any, Date>) => {
 
   return <Fecha diasDelMes={diasEnMes} onChange={handleChange} initialValue={dia} onTabPressed={handleTabPressed} />;
 };
+
+function FechaFilterInput(props: GridFilterInputValueProps) {
+  const { item, applyValue, focusElementRef } = props;
+  const [value, setValue] = useState(item.value || '');
+
+  const fechaRef: React.Ref<any> = useRef(null);
+  useImperativeHandle(focusElementRef, () => ({
+    focus: () => {
+      fechaRef?.current?.querySelector('input').focus();
+    },
+  }));
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+    applyValue({ ...item, value: event.target.value });
+  };
+
+  return (
+    <TextField
+      ref={fechaRef}
+      value={value}
+      onChange={handleInputChange}
+      variant="standard"
+      placeholder="Filter value"
+      fullWidth
+      label="Fecha"
+    />
+  );
+}
+
+const applyFilterFecha = (filterItem: GridFilterItem) => {
+  if (!filterItem.field || !filterItem.value || !filterItem.operator) {
+    return null;
+  }
+
+  return (value: GridCellParams<any, MovimientoGastoGrilla, MovimientoGastoGrilla, GridTreeNode>) => {
+    const movimiento = value.row as MovimientoGastoGrilla;
+    const dia = new Date(movimiento.fecha).getDate();
+    switch (filterItem.operator) {
+      case '<':
+        return dia < parseInt(filterItem.value);
+      case '<=':
+        return dia <= parseInt(filterItem.value);
+      case '=':
+        return dia === parseInt(filterItem.value);
+      case '>':
+        return dia > parseInt(filterItem.value);
+      case '>=':
+        return dia >= parseInt(filterItem.value);
+      case '!=':
+        return dia !== parseInt(filterItem.value);
+      default:
+        return false;
+    }
+  };
+};
+
+const fechaOperators: GridFilterOperator<any, MovimientoGastoGrilla>[] = [
+  {
+    label: '=',
+    value: '=',
+    getApplyFilterFn: applyFilterFecha,
+    InputComponent: FechaFilterInput,
+  },
+  {
+    label: '!=',
+    value: '!=',
+    getApplyFilterFn: applyFilterFecha,
+    InputComponent: FechaFilterInput,
+  },
+  {
+    label: '<',
+    value: '<',
+    getApplyFilterFn: applyFilterFecha,
+    InputComponent: FechaFilterInput,
+  },
+  {
+    label: '<=',
+    value: '<=',
+    getApplyFilterFn: applyFilterFecha,
+    InputComponent: FechaFilterInput,
+  },
+  {
+    label: '>',
+    value: '>',
+    getApplyFilterFn: applyFilterFecha,
+    InputComponent: FechaFilterInput,
+  },
+  {
+    label: '>=',
+    value: '>=',
+    getApplyFilterFn: applyFilterFecha,
+    InputComponent: FechaFilterInput,
+  },
+];
+
+export { FechaEditInputCell, fechaOperators };

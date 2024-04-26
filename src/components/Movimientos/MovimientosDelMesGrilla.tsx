@@ -20,7 +20,7 @@ import { Concepto, conceptoOperators } from './editores/Concepto/Concepto';
 import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { GrillaToolbar } from './GrillaToolbar';
-import { FechaEditInputCell } from './editores/Fecha/Fecha';
+import { FechaEditInputCell, fechaOperators } from './editores/Fecha/Fecha';
 import { focusOnField, mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
 import { renderMontoEditInputCell } from './editores/Monto/Monto';
 
@@ -99,6 +99,7 @@ const MovimientosDelMesGrilla = ({
     {
       field: 'fecha',
       headerName: 'Fecha',
+      filterOperators: fechaOperators,
       renderEditCell: renderFechaEditInputCell,
       valueFormatter: (params: GridValueFormatterParams<Date>) => params.value?.getDate(),
       width: 100,

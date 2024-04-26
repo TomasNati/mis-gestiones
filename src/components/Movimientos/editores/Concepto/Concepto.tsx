@@ -98,7 +98,6 @@ const conceptoOperators: GridFilterOperator<any, MovimientoGastoGrilla>[] = [
       };
     },
     InputComponent: ConceptoFilterInput,
-    // InputComponentProps: {},
   },
 ];
 
