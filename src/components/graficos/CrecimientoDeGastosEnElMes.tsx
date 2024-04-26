@@ -47,8 +47,6 @@ const CrecimientoDeGastosEnElMes = ({
     gasto.pendienteDeGastar -= gasto.totalAcumulado;
   });
 
-  console.log(gastosAcumuladosPorDia);
-
   return (
     <LineChart width={700} height={300} data={gastosAcumuladosPorDia}>
       <CartesianGrid strokeDasharray="3 3" />
