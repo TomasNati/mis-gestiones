@@ -6,6 +6,7 @@ type GastoPorDia = {
   dia: number;
   totalPorDia: number;
   totalAcumulado: number;
+  pendienteDeGastar: number;
 };
 
 const CrecimientoDeGastosEnElMes = ({
@@ -26,13 +27,13 @@ const CrecimientoDeGastosEnElMes = ({
     const monto = movimiento.monto;
 
     if (acc.length === 0) {
-      acc.push({ dia, totalPorDia: monto, totalAcumulado: 0 });
+      acc.push({ dia, totalPorDia: monto, totalAcumulado: 0, pendienteDeGastar: totalEstimado });
     } else {
       const gastosDelDia = acc.find((gasto) => gasto.dia === dia);
       if (gastosDelDia) {
         gastosDelDia.totalPorDia += monto;
       } else {
-        acc.push({ dia, totalPorDia: monto, totalAcumulado: 0 });
+        acc.push({ dia, totalPorDia: monto, totalAcumulado: 0, pendienteDeGastar: totalEstimado });
       }
     }
 
@@ -43,7 +44,10 @@ const CrecimientoDeGastosEnElMes = ({
     gasto.totalAcumulado = gastosAcumuladosPorDia
       .slice(0, index + 1) //obtengo todos los dias hasta el actual
       .reduce((acc, gasto) => acc + gasto.totalPorDia, 0); //sumo los gastos de cada dia
+    gasto.pendienteDeGastar -= gasto.totalAcumulado;
   });
+
+  console.log(gastosAcumuladosPorDia);
 
   return (
     <LineChart width={700} height={300} data={gastosAcumuladosPorDia}>
@@ -54,7 +58,7 @@ const CrecimientoDeGastosEnElMes = ({
       <Legend />
       <Line type="monotone" dataKey="totalAcumulado" stroke="#8884d8" name="Acumulado" />
       <Line type="monotone" dataKey="totalPorDia" stroke="#82ca9d" name="Gastos del día" />
-      <ReferenceLine y={totalEstimado} stroke="red" label="Gastos estimados" />
+      <Line type="monotone" dataKey="pendienteDeGastar" stroke="red" name="Pendiente de gastar" />
     </LineChart>
   );
 };
