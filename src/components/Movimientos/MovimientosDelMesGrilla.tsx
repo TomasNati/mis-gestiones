@@ -47,8 +47,6 @@ const renderTipoDePagoEditInputCell: GridColDef['renderCell'] = (params) => {
   return <TipoDePagoEditInputCell {...params} />;
 };
 
-const renderFechaEditInputCell: GridColDef['renderCell'] = (params) => <FechaEditInputCell {...params} />;
-
 const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   return <TipoDePagoVista tipoDePago={params.value as TipoDeMovimientoGasto} />;
 };
@@ -100,7 +98,13 @@ const MovimientosDelMesGrilla = ({
       field: 'fecha',
       headerName: 'Fecha',
       filterOperators: fechaOperators,
-      renderEditCell: renderFechaEditInputCell,
+      renderEditCell: (params: GridRenderEditCellParams) => {
+        const fechaDefault = new Date(anio, mes, 1);
+        if (!params.value) {
+          params.value = fechaDefault;
+        }
+        return <FechaEditInputCell {...params} />;
+      },
       valueFormatter: (params: GridValueFormatterParams<Date>) => params.value?.getDate(),
       width: 100,
       editable: true,
