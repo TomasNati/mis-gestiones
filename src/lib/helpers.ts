@@ -1,5 +1,6 @@
 import {
   CategoriaUIMovimiento,
+  ConceptoExcelASubcategoria,
   MovimientoGasto,
   TipoDeMovimientoGasto,
   TiposDeConceptoExcel,
@@ -147,12 +148,6 @@ export const generateUUID = (): string => {
 
   return uuid;
 };
-
-export interface ConceptoExcelASubcategoria {
-  subcategoriaId: string;
-  detalleSubcategoriaId?: string;
-  sinComentarios?: boolean;
-}
 
 export const obtenerTipoDeMovimientoGasto = (tipoDePago: string): TipoDeMovimientoGasto => {
   switch (tipoDePago) {

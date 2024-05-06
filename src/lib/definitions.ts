@@ -285,3 +285,553 @@ export const months = [
 ];
 
 export const years = [2024, 2023, 2022];
+
+export interface ConceptoExcelASubcategoria {
+  subcategoriaId: string;
+  detalleSubcategoriaId?: string;
+  sinComentarios?: boolean;
+}
+
+interface ConceptoExcelGastosEstimadoFila {
+  indice: number;
+  descripcion: string;
+  tipo: 'categoria' | 'subcategoria';
+}
+
+export const ConceptoExcelGastosEstimados: ConceptoExcelGastosEstimadoFila[] = [
+  {
+    indice: 0,
+    descripcion: 'Hijos',
+    tipo: 'categoria',
+  },
+  {
+    indice: 1,
+    descripcion: 'Actividades',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 2,
+    descripcion: 'Medicamentos',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 3,
+    descripcion: 'Higiene',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 4,
+    descripcion: 'Ropa',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 5,
+    descripcion: 'Colegio-Extras',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 6,
+    descripcion: 'Juguetes',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 7,
+    descripcion: 'Deportes y juegos',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 8,
+    descripcion: 'Otros',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 9,
+    descripcion: 'Educación',
+    tipo: 'categoria',
+  },
+  {
+    indice: 10,
+    descripcion: 'Cursos',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 11,
+    descripcion: 'Colegio',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 12,
+    descripcion: 'Materiales escuela',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 13,
+    descripcion: 'Otros',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 14,
+    descripcion: 'Entretenimiento',
+    tipo: 'categoria',
+  },
+  {
+    indice: 15,
+    descripcion: 'Lawn Tennis',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 16,
+    descripcion: 'TIC',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 17,
+    descripcion: 'Readers & Digest',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 18,
+    descripcion: 'HBO Max',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 19,
+    descripcion: 'Netflix',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 20,
+    descripcion: 'Disney+',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 21,
+    descripcion: 'Libros',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 22,
+    descripcion: 'Deporte',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 23,
+    descripcion: 'Teatro',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 24,
+    descripcion: 'Spotify',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 25,
+    descripcion: 'Otro',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 26,
+    descripcion: 'Diario',
+    tipo: 'categoria',
+  },
+  {
+    indice: 27,
+    descripcion: 'Comida',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 28,
+    descripcion: 'Restaurants',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 29,
+    descripcion: 'Productos personales',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 30,
+    descripcion: 'Ropa',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 31,
+    descripcion: 'Supermercado',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 32,
+    descripcion: 'Peluqueria/Belleza',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 33,
+    descripcion: 'Alcohol',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 34,
+    descripcion: 'Gaseosas',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 35,
+    descripcion: 'Otras',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 36,
+    descripcion: 'Regalos',
+    tipo: 'categoria',
+  },
+  {
+    indice: 37,
+    descripcion: 'Regalos',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 38,
+    descripcion: 'Salud',
+    tipo: 'categoria',
+  },
+  {
+    indice: 39,
+    descripcion: 'Doctores',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 40,
+    descripcion: 'Maestra de apoyo',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 41,
+    descripcion: 'Farmacia',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 42,
+    descripcion: 'Psicologos',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 43,
+    descripcion: 'Lentes - Óptica',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 44,
+    descripcion: 'Acompañante terapéutico',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 45,
+    descripcion: 'Otro',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 46,
+    descripcion: 'Hogar',
+    tipo: 'categoria',
+  },
+  {
+    indice: 47,
+    descripcion: 'Aportes Claudia',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 48,
+    descripcion: 'Sueldo Claudia',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 49,
+    descripcion: 'Extras Claudia',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 50,
+    descripcion: 'Muebles',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 51,
+    descripcion: 'Jardin',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 52,
+    descripcion: 'Cosas para la casa',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 53,
+    descripcion: 'Mantenimiento',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 54,
+    descripcion: 'Mejora',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 55,
+    descripcion: 'Mudanza',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 56,
+    descripcion: 'Otras',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 57,
+    descripcion: 'Seguros',
+    tipo: 'categoria',
+  },
+  {
+    indice: 58,
+    descripcion: 'Auto',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 59,
+    descripcion: 'Tecnología',
+    tipo: 'categoria',
+  },
+  {
+    indice: 60,
+    descripcion: 'Domains & hosting',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 61,
+    descripcion: 'Servicios Online',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 62,
+    descripcion: 'Hardware',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 63,
+    descripcion: 'Software',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 64,
+    descripcion: 'Tablet + funda',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 65,
+    descripcion: 'Otros',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 66,
+    descripcion: 'Transporte',
+    tipo: 'categoria',
+  },
+  {
+    indice: 67,
+    descripcion: 'Nafta',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 68,
+    descripcion: 'Patente auto',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 69,
+    descripcion: 'Taller',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 70,
+    descripcion: 'VTV',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 71,
+    descripcion: 'Cosas para el auto',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 72,
+    descripcion: 'Taxi',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 73,
+    descripcion: 'Transporte Publico',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 74,
+    descripcion: 'Viajes',
+    tipo: 'categoria',
+  },
+  {
+    indice: 75,
+    descripcion: 'Avion',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 76,
+    descripcion: 'Hotels',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 77,
+    descripcion: 'Comida',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 78,
+    descripcion: 'Transporte',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 79,
+    descripcion: 'Entretenimiento',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 80,
+    descripcion: 'Otro',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 81,
+    descripcion: 'Servicios',
+    tipo: 'categoria',
+  },
+  {
+    indice: 82,
+    descripcion: 'Servicios',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 83,
+    descripcion: 'Cablevision',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 84,
+    descripcion: 'Contadora',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 85,
+    descripcion: 'Personal',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 86,
+    descripcion: 'Edese',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 87,
+    descripcion: 'Gasnor',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 88,
+    descripcion: 'Santiago - Inmobiliario municipal',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 89,
+    descripcion: 'Santiago - Rentas provincial',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 90,
+    descripcion: 'Dto. Tuc-Cór - SAT',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 91,
+    descripcion: 'Dto. Tuc-Cór - Gasnor',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 92,
+    descripcion: 'Dto. Tuc-Cór - Edet',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 93,
+    descripcion: 'Dto. Tuc-Cór - DGR',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 94,
+    descripcion: 'Dto. Tuc-Cór - CISI',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 95,
+    descripcion: 'Dto. Tuc-Mar - DGR',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 96,
+    descripcion: 'Bahía - ABSA',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 97,
+    descripcion: 'Bahía - Municipal',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 98,
+    descripcion: 'Bahía - ARBA',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 99,
+    descripcion: 'Monotributo Nati',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 100,
+    descripcion: 'Patente',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 101,
+    descripcion: 'Placehodler',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 102,
+    descripcion: 'Other',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 103,
+    descripcion: 'Other',
+    tipo: 'categoria',
+  },
+  {
+    indice: 104,
+    descripcion: 'Cripto',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 105,
+    descripcion: 'Emilio',
+    tipo: 'subcategoria',
+  },
+  {
+    indice: 106,
+    descripcion: 'Otros',
+    tipo: 'subcategoria',
+  },
+];
