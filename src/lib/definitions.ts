@@ -128,6 +128,15 @@ export type ResultadoAPI = {
   exitoso: boolean;
 };
 
+export type TipoDeImportacion = 'Gastos del mes' | 'Presupuesto del mes';
+
+export type ImportarUI = {
+  anio: number;
+  mes: number;
+  tipo: TipoDeImportacion;
+  textoAImportar: string;
+};
+
 export type ImportarMovimientoUI = {
   anio: number;
   mes: number;
@@ -254,13 +263,14 @@ export type TipoDeServicioExcel =
   | 'Spotify'
   | 'Aportes Claudia';
 
-export interface ImportarMovimientosResult {
+export interface ImportarResult {
   lineasInvalidas: {
     linea: string;
     razon: string;
   }[];
   exitoso: boolean;
   error?: string;
+  temporal?: ConceptoExcelGastosEstimadoFila[];
 }
 
 export type DeepNullable<T> = {
@@ -296,9 +306,10 @@ interface ConceptoExcelGastosEstimadoFila {
   indice: number;
   descripcion: string;
   tipo: 'categoria' | 'subcategoria' | 'XXXX';
+  monto?: number;
 }
 
-export const ConceptoExcelGastosEstimados: ConceptoExcelGastosEstimadoFila[] = [
+export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFila[] = [
   {
     indice: 0,
     descripcion: 'Hijos',

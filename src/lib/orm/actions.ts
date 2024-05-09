@@ -4,11 +4,13 @@ import { z } from 'zod';
 import { eq, inArray } from 'drizzle-orm';
 import {
   ImportarMovimientoUI,
-  ImportarMovimientosResult,
+  ImportarResult,
   MovimientoGastoAImportar,
   MovimientoUI,
   ResultadoAPI,
   MovimientoGastoInsertarDB,
+  ImportarUI,
+  conceptoExcelGastosEstimadosTemplate,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
@@ -164,8 +166,59 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
   }
 }
 
-export const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<ImportarMovimientosResult> => {
-  const resultadoFinal: ImportarMovimientosResult = {
+export const importarDatos = async (datos: ImportarUI): Promise<ImportarResult> => {
+  if (datos.tipo === 'Gastos del mes') {
+    return await importarMovimientos(datos);
+  } else {
+    return await importarPresupuestos(datos);
+  }
+};
+
+const importarPresupuestos = async (datos: ImportarUI): Promise<ImportarResult> => {
+  const resultadoFinal: ImportarResult = {
+    lineasInvalidas: [],
+    exitoso: true,
+  };
+
+  const textoAImportar = datos.textoAImportar;
+  const lineas = textoAImportar.split('\n');
+
+  const conceptoExcelGastosEstimados = JSON.parse(JSON.stringify(conceptoExcelGastosEstimadosTemplate));
+
+  if (lineas.length !== conceptoExcelGastosEstimados.length) {
+    resultadoFinal.exitoso = false;
+    resultadoFinal.lineasInvalidas.push({
+      linea: '',
+      razon: `El archivo debe tener ${conceptoExcelGastosEstimados.length} líneas`,
+    });
+    logMessage(`El archivo debe tener ${conceptoExcelGastosEstimados.length} líneas`, 'error');
+    return Promise.resolve(resultadoFinal);
+  }
+
+  for (let i = 0; i < lineas.length; i++) {
+    try {
+      const monto = transformCurrencyToNumber(lineas[i].replace(',', ''));
+      if (monto == null && conceptoExcelGastosEstimados[i].tipo !== 'XXXX') {
+        throw new Error('No es un número');
+      }
+      conceptoExcelGastosEstimados[i].monto = monto;
+    } catch (error) {
+      resultadoFinal.lineasInvalidas.push({
+        linea: lineas[i],
+        razon: `El monto ${lineas[i]} no es un número`,
+      });
+      logMessage(`El monto ${lineas[i]} no es un número`, 'error');
+      continue;
+    }
+  }
+
+  resultadoFinal.temporal = conceptoExcelGastosEstimados;
+
+  return Promise.resolve(resultadoFinal);
+};
+
+const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<ImportarResult> => {
+  const resultadoFinal: ImportarResult = {
     lineasInvalidas: [],
     exitoso: true,
   };

@@ -11,9 +11,9 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { importarMovimientos } from '@/lib/orm/actions';
+import { importarDatos } from '@/lib/orm/actions';
 import { useEffect, useState } from 'react';
-import { ImportarMovimientosResult } from '@/lib/definitions';
+import { ImportarResult, TipoDeImportacion } from '@/lib/definitions';
 import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
 
 const years = [2022, 2023, 2024];
@@ -31,10 +31,12 @@ const months = [
   'Noviembre',
   'Diciembre',
 ];
+const tipoDeImportacion: TipoDeImportacion[] = ['Gastos del mes', 'Presupuesto del mes'];
 
 const Importar = () => {
   const [anio, setAnio] = useState(2024);
   const [mes, setMes] = useState('Enero');
+  const [tipo, setTipo] = useState<TipoDeImportacion>('Gastos del mes');
   const [textoAImportar, setTextoAImportar] = useState('');
   const [importar, setImportar] = useState(false);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
@@ -46,9 +48,10 @@ const Importar = () => {
   useEffect(() => {
     const importarMovimientosNuevos = async () => {
       if (importar) {
-        const resultado: ImportarMovimientosResult = await importarMovimientos({
+        const resultado: ImportarResult = await importarDatos({
           anio,
           mes: months.indexOf(mes) + 1,
+          tipo,
           textoAImportar,
         });
         console.log(resultado);
@@ -56,13 +59,13 @@ const Importar = () => {
           setConfigNotificacion({
             open: true,
             severity: 'success',
-            mensaje: 'Movimientos importados correctamente',
+            mensaje: 'Importación realizada correctamente',
           });
         } else {
           setConfigNotificacion({
             open: true,
             severity: 'error',
-            mensaje: 'Error al importar movimientos',
+            mensaje: 'Error al importar',
           });
         }
         setImportar(false);
@@ -129,6 +132,26 @@ const Importar = () => {
               {months.map((month) => (
                 <MenuItem key={month} value={month}>
                   {month}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ width: '200px', marginRight: '10px' }}>
+            <InputLabel htmlFor="anio">Tipo</InputLabel>
+            <Select
+              label="Tipo"
+              sx={{
+                '& .MuiSelect-select': {
+                  paddingTop: '8px',
+                  paddingBottom: '8px',
+                },
+              }}
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value as TipoDeImportacion)}
+            >
+              {tipoDeImportacion.map((tipo) => (
+                <MenuItem key={tipo} value={tipo}>
+                  {tipo}
                 </MenuItem>
               ))}
             </Select>
