@@ -307,7 +307,15 @@ interface ConceptoExcelGastosEstimadoFila {
   descripcion: string;
   tipo: 'categoria' | 'subcategoria' | 'XXXX';
   monto?: number;
+  subcategoriaId?: string;
 }
+
+/*
+select fc.nombre , fs2.nombre , fs2.id 
+from misgestiones.finanzas_subcategoria fs2 
+join misgestiones.finanzas_categoria fc on fc.id = fs2.categoria and fc.active = true
+order by fc.nombre , fs2.nombre 
+*/
 
 export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFila[] = [
   {
@@ -319,41 +327,49 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 1,
     descripcion: 'Actividades',
     tipo: 'subcategoria',
+    subcategoriaId: '84edcca4-f102-4a99-83e0-8a8cad82b6fd',
   },
   {
     indice: 2,
     descripcion: 'Medicamentos',
     tipo: 'subcategoria',
+    subcategoriaId: '0ca9dfa2-7850-4459-b833-6ceb0ff36ac8',
   },
   {
     indice: 3,
     descripcion: 'Higiene',
     tipo: 'subcategoria',
+    subcategoriaId: '9c90e9f1-7262-4f0a-a0ba-e88876b731be',
   },
   {
     indice: 4,
     descripcion: 'Ropa',
     tipo: 'subcategoria',
+    subcategoriaId: 'fc49d0cb-51ee-4628-a019-40240edadbde',
   },
   {
     indice: 5,
     descripcion: 'Colegio-Extras',
     tipo: 'subcategoria',
+    subcategoriaId: 'aed07cba-f0e0-4953-9087-f1b7390e5535',
   },
   {
     indice: 6,
     descripcion: 'Juguetes',
     tipo: 'subcategoria',
+    subcategoriaId: '9b5875af-913d-4138-b02c-a15c20614a19',
   },
   {
     indice: 7,
     descripcion: 'Deportes y juegos',
     tipo: 'subcategoria',
+    subcategoriaId: '284fc189-3879-4876-b7ca-7e7ffddff12b',
   },
   {
     indice: 8,
     descripcion: 'Otros',
     tipo: 'subcategoria',
+    subcategoriaId: 'ce16188d-8926-4115-9678-f899ab692337',
   },
   {
     indice: 9,
@@ -419,21 +435,25 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 21,
     descripcion: 'Cursos',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 22,
     descripcion: 'Colegio',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 23,
     descripcion: 'Materiales escuela',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 24,
     descripcion: 'Otros',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 25,
@@ -447,63 +467,74 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
   },
   {
     indice: 27,
-    descripcion: 'Servicios',
+    descripcion: 'Entretenimiento',
     tipo: 'categoria',
   },
   {
     indice: 28,
     descripcion: 'Lawn Tennis',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 29,
     descripcion: 'TIC',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 30,
     descripcion: 'Readers & Digest',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 31,
     descripcion: 'HBO Max',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 32,
     descripcion: 'Netflix',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 33,
     descripcion: 'Disney+',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 34,
     descripcion: 'Libros',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 35,
     descripcion: 'Deporte',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 36,
     descripcion: 'Teatro',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 37,
     descripcion: 'Spotify',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 38,
     descripcion: 'Otro',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 39,
@@ -524,46 +555,55 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 42,
     descripcion: 'Comida',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 43,
     descripcion: 'Restaurants',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 44,
     descripcion: 'Productos personales',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 45,
     descripcion: 'Ropa',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 46,
     descripcion: 'Supermercado',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 47,
     descripcion: 'Peluqueria/Belleza',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 48,
     descripcion: 'Alcohol',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 49,
     descripcion: 'Gaseosas',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 50,
     descripcion: 'Otras',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 51,
@@ -584,6 +624,7 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 54,
     descripcion: 'Regalos',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 55,
@@ -614,11 +655,13 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 60,
     descripcion: 'Doctores',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 61,
     descripcion: 'Maestra de apoyo',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 62,
@@ -629,21 +672,25 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 63,
     descripcion: 'Psicólogos',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 64,
     descripcion: 'Lentes - Óptica',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 65,
     descripcion: 'Acompañante terapéutico',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 66,
     descripcion: 'Otro',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 67,
@@ -664,51 +711,61 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 70,
     descripcion: 'Aportes Claudia',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 71,
     descripcion: 'Sueldo Claudia',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 72,
     descripcion: 'Extras Claudia',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 73,
     descripcion: 'Muebles',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 74,
     descripcion: 'Jardin',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 75,
     descripcion: 'Cosas para la casa',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 76,
     descripcion: 'Mantenimiento',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 77,
     descripcion: 'Mejora',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 78,
     descripcion: 'Mudanza',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 79,
     descripcion: 'Otras',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 80,
@@ -729,6 +786,7 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 83,
     descripcion: 'Auto',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 84,
@@ -809,31 +867,37 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 99,
     descripcion: 'Domains & hosting',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 100,
     descripcion: 'Servicios Online',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 101,
     descripcion: 'Hardware',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 102,
     descripcion: 'Software',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 103,
     descripcion: 'Tablet + funda',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 104,
     descripcion: 'Otros',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 105,
@@ -855,36 +919,43 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 108,
     descripcion: 'Nafta',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 109,
     descripcion: 'Patente auto',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 110,
     descripcion: 'Taller',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 111,
     descripcion: 'VTV',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 112,
     descripcion: 'Cosas para el auto',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 113,
     descripcion: 'Taxi',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 114,
     descripcion: 'Transporte Publico',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 115,
@@ -905,31 +976,37 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 118,
     descripcion: 'Avion',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 119,
     descripcion: 'Hoteles',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 120,
     descripcion: 'Comida',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 121,
     descripcion: 'Transporte',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 122,
     descripcion: 'Entretenimiento',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 123,
     descripcion: 'Otro',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 124,
@@ -950,31 +1027,37 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 127,
     descripcion: 'Aguas de Santiago',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 128,
     descripcion: 'Cablevision',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 129,
     descripcion: 'Contadora',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 130,
     descripcion: 'Personal',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 131,
     descripcion: 'Edese',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 132,
     descripcion: 'Gasnor',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 133,
@@ -985,71 +1068,85 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 134,
     descripcion: 'Santiago - Rentas provincial',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 135,
     descripcion: 'Dto. Tuc-Cór - SAT',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 136,
     descripcion: 'Dto. Tuc-Cór - Gasnor',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 137,
     descripcion: 'Dto. Tuc-Cór - Edet',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 138,
     descripcion: 'Dto. Tuc-Cór - DGR',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 139,
     descripcion: 'Dto. Tuc-Cór - CISI',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 140,
     descripcion: 'Dto. Tuc-Mar - DGR',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 141,
     descripcion: 'Bahía - ABSA',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 142,
     descripcion: 'Bahía - Municipal',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 143,
     descripcion: 'Bahía - ARBA',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 144,
     descripcion: 'Monotributo Nati',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 145,
     descripcion: 'Patente',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 146,
     descripcion: 'Placehodler',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 147,
     descripcion: 'Other',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 148,
@@ -1070,15 +1167,18 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 151,
     descripcion: 'Cripto',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 152,
     descripcion: 'Emilio',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
   {
     indice: 153,
     descripcion: 'Otros',
     tipo: 'subcategoria',
+    subcategoriaId: 'XXXXXXX',
   },
 ];
