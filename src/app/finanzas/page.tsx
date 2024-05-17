@@ -52,6 +52,16 @@ const Finanzas = async () => {
           >
             Importar movimientos
           </Button>
+          <Button
+            component={NextLink}
+            variant="outlined"
+            startIcon={<TableRowsIcon />}
+            href="/finanzas/presupuestoDelMes"
+            color="primary"
+            sx={{ marginRight: 2 }}
+          >
+            Ver el presupuesto por mes
+          </Button>
         </Box>
       </Box>
     </Container>

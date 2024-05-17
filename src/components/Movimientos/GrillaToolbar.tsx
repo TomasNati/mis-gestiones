@@ -31,8 +31,6 @@ const GrillaToolbar = ({
   sumaTotalDelMes,
   onMovimientosEliminados,
 }: GrillaToolbarProps) => {
-  const [abrirDialogoExportar, setAbrirDialogoExportar] = useState(false);
-
   const handleAgregarNuevoMovimiento = () => {
     const id = generateUUID();
     const nuevoMovimiento = {

@@ -245,6 +245,10 @@ const importarPresupuestos = async (datos: ImportarUI): Promise<ImportarResult> 
     resultadoFinal.exitoso = false;
   }
 
+  //Revalidate the cache
+  revalidatePath('/finanzas');
+  revalidatePath('/finanzas/presupuestoDelMes');
+
   return resultadoFinal;
 };
 

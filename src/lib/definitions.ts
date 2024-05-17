@@ -310,13 +310,6 @@ export interface ConceptoExcelGastosEstimadoFila {
   subcategoriaId?: string;
 }
 
-/*
-select fc.nombre , fs2.nombre , fs2.id 
-from misgestiones.finanzas_subcategoria fs2 
-join misgestiones.finanzas_categoria fc on fc.id = fs2.categoria and fc.active = true
-order by fc.nombre , fs2.nombre 
-*/
-
 export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFila[] = [
   {
     indice: 0,
@@ -1180,3 +1173,12 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     subcategoriaId: '5be3d25e-4f79-4416-bd9b-f7f0b485d9c3',
   },
 ];
+
+export type GastosEstimado = {
+  id: string;
+  comentarios?: string;
+  fecha: Date;
+  categoria: string;
+  subcategoria: string;
+  monto: number;
+};

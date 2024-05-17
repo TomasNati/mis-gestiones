@@ -1,5 +1,5 @@
 [ ] Gastos estimados
- - Importar los gastos estimados de la planilla de google
+ - Ver si puedo crear una subgrilla para las subcategorias
  - Importar los movimientos faltantes de la planilla de google
  - Usar gastos estimados para los gráficos de los movimientos del mes
  - Pantalla para gastos estimados

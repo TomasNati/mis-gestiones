@@ -3,6 +3,7 @@
 import {
   CategoriaUIMovimiento,
   DetalleSubcategoria,
+  GastosEstimado,
   MovimientoGasto,
   MovimientoGastoGrilla,
   Subcategoria,
@@ -10,9 +11,8 @@ import {
   TipoDeMovimientoGasto,
 } from '../definitions';
 import { db } from './database';
-import { categorias, detalleSubcategorias, movimientosGasto, subcategorias } from './tables';
-import { unstable_noStore as noStore } from 'next/cache';
-import { eq, and, desc, between } from 'drizzle-orm';
+import { categorias, detalleSubcategorias, gastoEstimado, movimientosGasto, subcategorias } from './tables';
+import { eq, and, desc, between, asc } from 'drizzle-orm';
 import { obtenerCategoriaUIMovimiento } from '../helpers';
 
 const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
@@ -135,7 +135,7 @@ const obtenerMovimientos = async (
   fechaDesde?: Date,
   fechaHasta?: Date,
 ): Promise<MovimientoGastoGrilla[]> => {
-  noStore();
+  // noStore();
   try {
     const limite = limiteDeMovimientos ? limiteDeMovimientos : 500;
     const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
@@ -219,4 +219,46 @@ export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<Movimient
   const fechaDesde = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0));
   const fechaHasta = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59));
   return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);
+};
+
+export const obtenerGastosEstimadosPorFecha = async (fecha: Date): Promise<GastosEstimado[]> => {
+  const fechaDesde = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0));
+  const fechaHasta = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59));
+
+  try {
+    const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
+    const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
+
+    const result = await db
+      .select({
+        id: gastoEstimado.id,
+        fecha: gastoEstimado.fecha,
+        monto: gastoEstimado.monto,
+        comentarios: gastoEstimado.comentarios,
+        subCategoriaNombre: subcategorias.nombre,
+        categoriaNombre: categorias.nombre,
+      })
+      .from(gastoEstimado)
+      .innerJoin(subcategorias, and(eq(gastoEstimado.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
+      .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
+      .where(and(eq(gastoEstimado.active, true), between(gastoEstimado.fecha, fechaDesdeFiltro, fechaHastaFiltro)))
+      .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
+
+    const gastosEstimados: GastosEstimado[] = result.map((gastoDB) => {
+      const gasto: GastosEstimado = {
+        id: gastoDB.id,
+        fecha: gastoDB.fecha,
+        monto: Number.parseFloat(gastoDB.monto),
+        comentarios: gastoDB.comentarios || undefined,
+        subcategoria: gastoDB.subCategoriaNombre,
+        categoria: gastoDB.categoriaNombre,
+      };
+      return gasto;
+    });
+
+    return gastosEstimados;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener los gastos estimados');
+  }
 };
