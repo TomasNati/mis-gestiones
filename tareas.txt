@@ -1,3 +1,26 @@
+[ ] Gastos estimados
+ - Importar los gastos estimados de la planilla de google
+ - Importar los movimientos faltantes de la planilla de google
+ - Usar gastos estimados para los gráficos de los movimientos del mes
+ - Pantalla para gastos estimados
+
+ select  fc.id AS categoria_id,
+    fc.nombre AS categoria_nombre,
+    SUM(fg.monto) AS total_monto
+from finanzas_gastoestimado fg 
+join finanzas_subcategoria fs2 on fg.subcategoria  = fs2.id
+join finanzas_categoria fc on fs2.categoria = fc.id
+group by fc.id 
+order by fc.nombre;
+
+
+select fc.nombre , fs2.nombre , fg.monto , fg.fecha 
+from finanzas_gastoestimado fg 
+join finanzas_subcategoria fs2 on fg.subcategoria  = fs2.id
+join finanzas_categoria fc on fs2.categoria = fc.id
+order by fc.nombre , fs2.nombre 
+
+
 [ ] Gráficos: https://recharts.org/en-US/guide/getting-started 
 [ ] Grilla de movimientos:
     .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes

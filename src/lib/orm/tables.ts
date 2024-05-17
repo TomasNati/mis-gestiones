@@ -54,3 +54,19 @@ export const movimientosGasto = misgestiones.table('finanzas_movimientogasto', {
 });
 
 export type MovimientoGastoDB = InferSelectModel<typeof movimientosGasto>;
+
+export const gastoEstimado = misgestiones.table('finanzas_gastoestimado', {
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => generateUUID()),
+  subcategoria: uuid('subcategoria')
+    .references(() => subcategorias.id)
+    .notNull(),
+  fecha: timestamp('fecha', { withTimezone: false }).notNull(),
+  monto: numeric('monto', { precision: 12, scale: 2 }).notNull(),
+  comentarios: text('comentarios'),
+  active: boolean('active').notNull().default(true),
+});
+
+export type GastoEstimadoDB = InferSelectModel<typeof gastoEstimado>;
+export type GastoEstimadoAInsertarDB = Omit<GastoEstimadoDB, 'id' | 'active'>;

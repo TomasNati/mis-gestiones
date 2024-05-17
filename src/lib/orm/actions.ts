@@ -11,6 +11,7 @@ import {
   MovimientoGastoInsertarDB,
   ImportarUI,
   conceptoExcelGastosEstimadosTemplate,
+  ConceptoExcelGastosEstimadoFila,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
@@ -20,7 +21,7 @@ import {
   transformCurrencyToNumber,
 } from '../helpers';
 import { db } from './database';
-import { movimientosGasto } from './tables';
+import { GastoEstimadoAInsertarDB, gastoEstimado, movimientosGasto } from './tables';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -183,7 +184,9 @@ const importarPresupuestos = async (datos: ImportarUI): Promise<ImportarResult> 
   const textoAImportar = datos.textoAImportar;
   const lineas = textoAImportar.split('\n');
 
-  const conceptoExcelGastosEstimados = JSON.parse(JSON.stringify(conceptoExcelGastosEstimadosTemplate));
+  const conceptoExcelGastosEstimados: ConceptoExcelGastosEstimadoFila[] = JSON.parse(
+    JSON.stringify(conceptoExcelGastosEstimadosTemplate),
+  );
 
   if (lineas.length !== conceptoExcelGastosEstimados.length) {
     resultadoFinal.exitoso = false;
@@ -201,7 +204,7 @@ const importarPresupuestos = async (datos: ImportarUI): Promise<ImportarResult> 
       if (monto == null && conceptoExcelGastosEstimados[i].tipo !== 'XXXX') {
         throw new Error('No es un número');
       }
-      conceptoExcelGastosEstimados[i].monto = monto;
+      conceptoExcelGastosEstimados[i].monto = monto === null ? undefined : monto;
     } catch (error) {
       resultadoFinal.lineasInvalidas.push({
         linea: i.toString(),
@@ -212,9 +215,37 @@ const importarPresupuestos = async (datos: ImportarUI): Promise<ImportarResult> 
     }
   }
 
+  resultadoFinal.exitoso = resultadoFinal.lineasInvalidas.length === 0;
   resultadoFinal.temporal = conceptoExcelGastosEstimados;
+  if (!resultadoFinal.exitoso) {
+    logMessage(`Hubo ${resultadoFinal.lineasInvalidas.length} líneas inválidas`, 'error');
+    return Promise.resolve(resultadoFinal);
+  }
 
-  return Promise.resolve(resultadoFinal);
+  const gastosEstimadosAInsertar: GastoEstimadoAInsertarDB[] = conceptoExcelGastosEstimados
+    .filter((gasto) => gasto.tipo == 'subcategoria' && gasto.monto !== undefined && gasto.subcategoriaId !== undefined)
+    .map((gasto) => ({
+      fecha: new Date(Date.UTC(datos.anio, datos.mes - 1, 1, 0, 0, 0, 0)),
+      monto: gasto.monto?.toString() || '',
+      subcategoria: gasto.subcategoriaId || '',
+      comentarios: null,
+    }));
+
+  try {
+    await db.insert(gastoEstimado).values(gastosEstimadosAInsertar);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultadoFinal.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+    } else {
+      resultadoFinal.error = ` Error al insertar en base de datos: ${error}.\n`;
+    }
+  }
+  if (resultadoFinal.error) {
+    logMessage(resultadoFinal.error, 'error');
+    resultadoFinal.exitoso = false;
+  }
+
+  return resultadoFinal;
 };
 
 const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<ImportarResult> => {
