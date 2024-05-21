@@ -13,24 +13,10 @@ import {
 } from '@mui/material';
 import { importarDatos } from '@/lib/orm/actions';
 import { useEffect, useState } from 'react';
-import { ImportarResult, TipoDeImportacion } from '@/lib/definitions';
+import { ImportarResult, TipoDeImportacion, months } from '@/lib/definitions';
 import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
 
 const years = [2022, 2023, 2024];
-const months = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
 const tipoDeImportacion: TipoDeImportacion[] = ['Gastos del mes', 'Presupuesto del mes'];
 
 const Importar = () => {

@@ -1174,11 +1174,27 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
   },
 ];
 
-export type GastosEstimado = {
+export type GastoEstimadoAnual = {
   id: string;
-  comentarios?: string;
-  fecha: Date;
-  categoria: string;
-  subcategoria: string;
-  monto: number;
+  dbId: string;
+  descripcion: string;
+  Enero?: number;
+  Febrero?: number;
+  Marzo?: number;
+  Abril?: number;
+  Mayo?: number;
+  Junio?: number;
+  Julio?: number;
+  Agosto?: number;
+  Septiembre?: number;
+  Octubre?: number;
+  Noviembre?: number;
+  Diciembre?: number;
+  [keyof: string]: number | string | Date | undefined;
+};
+
+export type GastoEstimadoAnualGrupo = {
+  groupId: string;
+  esCategoria: boolean;
+  elementos: GastoEstimadoAnual[];
 };

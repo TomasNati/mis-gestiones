@@ -5,6 +5,7 @@ import {
   TipoDeMovimientoGasto,
   TiposDeConceptoExcel,
   TiposDeServicioExcel,
+  months,
 } from './definitions';
 
 export const logMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info'): void => {
@@ -39,20 +40,7 @@ function esBisiesto(year: number): boolean {
 
 export const obtenerDiasEnElMes = (fecha: Date) => {
   const mes = fecha.getMonth();
-  const meses = [
-    'enero',
-    'febrero',
-    'marzo',
-    'abril',
-    'mayo',
-    'junio',
-    'julio',
-    'agosto',
-    'septiembre',
-    'octubre',
-    'noviembre',
-    'diciembre',
-  ];
+  const meses = months.map((m) => m.toLowerCase());
 
   let diasEnElMes = 0;
   const diasEnFebrero = esBisiesto(fecha.getFullYear()) ? 29 : 28;

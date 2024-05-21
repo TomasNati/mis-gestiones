@@ -4,8 +4,8 @@ import { Box, FormControl, Select, MenuItem, Button } from '@mui/material';
 interface SeleccionadorPeriodoProps {
   anio?: number;
   setAnio: (anio: number) => void;
-  mes: string;
-  setMes: (mes: string) => void;
+  mes?: string;
+  setMes?: (mes: string) => void;
 }
 const SeleccionadorPeriodo = ({ anio, setAnio, mes, setMes }: SeleccionadorPeriodoProps) => {
   return (
@@ -33,23 +33,25 @@ const SeleccionadorPeriodo = ({ anio, setAnio, mes, setMes }: SeleccionadorPerio
           ))}
         </Select>
       </FormControl>
-      <Box>
-        {months.map((month, index) => (
-          <Button
-            key={index}
-            variant="outlined"
-            onClick={() => setMes(month)}
-            color={month === mes ? 'success' : 'secondary'}
-            sx={{
-              marginRight: 1,
-              marginBottom: 2,
-              padding: '0 2px',
-            }}
-          >
-            {month}
-          </Button>
-        ))}
-      </Box>
+      {setMes ? (
+        <Box>
+          {months.map((month, index) => (
+            <Button
+              key={index}
+              variant="outlined"
+              onClick={() => setMes(month)}
+              color={month === mes ? 'success' : 'secondary'}
+              sx={{
+                marginRight: 1,
+                marginBottom: 2,
+                padding: '0 2px',
+              }}
+            >
+              {month}
+            </Button>
+          ))}
+        </Box>
+      ) : null}
     </Box>
   );
 };

@@ -1,14 +1,14 @@
 import { Box } from '@mui/material';
 import { GridRowModesModel, GridRowsProp, GridToolbarContainer, GridToolbarExport } from '@mui/x-data-grid';
 import { transformNumberToCurrenty } from '@/lib/helpers';
-import { GastosEstimado } from '@/lib/definitions';
+import { GastoEstimadoAnual } from '@/lib/definitions';
 
 interface GrillaToolbarProps {
-  gastosEstimadosElegidos: GastosEstimado[];
+  gastosEstimadosElegidos: GastoEstimadoAnual[];
   sumaTotalDelMes: number;
 }
 const GrillaToolbar = ({ gastosEstimadosElegidos, sumaTotalDelMes }: GrillaToolbarProps) => {
-  const sumaDeGastosEstimadosElegidos = gastosEstimadosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
+  const sumaDeGastosEstimadosElegidos = 0; // gastosEstimadosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
 
   const sumaFormateada = transformNumberToCurrenty(sumaDeGastosEstimadosElegidos);
   const totalDeMontosFormateada = transformNumberToCurrenty(sumaTotalDelMes);

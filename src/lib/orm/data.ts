@@ -3,17 +3,19 @@
 import {
   CategoriaUIMovimiento,
   DetalleSubcategoria,
-  GastosEstimado,
+  GastoEstimadoAnual,
   MovimientoGasto,
   MovimientoGastoGrilla,
   Subcategoria,
   TipoDeGasto,
   TipoDeMovimientoGasto,
+  months,
 } from '../definitions';
 import { db } from './database';
 import { categorias, detalleSubcategorias, gastoEstimado, movimientosGasto, subcategorias } from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
-import { obtenerCategoriaUIMovimiento } from '../helpers';
+import { generateUUID, obtenerCategoriaUIMovimiento } from '../helpers';
+import { group } from 'console';
 
 const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
   // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
@@ -221,22 +223,26 @@ export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<Movimient
   return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);
 };
 
-export const obtenerGastosEstimadosPorFecha = async (fecha: Date): Promise<GastosEstimado[]> => {
-  const fechaDesde = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0));
-  const fechaHasta = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59));
+export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<GastoEstimadoAnual[]> => {
+  const resultado: GastoEstimadoAnual[] = [];
+
+  const fechaDesde = new Date(Date.UTC(anio, 0, 1, 0, 0, 0));
+  const fechaHasta = new Date(Date.UTC(anio, 11, 31, 23, 59, 59));
 
   try {
     const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
     const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
 
-    const result = await db
+    const dbResults = await db
       .select({
         id: gastoEstimado.id,
         fecha: gastoEstimado.fecha,
         monto: gastoEstimado.monto,
         comentarios: gastoEstimado.comentarios,
         subCategoriaNombre: subcategorias.nombre,
+        subCategoriaId: subcategorias.id,
         categoriaNombre: categorias.nombre,
+        categoriaId: categorias.id,
       })
       .from(gastoEstimado)
       .innerJoin(subcategorias, and(eq(gastoEstimado.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
@@ -244,19 +250,32 @@ export const obtenerGastosEstimadosPorFecha = async (fecha: Date): Promise<Gasto
       .where(and(eq(gastoEstimado.active, true), between(gastoEstimado.fecha, fechaDesdeFiltro, fechaHastaFiltro)))
       .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
 
-    const gastosEstimados: GastosEstimado[] = result.map((gastoDB) => {
-      const gasto: GastosEstimado = {
-        id: gastoDB.id,
-        fecha: gastoDB.fecha,
-        monto: Number.parseFloat(gastoDB.monto),
-        comentarios: gastoDB.comentarios || undefined,
-        subcategoria: gastoDB.subCategoriaNombre,
-        categoria: gastoDB.categoriaNombre,
-      };
-      return gasto;
-    });
+    for (const gastoDB of dbResults) {
+      if (!resultado.find((gasto) => gasto.id === gastoDB.categoriaId)) {
+        resultado.push({
+          id: gastoDB.categoriaId,
+          dbId: `categoria-${generateUUID()}`,
+          descripcion: `${gastoDB.categoriaNombre} - Total mensual`,
+        });
+      }
 
-    return gastosEstimados;
+      if (!resultado.find((gasto) => gasto.id === gastoDB.subCategoriaId)) {
+        resultado.push({
+          id: gastoDB.subCategoriaId,
+          dbId: gastoDB.id,
+          descripcion: `-------------  ${gastoDB.subCategoriaNombre}`,
+        });
+      }
+    }
+
+    // for (const fila of resultado) {
+    //   if (fila.dbId.startsWith('categoria-')) {
+    //     const gastos = dbResults.filter((gastoDB) => gastoDB.categoriaId === fila.id);
+    //     fila.monto = gastos.reduce((acc, gasto) => acc + gasto.monto, 0);
+    //   }
+    // }
+
+    return resultado;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Error al obtener los gastos estimados');

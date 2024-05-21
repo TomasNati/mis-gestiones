@@ -1,18 +1,16 @@
 'use client';
 
-import { obtenerGastosEstimadosPorFecha } from '@/lib/orm/data';
+import { obtenerGastosEstimadosPorAnio } from '@/lib/orm/data';
 import { Box, Breadcrumbs, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { GastosEstimado, months } from '@/lib/definitions';
-import { setDateAsUTC } from '@/lib/helpers';
+import { GastoEstimadoAnual } from '@/lib/definitions';
 import { GastosEstimadosDelMesGrilla } from '@/components/presupuesto/GastosEstimadosDelMesGrilla';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
 
 const GastosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
-  const [mes, setMes] = useState(months[new Date().getMonth()]);
-  const [gastosEstimados, setGastosEstimados] = useState<GastosEstimado[]>([]);
+  const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnual[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
@@ -22,30 +20,25 @@ const GastosDelMes = () => {
 
   useEffect(() => {
     const obtenerGastosEstimados = async () => {
-      if (anio && mes) {
+      if (anio) {
         const obtenerGastosEstimadosParaLaFechaElegida = async () => {
-          const fecha = new Date(anio, months.indexOf(mes), 1);
-          const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
-          const gastosEstimados = await obtenerGastosEstimadosPorFecha(primerDiaDelMesActual);
-
-          gastosEstimados.forEach((mov) => {
-            mov.fecha = setDateAsUTC(mov.fecha);
-          });
+          const gastosEstimados = await obtenerGastosEstimadosPorAnio(anio);
           return gastosEstimados;
         };
 
         const gastosEstimados = await obtenerGastosEstimadosParaLaFechaElegida();
+        console.log('gastosEstimados', gastosEstimados);
         setGastosEstimados(gastosEstimados);
       }
     };
     obtenerGastosEstimados();
-  }, [mes, anio]);
+  }, [anio]);
 
   useEffect(() => {
     setAnio(new Date().getFullYear());
   }, []);
 
-  const mostrarInformacion = !!(anio && mes);
+  const mostrarInformacion = !!anio;
 
   return (
     <Box>
@@ -64,10 +57,10 @@ const GastosDelMes = () => {
           <Typography color="text.primary">Gastos estimados del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} />
+      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} />
       {mostrarInformacion && (
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
-          <GastosEstimadosDelMesGrilla gastos={gastosEstimados} anio={anio} mes={months.indexOf(mes)} />
+          <GastosEstimadosDelMesGrilla gastos={gastosEstimados} anio={anio} />
         </Box>
       )}
       <Notificacion configuracionProp={configNotificacion} />
