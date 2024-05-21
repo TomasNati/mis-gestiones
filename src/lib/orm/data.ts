@@ -14,7 +14,7 @@ import {
 import { db } from './database';
 import { categorias, detalleSubcategorias, gastoEstimado, movimientosGasto, subcategorias } from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
-import { generateUUID, obtenerCategoriaUIMovimiento } from '../helpers';
+import { generateUUID, obtenerCategoriaUIMovimiento, transformCurrencyToNumber } from '../helpers';
 import { group } from 'console';
 
 const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
@@ -268,12 +268,30 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
       }
     }
 
-    // for (const fila of resultado) {
-    //   if (fila.dbId.startsWith('categoria-')) {
-    //     const gastos = dbResults.filter((gastoDB) => gastoDB.categoriaId === fila.id);
-    //     fila.monto = gastos.reduce((acc, gasto) => acc + gasto.monto, 0);
-    //   }
-    // }
+    for (const fila of resultado) {
+      months.forEach((mes, mesIndex) => {
+        if (fila.dbId.startsWith('categoria-')) {
+          // obtengo los gastos estimados para todas las subcategorias de la categoria y el mes dado
+          const gastosMes = dbResults.filter(
+            (gasto) =>
+              gasto.categoriaId === fila.id &&
+              gasto.fecha.getMonth() === mesIndex &&
+              gasto.fecha.getFullYear() === anio,
+          );
+          const totalMes = gastosMes.reduce((total, gasto) => total + (transformCurrencyToNumber(gasto.monto) || 0), 0);
+          fila[mes] = totalMes;
+        } else {
+          // obtengo los gastos estimados para la subcategoria y el mes dado
+          const gastoMes = dbResults.find(
+            (gasto) =>
+              gasto.subCategoriaId === fila.id &&
+              gasto.fecha.getMonth() === mesIndex &&
+              gasto.fecha.getFullYear() === anio,
+          );
+          fila[mes] = gastoMes ? transformCurrencyToNumber(gastoMes.monto) || 0 : 0;
+        }
+      });
+    }
 
     return resultado;
   } catch (error) {
