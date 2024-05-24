@@ -1177,6 +1177,7 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
 export type GastoEstimadoAnual = {
   id: string;
   dbId: string;
+  categoriaId?: string;
   descripcion: string;
   Enero?: number;
   Febrero?: number;
@@ -1192,6 +1193,8 @@ export type GastoEstimadoAnual = {
   Diciembre?: number;
   [keyof: string]: number | string | Date | undefined;
 };
+
+export type GastoEstimadoAnualUI = GastoEstimadoAnual & { colapsado?: boolean };
 
 export type GastoEstimadoAnualGrupo = {
   groupId: string;

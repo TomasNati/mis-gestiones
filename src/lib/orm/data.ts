@@ -263,6 +263,7 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
         resultado.push({
           id: gastoDB.subCategoriaId,
           dbId: gastoDB.id,
+          categoriaId: gastoDB.categoriaId,
           descripcion: `-------------  ${gastoDB.subCategoriaNombre}`,
         });
       }

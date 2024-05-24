@@ -1,18 +1,21 @@
-import { GastoEstimadoAnual, months } from '@/lib/definitions';
+import { GastoEstimadoAnual, GastoEstimadoAnualUI, months } from '@/lib/definitions';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef, GridRowsProp, GridRowSelectionModel, GridRowId } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowsProp, GridRowSelectionModel, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
+import { IconButton } from '@mui/material';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface GastosEstimadosDelMesGrillaProps {
-  gastos: GastoEstimadoAnual[];
+  gastos: GastoEstimadoAnualUI[];
   anio: number;
 }
 
 const GastosEstimadosDelMesGrilla = ({ gastos }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>(gastos);
-  const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnual[]>([]);
+  const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnualUI[]>([]);
 
   useEffect(() => {
     setRows(gastos);
@@ -28,7 +31,42 @@ const GastosEstimadosDelMesGrilla = ({ gastos }: GastosEstimadosDelMesGrillaProp
     valueFormatter: (params) => params.value,
   }));
 
+  const onToggleSubcategoriesVisibility = (event: React.MouseEvent<HTMLButtonElement>, row: GastoEstimadoAnualUI) => {
+    event.stopPropagation();
+    const nuevoValorColapsado = !row.colapsado;
+
+    if (nuevoValorColapsado) {
+      row.colapsado = true;
+      const rowsFiltered = rows.filter((r) => !r.categoriaId || !(r.categoriaId === row.id));
+      setRows([...rowsFiltered]);
+    } else {
+      const newRows = gastos.filter((filaGasto) => {
+        const esSubcategoriaDeCategoria = filaGasto.categoriaId === row.id;
+        const yaVisible = rows.find((r) => r.id === filaGasto.id);
+        return esSubcategoriaDeCategoria || yaVisible;
+      });
+
+      const rowCategoria = newRows.find((r) => r.dbId === row.dbId);
+      rowCategoria && (rowCategoria.colapsado = false);
+      setRows([...newRows]);
+    }
+  };
+
   const columns: GridColDef[] = [
+    {
+      field: 'actions',
+      headerName: '',
+      width: 50,
+      sortable: false,
+      renderCell: ({ row }: GridCellParams<GastoEstimadoAnualUI>) => {
+        if (!row.dbId.startsWith('categoria')) return null;
+        return (
+          <IconButton aria-label="delete" onClick={(event) => onToggleSubcategoriesVisibility(event, row)}>
+            {row.colapsado ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+          </IconButton>
+        );
+      },
+    },
     {
       field: 'descripcion',
       headerName: 'Descripcion',
@@ -39,7 +77,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos }: GastosEstimadosDelMesGrillaProp
 
   const handleSelectionChange = (rowSelectionModel: GridRowSelectionModel) => {
     const gastosElegidos = rows.filter((row) => rowSelectionModel.includes(row.id as GridRowId));
-    setGastosEstimadosElegidos(gastosElegidos as GastoEstimadoAnual[]);
+    setGastosEstimadosElegidos(gastosElegidos as GastoEstimadoAnualUI[]);
   };
 
   const sumaTotalDelMes = 0; // gastos.reduce((acc, movimiento) => acc + movimiento.monto, 0);
