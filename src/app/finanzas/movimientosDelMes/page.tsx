@@ -1,6 +1,6 @@
 'use client';
 
-import { obtenerMovimientosPorFecha } from '@/lib/orm/data';
+import { obtenerMovimientosPorFecha, obtenerGastosEstimadosTotalesPorFecha } from '@/lib/orm/data';
 import { Box, Breadcrumbs, Divider, IconButton, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { MovimientoGastoGrilla, MovimientoUI, ResultadoAPI, months } from '@/lib/definitions';
@@ -13,37 +13,6 @@ import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graf
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 
-const getTotalEstimadoPorMes = (mes: string) => {
-  switch (mes) {
-    case 'Enero':
-      return 1146279.72;
-    case 'Febrero':
-      return 1800856;
-    case 'Marzo':
-      return 1840851.46;
-    case 'Abril':
-      return 2947940.98;
-    case 'Mayo':
-      return 3217940.98;
-    case 'Junio':
-      return 20000;
-    case 'Julio':
-      return 22000;
-    case 'Agosto':
-      return 24000;
-    case 'Septiembre':
-      return 26000;
-    case 'Octubre':
-      return 28000;
-    case 'Noviembre':
-      return 30000;
-    case 'Diciembre':
-      return 32000;
-    default:
-      return 0;
-  }
-};
-
 const MovimientosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
   const [mes, setMes] = useState(months[new Date().getMonth()]);
@@ -54,6 +23,7 @@ const MovimientosDelMes = () => {
     severity: 'success',
     mensaje: '',
   });
+  const [totalMensualEstimado, setTotalMensualEstimado] = useState(0);
 
   useEffect(() => {
     const obtenerMovimientos = async () => {
@@ -61,7 +31,13 @@ const MovimientosDelMes = () => {
         const obtenerMovimientos = async () => {
           const fecha = new Date(anio, months.indexOf(mes), 1);
           const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
-          const movimientos = await obtenerMovimientosPorFecha(primerDiaDelMesActual);
+
+          const [movimientos, totalEstimadoParaElMes] = await Promise.all([
+            obtenerMovimientosPorFecha(primerDiaDelMesActual),
+            obtenerGastosEstimadosTotalesPorFecha(primerDiaDelMesActual),
+          ]);
+
+          setTotalMensualEstimado(totalEstimadoParaElMes);
 
           const movimientosNoCredito = movimientos.filter(
             (movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito',
@@ -166,7 +142,7 @@ const MovimientosDelMes = () => {
             }}
           >
             <TipoDeGastoPorMes movimientos={movimientos} />
-            <CrecimientoDeGastosEnElMes movimientos={movimientos} totalEstimado={getTotalEstimadoPorMes(mes)} />
+            <CrecimientoDeGastosEnElMes movimientos={movimientos} totalEstimado={totalMensualEstimado} />
           </Box>
           <Divider>
             <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>

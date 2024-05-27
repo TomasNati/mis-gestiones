@@ -296,6 +296,29 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
 
     return resultado;
   } catch (error) {
+    console.error('Error:', error);
+    throw new Error('Error al obtener los gastos estimados');
+  }
+};
+
+export const obtenerGastosEstimadosTotalesPorFecha = async (fecha: Date): Promise<number> => {
+  const fechaDesde = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), 1, 0, 0, 0));
+  const fechaHasta = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth() + 1, 0, 23, 59, 59));
+
+  try {
+    const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
+    const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
+
+    const dbResults = await db
+      .select({
+        monto: gastoEstimado.monto,
+      })
+      .from(gastoEstimado)
+      .where(and(eq(gastoEstimado.active, true), between(gastoEstimado.fecha, fechaDesdeFiltro, fechaHastaFiltro)));
+
+    const totalEstimado = dbResults.reduce((total, gasto) => total + (transformCurrencyToNumber(gasto.monto) || 0), 0);
+    return totalEstimado;
+  } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Error al obtener los gastos estimados');
   }
