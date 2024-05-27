@@ -24,7 +24,7 @@ const getTotalEstimadoPorMes = (mes: string) => {
     case 'Abril':
       return 2947940.98;
     case 'Mayo':
-      return 2848116.21;
+      return 3217940.98;
     case 'Junio':
       return 20000;
     case 'Julio':
