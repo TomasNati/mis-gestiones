@@ -28,6 +28,12 @@ const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
     setInputValue(event.target.value);
   };
 
+  const handleOnKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleBlur();
+    }
+  };
+
   const handleBlur = () => {
     setPreviousInputValue(inputValue);
     setInputValue(formulaValue || '');
@@ -46,7 +52,15 @@ const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
   //   <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
   // );
 
-  return <TextField value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} onFocus={handleFocus} />;
+  return (
+    <TextField
+      value={inputValue}
+      onChange={handleChange}
+      onBlur={() => handleBlur()}
+      onFocus={handleFocus}
+      onKeyDown={handleOnKeyDown}
+    />
+  );
 };
 
 const MontoEditInputCell = (props: GridRenderCellParams<any, number>) => {
