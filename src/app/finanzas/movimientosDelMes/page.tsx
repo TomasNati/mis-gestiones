@@ -25,37 +25,35 @@ const MovimientosDelMes = () => {
   });
   const [totalMensualEstimado, setTotalMensualEstimado] = useState(0);
 
+  const obtenerMovimientos = async (): Promise<MovimientoGastoGrilla[]> => {
+    if (!anio || !mes) return [];
+
+    const fecha = new Date(anio, months.indexOf(mes), 1);
+    const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
+
+    const [movimientos, totalEstimadoParaElMes] = await Promise.all([
+      obtenerMovimientosPorFecha(primerDiaDelMesActual),
+      obtenerGastosEstimadosTotalesPorFecha(primerDiaDelMesActual),
+    ]);
+
+    setTotalMensualEstimado(totalEstimadoParaElMes);
+
+    const movimientosNoCredito = movimientos.filter((movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito');
+    const movimientosCredito = movimientos.filter((movimiento) => movimiento.tipoDeGasto.toString() === 'Credito');
+    const movimientosOrdenados = [...movimientosNoCredito, ...movimientosCredito];
+    movimientosOrdenados.forEach((mov) => {
+      mov.fecha = setDateAsUTC(mov.fecha);
+    });
+    return movimientosOrdenados;
+  };
+
   useEffect(() => {
-    const obtenerMovimientos = async () => {
-      if (anio && mes) {
-        const obtenerMovimientos = async () => {
-          const fecha = new Date(anio, months.indexOf(mes), 1);
-          const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
-
-          const [movimientos, totalEstimadoParaElMes] = await Promise.all([
-            obtenerMovimientosPorFecha(primerDiaDelMesActual),
-            obtenerGastosEstimadosTotalesPorFecha(primerDiaDelMesActual),
-          ]);
-
-          setTotalMensualEstimado(totalEstimadoParaElMes);
-
-          const movimientosNoCredito = movimientos.filter(
-            (movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito',
-          );
-          const movimientosCredito = movimientos.filter(
-            (movimiento) => movimiento.tipoDeGasto.toString() === 'Credito',
-          );
-          const movimientosOrdenados = [...movimientosNoCredito, ...movimientosCredito];
-          movimientosOrdenados.forEach((mov) => {
-            mov.fecha = setDateAsUTC(mov.fecha);
-          });
-          return movimientosOrdenados;
-        };
-        const movimientos = await obtenerMovimientos();
-        setMovimientos(movimientos);
-      }
+    const refrescarMovimientos = async () => {
+      const movimientos = await obtenerMovimientos();
+      setMovimientos(movimientos);
     };
-    obtenerMovimientos();
+
+    refrescarMovimientos();
   }, [mes, anio]);
 
   useEffect(() => {
@@ -103,6 +101,11 @@ const MovimientosDelMes = () => {
         mensaje: 'Movimientos eliminados correctamente',
       });
     }
+  };
+
+  const onRefrescarMovimientos = async () => {
+    const movimientos = await obtenerMovimientos();
+    setMovimientos(movimientos);
   };
 
   const onDividerClicked = () => {
@@ -154,6 +157,7 @@ const MovimientosDelMes = () => {
               mes={months.indexOf(mes)}
               onMovimientoActualizado={onMovimientoActualizado}
               onMovimientosEliminados={onMovimientosEliminados}
+              onRefrescarMovimientos={onRefrescarMovimientos}
             />
           </Box>
         </>

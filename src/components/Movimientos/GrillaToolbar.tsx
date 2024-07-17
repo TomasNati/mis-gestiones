@@ -8,10 +8,10 @@ import {
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { generateUUID, transformNumberToCurrenty } from '@/lib/helpers';
 import { eliminarMovimientos } from '@/lib/orm/actions';
 import { MovimientoGastoGrilla, ResultadoAPI } from '@/lib/definitions';
-import { useState } from 'react';
 
 interface GrillaToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -21,6 +21,7 @@ interface GrillaToolbarProps {
   mes: number;
   sumaTotalDelMes: number;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
+  onRefrescarMovimientos: () => void;
 }
 const GrillaToolbar = ({
   setRows,
@@ -30,6 +31,7 @@ const GrillaToolbar = ({
   movimientosElegidos,
   sumaTotalDelMes,
   onMovimientosEliminados,
+  onRefrescarMovimientos,
 }: GrillaToolbarProps) => {
   const handleAgregarNuevoMovimiento = () => {
     const id = generateUUID();
@@ -65,6 +67,9 @@ const GrillaToolbar = ({
 
   return (
     <GridToolbarContainer>
+      <Button color="primary" startIcon={<RefreshIcon />} onClick={onRefrescarMovimientos}>
+        Refrescar
+      </Button>
       <Button color="primary" startIcon={<AddIcon />} onClick={() => handleAgregarNuevoMovimiento()}>
         Agregar
       </Button>

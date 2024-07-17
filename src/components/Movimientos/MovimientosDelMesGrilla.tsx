@@ -55,6 +55,7 @@ interface MovimientosDelMesGrillaProps {
   movimientos: MovimientoGastoGrilla[];
   onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => void;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
+  onRefrescarMovimientos: () => void;
   mes: number;
   anio: number;
 }
@@ -65,6 +66,7 @@ const MovimientosDelMesGrilla = ({
   anio,
   onMovimientoActualizado,
   onMovimientosEliminados,
+  onRefrescarMovimientos,
 }: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [rows, setRows] = useState<GridRowsProp>(movimientos);
@@ -267,6 +269,7 @@ const MovimientosDelMesGrilla = ({
             movimientosElegidos,
             sumaTotalDelMes,
             onMovimientosEliminados,
+            onRefrescarMovimientos,
           },
         }}
       />
