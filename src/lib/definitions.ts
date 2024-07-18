@@ -1174,24 +1174,29 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
   },
 ];
 
+export type GastoEstimadoItemDelMes = {
+  estimado: number;
+  real: number;
+};
+
 export type GastoEstimadoAnual = {
   id: string;
   dbId: string;
   categoriaId?: string;
   descripcion: string;
-  Enero?: number;
-  Febrero?: number;
-  Marzo?: number;
-  Abril?: number;
-  Mayo?: number;
-  Junio?: number;
-  Julio?: number;
-  Agosto?: number;
-  Septiembre?: number;
-  Octubre?: number;
-  Noviembre?: number;
-  Diciembre?: number;
-  [keyof: string]: number | string | Date | undefined;
+  Enero?: GastoEstimadoItemDelMes;
+  Febrero?: GastoEstimadoItemDelMes;
+  Marzo?: GastoEstimadoItemDelMes;
+  Abril?: GastoEstimadoItemDelMes;
+  Mayo?: GastoEstimadoItemDelMes;
+  Junio?: GastoEstimadoItemDelMes;
+  Julio?: GastoEstimadoItemDelMes;
+  Agosto?: GastoEstimadoItemDelMes;
+  Septiembre?: GastoEstimadoItemDelMes;
+  Octubre?: GastoEstimadoItemDelMes;
+  Noviembre?: GastoEstimadoItemDelMes;
+  Diciembre?: GastoEstimadoItemDelMes;
+  [keyof: string]: number | string | Date | undefined | GastoEstimadoItemDelMes;
 };
 
 export type GastoEstimadoAnualUI = GastoEstimadoAnual & { colapsado?: boolean };

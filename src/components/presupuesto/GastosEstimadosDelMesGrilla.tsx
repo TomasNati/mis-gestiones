@@ -1,4 +1,4 @@
-import { GastoEstimadoAnual, GastoEstimadoAnualUI, months } from '@/lib/definitions';
+import { GastoEstimadoAnualUI, GastoEstimadoItemDelMes, months } from '@/lib/definitions';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef, GridRowsProp, GridRowSelectionModel, GridRowId, GridCellParams } from '@mui/x-data-grid';
@@ -14,11 +14,13 @@ interface GastosEstimadosDelMesGrillaProps {
 }
 
 const GastosEstimadosDelMesGrilla = ({ gastos }: GastosEstimadosDelMesGrillaProps) => {
-  const [rows, setRows] = useState<GridRowsProp>(gastos);
+  const [rows, setRows] = useState<GridRowsProp>([]);
   const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnualUI[]>([]);
 
   useEffect(() => {
-    setRows(gastos);
+    const categoriasColapsadasIds = gastos.filter(({ colapsado }) => colapsado).map(({ id }) => id);
+    const rowsFiltered = gastos.filter((r) => !r.categoriaId || !categoriasColapsadasIds.includes(r.categoriaId));
+    setRows([...rowsFiltered]);
   }, [gastos]);
 
   const mesesColumns: GridColDef[] = months.map((month) => ({
@@ -27,8 +29,8 @@ const GastosEstimadosDelMesGrilla = ({ gastos }: GastosEstimadosDelMesGrillaProp
     type: 'number',
     editable: true,
     width: 120,
-    renderCell: ({ value }) => <span>{transformNumberToCurrenty(value)}</span>,
-    valueFormatter: (params) => params.value,
+    renderCell: ({ value }) => <span>{transformNumberToCurrenty((value as GastoEstimadoItemDelMes).estimado)}</span>,
+    valueFormatter: (params) => (params.value as GastoEstimadoItemDelMes).estimado,
   }));
 
   const onToggleSubcategoriesVisibility = (event: React.MouseEvent<HTMLButtonElement>, row: GastoEstimadoAnualUI) => {

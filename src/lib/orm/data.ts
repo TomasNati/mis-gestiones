@@ -15,7 +15,17 @@ import { db } from './database';
 import { categorias, detalleSubcategorias, gastoEstimado, movimientosGasto, subcategorias } from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
 import { generateUUID, obtenerCategoriaUIMovimiento, transformCurrencyToNumber } from '../helpers';
-import { group } from 'console';
+
+type GastoEstimadoItem = {
+  id: string;
+  fecha: Date;
+  monto: string;
+  comentarios: string | null;
+  subCategoriaNombre: string;
+  subCategoriaId: string;
+  categoriaNombre: string;
+  categoriaId: string;
+};
 
 const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
   // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
@@ -233,7 +243,7 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
     const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
     const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
 
-    const dbResults = await db
+    const dbResults: GastoEstimadoItem[] = await db
       .select({
         id: gastoEstimado.id,
         fecha: gastoEstimado.fecha,
@@ -280,7 +290,10 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
               gasto.fecha.getFullYear() === anio,
           );
           const totalMes = gastosMes.reduce((total, gasto) => total + (transformCurrencyToNumber(gasto.monto) || 0), 0);
-          fila[mes] = totalMes;
+          fila[mes] = {
+            estimado: totalMes,
+            real: 0,
+          };
         } else {
           // obtengo los gastos estimados para la subcategoria y el mes dado
           const gastoMes = dbResults.find(
@@ -289,7 +302,10 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
               gasto.fecha.getMonth() === mesIndex &&
               gasto.fecha.getFullYear() === anio,
           );
-          fila[mes] = gastoMes ? transformCurrencyToNumber(gastoMes.monto) || 0 : 0;
+          fila[mes] = {
+            estimado: gastoMes ? transformCurrencyToNumber(gastoMes.monto) || 0 : 0,
+            real: 0,
+          };
         }
       });
     }
