@@ -10,12 +10,13 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
-  anio: number;
+  mesesAMostrar?: string[];
 }
 
-const GastosEstimadosDelMesGrilla = ({ gastos }: GastosEstimadosDelMesGrillaProps) => {
+const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnualUI[]>([]);
+  const [mesesVisibles, setMesesVisibles] = useState<string[]>(months);
 
   useEffect(() => {
     const categoriasColapsadasIds = gastos.filter(({ colapsado }) => colapsado).map(({ id }) => id);
@@ -23,7 +24,13 @@ const GastosEstimadosDelMesGrilla = ({ gastos }: GastosEstimadosDelMesGrillaProp
     setRows([...rowsFiltered]);
   }, [gastos]);
 
-  const mesesColumns: GridColDef[] = months.map((month) => ({
+  useEffect(() => {
+    if (mesesAMostrar) {
+      setMesesVisibles(mesesAMostrar?.sort((a, b) => months.indexOf(a) - months.indexOf(b)));
+    }
+  }, [mesesAMostrar]);
+
+  const mesesColumns: GridColDef[] = mesesVisibles.map((month) => ({
     field: month,
     headerName: month,
     type: 'number',
