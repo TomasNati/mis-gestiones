@@ -286,8 +286,8 @@ const obtenerTotales = (
   const gastosMes = dbResults.filter(
     (gasto) =>
       ((esCategoria && gasto.categoriaId === id) || gasto.subCategoriaId === id) &&
-      gasto.fecha.getMonth() === mes &&
-      gasto.fecha.getFullYear() === anio,
+      gasto.fecha.getUTCMonth() === mes &&
+      gasto.fecha.getUTCFullYear() === anio,
   );
   const totalMes = gastosMes.reduce((total, gasto) => total + (transformCurrencyToNumber(gasto.monto) || 0), 0);
   return totalMes;
