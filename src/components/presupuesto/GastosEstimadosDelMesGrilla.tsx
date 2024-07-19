@@ -35,8 +35,13 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar }: GastosEstimadosD
     headerName: month,
     type: 'number',
     editable: true,
-    width: 120,
-    renderCell: ({ value }) => <span>{transformNumberToCurrenty((value as GastoEstimadoItemDelMes).estimado)}</span>,
+    width: 300,
+    renderCell: ({ value }) => (
+      <Box sx={{ display: 'flex', flexDirection: 'column', paddingTop: '7px', paddingBottom: '7px' }}>
+        <span>E: {transformNumberToCurrenty((value as GastoEstimadoItemDelMes).estimado)}</span>
+        <span>R: {transformNumberToCurrenty((value as GastoEstimadoItemDelMes).real)}</span>
+      </Box>
+    ),
     valueFormatter: (params) => (params.value as GastoEstimadoItemDelMes).estimado,
   }));
 

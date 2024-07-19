@@ -233,6 +233,66 @@ export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<Movimient
   return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);
 };
 
+const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoEstimadoItem[]> => {
+  const dbResults: GastoEstimadoItem[] = await db
+    .select({
+      id: gastoEstimado.id,
+      fecha: gastoEstimado.fecha,
+      monto: gastoEstimado.monto,
+      comentarios: gastoEstimado.comentarios,
+      subCategoriaNombre: subcategorias.nombre,
+      subCategoriaId: subcategorias.id,
+      categoriaNombre: categorias.nombre,
+      categoriaId: categorias.id,
+    })
+    .from(gastoEstimado)
+    .innerJoin(subcategorias, and(eq(gastoEstimado.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
+    .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
+    .where(and(eq(gastoEstimado.active, true), between(gastoEstimado.fecha, fechaDesde, fechaHasta)))
+    .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
+
+  return dbResults;
+};
+
+const obtenerGastosReales = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoEstimadoItem[]> => {
+  const dbResults: GastoEstimadoItem[] = await db
+    .select({
+      id: movimientosGasto.id,
+      fecha: movimientosGasto.fecha,
+      monto: movimientosGasto.monto,
+      comentarios: movimientosGasto.comentarios,
+      subCategoriaNombre: subcategorias.nombre,
+      subCategoriaId: subcategorias.id,
+      categoriaNombre: categorias.nombre,
+      categoriaId: categorias.id,
+    })
+    .from(movimientosGasto)
+    .innerJoin(subcategorias, and(eq(movimientosGasto.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
+    .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
+    .where(and(eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesde, fechaHasta)))
+    .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
+
+  return dbResults;
+};
+
+const obtenerTotales = (
+  anio: number,
+  mes: number,
+  esCategoria: boolean,
+  id: string,
+  dbResults: GastoEstimadoItem[],
+): number => {
+  // obtengo los gastos para todas las subcategorias de la categoria y el mes dado
+  const gastosMes = dbResults.filter(
+    (gasto) =>
+      ((esCategoria && gasto.categoriaId === id) || gasto.subCategoriaId === id) &&
+      gasto.fecha.getMonth() === mes &&
+      gasto.fecha.getFullYear() === anio,
+  );
+  const totalMes = gastosMes.reduce((total, gasto) => total + (transformCurrencyToNumber(gasto.monto) || 0), 0);
+  return totalMes;
+};
+
 export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<GastoEstimadoAnual[]> => {
   const resultado: GastoEstimadoAnual[] = [];
 
@@ -243,24 +303,10 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
     const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
     const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
 
-    const dbResults: GastoEstimadoItem[] = await db
-      .select({
-        id: gastoEstimado.id,
-        fecha: gastoEstimado.fecha,
-        monto: gastoEstimado.monto,
-        comentarios: gastoEstimado.comentarios,
-        subCategoriaNombre: subcategorias.nombre,
-        subCategoriaId: subcategorias.id,
-        categoriaNombre: categorias.nombre,
-        categoriaId: categorias.id,
-      })
-      .from(gastoEstimado)
-      .innerJoin(subcategorias, and(eq(gastoEstimado.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
-      .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
-      .where(and(eq(gastoEstimado.active, true), between(gastoEstimado.fecha, fechaDesdeFiltro, fechaHastaFiltro)))
-      .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
+    const dbGastosEstimados: GastoEstimadoItem[] = await obtenerGastosEstimados(fechaDesdeFiltro, fechaHastaFiltro);
+    const dbGastosReales: GastoEstimadoItem[] = await obtenerGastosReales(fechaDesdeFiltro, fechaHastaFiltro);
 
-    for (const gastoDB of dbResults) {
+    for (const gastoDB of dbGastosEstimados) {
       if (!resultado.find((gasto) => gasto.id === gastoDB.categoriaId)) {
         resultado.push({
           id: gastoDB.categoriaId,
@@ -281,32 +327,18 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
 
     for (const fila of resultado) {
       months.forEach((mes, mesIndex) => {
-        if (fila.dbId.startsWith('categoria-')) {
-          // obtengo los gastos estimados para todas las subcategorias de la categoria y el mes dado
-          const gastosMes = dbResults.filter(
-            (gasto) =>
-              gasto.categoriaId === fila.id &&
-              gasto.fecha.getMonth() === mesIndex &&
-              gasto.fecha.getFullYear() === anio,
-          );
-          const totalMes = gastosMes.reduce((total, gasto) => total + (transformCurrencyToNumber(gasto.monto) || 0), 0);
-          fila[mes] = {
-            estimado: totalMes,
-            real: 0,
-          };
-        } else {
-          // obtengo los gastos estimados para la subcategoria y el mes dado
-          const gastoMes = dbResults.find(
-            (gasto) =>
-              gasto.subCategoriaId === fila.id &&
-              gasto.fecha.getMonth() === mesIndex &&
-              gasto.fecha.getFullYear() === anio,
-          );
-          fila[mes] = {
-            estimado: gastoMes ? transformCurrencyToNumber(gastoMes.monto) || 0 : 0,
-            real: 0,
-          };
-        }
+        const totalEstimado = obtenerTotales(
+          anio,
+          mesIndex,
+          fila.dbId.startsWith('categoria-'),
+          fila.id,
+          dbGastosEstimados,
+        );
+        const totalReal = obtenerTotales(anio, mesIndex, fila.dbId.startsWith('categoria-'), fila.id, dbGastosReales);
+        fila[mes] = {
+          estimado: totalEstimado,
+          real: totalReal,
+        };
       });
     }
 
