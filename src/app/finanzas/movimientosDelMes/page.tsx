@@ -132,7 +132,7 @@ const MovimientosDelMes = () => {
           <Typography color="text.primary">Movimientos del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} />
+      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} mesesExclusivos />
       {mostrarInformacion && (
         <>
           <Box

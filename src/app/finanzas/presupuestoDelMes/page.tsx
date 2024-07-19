@@ -3,13 +3,14 @@
 import { obtenerGastosEstimadosPorAnio } from '@/lib/orm/data';
 import { Box, Breadcrumbs, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { GastoEstimadoAnualUI } from '@/lib/definitions';
+import { GastoEstimadoAnualUI, months } from '@/lib/definitions';
 import { GastosEstimadosDelMesGrilla } from '@/components/presupuesto/GastosEstimadosDelMesGrilla';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
 
 const GastosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
+  const [meses, setMeses] = useState<string[]>(months);
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
@@ -61,7 +62,7 @@ const GastosDelMes = () => {
           <Typography color="text.primary">Gastos estimados del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} />
+      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} setMeses={setMeses} meses={meses} />
       {mostrarInformacion && (
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
           <GastosEstimadosDelMesGrilla gastos={gastosEstimados} anio={anio} />
