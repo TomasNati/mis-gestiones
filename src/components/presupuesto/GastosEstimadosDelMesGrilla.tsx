@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import { DataGrid, GridColDef, GridRowsProp, GridRowSelectionModel, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
-import { IconButton } from '@mui/material';
+import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -36,12 +36,25 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar }: GastosEstimadosD
     type: 'number',
     editable: true,
     width: 125,
-    renderCell: ({ value }) => (
-      <Box sx={{ display: 'flex', flexDirection: 'column', paddingTop: '7px', paddingBottom: '7px' }}>
-        <span>E: {transformNumberToCurrenty((value as GastoEstimadoItemDelMes).estimado)}</span>
-        <span>R: {transformNumberToCurrenty((value as GastoEstimadoItemDelMes).real)}</span>
-      </Box>
-    ),
+    renderCell: ({ row }: GridCellParams<GastoEstimadoAnualUI>) => {
+      const { estimado, real } = row[month] as GastoEstimadoItemDelMes;
+      const gastoRealColor = estimado >= real ? '#40b040' : '#ea5e5e';
+      const containerStyles: SxProps = {
+        display: 'flex',
+        flexDirection: 'column',
+        paddingTop: '7px',
+        paddingBottom: '7px',
+        fontSize: row.dbId.startsWith('categoria') ? '0.875rem' : '0.8rem',
+        fontWeight: row.dbId.startsWith('categoria') ? '800' : '400',
+      };
+
+      return (
+        <Box sx={containerStyles}>
+          <Box sx={{ color: '#72a2df' }}>{transformNumberToCurrenty(estimado)}</Box>
+          {real > 0 ? <Box sx={{ color: gastoRealColor }}>{transformNumberToCurrenty(real)}</Box> : null}
+        </Box>
+      );
+    },
     valueFormatter: (params) => (params.value as GastoEstimadoItemDelMes).estimado,
   }));
 
