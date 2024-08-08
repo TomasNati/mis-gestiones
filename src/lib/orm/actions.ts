@@ -12,6 +12,8 @@ import {
   ImportarUI,
   conceptoExcelGastosEstimadosTemplate,
   ConceptoExcelGastosEstimadoFila,
+  GastoEstimadoItemDelMes,
+  GastoEstimadoDB,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
@@ -22,8 +24,9 @@ import {
 } from '../helpers';
 import { db } from './database';
 import { GastoEstimadoAInsertarDB, gastoEstimado, movimientosGasto } from './tables';
+import { error } from 'console';
 
-const FormSchema = z.object({
+const FormMovimientoSchema = z.object({
   id: z.string(),
   comentarios: z.string().optional(),
   fecha: z.date({
@@ -37,7 +40,19 @@ const FormSchema = z.object({
   monto: z.coerce.number().gt(0, { message: 'Por favor ingresar un monto mayor a $0.' }),
 });
 
-const CrearMovimiento = FormSchema.omit({ id: true });
+const CrearMovimiento = FormMovimientoSchema.omit({ id: true });
+
+const GastoEstimadoSchema = z
+  .object({
+    id: z.string(),
+    subcategoria: z.string(),
+    fecha: z.date({
+      invalid_type_error: 'Por favor elegir una fecha',
+    }),
+    monto: z.coerce.number().gte(0, { message: 'Por favor ingresar un monto mayor o igual a $0.' }),
+    comentarios: z.string().optional(),
+  })
+  .omit({ id: true });
 
 export async function crearMovimientos(nuevosMovimientos: MovimientoUI[]) {
   const resultadoFinal: ResultadoAPI = {
@@ -130,6 +145,7 @@ export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<Re
   //Revalidate the cache
   revalidatePath('/finanzas');
   revalidatePath('/finanzas/movimientosDelMes');
+  revalidatePath('/finanzas/presupuestoDelMes');
   return resultadoFinal;
 }
 
@@ -335,4 +351,62 @@ const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<Importa
   revalidatePath('/finanzas');
   revalidatePath('/finanzas/movimientosDelMes');
   return Promise.resolve(resultadoFinal);
+};
+
+export const persistirGastoEstimado = async ({
+  id,
+  subcategoriaId,
+  monto,
+  mes,
+  anio,
+}: GastoEstimadoDB): Promise<{ error: string; id: string | null }> => {
+  const resultado: { error: string; id: string | null } = {
+    error: '',
+    id: null,
+  };
+
+  const utcToday = new Date(Date.UTC(anio, mes, 1, 11, 0, 0));
+
+  const objetoGastoEstimado = {
+    id,
+    subcategoria: subcategoriaId,
+    fecha: utcToday,
+    monto,
+  };
+
+  const camposValidados = GastoEstimadoSchema.safeParse(objetoGastoEstimado);
+  if (!camposValidados.success) {
+    const errores = camposValidados.error.flatten().fieldErrors;
+    resultado.error = `Hubo errores de validación: ${errores}`;
+  } else {
+    try {
+      if (objetoGastoEstimado.id) {
+        await db
+          .update(gastoEstimado)
+          .set({
+            monto: objetoGastoEstimado.monto.toString(),
+          })
+          .where(eq(gastoEstimado.id, objetoGastoEstimado.id));
+        resultado.id = objetoGastoEstimado.id;
+      } else {
+        const newId = await db
+          .insert(gastoEstimado)
+          .values({
+            ...objetoGastoEstimado,
+            monto: objetoGastoEstimado.monto.toString(),
+            comentarios: null,
+          })
+          .returning({ insertedId: gastoEstimado.id });
+        resultado.id = newId[0].insertedId;
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        resultado.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+      } else {
+        resultado.error = ` Error al insertar en base de datos: ${error}.\n`;
+      }
+    }
+  }
+
+  return resultado;
 };

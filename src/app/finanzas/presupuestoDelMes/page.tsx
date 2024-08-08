@@ -65,7 +65,7 @@ const GastosDelMes = () => {
       <SeleccionadorPeriodo anio={anio} setAnio={setAnio} setMeses={setMeses} meses={meses} />
       {mostrarInformacion && (
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
-          <GastosEstimadosDelMesGrilla gastos={gastosEstimados} mesesAMostrar={meses} />
+          <GastosEstimadosDelMesGrilla gastos={gastosEstimados} mesesAMostrar={meses} anio={anio} />
         </Box>
       )}
       <Notificacion configuracionProp={configNotificacion} />

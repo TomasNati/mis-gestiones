@@ -1177,6 +1177,16 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
 export type GastoEstimadoItemDelMes = {
   estimado: number;
   real: number;
+  gastoEstimadoDBId?: string;
+  modificado?: boolean;
+};
+
+export type GastoEstimadoDB = {
+  id?: string;
+  subcategoriaId: string;
+  monto: number;
+  mes: number;
+  anio: number;
 };
 
 export type GastoEstimadoAnual = {

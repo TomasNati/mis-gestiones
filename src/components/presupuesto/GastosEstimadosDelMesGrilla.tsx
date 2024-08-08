@@ -1,19 +1,30 @@
-import { GastoEstimadoAnualUI, GastoEstimadoItemDelMes, months } from '@/lib/definitions';
+import { GastoEstimadoAnualUI, GastoEstimadoDB, GastoEstimadoItemDelMes, months } from '@/lib/definitions';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef, GridRowsProp, GridRowSelectionModel, GridRowId, GridCellParams } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridColDef,
+  GridRowsProp,
+  GridRowSelectionModel,
+  GridRowId,
+  GridCellParams,
+  GridRowModel,
+} from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
 import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
+import { persistirGastoEstimado } from '@/lib/orm/actions';
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
   mesesAMostrar?: string[];
+  anio: number;
 }
 
-const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar }: GastosEstimadosDelMesGrillaProps) => {
+const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnualUI[]>([]);
   const [mesesVisibles, setMesesVisibles] = useState<string[]>(months);
@@ -33,9 +44,9 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar }: GastosEstimadosD
   const mesesColumns: GridColDef[] = mesesVisibles.map((month) => ({
     field: month,
     headerName: month,
-    type: 'number',
     editable: true,
     width: 125,
+    renderEditCell: renderGastoEstimadoEditInputCell,
     renderCell: ({ row }: GridCellParams<GastoEstimadoAnualUI>) => {
       const { estimado, real } = row[month] as GastoEstimadoItemDelMes;
       const gastoRealColor = estimado >= real ? '#40b040' : '#ea5e5e';
@@ -107,6 +118,46 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar }: GastosEstimadosD
     setGastosEstimadosElegidos(gastosElegidos as GastoEstimadoAnualUI[]);
   };
 
+  const processRowUpdate = async (newRow: GridRowModel, originalRow: GridRowModel) => {
+    let gastoEstimadoDB: GastoEstimadoDB | null = null;
+    let nombreMes: string = '';
+
+    for (const month of mesesVisibles) {
+      if (newRow[month].modificado) {
+        gastoEstimadoDB = {
+          anio,
+          mes: months.indexOf(month),
+          subcategoriaId: newRow.id as string,
+          monto: newRow[month]?.estimado as number,
+          id: originalRow[month]?.gastoEstimadoDBId as string,
+        };
+        newRow[month].modificado = false;
+        nombreMes = month;
+        break;
+      }
+    }
+
+    if (!gastoEstimadoDB) return originalRow;
+
+    const resultado = await persistirGastoEstimado(gastoEstimadoDB);
+
+    if (resultado) {
+      newRow[nombreMes] = {
+        ...newRow[nombreMes],
+        estimado: gastoEstimadoDB.monto,
+        modificado: false,
+        gastoEstimadoDBId: resultado.id,
+      };
+      console.log(newRow);
+      return newRow;
+    } else {
+      return originalRow;
+    }
+
+    // TODO: obtener todos los gastos estimados del mes y subcategoria, sumarlos, y actualizar el total del mes
+    // TODO: TAL VEZ PUEDA USAR 'obtenerTotales' DE 'src/lib/orm/data.ts'
+  };
+
   const sumaTotalDelMes = 0; // gastos.reduce((acc, movimiento) => acc + movimiento.monto, 0);
 
   return (
@@ -130,6 +181,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar }: GastosEstimadosD
         }}
         pageSizeOptions={[25, 50, 100]}
         onRowSelectionModelChange={handleSelectionChange}
+        processRowUpdate={processRowUpdate}
         slots={{
           toolbar: GrillaToolbar,
         }}

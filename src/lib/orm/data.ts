@@ -15,8 +15,9 @@ import { db } from './database';
 import { categorias, detalleSubcategorias, gastoEstimado, movimientosGasto, subcategorias } from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
 import { generateUUID, obtenerCategoriaUIMovimiento, transformCurrencyToNumber } from '../helpers';
+import { esES } from '@mui/x-data-grid';
 
-type GastoEstimadoItem = {
+type GastoPresupuestoItem = {
   id: string;
   fecha: Date;
   monto: string;
@@ -25,6 +26,7 @@ type GastoEstimadoItem = {
   subCategoriaId: string;
   categoriaNombre: string;
   categoriaId: string;
+  esEstimado?: boolean;
 };
 
 const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
@@ -233,8 +235,8 @@ export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<Movimient
   return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);
 };
 
-const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoEstimadoItem[]> => {
-  const dbResults: GastoEstimadoItem[] = await db
+const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoPresupuestoItem[]> => {
+  const dbResults: GastoPresupuestoItem[] = await db
     .select({
       id: gastoEstimado.id,
       fecha: gastoEstimado.fecha,
@@ -251,11 +253,13 @@ const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promi
     .where(and(eq(gastoEstimado.active, true), between(gastoEstimado.fecha, fechaDesde, fechaHasta)))
     .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
 
+  dbResults.forEach((gasto) => (gasto.esEstimado = true));
+
   return dbResults;
 };
 
-const obtenerGastosReales = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoEstimadoItem[]> => {
-  const dbResults: GastoEstimadoItem[] = await db
+const obtenerGastosReales = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoPresupuestoItem[]> => {
+  const dbResults: GastoPresupuestoItem[] = await db
     .select({
       id: movimientosGasto.id,
       fecha: movimientosGasto.fecha,
@@ -280,8 +284,8 @@ const obtenerTotales = (
   mes: number,
   esCategoria: boolean,
   id: string,
-  dbResults: GastoEstimadoItem[],
-): number => {
+  dbResults: GastoPresupuestoItem[],
+): { totalMes: number; gastoEstimadoId?: string } => {
   // obtengo los gastos para todas las subcategorias de la categoria y el mes dado
   const gastosMes = dbResults.filter(
     (gasto) =>
@@ -290,7 +294,10 @@ const obtenerTotales = (
       gasto.fecha.getUTCFullYear() === anio,
   );
   const totalMes = gastosMes.reduce((total, gasto) => total + (transformCurrencyToNumber(gasto.monto) || 0), 0);
-  return totalMes;
+  return {
+    totalMes,
+    gastoEstimadoId: gastosMes[0]?.esEstimado ? gastosMes[0].id : undefined,
+  };
 };
 
 export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<GastoEstimadoAnual[]> => {
@@ -303,8 +310,8 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
     const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
     const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
 
-    const dbGastosEstimados: GastoEstimadoItem[] = await obtenerGastosEstimados(fechaDesdeFiltro, fechaHastaFiltro);
-    const dbGastosReales: GastoEstimadoItem[] = await obtenerGastosReales(fechaDesdeFiltro, fechaHastaFiltro);
+    const dbGastosEstimados: GastoPresupuestoItem[] = await obtenerGastosEstimados(fechaDesdeFiltro, fechaHastaFiltro);
+    const dbGastosReales: GastoPresupuestoItem[] = await obtenerGastosReales(fechaDesdeFiltro, fechaHastaFiltro);
 
     for (const gastoDB of dbGastosEstimados) {
       if (!resultado.find((gasto) => gasto.id === gastoDB.categoriaId)) {
@@ -336,8 +343,9 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
         );
         const totalReal = obtenerTotales(anio, mesIndex, fila.dbId.startsWith('categoria-'), fila.id, dbGastosReales);
         fila[mes] = {
-          estimado: totalEstimado,
-          real: totalReal,
+          estimado: totalEstimado.totalMes,
+          real: totalReal.totalMes,
+          gastoEstimadoDBId: totalEstimado.gastoEstimadoId,
         };
       });
     }
