@@ -9,6 +9,7 @@ import {
   GridRowId,
   GridCellParams,
   GridRowModel,
+  GridValidRowModel,
 } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
@@ -118,6 +119,18 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
     setGastosEstimadosElegidos(gastosElegidos as GastoEstimadoAnualUI[]);
   };
 
+  const actualizarGastosEstimadosDeCategoria = (mes: string, newRow: GridValidRowModel) => {
+    const gastosEstimadosDelMesYCategorias = rows
+      .filter((gasto) => gasto.categoriaId === newRow.categoriaId)
+      .map((gasto) => (gasto.id == newRow.id ? newRow[mes].estimado : gasto[mes].estimado));
+
+    const total = gastosEstimadosDelMesYCategorias.reduce((acc, gasto) => acc + gasto, 0);
+    const categoriaRow = rows.find((gasto) => gasto.id === newRow.categoriaId);
+    categoriaRow && (categoriaRow[mes].estimado = total);
+
+    return categoriaRow;
+  };
+
   const processRowUpdate = async (newRow: GridRowModel, originalRow: GridRowModel) => {
     let gastoEstimadoDB: GastoEstimadoDB | null = null;
     let nombreMes: string = '';
@@ -148,14 +161,20 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
         modificado: false,
         gastoEstimadoDBId: resultado.id,
       };
-      console.log(newRow);
+
+      const categoriaRowActualizada = actualizarGastosEstimadosDeCategoria(nombreMes, newRow);
+
+      // update the rows array with the new versions for categoriaRowActualizada and newRow
+      const updatedRows = rows.map((row) => {
+        if (categoriaRowActualizada && row.id === categoriaRowActualizada?.id) return categoriaRowActualizada;
+        if (row.id === newRow.id) return newRow;
+        return row;
+      });
+      setRows(updatedRows);
       return newRow;
     } else {
       return originalRow;
     }
-
-    // TODO: obtener todos los gastos estimados del mes y subcategoria, sumarlos, y actualizar el total del mes
-    // TODO: TAL VEZ PUEDA USAR 'obtenerTotales' DE 'src/lib/orm/data.ts'
   };
 
   const sumaTotalDelMes = 0; // gastos.reduce((acc, movimiento) => acc + movimiento.monto, 0);
