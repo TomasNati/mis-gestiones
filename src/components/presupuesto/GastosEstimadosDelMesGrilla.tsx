@@ -191,6 +191,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
         columns={columns}
         density="compact"
         checkboxSelection
+        isCellEditable={(params) => !params.row.dbId.startsWith('categoria')}
         initialState={{
           pagination: {
             paginationModel: {

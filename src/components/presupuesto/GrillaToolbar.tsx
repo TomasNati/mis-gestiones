@@ -1,7 +1,8 @@
 import { Box } from '@mui/material';
-import { GridRowModesModel, GridRowsProp, GridToolbarContainer, GridToolbarExport } from '@mui/x-data-grid';
+import { GridToolbarContainer, GridToolbarExport } from '@mui/x-data-grid';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import { GastoEstimadoAnual } from '@/lib/definitions';
+import PercentageTextField from './InputPorcentaje';
 
 interface GrillaToolbarProps {
   gastosEstimadosElegidos: GastoEstimadoAnual[];
@@ -16,6 +17,9 @@ const GrillaToolbar = ({ gastosEstimadosElegidos, sumaTotalDelMes }: GrillaToolb
   return (
     <GridToolbarContainer>
       <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
+      <Box>
+        <PercentageTextField onChange={(valor?: number) => console.log(valor)} />
+      </Box>
       <Box>
         <span style={{ marginRight: '5px' }}>Suma parcial:</span>
         <span>{sumaFormateada}</span>
