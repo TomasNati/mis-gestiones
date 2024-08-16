@@ -4,7 +4,18 @@ import Icon from '@mui/material/Icon';
 import { styled } from '@mui/material/styles';
 import PercentIcon from '@mui/icons-material/Percent';
 
-const NumberInput = styled(TextField)({
+const NumberInput = styled(TextField)(({ theme }) => ({
+  '& .MuiInputBase-root': {
+    color: theme.palette.primary.main,
+    paddingLeft: '0',
+    borderTop: 'none',
+    borderLeft: 'none',
+    borderRight: 'none',
+    borderRadius: 'unset',
+  },
+  '& .MuiInputAdornment-root': {
+    color: theme.palette.primary.main,
+  },
   '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
     WebkitAppearance: 'none',
     margin: 0,
@@ -12,8 +23,12 @@ const NumberInput = styled(TextField)({
   '& input[type=number]': {
     MozAppearance: 'textfield',
     padding: '3px',
+    height: '20px',
   },
-});
+  '& .MuiSvgIcon-root': {
+    fontSize: '18px',
+  },
+}));
 
 interface PercentageTextFieldProps {
   onChange: (valor?: number) => void;
@@ -36,6 +51,7 @@ const PercentageTextField = ({ onChange }: PercentageTextFieldProps) => {
     <NumberInput
       type="number"
       onChange={handleInputChange}
+      margin="dense"
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
