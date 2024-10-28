@@ -585,6 +585,8 @@ export const mapearSubcategoriasATiposDeConceptoExcel = (
     case 'c4fb8b43-6697-4bc3-84c1-ee0fa34ae3af':
       tipoDeConcepto = TiposDeConceptoExcel.Alcohol;
       break;
+    case 'c7682c23-aacb-4cd1-8169-ac63248c1233':
+      tipoDeConcepto = TiposDeConceptoExcel.Otras;
     case 'a544c67b-969b-486c-a859-6e1087da9858':
       tipoDeConcepto = TiposDeConceptoExcel.Peluqueria_belleza;
       break;
