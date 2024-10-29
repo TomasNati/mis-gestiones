@@ -9,7 +9,7 @@ import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificaci
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
 
 const mesActual: string = months.at(new Date().getMonth()) || 'Enero';
-
+console.log(mesActual);
 const GastosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
   const [meses, setMeses] = useState<string[]>([mesActual]);
