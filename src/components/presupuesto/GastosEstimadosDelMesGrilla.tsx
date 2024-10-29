@@ -56,8 +56,8 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
         flexDirection: 'column',
         paddingTop: '7px',
         paddingBottom: '7px',
-        fontSize: row.dbId.startsWith('categoria') ? '0.875rem' : '0.8rem',
-        fontWeight: row.dbId.startsWith('categoria') ? '800' : '400',
+        fontSize: row.dbId?.startsWith('categoria') ? '0.875rem' : '0.8rem',
+        fontWeight: row.dbId?.startsWith('categoria') ? '800' : '400',
       };
 
       return (
@@ -98,7 +98,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
       width: 50,
       sortable: false,
       renderCell: ({ row }: GridCellParams<GastoEstimadoAnualUI>) => {
-        if (!row.dbId.startsWith('categoria')) return null;
+        if (!row.dbId?.startsWith('categoria')) return null;
         return (
           <IconButton aria-label="delete" onClick={(event) => onToggleSubcategoriesVisibility(event, row)}>
             {row.colapsado ? <ExpandMoreIcon /> : <ExpandLessIcon />}
@@ -191,7 +191,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
         columns={columns}
         density="compact"
         checkboxSelection
-        isCellEditable={(params) => !params.row.dbId.startsWith('categoria')}
+        isCellEditable={(params) => !params.row.dbId?.startsWith('categoria')}
         initialState={{
           pagination: {
             paginationModel: {

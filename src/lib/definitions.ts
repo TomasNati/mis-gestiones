@@ -1191,7 +1191,7 @@ export type GastoEstimadoDB = {
 
 export type GastoEstimadoAnual = {
   id: string;
-  dbId: string;
+  dbId: string | null;
   categoriaId?: string;
   descripcion: string;
   Enero?: GastoEstimadoItemDelMes;
@@ -1206,7 +1206,7 @@ export type GastoEstimadoAnual = {
   Octubre?: GastoEstimadoItemDelMes;
   Noviembre?: GastoEstimadoItemDelMes;
   Diciembre?: GastoEstimadoItemDelMes;
-  [keyof: string]: number | string | Date | undefined | GastoEstimadoItemDelMes;
+  [keyof: string]: number | string | Date | undefined | GastoEstimadoItemDelMes | null;
 };
 
 export type GastoEstimadoAnualUI = GastoEstimadoAnual & { colapsado?: boolean };
