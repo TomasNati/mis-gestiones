@@ -8,9 +8,11 @@ import { GastosEstimadosDelMesGrilla } from '@/components/presupuesto/GastosEsti
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
 
+const mesActual: string = months.at(new Date().getMonth()) || 'Enero';
+
 const GastosDelMes = () => {
   const [anio, setAnio] = useState<number | undefined>(0);
-  const [meses, setMeses] = useState<string[]>(months);
+  const [meses, setMeses] = useState<string[]>([mesActual]);
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
