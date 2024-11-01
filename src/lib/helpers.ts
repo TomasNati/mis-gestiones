@@ -6,6 +6,9 @@ import {
   TiposDeConceptoExcel,
   TiposDeServicioExcel,
   months,
+  conceptoExcelGastosEstimadosTemplate,
+  GastoEstimadoAnualUI,
+  GastoEstimadoItemDelMes,
 } from './definitions';
 
 export const logMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info'): void => {
@@ -692,4 +695,43 @@ export const mapearSubcategoriasATiposDeConceptoExcel = (
   }
 
   return [tipoDeConcepto, comentario];
+};
+
+export const exportarGastosEstimados = (gastos: GastoEstimadoAnualUI[], meses: string[]): void => {
+  const resultado: string[][] = [];
+  const header = ['Categoria', ...meses];
+
+  conceptoExcelGastosEstimadosTemplate.forEach((concepto) => {
+    if (concepto.tipo === 'categoria') {
+      resultado.push([concepto.descripcion, '']);
+    } else {
+      const gasto = gastos.find((g) => g.id === concepto.subcategoriaId);
+      if (gasto) {
+        const fila: string[] = [gasto.descripcion.replace('------------- ', '')];
+        meses.forEach((mes) => {
+          fila.push((gasto[mes] as GastoEstimadoItemDelMes)?.estimado.toString() || '');
+        });
+        resultado.push(fila);
+      }
+    }
+  });
+
+  // Convert array of objects to CSV format
+  const csvContent = [
+    header.join(','), // Header row
+    ...resultado.map((row) => row.join(',')), // Data rows
+  ].join('\n');
+
+  // Create a Blob from the CSV content
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  // Create a temporary link to download the file
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `resultado.csv`);
+  link.click();
+
+  // Cleanup
+  URL.revokeObjectURL(url);
 };

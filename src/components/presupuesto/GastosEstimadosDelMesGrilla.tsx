@@ -18,6 +18,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
+import { GridCsvExportOptions, GridToolbarExport } from '@mui/x-data-grid';
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
@@ -208,6 +209,8 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
         slotProps={{
           toolbar: {
             gastosEstimadosElegidos,
+            gastosEstimados: rows as GastoEstimadoAnualUI[],
+            mesesVisibles,
             sumaTotalDelMes,
           },
         }}
