@@ -14,7 +14,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 
 const MovimientosDelMes = () => {
-  const [anio, setAnio] = useState<number | undefined>(0);
+  const [anio, setAnio] = useState<number>(new Date().getFullYear());
   const [mes, setMes] = useState(months[new Date().getMonth()]);
   const [movimientos, setMovimientos] = useState<MovimientoGastoGrilla[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
@@ -55,10 +55,6 @@ const MovimientosDelMes = () => {
 
     refrescarMovimientos();
   }, [mes, anio]);
-
-  useEffect(() => {
-    setAnio(new Date().getFullYear());
-  }, []);
 
   const onMovimientoActualizado = async (movimiento: MovimientoGastoGrilla) => {
     const movimientoUI: MovimientoUI = {

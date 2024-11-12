@@ -11,7 +11,7 @@ import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeri
 const mesActual: string = months.at(new Date().getMonth()) || 'Enero';
 
 const GastosDelMes = () => {
-  const [anio, setAnio] = useState<number | undefined>(0);
+  const [anio, setAnio] = useState<number>(new Date().getFullYear());
   const [meses, setMeses] = useState<string[]>([mesActual]);
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
@@ -40,10 +40,6 @@ const GastosDelMes = () => {
     };
     obtenerGastosEstimados();
   }, [anio]);
-
-  useEffect(() => {
-    setAnio(new Date().getFullYear());
-  }, []);
 
   const mostrarInformacion = !!anio;
 
