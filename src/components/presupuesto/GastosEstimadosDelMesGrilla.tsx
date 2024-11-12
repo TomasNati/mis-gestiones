@@ -134,12 +134,13 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
   };
 
   const actualizarGastosEstimadosDeCategoria = (mes: string, newRow: GridValidRowModel) => {
-    const gastosEstimadosDelMesYCategorias = rows
+    const rowValues = Array.from(apiRef.current.getRowModels().values());
+    const gastosEstimadosDelMesYCategorias = rowValues
       .filter((gasto) => gasto.categoriaId === newRow.categoriaId)
       .map((gasto) => (gasto.id == newRow.id ? newRow[mes].estimado : gasto[mes].estimado));
 
     const total = gastosEstimadosDelMesYCategorias.reduce((acc, gasto) => acc + gasto, 0);
-    const categoriaRow = rows.find((gasto) => gasto.id === newRow.categoriaId);
+    const categoriaRow = rowValues.find((gasto) => gasto.id === newRow.categoriaId);
     categoriaRow && (categoriaRow[mes].estimado = total);
 
     return categoriaRow;
@@ -147,7 +148,6 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
 
   const persistRowUpdates = async (unsavedRows: Record<GridRowId, GridValidRowModel>) => {
     let gastoEstimadoDB: GastoEstimadoDB | null = null;
-    let nombreMes: string = '';
     const gastosEstimadosDB: GastoEstimadoDB[] = [];
 
     const updatedRows = await Promise.all(
@@ -165,7 +165,6 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
             };
             gastosEstimadosDB.push(gastoEstimadoDB);
             newRow[month].modificado = false;
-            nombreMes = month;
             break;
           }
         }
@@ -175,27 +174,6 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
         return resultado;
       }),
     );
-
-    // const categoriaRowsARefrescar: GridValidRowModel[] = [];
-
-    // for (const updatedRow of updatedRows) {
-    //   const gastoEstimadoDB = gastosEstimadosDB.shift();
-    //   if (!updatedRow?.error && gastoEstimadoDB) {
-    //     const newRow = unsavedRows[updatedRow.id];
-    //     newRow[nombreMes] = {
-    //       ...newRow[nombreMes],
-    //       estimado: gastoEstimadoDB.monto,
-    //       modificado: false,
-    //       gastoEstimadoDBId: updatedRow.id,
-    //     };
-    //     const categoriaRowActualizada = actualizarGastosEstimadosDeCategoria(nombreMes, newRow);
-    //     if (categoriaRowActualizada) {
-    //       categoriaRowsARefrescar.push(categoriaRowActualizada);
-    //     }
-    //   }
-    // }
-
-    // apiRef.current.updateRows(categoriaRowsARefrescar);
 
     return updatedRows;
   };
@@ -218,7 +196,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
         unsavedChangesRef.current.rowsBeforeChange[rowId] = oldRow;
       }
       setHasUnsavedRows(true);
-      actualizarGastosCategorias(Object.values(unsavedChangesRef.current.unsavedRows));
+      actualizarGastosCategorias([newRow]);
       return newRow;
     },
     [],

@@ -38,10 +38,10 @@ const GrillaToolbar = ({
   return (
     <GridToolbarContainer>
       <Button disabled={!hasUnsavedRows} onClick={saveChanges} startIcon={<SaveOutlinedIcon />}>
-        <span>Save</span>
+        <span>Guardar</span>
       </Button>
       <Button disabled={!hasUnsavedRows} onClick={discardChanges} startIcon={<RestoreOutlinedIcon />}>
-        Discard all changes
+        Descartar cambios
       </Button>
       <Button color="primary" startIcon={<SaveAltOutlinedIcon />} onClick={onExportarClicked}>
         Exportar
