@@ -32,9 +32,10 @@ const NumberInput = styled(TextField)(({ theme }) => ({
 
 interface PercentageTextFieldProps {
   onChange: (valor?: number) => void;
+  disabled?: boolean;
 }
 
-const PercentageTextField = ({ onChange }: PercentageTextFieldProps) => {
+const PercentageTextField = ({ onChange, disabled }: PercentageTextFieldProps) => {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     const regex = /^(?:\d{0,2}(?:\.\d)?)?$/;
@@ -51,6 +52,7 @@ const PercentageTextField = ({ onChange }: PercentageTextFieldProps) => {
     <NumberInput
       type="number"
       onChange={handleInputChange}
+      disabled={disabled}
       margin="dense"
       InputProps={{
         startAdornment: (

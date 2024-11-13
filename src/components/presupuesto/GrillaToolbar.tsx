@@ -1,7 +1,7 @@
 import { Box, Button } from '@mui/material';
 import { GridToolbarContainer } from '@mui/x-data-grid';
-import { transformNumberToCurrenty } from '@/lib/helpers';
-import { GastoEstimadoAnual } from '@/lib/definitions';
+import { cloneObject, transformNumberToCurrenty } from '@/lib/helpers';
+import { GastoEstimadoAnual, GastoEstimadoItemDelMes } from '@/lib/definitions';
 import PercentageTextField from './InputPorcentaje';
 import { exportarGastosEstimados } from '@/lib/helpers';
 import SaveAltOutlinedIcon from '@mui/icons-material/SaveAltOutlined';
@@ -16,6 +16,7 @@ interface GrillaToolbarProps {
   hasUnsavedRows: boolean;
   saveChanges: () => void;
   discardChanges: () => void;
+  gastosIncreasedByPercentage: (gastosUpdated: GastoEstimadoAnual[]) => void;
 }
 const GrillaToolbar = ({
   gastosEstimadosElegidos,
@@ -25,6 +26,7 @@ const GrillaToolbar = ({
   hasUnsavedRows,
   saveChanges,
   discardChanges,
+  gastosIncreasedByPercentage,
 }: GrillaToolbarProps) => {
   const sumaDeGastosEstimadosElegidos = 0; // gastosEstimadosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
 
@@ -33,6 +35,22 @@ const GrillaToolbar = ({
 
   const onExportarClicked = () => {
     exportarGastosEstimados(gastosEstimadosElegidos.length ? gastosEstimadosElegidos : gastosEstimados, mesesVisibles);
+  };
+
+  const onPercentageUpdateClicked = (valor?: number) => {
+    if (!valor) return;
+
+    const mesAActualizar = mesesVisibles[mesesVisibles.length - 1];
+    const copiasDeGastosEstimadosElegidos = cloneObject(gastosEstimadosElegidos);
+
+    copiasDeGastosEstimadosElegidos.forEach((gasto) => {
+      const gastoEstimadoDelMes = gasto[mesAActualizar] as GastoEstimadoItemDelMes;
+      if (gastoEstimadoDelMes) {
+        gastoEstimadoDelMes.estimado = gastoEstimadoDelMes.estimado + (gastoEstimadoDelMes.estimado * valor) / 100;
+      }
+    });
+
+    gastosIncreasedByPercentage(copiasDeGastosEstimadosElegidos);
   };
 
   return (
@@ -47,7 +65,7 @@ const GrillaToolbar = ({
         Exportar
       </Button>
       <Box>
-        <PercentageTextField onChange={(valor?: number) => console.log(valor)} />
+        <PercentageTextField onChange={onPercentageUpdateClicked} />
       </Box>
       <Box>
         <span style={{ marginRight: '5px' }}>Suma parcial:</span>

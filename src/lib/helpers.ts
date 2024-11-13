@@ -735,3 +735,5 @@ export const exportarGastosEstimados = (gastos: GastoEstimadoAnualUI[], meses: s
   // Cleanup
   URL.revokeObjectURL(url);
 };
+
+export const cloneObject = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));

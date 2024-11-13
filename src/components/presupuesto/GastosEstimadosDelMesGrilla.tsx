@@ -1,11 +1,16 @@
-import { GastoEstimadoAnualUI, GastoEstimadoDB, GastoEstimadoItemDelMes, months } from '@/lib/definitions';
-import { transformNumberToCurrenty } from '@/lib/helpers';
+import {
+  GastoEstimadoAnual,
+  GastoEstimadoAnualUI,
+  GastoEstimadoDB,
+  GastoEstimadoItemDelMes,
+  months,
+} from '@/lib/definitions';
+import { cloneObject, transformNumberToCurrenty } from '@/lib/helpers';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
   GridColDef,
   GridRowsProp,
-  GridRowSelectionModel,
   GridRowId,
   GridCellParams,
   GridRowModel,
@@ -14,7 +19,7 @@ import {
   useGridApiRef,
 } from '@mui/x-data-grid';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { GrillaToolbar } from './GrillaToolbar';
+import { GrillaToolbar, GrillaToolbarProps } from './GrillaToolbar';
 import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -29,7 +34,7 @@ interface GastosEstimadosDelMesGrillaProps {
 
 const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>([]);
-  const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnualUI[]>([]);
+  const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnual[]>([]);
   const [mesesVisibles, setMesesVisibles] = useState<string[]>(months);
 
   const [hasUnsavedRows, setHasUnsavedRows] = useState(false);
@@ -128,9 +133,9 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
     ...mesesColumns,
   ];
 
-  const handleSelectionChange = (rowSelectionModel: GridRowSelectionModel) => {
-    const gastosElegidos = rows.filter((row) => rowSelectionModel.includes(row.id as GridRowId));
-    setGastosEstimadosElegidos(gastosElegidos as GastoEstimadoAnualUI[]);
+  const handleSelectionChange = () => {
+    const modelRowsSelected = Array.from(apiRef.current.getSelectedRows().values());
+    setGastosEstimadosElegidos(modelRowsSelected as GastoEstimadoAnual[]);
   };
 
   const actualizarGastosEstimadosDeCategoria = (mes: string, newRow: GridValidRowModel) => {
@@ -230,7 +235,39 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
     }
   }, [apiRef]);
 
+  const gastosActualizadosPorPorcentaje = useCallback(
+    (gastosActualizados: GastoEstimadoAnualUI[]) => {
+      for (const gasto of gastosActualizados) {
+        const rowUpdated = gasto as GridValidRowModel;
+        const rowId = rowUpdated.id;
+        const oldRow = gastosEstimadosElegidos.find((r) => r.id === rowId);
+        unsavedChangesRef.current.unsavedRows[rowId] = rowUpdated;
+        if (!unsavedChangesRef.current.rowsBeforeChange[rowId] && oldRow) {
+          unsavedChangesRef.current.rowsBeforeChange[rowId] = cloneObject(oldRow);
+        }
+      }
+
+      Object.values(unsavedChangesRef.current.unsavedRows).forEach((row) => {
+        apiRef.current.updateRows([row]);
+      });
+      actualizarGastosCategorias([unsavedChangesRef.current.unsavedRows]);
+      setHasUnsavedRows(true);
+    },
+    [apiRef, gastosEstimadosElegidos],
+  );
+
   const sumaTotalDelMes = 0; // gastos.reduce((acc, movimiento) => acc + movimiento.monto, 0);
+
+  const toolbarProps: GrillaToolbarProps = {
+    gastosEstimadosElegidos,
+    gastosEstimados: rows as GastoEstimadoAnualUI[],
+    mesesVisibles,
+    sumaTotalDelMes,
+    hasUnsavedRows,
+    saveChanges,
+    discardChanges,
+    gastosIncreasedByPercentage: gastosActualizadosPorPorcentaje,
+  };
 
   return (
     <Box sx={{ width: '100%', minWidth: 650 }}>
@@ -261,15 +298,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
           toolbar: GrillaToolbar,
         }}
         slotProps={{
-          toolbar: {
-            gastosEstimadosElegidos,
-            gastosEstimados: rows as GastoEstimadoAnualUI[],
-            mesesVisibles,
-            sumaTotalDelMes,
-            hasUnsavedRows,
-            saveChanges,
-            discardChanges,
-          },
+          toolbar: toolbarProps,
         }}
       />
     </Box>
