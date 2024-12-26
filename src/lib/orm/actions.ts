@@ -399,6 +399,7 @@ export const persistirGastoEstimado = async ({
           .returning({ insertedId: gastoEstimado.id });
         resultado.id = newId[0].insertedId;
       }
+      revalidatePath('/finanzas/presupuestoDelMes');
     } catch (error: unknown) {
       if (error instanceof Error) {
         resultado.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
