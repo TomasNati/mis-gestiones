@@ -151,7 +151,11 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
     return categoriaRow;
   };
 
-  const persistRowUpdates = async (unsavedRows: Record<GridRowId, GridValidRowModel>) => {
+  const persistRowUpdates = async (
+    unsavedRows: Record<GridRowId, GridValidRowModel>,
+    anioAUsar: number,
+    mesesAPersistir: string[],
+  ) => {
     let gastoEstimadoDB: GastoEstimadoDB | null = null;
     const gastosEstimadosDB: GastoEstimadoDB[] = [];
 
@@ -159,10 +163,10 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
       Object.entries(unsavedRows).map(async ([rowId, newRow]) => {
         const originalRow = unsavedChangesRef.current.rowsBeforeChange[rowId];
 
-        for (const month of mesesVisibles) {
+        for (const month of mesesAPersistir) {
           if (newRow[month].modificado) {
             gastoEstimadoDB = {
-              anio,
+              anio: anioAUsar,
               mes: months.indexOf(month),
               subcategoriaId: newRow.id as string,
               monto: newRow[month]?.estimado as number,
@@ -173,7 +177,6 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
             break;
           }
         }
-
         if (!gastoEstimadoDB) return originalRow;
         const resultado = await persistirGastoEstimado(gastoEstimadoDB);
         return resultado;
@@ -223,7 +226,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
     try {
       // Persist updates in the database
       setIsSaving(true);
-      await persistRowUpdates(unsavedChangesRef.current.unsavedRows);
+      await persistRowUpdates(unsavedChangesRef.current.unsavedRows, anio, mesesVisibles);
       setIsSaving(false);
       setHasUnsavedRows(false);
       unsavedChangesRef.current = {
@@ -233,7 +236,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
     } catch (error) {
       setIsSaving(false);
     }
-  }, [apiRef]);
+  }, [apiRef, anio, mesesVisibles]);
 
   const gastosActualizadosPorPorcentaje = useCallback(
     (gastosActualizados: GastoEstimadoAnualUI[]) => {
