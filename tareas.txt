@@ -1,4 +1,4 @@
-[X] Gastos estimados 
+[X] Gastos estimados
  - Para mostrar los gastos reales vs los estimados:
  1. Obtener, en obtenerGastosEstimadosPorAnio (data.ts), los movimientos para el año actual. Es una query muy parecida a la actual
  2. Unificar el object de salida tal que, para cada mes, en vez de tener un 'number' tenga un {estimado: number, real: number}
