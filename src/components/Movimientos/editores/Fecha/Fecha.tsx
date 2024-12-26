@@ -55,7 +55,7 @@ const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, o
 const FechaEditInputCell = (props: GridRenderCellParams<any, Date>) => {
   const { id, value, field } = props;
   const anio = value?.getFullYear() || new Date().getFullYear();
-  const mes = value?.getMonth() || new Date().getMonth();
+  const mes = value ? value.getMonth() : new Date().getMonth();
   const dia = value?.getDate() || 1;
   const diasEnMes = obtenerDiasEnElMes(new Date(anio, mes, 1));
   const apiRef = useGridApiContext();
