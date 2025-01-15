@@ -1,4 +1,6 @@
 BUGS:
+-
+
 
  select  fc.id AS categoria_id,
     fc.nombre AS categoria_nombre,
