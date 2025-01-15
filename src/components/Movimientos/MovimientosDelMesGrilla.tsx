@@ -53,7 +53,7 @@ const renderTipoDePago = (params: GridRenderCellParams<any, TipoDeMovimientoGast
 
 interface MovimientosDelMesGrillaProps {
   movimientos: MovimientoGastoGrilla[];
-  onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => void;
+  onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => Promise<MovimientoGastoGrilla>;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
   onRefrescarMovimientos: () => void;
   mes: number;
@@ -190,13 +190,13 @@ const MovimientosDelMesGrilla = ({
     console.error('Error al actualizar el movimiento', params);
   };
 
-  const processRowUpdate = (newRow: GridRowModel, originalRow: GridRowModel) => {
+  const processRowUpdate = async (newRow: GridRowModel, originalRow: GridRowModel) => {
     const { id, fecha, concepto, tipoDeGasto, monto, isNew } = newRow;
     const valido = id && fecha && !!concepto && tipoDeGasto !== null && monto && monto > 0.01;
     if (valido) {
-      onMovimientoActualizado(newRow as MovimientoGastoGrilla);
-      const updatedRow = { ...newRow, isNew: false };
-      setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+      const movimientoActualizado = await onMovimientoActualizado(newRow as MovimientoGastoGrilla);
+      const updatedRow = { ...newRow, isNew: false, id: movimientoActualizado.id };
+      setRows(rows.map((row) => (row.id === id ? updatedRow : row)));
       return updatedRow;
     } else {
       const newRows = isNew

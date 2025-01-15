@@ -14,6 +14,8 @@ import {
   ConceptoExcelGastosEstimadoFila,
   GastoEstimadoItemDelMes,
   GastoEstimadoDB,
+  ResultadoAPICrear,
+  ResultadoCrearMovimiento,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
@@ -55,17 +57,20 @@ const GastoEstimadoSchema = z
   .omit({ id: true });
 
 export async function crearMovimientos(nuevosMovimientos: MovimientoUI[]) {
-  const resultadoFinal: ResultadoAPI = {
+  const resultadoFinal: ResultadoAPICrear = {
     exitoso: true,
     errores: [],
+    idsCreados: [],
   };
 
   for (const movimiento of nuevosMovimientos) {
-    const mensajeError = await crearMovimiento(movimiento);
-    if (mensajeError) {
+    const { error, id } = await crearMovimiento(movimiento);
+    if (error) {
       resultadoFinal.errores.push(`Error al crear el movimiento ${movimiento.filaId}. 
-        Detalle: ${mensajeError}`);
+        Detalle: ${error}`);
       resultadoFinal.exitoso = false;
+    } else if (id) {
+      resultadoFinal.idsCreados.push(id);
     }
   }
   //Revalidate the cache
@@ -149,38 +154,42 @@ export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<Re
   return resultadoFinal;
 }
 
-export async function crearMovimiento(nuevoMovimiento: MovimientoUI) {
-  let resultadoMensaje = '';
+export async function crearMovimiento(nuevoMovimiento: MovimientoUI): Promise<ResultadoCrearMovimiento> {
+  const resultado: ResultadoCrearMovimiento = {};
 
   const camposValidados = CrearMovimiento.safeParse(nuevoMovimiento);
   if (!camposValidados.success) {
     const errores = camposValidados.error.flatten().fieldErrors;
-    resultadoMensaje = 'Hubo errores de validación.';
+    resultado.error = 'Hubo errores de validación.';
   } else {
     const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
     const fechaString = fecha.toISOString().replace('T', ' ');
     const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
 
     try {
-      await db.insert(movimientosGasto).values({
-        fecha: new Date(fechaString),
-        monto: monto.toString(),
-        subcategoria: subcategoriaId,
-        detallesubcategoria: detalleSubcategoriaIdFinal,
-        tipodepago: tipoDeGasto,
-        comentarios: comentarios || null,
-      });
+      const newId = await db
+        .insert(movimientosGasto)
+        .values({
+          fecha: new Date(fechaString),
+          monto: monto.toString(),
+          subcategoria: subcategoriaId,
+          detallesubcategoria: detalleSubcategoriaIdFinal,
+          tipodepago: tipoDeGasto,
+          comentarios: comentarios || null,
+        })
+        .returning({ insertedId: movimientosGasto.id });
+
+      resultado.id = newId[0].insertedId;
     } catch (error: unknown) {
       if (error instanceof Error) {
-        resultadoMensaje = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+        resultado.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
       } else {
-        resultadoMensaje = ` Error al insertar en base de datos: ${error}.\n`;
+        resultado.error = ` Error al insertar en base de datos: ${error}.\n`;
       }
     }
-    resultadoMensaje && logMessage(resultadoMensaje, 'error');
-
-    return resultadoMensaje;
+    resultado.error && logMessage(resultado.error, 'error');
   }
+  return resultado;
 }
 
 export const importarDatos = async (datos: ImportarUI): Promise<ImportarResult> => {

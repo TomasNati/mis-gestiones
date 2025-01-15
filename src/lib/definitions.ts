@@ -128,6 +128,15 @@ export type ResultadoAPI = {
   exitoso: boolean;
 };
 
+export type ResultadoAPICrear = ResultadoAPI & {
+  idsCreados: string[];
+};
+
+export interface ResultadoCrearMovimiento {
+  id?: string;
+  error?: string;
+}
+
 export type TipoDeImportacion = 'Gastos del mes' | 'Presupuesto del mes';
 
 export type ImportarUI = {

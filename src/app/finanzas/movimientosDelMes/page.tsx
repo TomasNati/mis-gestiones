@@ -56,7 +56,7 @@ const MovimientosDelMes = () => {
     refrescarMovimientos();
   }, [mes, anio]);
 
-  const onMovimientoActualizado = async (movimiento: MovimientoGastoGrilla) => {
+  const onMovimientoActualizado = async (movimiento: MovimientoGastoGrilla): Promise<MovimientoGastoGrilla> => {
     const movimientoUI: MovimientoUI = {
       ...movimiento,
       subcategoriaId: movimiento.concepto.subcategoriaId,
@@ -64,9 +64,16 @@ const MovimientosDelMes = () => {
       valido: true,
       filaId: 0,
     };
-    const resultado = movimiento.isNew
-      ? await crearMovimientos([movimientoUI])
-      : await actualizarMovimiento(movimientoUI);
+    let resultado: ResultadoAPI;
+    if (movimiento.isNew) {
+      const resultadoCrear = await crearMovimientos([movimientoUI]);
+      if (resultadoCrear.exitoso) {
+        movimiento.id = resultadoCrear.idsCreados[0];
+      }
+      resultado = resultadoCrear;
+    } else {
+      resultado = await actualizarMovimiento(movimientoUI);
+    }
 
     if (!resultado.exitoso) {
       setConfigNotificacion({
@@ -81,6 +88,7 @@ const MovimientosDelMes = () => {
         mensaje: movimiento.isNew ? 'Movimientos agregados correctamente' : 'Movimiento actualizado correctamente',
       });
     }
+    return movimiento;
   };
 
   const onMovimientosEliminados = (resultado: ResultadoAPI) => {
