@@ -1,4 +1,3 @@
-import * as React from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { Autocomplete, Box, Button, DialogContent, Grid, TextField } from '@mui/material';
@@ -7,11 +6,14 @@ import { Fecha } from '../Fecha/Fecha';
 import { TipoDePagoEdicion } from '../TipoDePago/TipoDePago';
 import { CategoriaUIMovimiento, InfoFilaMovimientoGrupo, TipoDeMovimientoGasto } from '@/lib/definitions';
 import AddIcon from '@mui/icons-material/Add';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateUUID } from '@/lib/helpers';
 import { FilaGrupoModal } from './FilaGrupoModal';
 
 const establecimientos = ['Changomás', 'Farmacity', 'Oriente', 'Super Más', 'Vea'];
+
+const categoriaDiarioSugeridos = ['Comida', 'Gaseosas', 'Alcohol', 'Cig', 'Productos personales'];
+const categoriaHogarSugeridos = ['Cosas para la casa'];
 
 export interface GrupoModalProps {
   open: boolean;
@@ -23,6 +25,25 @@ export interface GrupoModalProps {
 
 export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: GrupoModalProps) => {
   const [filas, setFilas] = useState<InfoFilaMovimientoGrupo[]>([]);
+  const [categoriasMov, setCategoriasMov] = useState<CategoriaUIMovimiento[]>([]);
+
+  useEffect(() => {
+    const categoriasFiltradas = categoriasMovimiento.filter(
+      (categoria) =>
+        (categoriaDiarioSugeridos.includes(categoria.nombre) && categoria.categoriaNombre === 'Diario') ||
+        (categoriaHogarSugeridos.includes(categoria.nombre) && categoria.categoriaNombre === 'Hogar'),
+    );
+    const restantesCategorias = categoriasMovimiento.filter(
+      (categoria) => !categoriasFiltradas.some((cat) => cat.id === categoria.id),
+    );
+
+    const categoriasSugeridas: CategoriaUIMovimiento[] = categoriasFiltradas.map((categoria) => ({
+      ...categoria,
+      categoriaNombre: 'Sugeridos',
+    }));
+
+    setCategoriasMov([...categoriasSugeridas, ...restantesCategorias]);
+  }, [categoriasMovimiento]);
 
   const handleClose = () => {
     onClose();
@@ -104,7 +125,7 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
                 key={fila.id}
                 fila={fila}
                 onDeleteClick={handleEliminarFila}
-                categoriasMovimiento={categoriasMovimiento}
+                categoriasMovimiento={categoriasMov}
               />
             ))}
           </Grid>
