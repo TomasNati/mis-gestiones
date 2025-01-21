@@ -5,7 +5,7 @@ import { Autocomplete, Box, Button, DialogContent, Grid, TextField } from '@mui/
 import { obtenerDiasEnElMes } from '@/lib/helpers';
 import { Fecha } from '../Fecha/Fecha';
 import { TipoDePagoEdicion } from '../TipoDePago/TipoDePago';
-import { InfoFilaMovimientoGrupo, TipoDeMovimientoGasto } from '@/lib/definitions';
+import { CategoriaUIMovimiento, InfoFilaMovimientoGrupo, TipoDeMovimientoGasto } from '@/lib/definitions';
 import AddIcon from '@mui/icons-material/Add';
 import { useState } from 'react';
 import { generateUUID } from '@/lib/helpers';
@@ -18,9 +18,10 @@ export interface GrupoModalProps {
   onClose: () => void;
   anio: number;
   mes: number;
+  categoriasMovimiento: CategoriaUIMovimiento[];
 }
 
-export const GrupoModal = ({ onClose, open, anio, mes }: GrupoModalProps) => {
+export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: GrupoModalProps) => {
   const [filas, setFilas] = useState<InfoFilaMovimientoGrupo[]>([]);
 
   const handleClose = () => {
@@ -99,7 +100,12 @@ export const GrupoModal = ({ onClose, open, anio, mes }: GrupoModalProps) => {
           </Grid>
           <Grid item xs={12}>
             {filas.map((fila) => (
-              <FilaGrupoModal key={fila.id} fila={fila} onDeleteClick={handleEliminarFila} />
+              <FilaGrupoModal
+                key={fila.id}
+                fila={fila}
+                onDeleteClick={handleEliminarFila}
+                categoriasMovimiento={categoriasMovimiento}
+              />
             ))}
           </Grid>
         </Grid>

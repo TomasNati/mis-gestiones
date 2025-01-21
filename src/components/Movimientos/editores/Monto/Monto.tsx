@@ -8,9 +8,11 @@ const mexp = new Mexp();
 interface NumberInputProps {
   onBlur: (value?: number) => void;
   valorInicial?: string;
+  label?: string;
+  size?: 'small' | 'medium';
 }
 
-const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
+const NumberInput = ({ onBlur, valorInicial, label, size }: NumberInputProps) => {
   const [inputValue, setInputValue] = useState<string>(valorInicial || '');
   const [formulaValue, setFormulaValue] = useState<string>(valorInicial || '');
   const [previousInputValue, setPreviousInputValue] = useState<string>(valorInicial || '');
@@ -59,6 +61,8 @@ const NumberInput = ({ onBlur, valorInicial }: NumberInputProps) => {
       onBlur={() => handleBlur()}
       onFocus={handleFocus}
       onKeyDown={handleOnKeyDown}
+      label={label}
+      size={size}
     />
   );
 };
@@ -78,4 +82,4 @@ const renderMontoEditInputCell: GridColDef['renderCell'] = (params) => {
   return <MontoEditInputCell {...params} />;
 };
 
-export { renderMontoEditInputCell };
+export { renderMontoEditInputCell, NumberInput };

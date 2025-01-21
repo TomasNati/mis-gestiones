@@ -8,8 +8,17 @@ interface ConceptoProps {
   conceptoInicial?: CategoriaUIMovimiento;
   onConceptoModificado: (concepto: CategoriaUIMovimiento) => void;
   onTabPressed: () => void;
+  size?: 'small' | 'medium';
+  label?: string;
 }
-const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado, onTabPressed }: ConceptoProps) => {
+const Concepto = ({
+  categoriasMovimiento,
+  conceptoInicial,
+  onConceptoModificado,
+  onTabPressed,
+  size,
+  label,
+}: ConceptoProps) => {
   const ref = useRef<HTMLElement>();
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -43,12 +52,13 @@ const Concepto = ({ categoriasMovimiento, conceptoInicial, onConceptoModificado,
         groupBy={(option: CategoriaUIMovimiento) => option.categoriaNombre}
         getOptionLabel={(option: CategoriaUIMovimiento) => option.nombre}
         value={conceptoInicial}
+        size={size}
         onChange={(_, newValue) => {
           if (newValue) {
             onConceptoModificado(newValue);
           }
         }}
-        renderInput={(params) => <TextField {...params} />}
+        renderInput={(params) => <TextField label={label} {...params} />}
       />
     </Box>
   );

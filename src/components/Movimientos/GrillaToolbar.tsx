@@ -12,7 +12,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import { generateUUID, transformNumberToCurrenty } from '@/lib/helpers';
 import { eliminarMovimientos } from '@/lib/orm/actions';
-import { MovimientoGastoGrilla, ResultadoAPI } from '@/lib/definitions';
+import { MovimientoGastoGrilla, ResultadoAPI, CategoriaUIMovimiento } from '@/lib/definitions';
 import { useState } from 'react';
 import { GrupoModal } from './editores/GrupoModal/GrupoModal';
 
@@ -25,6 +25,7 @@ interface GrillaToolbarProps {
   sumaTotalDelMes: number;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
   onRefrescarMovimientos: () => void;
+  categoriasMovimiento: CategoriaUIMovimiento[];
 }
 const GrillaToolbar = ({
   setRows,
@@ -35,6 +36,7 @@ const GrillaToolbar = ({
   sumaTotalDelMes,
   onMovimientosEliminados,
   onRefrescarMovimientos,
+  categoriasMovimiento,
 }: GrillaToolbarProps) => {
   const [openAgregarGrupo, setOpenAgregarGrupo] = useState(false);
 
@@ -80,7 +82,13 @@ const GrillaToolbar = ({
 
   return (
     <GridToolbarContainer>
-      <GrupoModal open={openAgregarGrupo} onClose={handleAgregarGrupoClose} anio={anio} mes={mes} />
+      <GrupoModal
+        open={openAgregarGrupo}
+        onClose={handleAgregarGrupoClose}
+        anio={anio}
+        mes={mes}
+        categoriasMovimiento={categoriasMovimiento}
+      />
       <Button color="primary" startIcon={<RefreshIcon />} onClick={onRefrescarMovimientos}>
         Refrescar
       </Button>

@@ -270,6 +270,7 @@ const MovimientosDelMesGrilla = ({
             sumaTotalDelMes,
             onMovimientosEliminados,
             onRefrescarMovimientos,
+            categoriasMovimiento,
           },
         }}
       />
