@@ -85,35 +85,48 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
           }}
         >
           <Grid item xs={12}>
-            <Fecha
-              size="small"
-              initialValue={1}
-              diasDelMes={diasEnMes}
-              onChange={() => {}}
-              onTabPressed={() => {}}
-              label="Día"
-            />
-          </Grid>{' '}
-          <Grid item xs={12}>
-            {' '}
-            <Autocomplete
-              id="free-solo-demo"
-              freeSolo
-              options={establecimientos}
-              renderInput={(params) => <TextField {...params} label="Establecimiento" />}
-              size="small"
-            />
-          </Grid>{' '}
-          <Grid item xs={12}>
-            <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
-              <label>Tipo de pago</label>
-              <TipoDePagoEdicion
-                onTipoDePagoChange={(tipoDePago: TipoDeMovimientoGasto) => console.log(tipoDePago)}
-                tipoDepagoInicial={undefined}
+            <Box display="flex" alignItems="center" sx={{ paddingTop: '5px', paddingBottom: '3px', gap: '3px' }}>
+              <Fecha
+                size="small"
+                initialValue={1}
+                diasDelMes={diasEnMes}
+                onChange={() => {}}
                 onTabPressed={() => {}}
+                label="Día"
               />
+              <Box width={'200px'}>
+                <Autocomplete
+                  freeSolo
+                  options={establecimientos}
+                  renderInput={(params) => <TextField {...params} label="Establecimiento" />}
+                  size="small"
+                />
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+                <Box
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    transformOrigin: 'top left',
+                    position: 'absolute',
+                    top: '79px',
+                    transform: 'translate(14px, -9px) scale(0.75)',
+                    backgroundColor: '#676e70',
+                    paddingLeft: '4px',
+                    paddingRight: '4px',
+                    zIndex: 1,
+                  }}
+                >
+                  Tipo de pago
+                </Box>
+                <TipoDePagoEdicion
+                  onTipoDePagoChange={(tipoDePago: TipoDeMovimientoGasto) => console.log(tipoDePago)}
+                  tipoDepagoInicial={undefined}
+                  onTabPressed={() => {}}
+                  borderStyle="solid"
+                />
+              </Box>
             </Box>
-          </Grid>
+          </Grid>{' '}
           <Grid item xs={12} className="gridItem-small">
             <Button color="primary" startIcon={<AddIcon />} onClick={handleAgregarFila}>
               Agregar movimiento

@@ -27,18 +27,37 @@ const TipoDePagoVista = ({ tipoDePago }: { tipoDePago: TipoDeMovimientoGasto }) 
   );
 };
 
+const borderDefinitions = [
+  { borderStyle: 'none', borderProps: {} },
+  {
+    borderStyle: 'solid',
+    borderProps: {
+      border: '1px solid rgba(255, 255, 255, 0.23)',
+      borderRadius: '5px',
+    },
+  },
+];
+
 interface TipoDePagoEdicionProps {
   tipoDepagoInicial?: TipoDeMovimientoGasto;
   onTipoDePagoChange: (tipoDePago: TipoDeMovimientoGasto) => void;
   onTabPressed: () => void;
+  borderStyle?: 'none' | 'solid';
 }
 
-const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange, onTabPressed }: TipoDePagoEdicionProps) => {
+const TipoDePagoEdicion = ({
+  tipoDepagoInicial,
+  onTipoDePagoChange,
+  onTabPressed,
+  borderStyle,
+}: TipoDePagoEdicionProps) => {
   const [tipoDePago, setTipoDePago] = useState<TipoDeMovimientoGasto | undefined>(tipoDepagoInicial);
 
   const colorEfectivo = tipoDePago === TipoDeMovimientoGasto.Efectivo ? 'primary' : 'default';
   const colorDebito = tipoDePago === TipoDeMovimientoGasto.Debito ? 'primary' : 'default';
   const colorCredito = tipoDePago === TipoDeMovimientoGasto.Credito ? 'primary' : 'default';
+
+  const borderStyles = borderDefinitions.find((border) => border.borderStyle === borderStyle) || borderDefinitions[0];
 
   const onTipoDePagoModificado = (tipoDePago: TipoDeMovimientoGasto) => {
     setTipoDePago(tipoDePago);
@@ -58,7 +77,7 @@ const TipoDePagoEdicion = ({ tipoDepagoInicial, onTipoDePagoChange, onTabPressed
   };
 
   return (
-    <Box>
+    <Box sx={{ ...borderStyles.borderProps }}>
       <IconButton
         onKeyDown={handleKeyDown}
         color={colorEfectivo}
