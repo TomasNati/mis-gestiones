@@ -1225,3 +1225,10 @@ export type GastoEstimadoAnualGrupo = {
   esCategoria: boolean;
   elementos: GastoEstimadoAnual[];
 };
+
+export interface InfoFilaMovimientoGrupo {
+  monto: number;
+  concepto: string;
+  comentario?: string;
+  id: string;
+}

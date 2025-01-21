@@ -17,9 +17,11 @@ interface FechaProps {
   diasDelMes: number;
   onChange: (value?: number) => void;
   onTabPressed: () => void;
+  label?: string;
+  size?: 'small' | 'medium';
 }
 
-const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, onTabPressed }) => {
+const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, onTabPressed, label, size }) => {
   const [value, setValue] = useState<number | undefined>(initialValue);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +50,8 @@ const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, o
       onKeyDown={handleTabPress}
       inputProps={{ min: 1, max: diasDelMes, step: 1 }}
       variant="outlined"
+      label={label}
+      size={size}
     />
   );
 };
@@ -165,4 +169,4 @@ const fechaOperators: GridFilterOperator<any, MovimientoGastoGrilla>[] = [
   },
 ];
 
-export { FechaEditInputCell, fechaOperators };
+export { FechaEditInputCell, fechaOperators, Fecha };
