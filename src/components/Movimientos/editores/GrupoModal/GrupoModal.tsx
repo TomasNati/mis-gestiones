@@ -9,6 +9,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useState, useEffect } from 'react';
 import { generateUUID } from '@/lib/helpers';
 import { FilaGrupoModal } from './FilaGrupoModal';
+import { NumberInput } from '../Monto/Monto';
 
 const establecimientos = ['Changomás', 'Farmacity', 'Oriente', 'Super Más', 'Vea'];
 
@@ -102,7 +103,7 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
                   size="small"
                 />
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Box
                   sx={{
                     color: 'rgba(255, 255, 255, 0.7)',
@@ -124,6 +125,9 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
                   onTabPressed={() => {}}
                   borderStyle="solid"
                 />
+              </Box>
+              <Box width={'113px'}>
+                <NumberInput onBlur={() => {}} size="small" label="Total" />
               </Box>
             </Box>
           </Grid>{' '}
