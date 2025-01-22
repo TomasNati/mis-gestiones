@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import { TextField, Tooltip } from '@mui/material';
 import Mexp from 'math-expression-evaluator';
 import { GridColDef, GridRenderCellParams, useGridApiContext } from '@mui/x-data-grid';
@@ -7,15 +7,22 @@ const mexp = new Mexp();
 
 interface NumberInputProps {
   onBlur: (value?: number) => void;
+  disabled?: boolean;
   valorInicial?: string;
   label?: string;
   size?: 'small' | 'medium';
 }
 
-const NumberInput = ({ onBlur, valorInicial, label, size }: NumberInputProps) => {
+const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInputProps) => {
   const [inputValue, setInputValue] = useState<string>(valorInicial || '');
   const [formulaValue, setFormulaValue] = useState<string>(valorInicial || '');
   const [previousInputValue, setPreviousInputValue] = useState<string>(valorInicial || '');
+
+  useEffect(() => {
+    setInputValue(valorInicial || '');
+    setFormulaValue(valorInicial || '');
+    setPreviousInputValue(valorInicial || '');
+  }, [valorInicial]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const valueToEval = event.target.value.startsWith('=') ? event.target.value.slice(1) : event.target.value;
@@ -63,6 +70,7 @@ const NumberInput = ({ onBlur, valorInicial, label, size }: NumberInputProps) =>
       onKeyDown={handleOnKeyDown}
       label={label}
       size={size}
+      disabled={disabled}
     />
   );
 };

@@ -8,18 +8,55 @@ import { useState, ChangeEvent } from 'react';
 interface FilaGrupoModalProps {
   fila: InfoFilaMovimientoGrupo;
   onDeleteClick: (id: string) => void;
+  onFilaEditada: (fila: InfoFilaMovimientoGrupo) => void;
   categoriasMovimiento: CategoriaUIMovimiento[];
+  totalMonto?: number;
+  parcialMonto: number;
+  restoEnabled?: boolean;
 }
-const FilaGrupoModal = ({ fila, onDeleteClick, categoriasMovimiento }: FilaGrupoModalProps) => {
-  const [restoTotalChecked, setRestoTotalChecked] = useState(false);
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setRestoTotalChecked(event.target.checked);
+const FilaGrupoModal = ({
+  fila,
+  onDeleteClick,
+  onFilaEditada,
+  categoriasMovimiento,
+  totalMonto,
+  parcialMonto,
+  restoEnabled,
+}: FilaGrupoModalProps) => {
+  const handleRestoChecked = (event: ChangeEvent<HTMLInputElement>) => {
+    fila.esRestoDelMonto = event.target.checked;
+    onFilaEditada(fila);
   };
+
+  const onMontoChanged = (nuevoMonto?: number) => {
+    fila.monto = nuevoMonto;
+    onFilaEditada(fila);
+  };
+
+  const onConceptoChanged = (nuevoConcepto?: CategoriaUIMovimiento) => {
+    fila.concepto = nuevoConcepto;
+    onFilaEditada(fila);
+  };
+
+  const onComentariosChanged = (event: ChangeEvent<HTMLInputElement>) => {
+    const nuevosComentarios = event.target.value;
+    fila.comentario = nuevosComentarios;
+    onFilaEditada(fila);
+  };
+
+  const montoRestante = totalMonto ? totalMonto - parcialMonto : undefined;
+  const valorInicialMonto = fila.esRestoDelMonto ? montoRestante : fila.monto;
+
   return (
     <Box display="flex" alignItems="center" sx={{ paddingTop: '7px', paddingBottom: '3px', gap: '3px' }}>
       <Box width={'150px'} display="flex" alignItems="center">
-        <NumberInput onBlur={() => {}} valorInicial={fila.monto.toString()} size="small" label="Monto" />
+        <NumberInput
+          onBlur={onMontoChanged}
+          valorInicial={fila.esRestoDelMonto ? valorInicialMonto?.toFixed(2) : valorInicialMonto?.toString()}
+          size="small"
+          label="Monto"
+          disabled={fila.esRestoDelMonto}
+        />
       </Box>
       <FormControl component="fieldset" sx={{ width: '60px' }}>
         <FormLabel
@@ -44,8 +81,9 @@ const FilaGrupoModal = ({ fila, onDeleteClick, categoriasMovimiento }: FilaGrupo
           }}
         >
           <Checkbox
-            checked={restoTotalChecked}
-            onChange={handleChange}
+            checked={fila.esRestoDelMonto}
+            onChange={handleRestoChecked}
+            disabled={!fila.esRestoDelMonto && !restoEnabled}
             name="checkedB"
             size="small"
             sx={{
@@ -57,13 +95,13 @@ const FilaGrupoModal = ({ fila, onDeleteClick, categoriasMovimiento }: FilaGrupo
       </FormControl>
       <Concepto
         categoriasMovimiento={categoriasMovimiento}
-        //conceptoInicial={params.value}
+        conceptoInicial={fila.concepto || null}
         onTabPressed={() => {}}
-        onConceptoModificado={(nuevoConcepto) => {}}
+        onConceptoModificado={onConceptoChanged}
         label="Concepto"
         size="small"
       />
-      <TextField label="Comentarios" variant="outlined" size="small" />
+      <TextField label="Comentarios" variant="outlined" size="small" onChange={onComentariosChanged} />
       <Button
         sx={{ minWidth: '0px', padding: '5px', '& span': { marginLeft: '3px', marginRight: '0px' } }}
         startIcon={<DeleteIcon />}

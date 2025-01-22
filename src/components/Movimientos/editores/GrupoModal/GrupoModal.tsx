@@ -4,7 +4,12 @@ import { Autocomplete, Box, Button, DialogContent, Grid, TextField } from '@mui/
 import { obtenerDiasEnElMes } from '@/lib/helpers';
 import { Fecha } from '../Fecha/Fecha';
 import { TipoDePagoEdicion } from '../TipoDePago/TipoDePago';
-import { CategoriaUIMovimiento, InfoFilaMovimientoGrupo, TipoDeMovimientoGasto } from '@/lib/definitions';
+import {
+  CategoriaUIMovimiento,
+  GrupoMovimiento,
+  InfoFilaMovimientoGrupo,
+  TipoDeMovimientoGasto,
+} from '@/lib/definitions';
 import AddIcon from '@mui/icons-material/Add';
 import { useState, useEffect } from 'react';
 import { generateUUID } from '@/lib/helpers';
@@ -25,8 +30,11 @@ export interface GrupoModalProps {
 }
 
 export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: GrupoModalProps) => {
-  const [filas, setFilas] = useState<InfoFilaMovimientoGrupo[]>([]);
   const [categoriasMov, setCategoriasMov] = useState<CategoriaUIMovimiento[]>([]);
+  const [grupoMovimiento, setGrupoMovimiento] = useState<GrupoMovimiento>({
+    dia: 1,
+    filas: [],
+  });
 
   useEffect(() => {
     const categoriasFiltradas = categoriasMovimiento.filter(
@@ -51,21 +59,49 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
   };
 
   const handleAgregarFila = () => {
-    setFilas([
+    const { filas } = grupoMovimiento;
+    const nuevasFilas = [
       ...filas,
       {
         monto: 0,
-        concepto: '',
+        esRestoDelMonto: false,
         id: generateUUID(),
       },
-    ]);
+    ];
+    setGrupoMovimiento({ ...grupoMovimiento, filas: nuevasFilas });
   };
 
   const handleEliminarFila = (id: string) => {
-    setFilas(filas.filter((fila) => fila.id !== id));
+    const { filas } = grupoMovimiento;
+    const nuevasFilas = filas.filter((fila) => fila.id !== id);
+    setGrupoMovimiento({ ...grupoMovimiento, filas: nuevasFilas });
+  };
+
+  const handleEditarFila = (fila: InfoFilaMovimientoGrupo) => {
+    const { filas } = grupoMovimiento;
+    const nuevasFilas = filas.map((f) => (f.id === fila.id ? fila : f));
+    setGrupoMovimiento({ ...grupoMovimiento, filas: nuevasFilas });
+  };
+
+  const handleDiaUpdated = (dia?: number) => {
+    setGrupoMovimiento({ ...grupoMovimiento, dia: dia || 1 });
+  };
+
+  const handleEstablecimientoUpdated = (establecimiento?: string) => {
+    setGrupoMovimiento({ ...grupoMovimiento, establecimiento });
+  };
+
+  const handleTipoDePagoUpdated = (tipoDePago?: TipoDeMovimientoGasto) => {
+    setGrupoMovimiento({ ...grupoMovimiento, tipoDePago });
+  };
+
+  const handleTotalUpdated = (total?: number) => {
+    setGrupoMovimiento({ ...grupoMovimiento, totalMonto: total });
   };
 
   const diasEnMes = obtenerDiasEnElMes(new Date(anio, mes, 1));
+  const montoParcial = grupoMovimiento.filas.reduce((acc, fila) => acc + (fila.monto || 0), 0);
+  const restoChecked = grupoMovimiento.filas.some((fila) => fila.esRestoDelMonto);
 
   return (
     <Dialog onClose={handleClose} open={open}>
@@ -89,9 +125,9 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
             <Box display="flex" alignItems="center" sx={{ paddingTop: '5px', paddingBottom: '3px', gap: '3px' }}>
               <Fecha
                 size="small"
-                initialValue={1}
+                initialValue={grupoMovimiento.dia}
                 diasDelMes={diasEnMes}
-                onChange={() => {}}
+                onChange={handleDiaUpdated}
                 onTabPressed={() => {}}
                 label="Día"
               />
@@ -99,6 +135,8 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
                 <Autocomplete
                   freeSolo
                   options={establecimientos}
+                  value={grupoMovimiento.establecimiento || null}
+                  onChange={(_, newValue) => handleEstablecimientoUpdated(newValue || undefined)}
                   renderInput={(params) => <TextField {...params} label="Establecimiento" />}
                   size="small"
                 />
@@ -120,14 +158,19 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
                   Tipo de pago
                 </Box>
                 <TipoDePagoEdicion
-                  onTipoDePagoChange={(tipoDePago: TipoDeMovimientoGasto) => console.log(tipoDePago)}
-                  tipoDepagoInicial={undefined}
+                  onTipoDePagoChange={handleTipoDePagoUpdated}
+                  tipoDepagoInicial={grupoMovimiento.tipoDePago}
                   onTabPressed={() => {}}
                   borderStyle="solid"
                 />
               </Box>
               <Box width={'113px'}>
-                <NumberInput onBlur={() => {}} size="small" label="Total" />
+                <NumberInput
+                  onBlur={handleTotalUpdated}
+                  size="small"
+                  label="Total"
+                  valorInicial={grupoMovimiento.totalMonto?.toString()}
+                />
               </Box>
             </Box>
           </Grid>{' '}
@@ -137,12 +180,16 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
             </Button>
           </Grid>
           <Grid item xs={12}>
-            {filas.map((fila) => (
+            {grupoMovimiento.filas.map((fila) => (
               <FilaGrupoModal
                 key={fila.id}
                 fila={fila}
                 onDeleteClick={handleEliminarFila}
+                onFilaEditada={handleEditarFila}
                 categoriasMovimiento={categoriasMov}
+                parcialMonto={montoParcial}
+                restoEnabled={!restoChecked}
+                totalMonto={grupoMovimiento.totalMonto}
               />
             ))}
           </Grid>

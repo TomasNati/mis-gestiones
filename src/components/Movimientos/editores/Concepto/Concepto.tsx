@@ -5,7 +5,7 @@ import { useImperativeHandle, useRef, useState } from 'react';
 
 interface ConceptoProps {
   categoriasMovimiento: CategoriaUIMovimiento[];
-  conceptoInicial?: CategoriaUIMovimiento;
+  conceptoInicial?: CategoriaUIMovimiento | null;
   onConceptoModificado: (concepto: CategoriaUIMovimiento) => void;
   onTabPressed: () => void;
   size?: 'small' | 'medium';

@@ -1227,8 +1227,17 @@ export type GastoEstimadoAnualGrupo = {
 };
 
 export interface InfoFilaMovimientoGrupo {
-  monto: number;
-  concepto: string;
+  monto?: number;
+  concepto?: CategoriaUIMovimiento;
   comentario?: string;
   id: string;
+  esRestoDelMonto: boolean;
+}
+
+export interface GrupoMovimiento {
+  dia: number;
+  establecimiento?: string;
+  tipoDePago?: TipoDeMovimientoGasto;
+  totalMonto?: number;
+  filas: InfoFilaMovimientoGrupo[];
 }
