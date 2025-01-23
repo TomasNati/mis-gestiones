@@ -1,4 +1,10 @@
-import { CategoriaUIMovimiento, MovimientoGastoGrilla, TipoDeMovimientoGasto, ResultadoAPI } from '@/lib/definitions';
+import {
+  CategoriaUIMovimiento,
+  MovimientoGastoGrilla,
+  TipoDeMovimientoGasto,
+  ResultadoAPI,
+  GrupoMovimiento,
+} from '@/lib/definitions';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
@@ -56,6 +62,7 @@ interface MovimientosDelMesGrillaProps {
   onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => Promise<MovimientoGastoGrilla>;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
   onRefrescarMovimientos: () => void;
+  onCrearGrupoMovimientos: (grupoMovimiento: GrupoMovimiento) => void;
   mes: number;
   anio: number;
 }
@@ -67,6 +74,7 @@ const MovimientosDelMesGrilla = ({
   onMovimientoActualizado,
   onMovimientosEliminados,
   onRefrescarMovimientos,
+  onCrearGrupoMovimientos,
 }: MovimientosDelMesGrillaProps) => {
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [rows, setRows] = useState<GridRowsProp>(movimientos);
@@ -271,6 +279,7 @@ const MovimientosDelMesGrilla = ({
             onMovimientosEliminados,
             onRefrescarMovimientos,
             categoriasMovimiento,
+            onGuardarGrupoMovimiento: onCrearGrupoMovimientos,
           },
         }}
       />

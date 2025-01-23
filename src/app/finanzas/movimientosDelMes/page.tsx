@@ -3,7 +3,7 @@
 import { obtenerMovimientosPorFecha, obtenerGastosEstimadosTotalesPorFecha } from '@/lib/orm/data';
 import { Box, Breadcrumbs, Divider, IconButton, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { MovimientoGastoGrilla, MovimientoUI, ResultadoAPI, months } from '@/lib/definitions';
+import { GrupoMovimiento, MovimientoGastoGrilla, MovimientoUI, ResultadoAPI, months } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
 import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
@@ -91,6 +91,37 @@ const MovimientosDelMes = () => {
     return movimiento;
   };
 
+  const onCrearGrupoMovimientos = async (grupoMovimiento: GrupoMovimiento) => {
+    const movimientosUI: MovimientoUI[] = grupoMovimiento.filas.map((mov) => ({
+      comentarios: `${grupoMovimiento.establecimiento}${mov.comentario ? ` - ${mov.comentario}` : ''}`,
+      monto: mov.monto || 0,
+      tipoDeGasto: grupoMovimiento.tipoDePago,
+      fecha: new Date(anio, months.indexOf(mes), grupoMovimiento.dia),
+      subcategoriaId: mov.concepto?.subcategoriaId || '',
+      detalleSubcategoriaId: mov.concepto?.detalleSubcategoriaId,
+      isNew: true,
+      valido: true,
+      filaId: 0,
+    }));
+
+    const resultado = await crearMovimientos(movimientosUI);
+    if (!resultado.exitoso) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: resultado.errores.join('\n'),
+      });
+    } else {
+      setConfigNotificacion({
+        open: true,
+        severity: 'success',
+        mensaje: 'Movimientos agregados correctamente',
+      });
+    }
+
+    onRefrescarMovimientos();
+  };
+
   const onMovimientosEliminados = (resultado: ResultadoAPI) => {
     if (!resultado.exitoso) {
       setConfigNotificacion({
@@ -162,6 +193,7 @@ const MovimientosDelMes = () => {
               onMovimientoActualizado={onMovimientoActualizado}
               onMovimientosEliminados={onMovimientosEliminados}
               onRefrescarMovimientos={onRefrescarMovimientos}
+              onCrearGrupoMovimientos={onCrearGrupoMovimientos}
             />
           </Box>
         </>

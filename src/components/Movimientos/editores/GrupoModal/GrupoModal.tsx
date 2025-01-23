@@ -24,12 +24,14 @@ const categoriaHogarSugeridos = ['Cosas para la casa'];
 export interface GrupoModalProps {
   open: boolean;
   onClose: () => void;
+  onGuardar: (grupoMovimiento: GrupoMovimiento) => void;
   anio: number;
   mes: number;
   categoriasMovimiento: CategoriaUIMovimiento[];
 }
 
-export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: GrupoModalProps) => {
+export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovimiento }: GrupoModalProps) => {
+  const [errors, setErrors] = useState<string[]>([]);
   const [categoriasMov, setCategoriasMov] = useState<CategoriaUIMovimiento[]>([]);
   const [grupoMovimiento, setGrupoMovimiento] = useState<GrupoMovimiento>({
     dia: 1,
@@ -55,7 +57,48 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
   }, [categoriasMovimiento]);
 
   const handleClose = () => {
+    setGrupoMovimiento({
+      dia: 1,
+      filas: [],
+    });
     onClose();
+  };
+
+  const validarDatos = (grupoMovimiento: GrupoMovimiento) => {
+    const errors = [];
+    if (!grupoMovimiento.dia) {
+      errors.push('El día es requerido');
+    }
+    if (!grupoMovimiento.establecimiento) {
+      errors.push('El establecimiento es requerido');
+    }
+    if (!grupoMovimiento.tipoDePago) {
+      errors.push('El tipo de pago es requerido');
+    }
+    if (grupoMovimiento.filas.length === 0) {
+      errors.push('Debe agregar al menos un movimiento');
+    }
+
+    grupoMovimiento.filas.forEach((fila, index) => {
+      if (!fila.monto) {
+        errors.push(`El monto es requerido en la fila ${index + 1}`);
+      }
+      if (!fila.concepto) {
+        errors.push(`El concepto es requerido en la fila ${index + 1}`);
+      }
+    });
+    return errors;
+  };
+
+  const handleGuardar = () => {
+    const errors = validarDatos(grupoMovimiento);
+    if (errors.length > 0) {
+      console.error(errors);
+      setErrors(errors);
+      return;
+    }
+    onGuardar(grupoMovimiento);
+    handleClose();
   };
 
   const handleAgregarFila = () => {
@@ -68,35 +111,55 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
         id: generateUUID(),
       },
     ];
-    setGrupoMovimiento({ ...grupoMovimiento, filas: nuevasFilas });
+    const nuevoGrupoMovimiento = { ...grupoMovimiento, filas: nuevasFilas };
+    setGrupoMovimiento(nuevoGrupoMovimiento);
+    setErrors(validarDatos(nuevoGrupoMovimiento));
   };
 
   const handleEliminarFila = (id: string) => {
     const { filas } = grupoMovimiento;
     const nuevasFilas = filas.filter((fila) => fila.id !== id);
-    setGrupoMovimiento({ ...grupoMovimiento, filas: nuevasFilas });
+    const nuevoGrupoMovimiento = { ...grupoMovimiento, filas: nuevasFilas };
+    setGrupoMovimiento(nuevoGrupoMovimiento);
+    setErrors(validarDatos(nuevoGrupoMovimiento));
   };
 
   const handleEditarFila = (fila: InfoFilaMovimientoGrupo) => {
     const { filas } = grupoMovimiento;
     const nuevasFilas = filas.map((f) => (f.id === fila.id ? fila : f));
-    setGrupoMovimiento({ ...grupoMovimiento, filas: nuevasFilas });
+    const filaRestoMonto = nuevasFilas.find((f) => f.esRestoDelMonto);
+    if (filaRestoMonto) {
+      filaRestoMonto.monto = 0;
+      const sumaMontos = nuevasFilas.reduce((acc, f) => acc + (f.monto || 0), 0);
+      filaRestoMonto.monto = grupoMovimiento.totalMonto ? grupoMovimiento.totalMonto - sumaMontos : 0;
+    }
+    const nuevoGrupoMovimiento = { ...grupoMovimiento, filas: nuevasFilas };
+    setGrupoMovimiento(nuevoGrupoMovimiento);
+    setErrors(validarDatos(nuevoGrupoMovimiento));
   };
 
   const handleDiaUpdated = (dia?: number) => {
-    setGrupoMovimiento({ ...grupoMovimiento, dia: dia || 1 });
+    const nuevoMovimiento = { ...grupoMovimiento, dia: dia || 1 };
+    setGrupoMovimiento(nuevoMovimiento);
+    setErrors(validarDatos(nuevoMovimiento));
   };
 
   const handleEstablecimientoUpdated = (establecimiento?: string) => {
-    setGrupoMovimiento({ ...grupoMovimiento, establecimiento });
+    const nuevoMovimiento = { ...grupoMovimiento, establecimiento };
+    setGrupoMovimiento(nuevoMovimiento);
+    setErrors(validarDatos(nuevoMovimiento));
   };
 
   const handleTipoDePagoUpdated = (tipoDePago?: TipoDeMovimientoGasto) => {
-    setGrupoMovimiento({ ...grupoMovimiento, tipoDePago });
+    const nuevoMovimiento = { ...grupoMovimiento, tipoDePago };
+    setGrupoMovimiento(nuevoMovimiento);
+    setErrors(validarDatos(nuevoMovimiento));
   };
 
   const handleTotalUpdated = (total?: number) => {
-    setGrupoMovimiento({ ...grupoMovimiento, totalMonto: total });
+    const nuevoMovimiento = { ...grupoMovimiento, totalMonto: total };
+    setGrupoMovimiento(nuevoMovimiento);
+    setErrors(validarDatos(nuevoMovimiento));
   };
 
   const diasEnMes = obtenerDiasEnElMes(new Date(anio, mes, 1));
@@ -195,6 +258,14 @@ export const GrupoModal = ({ onClose, open, anio, mes, categoriasMovimiento }: G
           </Grid>
         </Grid>
       </DialogContent>
+      <Box display="flex" justifyContent="center" sx={{ padding: '8px' }} gap={2}>
+        <Button onClick={handleGuardar} color="primary" variant="contained" disabled={errors.length > 0}>
+          Guardar
+        </Button>
+        <Button onClick={handleClose} color="secondary" sx={{ marginRight: '8px' }}>
+          Cancelar
+        </Button>
+      </Box>
     </Dialog>
   );
 };

@@ -25,6 +25,9 @@ const FilaGrupoModal = ({
 }: FilaGrupoModalProps) => {
   const handleRestoChecked = (event: ChangeEvent<HTMLInputElement>) => {
     fila.esRestoDelMonto = event.target.checked;
+    if (fila.esRestoDelMonto) {
+      fila.monto = totalMonto ? totalMonto - parcialMonto : undefined;
+    }
     onFilaEditada(fila);
   };
 
@@ -44,15 +47,12 @@ const FilaGrupoModal = ({
     onFilaEditada(fila);
   };
 
-  const montoRestante = totalMonto ? totalMonto - parcialMonto : undefined;
-  const valorInicialMonto = fila.esRestoDelMonto ? montoRestante : fila.monto;
-
   return (
     <Box display="flex" alignItems="center" sx={{ paddingTop: '7px', paddingBottom: '3px', gap: '3px' }}>
       <Box width={'150px'} display="flex" alignItems="center">
         <NumberInput
           onBlur={onMontoChanged}
-          valorInicial={fila.esRestoDelMonto ? valorInicialMonto?.toFixed(2) : valorInicialMonto?.toString()}
+          valorInicial={fila.esRestoDelMonto ? fila.monto?.toFixed(2) : fila.monto?.toString()}
           size="small"
           label="Monto"
           disabled={fila.esRestoDelMonto}
