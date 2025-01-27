@@ -16,7 +16,7 @@ import { generateUUID } from '@/lib/helpers';
 import { FilaGrupoModal } from './FilaGrupoModal';
 import { NumberInput } from '../Monto/Monto';
 
-const establecimientos = ['Changomás', 'Farmacity', 'Oriente', 'Super Más', 'Vea'];
+const establecimientos = ['Changomás', 'Farmacity', 'Oriente', 'Super Más', 'Vea', 'Kiosco Urquiza'];
 
 const categoriaDiarioSugeridos = ['Comida', 'Gaseosas', 'Alcohol', 'Cig', 'Productos personales'];
 const categoriaHogarSugeridos = ['Cosas para la casa'];
@@ -150,6 +150,11 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
     setErrors(validarDatos(nuevoMovimiento));
   };
 
+  const handleEstablecimientoBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const inputValue = (event.target as HTMLInputElement).value;
+    handleEstablecimientoUpdated(inputValue);
+  };
+
   const handleTipoDePagoUpdated = (tipoDePago?: TipoDeMovimientoGasto) => {
     const nuevoMovimiento = { ...grupoMovimiento, tipoDePago };
     setGrupoMovimiento(nuevoMovimiento);
@@ -199,6 +204,7 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
                   freeSolo
                   options={establecimientos}
                   value={grupoMovimiento.establecimiento || null}
+                  onBlur={handleEstablecimientoBlur}
                   onChange={(_, newValue) => handleEstablecimientoUpdated(newValue || undefined)}
                   renderInput={(params) => <TextField {...params} label="Establecimiento" />}
                   size="small"
