@@ -1,6 +1,5 @@
 BUGS / TODOS:
 - En la página de presupuesto, mejorar los colores: si está cerca de llegar: amarillo, si se pasó por poco: rojo, si se pasó por mucho: morado. Algo así
--
 
 
  select  fc.id AS categoria_id,
