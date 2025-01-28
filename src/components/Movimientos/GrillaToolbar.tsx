@@ -15,6 +15,7 @@ import { eliminarMovimientos } from '@/lib/orm/actions';
 import { MovimientoGastoGrilla, ResultadoAPI, CategoriaUIMovimiento, GrupoMovimiento } from '@/lib/definitions';
 import { useState } from 'react';
 import { GrupoModal } from './editores/GrupoModal/GrupoModal';
+import { GastosProgressBar } from './GastosProgressBar';
 
 interface GrillaToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -23,6 +24,7 @@ interface GrillaToolbarProps {
   anio: number;
   mes: number;
   sumaTotalDelMes: number;
+  totalMensualEstimado: number;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
   onRefrescarMovimientos: () => void;
   onGuardarGrupoMovimiento: (grupoMovimiento: GrupoMovimiento) => void;
@@ -35,6 +37,7 @@ const GrillaToolbar = ({
   mes,
   movimientosElegidos,
   sumaTotalDelMes,
+  totalMensualEstimado,
   onMovimientosEliminados,
   onRefrescarMovimientos,
   onGuardarGrupoMovimiento,
@@ -78,12 +81,12 @@ const GrillaToolbar = ({
   };
 
   const sumaDeMovimientosElegidos = movimientosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
-
   const sumaFormateada = transformNumberToCurrenty(sumaDeMovimientosElegidos);
-  const totalDeMontosFormateada = transformNumberToCurrenty(sumaTotalDelMes);
+  const sumaTotalFormateada = transformNumberToCurrenty(sumaTotalDelMes);
+  const pendiente = totalMensualEstimado - sumaTotalDelMes;
 
   return (
-    <GridToolbarContainer>
+    <GridToolbarContainer sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 3 }}>
       <GrupoModal
         open={openAgregarGrupo}
         onClose={handleAgregarGrupoClose}
@@ -92,32 +95,39 @@ const GrillaToolbar = ({
         categoriasMovimiento={categoriasMovimiento}
         onGuardar={onGuardarGrupoMovimiento}
       />
-      <Button color="primary" startIcon={<RefreshIcon />} onClick={onRefrescarMovimientos}>
-        Refrescar
-      </Button>
-      <Button color="primary" startIcon={<AddIcon />} onClick={() => handleAgregarNuevoMovimiento()}>
-        Agregar
-      </Button>
-      <Button color="primary" startIcon={<LibraryAddIcon />} onClick={handleAgregarGrupoOpen}>
-        Agregar grupo
-      </Button>
-      <Button
-        color="primary"
-        startIcon={<DeleteIcon />}
-        onClick={handleEliminarMovimientos}
-        disabled={movimientosElegidos.length === 0}
-      >
-        Eliminar
-      </Button>
-      <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
-      <Box>
-        <span style={{ marginRight: '5px' }}>Suma parcial:</span>
-        <span>{sumaFormateada}</span>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: 'auto' }}>
+        <Button color="primary" startIcon={<RefreshIcon />} onClick={onRefrescarMovimientos}>
+          Refrescar
+        </Button>
+        <Button color="primary" startIcon={<AddIcon />} onClick={() => handleAgregarNuevoMovimiento()}>
+          Agregar
+        </Button>
+        <Button color="primary" startIcon={<LibraryAddIcon />} onClick={handleAgregarGrupoOpen}>
+          Agregar grupo
+        </Button>
+        <Button
+          color="primary"
+          startIcon={<DeleteIcon />}
+          onClick={handleEliminarMovimientos}
+          disabled={movimientosElegidos.length === 0}
+        >
+          Eliminar
+        </Button>
+        <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
+        <Box>
+          <span style={{ marginRight: '5px', marginLeft: '5px' }}>Suma parcial:</span>
+          <span>{sumaFormateada}</span>
+        </Box>
+        {totalMensualEstimado <= 0 ? (
+          <Box>
+            <span style={{ marginRight: '5px', marginLeft: '5px' }}>Suma Total:</span>
+            <span>{sumaTotalFormateada}</span>
+          </Box>
+        ) : null}
       </Box>
-      <Box>
-        <span style={{ marginRight: '5px' }}>Suma total:</span>
-        <span>{totalDeMontosFormateada}</span>
-      </Box>
+      {totalMensualEstimado > 0 ? (
+        <GastosProgressBar presupuesto={totalMensualEstimado} gastado={sumaTotalDelMes} />
+      ) : null}
     </GridToolbarContainer>
   );
 };

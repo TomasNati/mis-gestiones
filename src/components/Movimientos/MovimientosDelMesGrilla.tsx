@@ -65,12 +65,14 @@ interface MovimientosDelMesGrillaProps {
   onCrearGrupoMovimientos: (grupoMovimiento: GrupoMovimiento) => void;
   mes: number;
   anio: number;
+  totalMensualEstimado: number;
 }
 
 const MovimientosDelMesGrilla = ({
   movimientos,
   mes,
   anio,
+  totalMensualEstimado,
   onMovimientoActualizado,
   onMovimientosEliminados,
   onRefrescarMovimientos,
@@ -276,6 +278,7 @@ const MovimientosDelMesGrilla = ({
             mes,
             movimientosElegidos,
             sumaTotalDelMes,
+            totalMensualEstimado,
             onMovimientosEliminados,
             onRefrescarMovimientos,
             categoriasMovimiento,

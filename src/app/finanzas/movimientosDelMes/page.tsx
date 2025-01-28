@@ -190,6 +190,7 @@ const MovimientosDelMes = () => {
               movimientos={movimientos}
               anio={anio}
               mes={months.indexOf(mes)}
+              totalMensualEstimado={totalMensualEstimado || 0}
               onMovimientoActualizado={onMovimientoActualizado}
               onMovimientosEliminados={onMovimientosEliminados}
               onRefrescarMovimientos={onRefrescarMovimientos}
