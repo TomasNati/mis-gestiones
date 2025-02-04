@@ -1,23 +1,16 @@
 import React from 'react';
-import { LinearProgress, Box, Tooltip } from '@mui/material';
+import { LinearProgress, Box, Tooltip, Typography } from '@mui/material';
 import { EventoSuenio, TipoEventoSuenio } from '@/lib/definitions';
-// export type TipoEventoSuenio = 'Despierto' | 'Dormido';
-
-// export interface EventoSuenio {
-//   id: string;
-//   hora: string;
-//   comentarios?: string;
-//   tipo: TipoEventoSuenio;
-// }
 
 interface ResultSegment {
   tipo: TipoEventoSuenio;
   start: number;
   end: number;
+  hora: string;
 }
 
 const timeStringToMinutes = (time: string): number => {
-  const [hours, minutes, seconds] = time.split(':').map(Number);
+  const [hours, minutes, _] = time.split(':').map(Number);
   return hours * 60 + minutes;
 };
 
@@ -27,14 +20,52 @@ const transformSegments = (segments: EventoSuenio[]): ResultSegment[] => {
 
   segments.forEach((segment, index) => {
     const end = timeStringToMinutes(segment.hora);
-    result.push({ tipo: index === 0 ? 'Despierto' : segments[index - 1].tipo, start, end });
+    result.push({
+      tipo: index === 0 ? 'Despierto' : segments[index - 1].tipo,
+      start,
+      end,
+      hora: segment.hora.slice(0, 5),
+    });
     start = end;
   });
 
   // Add the last segment
-  result.push({ tipo: segments[segments.length - 1].tipo, start, end: timeStringToMinutes('23:59:59') + 1 });
+  result.push({
+    tipo: segments[segments.length - 1].tipo,
+    start,
+    end: timeStringToMinutes('23:59:59') + 1,
+    hora: segments[segments.length - 1].hora.slice(0, 5),
+  });
 
   return result;
+};
+
+const LinearProgressWithLabel = ({ tipo, start, end, hora }: ResultSegment) => {
+  const showLabel = end < 1440;
+  return (
+    <Box position="relative" display="flex" alignItems="center" flexDirection="column">
+      <Box width="100%" mr={1}>
+        <LinearProgress
+          variant="determinate"
+          value={100}
+          sx={{
+            height: '22px',
+            borderRadius: start === 0 ? '5px 0 0 5px' : end === 1440 ? '0 5px 5px 0' : '0',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: tipo === 'Despierto' ? '#4caf50' : '#28749a',
+            },
+          }}
+        />
+      </Box>
+      {showLabel ? (
+        <Box position="absolute" right="-10px" top="-20px">
+          <Typography variant="caption" color="textSecondary">
+            {hora}
+          </Typography>
+        </Box>
+      ) : null}
+    </Box>
+  );
 };
 
 type Props = {
@@ -43,21 +74,12 @@ type Props = {
 
 const BarraSuenio: React.FC<Props> = ({ data }) => {
   const segmentos = transformSegments(data);
+
   return (
     <Box sx={{ display: 'flex', width: '100%', height: '30px' }}>
       {segmentos.map((segment, index) => (
         <Box key={index} width={`${((segment.end - segment.start) / 1440) * 100}%`}>
-          <LinearProgress
-            variant="determinate"
-            value={100}
-            sx={{
-              height: '22px',
-              borderRadius: segment.start === 0 ? '5px 0 0 5px' : segment.end === 1440 ? '0 5px 5px 0' : '0',
-              '& .MuiLinearProgress-bar': {
-                backgroundColor: segment.tipo === 'Despierto' ? '#4caf50' : '#28749a',
-              },
-            }}
-          />
+          <LinearProgressWithLabel {...segment} />
         </Box>
       ))}
     </Box>
