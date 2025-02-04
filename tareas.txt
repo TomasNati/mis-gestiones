@@ -1,4 +1,5 @@
 BUGS / TODOS:
+
 - En la página de presupuesto, mejorar los colores: si está cerca de llegar: amarillo, si se pasó por poco: rojo, si se pasó por mucho: morado. Algo así.
 - En la página de presupuesto, permitir elegir meses consecutivos entre años diferentees.
 - Tech debt: actualizar la versión de Next.JS a la última estable. Ver si el paquete de gráficos es compatible.
