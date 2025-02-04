@@ -1,6 +1,7 @@
 import { InferSelectModel } from 'drizzle-orm';
-import { text, uuid, varchar, boolean, pgSchema, numeric, timestamp } from 'drizzle-orm/pg-core';
+import { text, uuid, varchar, boolean, pgSchema, numeric, timestamp, time } from 'drizzle-orm/pg-core';
 import { generateUUID } from '../helpers';
+import { act } from 'react-dom/test-utils';
 
 export const misgestiones = pgSchema('misgestiones');
 
@@ -70,3 +71,27 @@ export const gastoEstimado = misgestiones.table('finanzas_gastoestimado', {
 
 export type GastoEstimadoDB = InferSelectModel<typeof gastoEstimado>;
 export type GastoEstimadoAInsertarDB = Omit<GastoEstimadoDB, 'id' | 'active'>;
+
+export const tomiAgendaDia = misgestiones.table('tomiagenda_dia', {
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => generateUUID()),
+  fecha: timestamp('fecha', { withTimezone: false }).notNull(),
+  comentarios: text('comentarios'),
+  active: boolean('active').notNull().default(true),
+});
+export type TomiAgendaDiaDB = InferSelectModel<typeof tomiAgendaDia>;
+
+export const tomiAgendaEventoSuenio = misgestiones.table('tomiagenda_eventosuenio', {
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => generateUUID()),
+  dia: uuid('dia')
+    .references(() => tomiAgendaDia.id)
+    .notNull(),
+  hora: time('hora', { withTimezone: false }).notNull(),
+  tipo: varchar('tipo', { length: 255 }).notNull(),
+  comentarios: text('comentarios'),
+  active: boolean('active').notNull().default(true),
+});
+export type TomiAgendaEventoSuenioDB = InferSelectModel<typeof tomiAgendaEventoSuenio>;

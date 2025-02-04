@@ -1241,3 +1241,19 @@ export interface GrupoMovimiento {
   totalMonto?: number;
   filas: InfoFilaMovimientoGrupo[];
 }
+
+export type TipoEventoSuenio = 'Despierto' | 'Dormido';
+
+export interface EventoSuenio {
+  id: string;
+  hora: string;
+  comentarios?: string;
+  tipo: TipoEventoSuenio;
+}
+
+export interface AgendaTomiDia {
+  id: string;
+  fecha: Date;
+  comentarios?: string;
+  eventos: EventoSuenio[];
+}

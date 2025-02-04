@@ -21,7 +21,7 @@ export const metadata = {
 const DRAWER_WIDTH = 240;
 
 const LINKS = [
-  { text: 'Tomi', href: '/', icon: HomeIcon },
+  { text: 'Tomi', href: '/tomi', icon: HomeIcon },
   { text: 'Finanzas', href: '/finanzas', icon: SavingsIcon },
 ];
 

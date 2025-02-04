@@ -82,6 +82,18 @@ export const formatDate = (date: Date, showHour: boolean = false): string => {
 
   return date.toLocaleString('es-AR', options).replace(/, /, ' ');
 };
+export const obtenerDiaYDiaDeLaSemana = (fechaUTC: Date): string => {
+  const opciones: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  };
+
+  const formattedDate = fechaUTC.toLocaleDateString('es-ES', opciones);
+  const [weekday, day] = formattedDate.split(' ');
+
+  return `${day} ${weekday}`;
+};
 
 export const addTimeToDateString = (date: string) => {
   // Get the current date and time

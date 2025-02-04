@@ -10,12 +10,21 @@ import {
   TipoDeGasto,
   TipoDeMovimientoGasto,
   months,
+  AgendaTomiDia,
+  TipoEventoSuenio,
 } from '../definitions';
 import { db } from './database';
-import { categorias, detalleSubcategorias, gastoEstimado, movimientosGasto, subcategorias } from './tables';
+import {
+  categorias,
+  detalleSubcategorias,
+  gastoEstimado,
+  movimientosGasto,
+  subcategorias,
+  tomiAgendaDia,
+  tomiAgendaEventoSuenio,
+} from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
 import { generateUUID, obtenerCategoriaUIMovimiento, transformCurrencyToNumber } from '../helpers';
-import { esES } from '@mui/x-data-grid';
 
 type GastoPresupuestoItem = {
   id: string | null;
@@ -393,4 +402,50 @@ export const obtenerGastosEstimadosTotalesPorFecha = async (fecha: Date): Promis
     console.error('Database Error:', error);
     throw new Error('Error al obtener los gastos estimados');
   }
+};
+
+export const obtenerAgendaTomiDias = async (fechaDesde: Date, fechaHasta: Date): Promise<AgendaTomiDia[]> => {
+  const dbResults = await db
+    .select({
+      id: tomiAgendaEventoSuenio.id,
+      hora: tomiAgendaEventoSuenio.hora,
+      tipo: tomiAgendaEventoSuenio.tipo,
+      comentarios: tomiAgendaEventoSuenio.comentarios,
+      diaId: tomiAgendaDia.id,
+      diaComentarios: tomiAgendaDia.comentarios,
+      diaFecha: tomiAgendaDia.fecha,
+    })
+    .from(tomiAgendaEventoSuenio)
+    .innerJoin(tomiAgendaDia, and(eq(tomiAgendaEventoSuenio.dia, tomiAgendaDia.id)))
+    .where(and(eq(tomiAgendaDia.active, true), between(tomiAgendaDia.fecha, fechaDesde, fechaHasta)))
+    .orderBy(asc(tomiAgendaDia.fecha), asc(tomiAgendaEventoSuenio.hora));
+
+  const agendaTomiDias: AgendaTomiDia[] = [];
+  dbResults.forEach((dbResult) => {
+    const dia = agendaTomiDias.find((agendaTomiDia) => agendaTomiDia.id === dbResult.diaId);
+    if (dia) {
+      dia.eventos.push({
+        id: dbResult.id,
+        hora: dbResult.hora,
+        tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
+        comentarios: dbResult.comentarios || '',
+      });
+    } else {
+      agendaTomiDias.push({
+        id: dbResult.diaId,
+        fecha: dbResult.diaFecha,
+        comentarios: dbResult.diaComentarios || '',
+        eventos: [
+          {
+            id: dbResult.id,
+            hora: dbResult.hora,
+            tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
+            comentarios: dbResult.comentarios || '',
+          },
+        ],
+      });
+    }
+  });
+
+  return agendaTomiDias;
 };
