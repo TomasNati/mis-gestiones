@@ -13,6 +13,15 @@ const Suenio = async () => {
 
   const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
 
+  const obtenerEstadoSuenioDiaAnterior = (index: number) => {
+    if (index === 0) {
+      return 'Despierto';
+    }
+    const diaAnterior = dias[index - 1];
+
+    return diaAnterior.eventos[diaAnterior.eventos.length - 1].tipo;
+  };
+
   return (
     <Container>
       <Box
@@ -48,7 +57,7 @@ const Suenio = async () => {
                     {dia.eventos.map(({ tipo, hora }) => `Tipo: ${tipo} - Hora: ${hora} || `)}
                   </TableCell>
                   <TableCell>
-                    <BarraSuenio data={dia.eventos} />
+                    <BarraSuenio data={dia.eventos} estadoSuenioPrevio={obtenerEstadoSuenioDiaAnterior(index)} />
                   </TableCell>
                 </TableRow>
               ))}

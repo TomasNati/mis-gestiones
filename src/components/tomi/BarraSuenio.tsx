@@ -1,5 +1,5 @@
 import React from 'react';
-import { LinearProgress, Box, Tooltip, Typography } from '@mui/material';
+import { LinearProgress, Box, Typography } from '@mui/material';
 import { EventoSuenio, TipoEventoSuenio } from '@/lib/definitions';
 
 interface ResultSegment {
@@ -14,14 +14,14 @@ const timeStringToMinutes = (time: string): number => {
   return hours * 60 + minutes;
 };
 
-const transformSegments = (segments: EventoSuenio[]): ResultSegment[] => {
+const transformSegments = (segments: EventoSuenio[], estadoSuenioPrevio: TipoEventoSuenio): ResultSegment[] => {
   let start = 0;
   const result: ResultSegment[] = [];
 
   segments.forEach((segment, index) => {
     const end = timeStringToMinutes(segment.hora);
     result.push({
-      tipo: index === 0 ? 'Despierto' : segments[index - 1].tipo,
+      tipo: index === 0 ? estadoSuenioPrevio : segments[index - 1].tipo,
       start,
       end,
       hora: segment.hora.slice(0, 5),
@@ -70,10 +70,11 @@ const LinearProgressWithLabel = ({ tipo, start, end, hora }: ResultSegment) => {
 
 type Props = {
   data: EventoSuenio[];
+  estadoSuenioPrevio: TipoEventoSuenio;
 };
 
-const BarraSuenio: React.FC<Props> = ({ data }) => {
-  const segmentos = transformSegments(data);
+const BarraSuenio: React.FC<Props> = ({ data, estadoSuenioPrevio }) => {
+  const segmentos = transformSegments(data, estadoSuenioPrevio);
 
   return (
     <Box sx={{ display: 'flex', width: '100%', height: '30px' }}>
