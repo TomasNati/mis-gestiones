@@ -137,7 +137,7 @@ export interface ResultadoCrearMovimiento {
   error?: string;
 }
 
-export type TipoDeImportacion = 'Gastos del mes' | 'Presupuesto del mes';
+export type TipoDeImportacion = 'Gastos del mes' | 'Presupuesto del mes' | 'Horas sueño Tomi';
 
 export type ImportarUI = {
   anio: number;
@@ -1257,3 +1257,13 @@ export interface AgendaTomiDia {
   comentarios?: string;
   eventos: EventoSuenio[];
 }
+
+export type ImportarSuenioTomiEvento = {
+  tiempo: string;
+  tipo: string;
+};
+
+export type ImportarSuenioTomiDia = {
+  id: string;
+  eventos: ImportarSuenioTomiEvento[];
+};
