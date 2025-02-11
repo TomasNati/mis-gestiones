@@ -19,13 +19,22 @@ import {
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
+  generateUUID,
   logMessage,
   mapearTiposDeConceptoExcelASubcategorias,
   obtenerTipoDeMovimientoGasto,
+  parseTextoSuenioTomi,
   transformCurrencyToNumber,
 } from '../helpers';
 import { db } from './database';
-import { GastoEstimadoAInsertarDB, gastoEstimado, movimientosGasto } from './tables';
+import {
+  GastoEstimadoAInsertarDB,
+  TomiAgendaEventoSuenioDB,
+  gastoEstimado,
+  movimientosGasto,
+  tomiAgendaDia,
+  tomiAgendaEventoSuenio,
+} from './tables';
 import { error } from 'console';
 
 const FormMovimientoSchema = z.object({
@@ -195,8 +204,12 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI): Promise<Re
 export const importarDatos = async (datos: ImportarUI): Promise<ImportarResult> => {
   if (datos.tipo === 'Gastos del mes') {
     return await importarMovimientos(datos);
-  } else {
+  } else if (datos.tipo === 'Presupuesto del mes') {
     return await importarPresupuestos(datos);
+  } else if (datos.tipo === 'Horas sueño Tomi') {
+    return await importarHorasSuenioTomi(datos);
+  } else {
+    return Promise.resolve({ exitoso: false, lineasInvalidas: [] });
   }
 };
 
@@ -359,6 +372,71 @@ const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<Importa
   //Revalidate the cache
   revalidatePath('/finanzas');
   revalidatePath('/finanzas/movimientosDelMes');
+  return Promise.resolve(resultadoFinal);
+};
+
+const importarHorasSuenioTomi = async ({ anio, mes, textoAImportar }: ImportarUI): Promise<ImportarResult> => {
+  const resultadoFinal: ImportarResult = {
+    lineasInvalidas: [],
+    exitoso: true,
+  };
+
+  // Validate input
+  if (mes < 1 || mes > 12) {
+    resultadoFinal.error = 'El mes debe ser un número entre 1 y 12';
+    resultadoFinal.exitoso = false;
+    logMessage(resultadoFinal.error, 'error');
+    return Promise.resolve(resultadoFinal);
+  }
+
+  const daysInMonth = new Date(anio, mes, 0).getDate();
+  const datosAImportar = parseTextoSuenioTomi(textoAImportar);
+
+  try {
+    const registrosAInsertarDias = [];
+
+    // Iterate over each day of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      // Create a date object for the current day
+      const fecha = new Date(Date.UTC(anio, mes - 1, day));
+      const diaIndex = day - 1; // Convert to 0-based index
+
+      registrosAInsertarDias.push({
+        id: datosAImportar[diaIndex]?.id || generateUUID(),
+        fecha,
+      });
+    }
+
+    await db.insert(tomiAgendaDia).values(registrosAInsertarDias);
+
+    const eventosAImportar: { dia: string; hora: string; tipo: string }[] = [];
+
+    datosAImportar.forEach((dia, diaIndex) => {
+      if (dia?.eventos?.length > 0) {
+        dia.eventos.forEach((evento) => {
+          const eventoDB = {
+            dia: datosAImportar[diaIndex].id,
+            hora: evento.tiempo,
+            tipo: evento.tipo === 'DOR' ? 'Dormido' : 'Despierto',
+          };
+          eventosAImportar.push(eventoDB);
+        });
+      }
+    });
+
+    await db.insert(tomiAgendaEventoSuenio).values(eventosAImportar);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultadoFinal.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+    } else {
+      resultadoFinal.error = ` Error al insertar en base de datos: ${error}.\n`;
+    }
+  }
+  if (resultadoFinal.error) {
+    logMessage(resultadoFinal.error, 'error');
+    resultadoFinal.exitoso = false;
+  }
+
   return Promise.resolve(resultadoFinal);
 };
 

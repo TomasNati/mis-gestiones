@@ -11,6 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import HomeIcon from '@mui/icons-material/Home';
 import SavingsIcon from '@mui/icons-material/Savings';
 import SettingsIcon from '@mui/icons-material/Settings';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ThemeRegistry from '@/components/ThemeRegistry/ThemeRegistry';
 
 export const metadata = {
@@ -23,6 +24,7 @@ const DRAWER_WIDTH = 240;
 const LINKS = [
   { text: 'Tomi', href: '/tomi', icon: HomeIcon },
   { text: 'Finanzas', href: '/finanzas', icon: SavingsIcon },
+  { text: 'Importar', href: '/importar', icon: FileUploadIcon },
 ];
 
 const PLACEHOLDER_LINKS = [{ text: 'Settings', icon: SettingsIcon }];

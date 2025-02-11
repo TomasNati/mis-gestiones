@@ -9,6 +9,7 @@ import {
   conceptoExcelGastosEstimadosTemplate,
   GastoEstimadoAnualUI,
   GastoEstimadoItemDelMes,
+  ImportarSuenioTomiDia,
 } from './definitions';
 
 export const logMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info'): void => {
@@ -82,6 +83,7 @@ export const formatDate = (date: Date, showHour: boolean = false): string => {
 
   return date.toLocaleString('es-AR', options).replace(/, /, ' ');
 };
+
 export const obtenerDiaYDiaDeLaSemana = (fechaUTC: Date): string => {
   const opciones: Intl.DateTimeFormatOptions = {
     weekday: 'long',
@@ -749,3 +751,30 @@ export const exportarGastosEstimados = (gastos: GastoEstimadoAnualUI[], meses: s
 };
 
 export const cloneObject = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
+
+export const parseTextoSuenioTomi = (input: string): ImportarSuenioTomiDia[] => {
+  const result: ImportarSuenioTomiDia[] = [];
+  // Split the input string by lines
+  const lines = input.split('\n').filter((line) => line.trim() !== '');
+
+  // Map each line to an array of TimeEntry objects
+  lines.forEach((line) => {
+    // Remove the leading number and arrow (e.g., ""1 -> "")
+    const cleanedLine = line.replace(/^\d+\s*->\s*/, '');
+
+    // Split the line by the ""||"" delimiter
+    const entries = cleanedLine.split('||').filter((entry) => entry.trim() !== '');
+
+    // Map each entry to a TimeEntry object
+    const dia: ImportarSuenioTomiDia = {
+      id: generateUUID(),
+      eventos: entries.map((entry) => {
+        const [tiempo, tipo] = entry.trim().split(/\s+/);
+        return { tiempo, tipo };
+      }),
+    };
+    result.push(dia);
+  });
+
+  return result;
+};
