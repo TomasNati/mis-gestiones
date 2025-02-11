@@ -1,4 +1,5 @@
-import * as React from 'react';
+'use client';
+
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -6,12 +7,25 @@ import { obtenerAgendaTomiDias } from '@/lib/orm/data';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { obtenerDiaYDiaDeLaSemana } from '@/lib/helpers';
 import BarraSuenio from '@/components/tomi/BarraSuenio';
+import { useState, useEffect } from 'react';
+import { AgendaTomiDia, months } from '@/lib/definitions';
+import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
 
-const Suenio = async () => {
-  const fechaDesde = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
-  const fechaHasta = new Date(Date.UTC(2025, 0, 31, 23, 59, 59));
+const Suenio = () => {
+  const [anio, setAnio] = useState<number>(new Date().getFullYear());
+  const [mes, setMes] = useState(months[new Date().getMonth()]);
+  const [dias, setDias] = useState<AgendaTomiDia[]>([]);
 
-  const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
+  useEffect(() => {
+    const refrescarDias = async () => {
+      const fechaDesde = new Date(Date.UTC(anio, months.indexOf(mes), 1));
+      const fechaHasta = new Date(Date.UTC(anio, months.indexOf(mes) + 1, 0));
+      const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
+      setDias(dias);
+    };
+
+    refrescarDias();
+  }, [mes, anio, setDias]);
 
   const obtenerEstadoSuenioDiaAnterior = (index: number) => {
     if (index === 0) {
@@ -35,6 +49,7 @@ const Suenio = async () => {
         <Typography variant="body1" gutterBottom>
           Dashboard de Agenda de Tomi
         </Typography>
+        <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} mesesExclusivos />
       </Box>
       <Box>
         <Typography color="primary" variant="h6">
