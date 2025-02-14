@@ -20,12 +20,17 @@ const Suenio = () => {
     const refrescarDias = async () => {
       const fechaDesde = new Date(Date.UTC(anio, months.indexOf(mes), 1));
       const fechaHasta = new Date(Date.UTC(anio, months.indexOf(mes) + 1, 0));
-      const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
-      setDias(dias);
+      console.log(fechaDesde, fechaHasta);
+      // const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
+      // setDias(dias);
     };
 
     refrescarDias();
   }, [mes, anio, setDias]);
+
+  const oneMesYAnioChanged = (mesNuevo: string, anioNuevo: number) => {
+    console.log(`Mes: ${mesNuevo} - Año: ${anioNuevo}`);
+  };
 
   const obtenerEstadoSuenioDiaAnterior = (index: number) => {
     if (index === 0) {
@@ -49,7 +54,14 @@ const Suenio = () => {
         <Typography variant="body1" gutterBottom>
           Dashboard de Agenda de Tomi
         </Typography>
-        <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} mesesExclusivos />
+        <SeleccionadorPeriodo
+          anio={anio}
+          setAnio={setAnio}
+          mes={mes}
+          setMes={setMes}
+          mesesExclusivos
+          setMesYAnio={oneMesYAnioChanged}
+        />
       </Box>
       <Box>
         <Typography color="primary" variant="h6">
