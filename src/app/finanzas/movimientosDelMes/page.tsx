@@ -8,14 +8,21 @@ import { setDateAsUTC } from '@/lib/helpers';
 import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
-import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
+import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graficos/';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 
+interface AnioYMes {
+  anio: number;
+  mes: string;
+}
+
 const MovimientosDelMes = () => {
-  const [anio, setAnio] = useState<number>(new Date().getFullYear());
-  const [mes, setMes] = useState(months[new Date().getMonth()]);
+  const [anioYMes, setAnioYMes] = useState<AnioYMes>({
+    anio: new Date().getFullYear(),
+    mes: months[new Date().getMonth()],
+  });
   const [movimientos, setMovimientos] = useState<MovimientoGastoGrilla[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
@@ -26,9 +33,7 @@ const MovimientosDelMes = () => {
   const [totalMensualEstimado, setTotalMensualEstimado] = useState(0);
 
   const obtenerMovimientos = async (): Promise<MovimientoGastoGrilla[]> => {
-    if (!anio || !mes) return [];
-
-    const fecha = new Date(anio, months.indexOf(mes), 1);
+    const fecha = new Date(anioYMes.anio, months.indexOf(anioYMes.mes), 1);
     const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
 
     const [movimientos, totalEstimadoParaElMes] = await Promise.all([
@@ -54,7 +59,11 @@ const MovimientosDelMes = () => {
     };
 
     refrescarMovimientos();
-  }, [mes, anio]);
+  }, [anioYMes]);
+
+  const oneMesYAnioChanged = async (mesNuevo: string, anioNuevo: number) => {
+    setAnioYMes({ anio: anioNuevo, mes: mesNuevo });
+  };
 
   const onMovimientoActualizado = async (movimiento: MovimientoGastoGrilla): Promise<MovimientoGastoGrilla> => {
     const movimientoUI: MovimientoUI = {
@@ -96,7 +105,7 @@ const MovimientosDelMes = () => {
       comentarios: `${grupoMovimiento.establecimiento}${mov.comentario ? ` - ${mov.comentario}` : ''}`,
       monto: mov.monto || 0,
       tipoDeGasto: grupoMovimiento.tipoDePago,
-      fecha: new Date(anio, months.indexOf(mes), grupoMovimiento.dia),
+      fecha: new Date(anioYMes.anio, months.indexOf(anioYMes.mes), grupoMovimiento.dia),
       subcategoriaId: mov.concepto?.subcategoriaId || '',
       detalleSubcategoriaId: mov.concepto?.detalleSubcategoriaId,
       isNew: true,
@@ -147,7 +156,7 @@ const MovimientosDelMes = () => {
     setMostrandoGrilla(!mostrandoGrilla);
   };
 
-  const mostrarInformacion = !!(anio && mes);
+  const mostrarInformacion = !!(anioYMes.anio && anioYMes.mes);
   const mostrandoGrafico = !mostrandoGrilla;
 
   return (
@@ -167,7 +176,7 @@ const MovimientosDelMes = () => {
           <Typography color="text.primary">Movimientos del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} mesesExclusivos />
+      <SeleccionadorPeriodo anio={anioYMes.anio} mes={anioYMes.mes} setMesYAnio={oneMesYAnioChanged} mesesExclusivos />
       {mostrarInformacion && (
         <>
           <Box
@@ -188,8 +197,8 @@ const MovimientosDelMes = () => {
           <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
             <MovimientosDelMesGrilla
               movimientos={movimientos}
-              anio={anio}
-              mes={months.indexOf(mes)}
+              anio={anioYMes.anio}
+              mes={months.indexOf(anioYMes.mes)}
               totalMensualEstimado={totalMensualEstimado || 0}
               onMovimientoActualizado={onMovimientoActualizado}
               onMovimientosEliminados={onMovimientosEliminados}

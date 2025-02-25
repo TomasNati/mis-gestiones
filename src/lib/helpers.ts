@@ -778,3 +778,20 @@ export const parseTextoSuenioTomi = (input: string): ImportarSuenioTomiDia[] => 
 
   return result;
 };
+
+const rotateArray = <T>(arr: T[], positions: number, direction: 'left' | 'right'): T[] => {
+  const length = arr.length;
+
+  // Normalize the number of positions
+  positions = positions % length;
+  if (positions < 0) {
+    positions += length;
+  }
+
+  // Rotate the array based on direction
+  if (direction === 'left') {
+    return arr.slice(positions).concat(arr.slice(0, positions));
+  } else {
+    return arr.slice(-positions).concat(arr.slice(0, length - positions));
+  }
+};

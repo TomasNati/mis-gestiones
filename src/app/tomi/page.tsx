@@ -9,23 +9,20 @@ import { obtenerDiaYDiaDeLaSemana } from '@/lib/helpers';
 import BarraSuenio from '@/components/tomi/BarraSuenio';
 import { useState, useEffect } from 'react';
 import { AgendaTomiDia, months } from '@/lib/definitions';
-import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
+import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
+
+const anio = new Date().getFullYear();
+const mes = months[new Date().getMonth()];
 
 const Suenio = () => {
-  const [anio, setAnio] = useState<number>(new Date().getFullYear());
-  const [mes, setMes] = useState(months[new Date().getMonth()]);
   const [dias, setDias] = useState<AgendaTomiDia[]>([]);
 
-  useEffect(() => {
-    const refrescarDias = async () => {
-      const fechaDesde = new Date(Date.UTC(anio, months.indexOf(mes), 1));
-      const fechaHasta = new Date(Date.UTC(anio, months.indexOf(mes) + 1, 0));
-      const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
-      setDias(dias);
-    };
-
-    refrescarDias();
-  }, [mes, anio, setDias]);
+  const oneMesYAnioChanged = async (mesNuevo: string, anioNuevo: number) => {
+    const fechaDesde = new Date(Date.UTC(anioNuevo, months.indexOf(mesNuevo), 1));
+    const fechaHasta = new Date(Date.UTC(anioNuevo, months.indexOf(mesNuevo) + 1, 0));
+    const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
+    setDias(dias);
+  };
 
   const obtenerEstadoSuenioDiaAnterior = (index: number) => {
     if (index === 0) {
@@ -49,7 +46,7 @@ const Suenio = () => {
         <Typography variant="body1" gutterBottom>
           Dashboard de Agenda de Tomi
         </Typography>
-        <SeleccionadorPeriodo anio={anio} setAnio={setAnio} mes={mes} setMes={setMes} mesesExclusivos />
+        <SeleccionadorPeriodo anio={anio} mes={mes} mesesExclusivos setMesYAnio={oneMesYAnioChanged} />
       </Box>
       <Box>
         <Typography color="primary" variant="h6">
@@ -66,7 +63,7 @@ const Suenio = () => {
             </TableHead>
             <TableBody>
               {dias.map((dia, index) => (
-                <TableRow key={index}>
+                <TableRow key={dia.id}>
                   <TableCell width={120}>{obtenerDiaYDiaDeLaSemana(dia.fecha)}</TableCell>
                   <TableCell width={300}>
                     {dia.eventos.map(({ tipo, hora }) => `Tipo: ${tipo} - Hora: ${hora} || `)}

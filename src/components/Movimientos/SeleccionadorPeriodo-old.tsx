@@ -11,7 +11,7 @@ interface SeleccionadorPeriodoProps {
   setMeses?: (meses: string[]) => void;
   mesesExclusivos?: boolean;
 }
-const SeleccionadorPeriodo = ({
+const SeleccionadorPeriodoOld = ({
   anio,
   setAnio,
   mes,
@@ -84,4 +84,4 @@ const SeleccionadorPeriodo = ({
   );
 };
 
-export { SeleccionadorPeriodo };
+export { SeleccionadorPeriodoOld };
