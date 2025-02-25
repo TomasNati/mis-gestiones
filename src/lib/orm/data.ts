@@ -405,47 +405,52 @@ export const obtenerGastosEstimadosTotalesPorFecha = async (fecha: Date): Promis
 };
 
 export const obtenerAgendaTomiDias = async (fechaDesde: Date, fechaHasta: Date): Promise<AgendaTomiDia[]> => {
-  const dbResults = await db
-    .select({
-      id: tomiAgendaEventoSuenio.id,
-      hora: tomiAgendaEventoSuenio.hora,
-      tipo: tomiAgendaEventoSuenio.tipo,
-      comentarios: tomiAgendaEventoSuenio.comentarios,
-      diaId: tomiAgendaDia.id,
-      diaComentarios: tomiAgendaDia.comentarios,
-      diaFecha: tomiAgendaDia.fecha,
-    })
-    .from(tomiAgendaEventoSuenio)
-    .innerJoin(tomiAgendaDia, and(eq(tomiAgendaEventoSuenio.dia, tomiAgendaDia.id)))
-    .where(and(eq(tomiAgendaDia.active, true), between(tomiAgendaDia.fecha, fechaDesde, fechaHasta)))
-    .orderBy(asc(tomiAgendaDia.fecha), asc(tomiAgendaEventoSuenio.hora));
+  try {
+    const dbResults = await db
+      .select({
+        id: tomiAgendaEventoSuenio.id,
+        hora: tomiAgendaEventoSuenio.hora,
+        tipo: tomiAgendaEventoSuenio.tipo,
+        comentarios: tomiAgendaEventoSuenio.comentarios,
+        diaId: tomiAgendaDia.id,
+        diaComentarios: tomiAgendaDia.comentarios,
+        diaFecha: tomiAgendaDia.fecha,
+      })
+      .from(tomiAgendaEventoSuenio)
+      .innerJoin(tomiAgendaDia, and(eq(tomiAgendaEventoSuenio.dia, tomiAgendaDia.id)))
+      .where(and(eq(tomiAgendaDia.active, true), between(tomiAgendaDia.fecha, fechaDesde, fechaHasta)))
+      .orderBy(asc(tomiAgendaDia.fecha), asc(tomiAgendaEventoSuenio.hora));
 
-  const agendaTomiDias: AgendaTomiDia[] = [];
-  dbResults.forEach((dbResult) => {
-    const dia = agendaTomiDias.find((agendaTomiDia) => agendaTomiDia.id === dbResult.diaId);
-    if (dia) {
-      dia.eventos.push({
-        id: dbResult.id,
-        hora: dbResult.hora,
-        tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
-        comentarios: dbResult.comentarios || '',
-      });
-    } else {
-      agendaTomiDias.push({
-        id: dbResult.diaId,
-        fecha: dbResult.diaFecha,
-        comentarios: dbResult.diaComentarios || '',
-        eventos: [
-          {
-            id: dbResult.id,
-            hora: dbResult.hora,
-            tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
-            comentarios: dbResult.comentarios || '',
-          },
-        ],
-      });
-    }
-  });
+    const agendaTomiDias: AgendaTomiDia[] = [];
+    dbResults.forEach((dbResult) => {
+      const dia = agendaTomiDias.find((agendaTomiDia) => agendaTomiDia.id === dbResult.diaId);
+      if (dia) {
+        dia.eventos.push({
+          id: dbResult.id,
+          hora: dbResult.hora,
+          tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
+          comentarios: dbResult.comentarios || '',
+        });
+      } else {
+        agendaTomiDias.push({
+          id: dbResult.diaId,
+          fecha: dbResult.diaFecha,
+          comentarios: dbResult.diaComentarios || '',
+          eventos: [
+            {
+              id: dbResult.id,
+              hora: dbResult.hora,
+              tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
+              comentarios: dbResult.comentarios || '',
+            },
+          ],
+        });
+      }
+    });
 
-  return agendaTomiDias;
+    return agendaTomiDias;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener obtenerAgendaTomiDias');
+  }
 };

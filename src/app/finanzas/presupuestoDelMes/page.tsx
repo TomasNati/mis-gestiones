@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { GastoEstimadoAnualUI, months } from '@/lib/definitions';
 import { GastosEstimadosDelMesGrilla } from '@/components/presupuesto/GastosEstimadosDelMesGrilla';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
-import { SeleccionadorPeriodo } from '@/components/Movimientos/SeleccionadorPeriodo';
+import { SeleccionadorPeriodoOld } from '@/components/Movimientos/SeleccionadorPeriodo-old';
 
 const mesActual: string = months.at(new Date().getMonth()) || 'Enero';
 
@@ -60,7 +60,7 @@ const GastosDelMes = () => {
           <Typography color="text.primary">Gastos estimados del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo anio={anio} setAnio={setAnio} setMeses={setMeses} meses={meses} />
+      <SeleccionadorPeriodoOld anio={anio} setAnio={setAnio} setMeses={setMeses} meses={meses} />
       {mostrarInformacion && (
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
           <GastosEstimadosDelMesGrilla gastos={gastosEstimados} mesesAMostrar={meses} anio={anio} />
