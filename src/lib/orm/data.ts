@@ -12,7 +12,7 @@ import {
   months,
   AgendaTomiDia,
   TipoEventoSuenio,
-} from '../definitions';
+} from '@/lib/definitions';
 import { db } from './database';
 import {
   categorias,

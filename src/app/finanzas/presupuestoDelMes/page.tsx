@@ -2,17 +2,17 @@
 
 import { obtenerGastosEstimadosPorAnio } from '@/lib/orm/data';
 import { Box, Breadcrumbs, Link, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { AnioYMes, GastoEstimadoAnualUI, months } from '@/lib/definitions';
+import { useState } from 'react';
+import { GastoEstimadoAnualUI, months } from '@/lib/definitions';
 import { GastosEstimadosDelMesGrilla } from '@/components/presupuesto/GastosEstimadosDelMesGrilla';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
+import { AnioConMeses } from '@/components/comun/seleccionadorPeriodoHelper';
 
 const mesActual: string = months.at(new Date().getMonth()) || 'Enero';
 
 const GastosDelMes = () => {
-  const [anio, setAnio] = useState<number>(new Date().getFullYear());
-  const [meses, setMeses] = useState<string[]>([mesActual]);
+  const [aniosYMesesElegidos, setAniosYMesesElegidos] = useState<AnioConMeses[]>([]);
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
@@ -21,27 +21,28 @@ const GastosDelMes = () => {
     mensaje: '',
   });
 
-  // useEffect(() => {
-  //   const obtenerGastosEstimados = async () => {
-  //     if (anio) {
-  //       const obtenerGastosEstimadosParaLaFechaElegida = async () => {
-  //         const gastosEstimados = await obtenerGastosEstimadosPorAnio(anio);
-  //         return gastosEstimados;
-  //       };
+  const onAnioConMesesElegidos = async (meses: AnioConMeses[]) => {
+    if (!meses.length) return;
 
-  //       const gastosEstimados: GastoEstimadoAnualUI[] = await obtenerGastosEstimadosParaLaFechaElegida();
-  //       const categoriasColapsadasInicialmente = ['Viajes - Total mensual', 'Other - Total mensual'];
-  //       gastosEstimados
-  //         .filter((gasto) => categoriasColapsadasInicialmente.includes(gasto.descripcion))
-  //         .forEach((gasto) => (gasto.colapsado = true));
+    let primerAnioConMeses = meses[0];
+    let ultimoAnioConMeses = meses[1] || meses[0];
 
-  //       setGastosEstimados(gastosEstimados);
-  //     }
-  //   };
-  //   obtenerGastosEstimados();
-  // }, [anio]);
+    const ultimoMes = ultimoAnioConMeses.meses[ultimoAnioConMeses.meses.length - 1];
 
-  const mostrarInformacion = !!anio;
+    const fechaDesde = new Date(primerAnioConMeses.anio, months.indexOf(primerAnioConMeses.meses[0]));
+    const fechaHasta = new Date(ultimoAnioConMeses.anio, months.indexOf(ultimoMes));
+
+    const gastosEstimados: GastoEstimadoAnualUI[] = await obtenerGastosEstimadosPorAnio(fechaDesde, fechaHasta);
+    const categoriasColapsadasInicialmente = ['Viajes - Total mensual', 'Other - Total mensual'];
+    gastosEstimados
+      .filter((gasto) => categoriasColapsadasInicialmente.includes(gasto.descripcion))
+      .forEach((gasto) => (gasto.colapsado = true));
+
+    setGastosEstimados(gastosEstimados);
+    setAniosYMesesElegidos(meses);
+  };
+
+  const mostrarInformacion = aniosYMesesElegidos.length > 0;
 
   return (
     <Box>
@@ -60,10 +61,10 @@ const GastosDelMes = () => {
           <Typography color="text.primary">Gastos estimados del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo anio={anio} />
+      <SeleccionadorPeriodo />
       {mostrarInformacion && (
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
-          <GastosEstimadosDelMesGrilla gastos={gastosEstimados} mesesAMostrar={meses} anio={anio} />
+          <GastosEstimadosDelMesGrilla gastos={gastosEstimados} aniosYMesesElegidos={aniosYMesesElegidos} />
         </Box>
       )}
       <Notificacion configuracionProp={configNotificacion} />

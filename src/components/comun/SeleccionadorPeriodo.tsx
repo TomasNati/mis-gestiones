@@ -20,7 +20,7 @@ interface SeleccionadorPeriodoProps {
   anio?: number;
   mes?: string;
   meses?: AnioConMeses[];
-  setMeses?: (meses: string[]) => void;
+  onAnioConMesesElegidos?: (meses: AnioConMeses[]) => void;
   setMesYAnio?: (mes: string, anio: number) => void;
   mesesExclusivos?: boolean;
 }
@@ -29,7 +29,7 @@ const SeleccionadorPeriodo = ({
   mes,
   meses,
   setMesYAnio,
-  setMeses,
+  onAnioConMesesElegidos,
   mesesExclusivos,
 }: SeleccionadorPeriodoProps) => {
   const [mesesConAniosElegidos, setMesesConAniosElegidos] = useState<AnioConMeses[]>(meses || []);
@@ -68,7 +68,7 @@ const SeleccionadorPeriodo = ({
       setMesYAnio && setMesYAnio(primerMesElegido, nuevoAnio);
     } else {
       setMesesConAniosElegidos([]);
-      //TODO: AVISAR QUE SE BORRARON LOS MESES ELEGIDOS
+      onAnioConMesesElegidos && onAnioConMesesElegidos([]);
     }
   };
 
@@ -95,8 +95,7 @@ const SeleccionadorPeriodo = ({
     });
     setMesesConAniosElegidos(nuevosMesesElegidos);
     updateAniosElegibles(nuevosMesesElegidos.map(({ anio }) => anio));
-    console.log(nuevosMesesElegidos);
-    // setMesYAnio && setMesYAnio(mes, mesAMostrarElegido.anio);
+    onAnioConMesesElegidos && onAnioConMesesElegidos(nuevosMesesElegidos);
   };
 
   const obtenerAnioDelMesActual = () => {

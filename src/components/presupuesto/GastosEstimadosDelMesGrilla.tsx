@@ -25,14 +25,14 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
+import { AnioConMeses } from '../comun/seleccionadorPeriodoHelper';
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
-  mesesAMostrar?: string[];
-  anio: number;
+  aniosYMesesElegidos: AnioConMeses[];
 }
 
-const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEstimadosDelMesGrillaProps) => {
+const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnual[]>([]);
   const [mesesVisibles, setMesesVisibles] = useState<string[]>(months);
@@ -56,10 +56,11 @@ const GastosEstimadosDelMesGrilla = ({ gastos, mesesAMostrar, anio }: GastosEsti
   }, [gastos]);
 
   useEffect(() => {
-    if (mesesAMostrar) {
+    if (aniosYMesesElegidos.length > 0) {
+      const mesesAMostrar = aniosYMesesElegidos.flatMap(({ meses }) => meses);
       setMesesVisibles(mesesAMostrar?.sort((a, b) => months.indexOf(a) - months.indexOf(b)));
     }
-  }, [mesesAMostrar]);
+  }, [aniosYMesesElegidos]);
 
   const mesesColumns: GridColDef[] = mesesVisibles.map((month) => ({
     field: month,
