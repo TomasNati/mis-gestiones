@@ -32,6 +32,8 @@ const GastosDelMes = () => {
     const fechaDesde = new Date(primerAnioConMeses.anio, months.indexOf(primerAnioConMeses.meses[0]));
     const fechaHasta = new Date(ultimoAnioConMeses.anio, months.indexOf(ultimoMes));
 
+    console.log(`Desde año y mes: ${fechaDesde.getFullYear()} - ${fechaDesde.getMonth() + 1}`);
+    console.log(`Hasta año y mes: ${fechaHasta.getFullYear()} - ${fechaHasta.getMonth() + 1}`);
     const gastosEstimados: GastoEstimadoAnualUI[] = await obtenerGastosEstimadosPorAnio(fechaDesde, fechaHasta);
     const categoriasColapsadasInicialmente = ['Viajes - Total mensual', 'Other - Total mensual'];
     gastosEstimados
@@ -61,7 +63,7 @@ const GastosDelMes = () => {
           <Typography color="text.primary">Gastos estimados del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo />
+      <SeleccionadorPeriodo onAnioConMesesElegidos={onAnioConMesesElegidos} />
       {mostrarInformacion && (
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
           <GastosEstimadosDelMesGrilla gastos={gastosEstimados} aniosYMesesElegidos={aniosYMesesElegidos} />
