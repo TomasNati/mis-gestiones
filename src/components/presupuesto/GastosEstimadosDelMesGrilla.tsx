@@ -25,13 +25,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
 import { AnioConMeses } from '../comun/seleccionadorPeriodoHelper';
+import { set } from 'zod';
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
   aniosYMesesElegidos: AnioConMeses[];
+  onTieneCambiosPendientesChanged: (tieneCambiosPendientes: boolean) => void;
 }
 
-const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos }: GastosEstimadosDelMesGrillaProps) => {
+const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambiosPendientesChanged }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnual[]>([]);
   const [mesesVisibles, setMesesVisibles] = useState<string[]>(months);
@@ -92,6 +94,11 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos }: GastosEsti
     },
     valueFormatter: (params) => (params.value as GastoEstimadoItemDelMes).estimado,
   }));
+
+  const onHasUnsavedRowsChanged = (hasUnsavedRows: boolean) => {
+    setHasUnsavedRows(hasUnsavedRows);
+    onTieneCambiosPendientesChanged(hasUnsavedRows);
+  }
 
   const onToggleSubcategoriesVisibility = (event: React.MouseEvent<HTMLButtonElement>, row: GastoEstimadoAnualUI) => {
     event.stopPropagation();
@@ -215,7 +222,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos }: GastosEsti
         if (!unsavedChangesRef.current.rowsBeforeChange[rowId]) {
           unsavedChangesRef.current.rowsBeforeChange[rowId] = oldRow;
         }
-        setHasUnsavedRows(true);
+        onHasUnsavedRowsChanged(true);
         actualizarGastosCategorias([newRow]);
         return newRow;
       } catch (error) {
@@ -226,7 +233,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos }: GastosEsti
   );
 
   const discardChanges = useCallback(() => {
-    setHasUnsavedRows(false);
+    onHasUnsavedRowsChanged(false);
     Object.values(unsavedChangesRef.current.rowsBeforeChange).forEach((row) => {
       apiRef.current.updateRows([row]);
     });
@@ -243,7 +250,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos }: GastosEsti
       setIsSaving(true);
       await persistRowUpdates(unsavedChangesRef.current.unsavedRows, mesesVisibles);
       setIsSaving(false);
-      setHasUnsavedRows(false);
+      onHasUnsavedRowsChanged(false);
       unsavedChangesRef.current = {
         unsavedRows: {},
         rowsBeforeChange: {},
@@ -269,7 +276,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos }: GastosEsti
         apiRef.current.updateRows([row]);
       });
       actualizarGastosCategorias([unsavedChangesRef.current.unsavedRows]);
-      setHasUnsavedRows(true);
+      onHasUnsavedRowsChanged(true);
     },
     [apiRef, gastosEstimadosElegidos],
   );

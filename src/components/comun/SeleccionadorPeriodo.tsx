@@ -20,9 +20,10 @@ interface SeleccionadorPeriodoProps {
   anio?: number;
   mes?: string;
   meses?: AnioConMeses[];
-  onAnioConMesesElegidos?: (meses: AnioConMeses[]) => void;
+  onAnioConMesesElegidos?: (mesesElegidos: string[], mesesVisibles: AnioConMeses[]) => void;
   setMesYAnio?: (mes: string, anio: number) => void;
   mesesExclusivos?: boolean;
+  disableChangeMonths?: boolean;
 }
 const SeleccionadorPeriodo = ({
   anio,
@@ -31,6 +32,7 @@ const SeleccionadorPeriodo = ({
   setMesYAnio,
   onAnioConMesesElegidos,
   mesesExclusivos,
+  disableChangeMonths,
 }: SeleccionadorPeriodoProps) => {
   const [mesesConAniosElegidos, setMesesConAniosElegidos] = useState<AnioConMeses[]>(meses || []);
   const [mesExclusivoElegido, setMesExclusivoElegido] = useState<string | null>(mes || null);
@@ -42,7 +44,9 @@ const SeleccionadorPeriodo = ({
 
   const updateFechaInicial = (newFechaInicial: Date) => {
     setFechaInicial(newFechaInicial);
-    setMesesAMostrar(obtenerMesesPorAnio(newFechaInicial));
+    const nuevosMesesAMostrar = obtenerMesesPorAnio(newFechaInicial);
+    setMesesAMostrar(nuevosMesesAMostrar);
+    return nuevosMesesAMostrar;
   };
 
   const updateAniosElegibles = (nuevosAnios: number[]) => {
@@ -63,12 +67,12 @@ const SeleccionadorPeriodo = ({
   const onAnioElegido = (e: SelectChangeEvent<number>) => {
     const nuevoAnio = e.target.value as number;
     const primerMesElegido = (mesesExclusivos ? mesExclusivoElegido : mesesConAniosElegidos[0].meses[0]) || months[0];
-    updateFechaInicial(crearFecha(nuevoAnio, primerMesElegido));
+    const nuevosMesesAMostrar = updateFechaInicial(crearFecha(nuevoAnio, primerMesElegido));
     if (mesesExclusivos) {
       setMesYAnio && setMesYAnio(primerMesElegido, nuevoAnio);
     } else {
       setMesesConAniosElegidos([]);
-      onAnioConMesesElegidos && onAnioConMesesElegidos([]);
+      onAnioConMesesElegidos && onAnioConMesesElegidos([], nuevosMesesAMostrar);
     }
   };
 
@@ -95,7 +99,7 @@ const SeleccionadorPeriodo = ({
     });
     setMesesConAniosElegidos(nuevosMesesElegidos);
     updateAniosElegibles(nuevosMesesElegidos.map(({ anio }) => anio));
-    onAnioConMesesElegidos && onAnioConMesesElegidos(nuevosMesesElegidos);
+    onAnioConMesesElegidos && onAnioConMesesElegidos(nuevosMeses, mesesAMostrar);
   };
 
   const obtenerAnioDelMesActual = () => {
@@ -123,8 +127,8 @@ const SeleccionadorPeriodo = ({
     }
   };
 
-  const moverIzquierdaDisabled = ultimoMesVisibleElegido();
-  const moverADerechaDisabled = primerMesVisibleElegido();
+  const moverIzquierdaDisabled = disableChangeMonths || ultimoMesVisibleElegido();
+  const moverADerechaDisabled = disableChangeMonths || primerMesVisibleElegido();
   const mesesElegidos = mesesConAniosElegidos.flatMap(({ meses }) => meses);
 
   const anioParaEnero = mesesAMostrar

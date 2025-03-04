@@ -9,10 +9,15 @@ import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificaci
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import { AnioConMeses } from '@/components/comun/seleccionadorPeriodoHelper';
 
-const mesActual: string = months.at(new Date().getMonth()) || 'Enero';
+const today = new Date();
+const tenMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 10, today.getDate());
+const anio = tenMonthsAgo.getFullYear();
+const mes = tenMonthsAgo.getMonth();
 
 const GastosDelMes = () => {
-  const [aniosYMesesElegidos, setAniosYMesesElegidos] = useState<AnioConMeses[]>([]);
+  const [cambiosPendientes, setCambiosPendientes] = useState(false);
+  const [aniosYMesesVisibles, setAniosYMesesVisibles] = useState<AnioConMeses[]>([]);
+  const [mesesElegidos, setMesesElegidos] = useState<string[]>([]);
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
@@ -21,11 +26,11 @@ const GastosDelMes = () => {
     mensaje: '',
   });
 
-  const onAnioConMesesElegidos = async (meses: AnioConMeses[]) => {
-    if (!meses.length) return;
+  const onAnioConMesesElegidos = async (mesesElegidos: string[], mesesVisibles: AnioConMeses[]) => {
+    if (!mesesVisibles.length) return;
 
-    let primerAnioConMeses = meses[0];
-    let ultimoAnioConMeses = meses[1] || meses[0];
+    let primerAnioConMeses = mesesVisibles[0];
+    let ultimoAnioConMeses = mesesVisibles[1] || mesesVisibles[0];
 
     const ultimoMes = ultimoAnioConMeses.meses[ultimoAnioConMeses.meses.length - 1];
 
@@ -41,10 +46,10 @@ const GastosDelMes = () => {
       .forEach((gasto) => (gasto.colapsado = true));
 
     setGastosEstimados(gastosEstimados);
-    setAniosYMesesElegidos(meses);
+    setAniosYMesesVisibles(mesesVisibles);
   };
 
-  const mostrarInformacion = aniosYMesesElegidos.length > 0;
+  const mostrarInformacion = aniosYMesesVisibles.length > 0;
 
   return (
     <Box>
@@ -63,10 +68,19 @@ const GastosDelMes = () => {
           <Typography color="text.primary">Gastos estimados del mes</Typography>
         </Breadcrumbs>
       </Box>
-      <SeleccionadorPeriodo onAnioConMesesElegidos={onAnioConMesesElegidos} />
+      <SeleccionadorPeriodo
+        anio={anio}
+        mes={months[mes]}
+        onAnioConMesesElegidos={onAnioConMesesElegidos}
+        disableChangeMonths={cambiosPendientes}
+      />
       {mostrarInformacion && (
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
-          <GastosEstimadosDelMesGrilla gastos={gastosEstimados} aniosYMesesElegidos={aniosYMesesElegidos} />
+          <GastosEstimadosDelMesGrilla
+            gastos={gastosEstimados}
+            aniosYMesesElegidos={aniosYMesesVisibles}
+            onTieneCambiosPendientesChanged={setCambiosPendientes}
+          />
         </Box>
       )}
       <Notificacion configuracionProp={configNotificacion} />
