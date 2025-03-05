@@ -8,15 +8,16 @@ import { GastosEstimadosDelMesGrilla } from '@/components/presupuesto/GastosEsti
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import { AnioConMeses } from '@/components/comun/seleccionadorPeriodoHelper';
+import { SonIguales } from '@/lib/helpers';
 
 const today = new Date();
 const tenMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 10, today.getDate());
 const anio = tenMonthsAgo.getFullYear();
 const mes = tenMonthsAgo.getMonth();
 
-const GastosDelMes = () => {
+const PresupuestoDelMes = () => {
   const [cambiosPendientes, setCambiosPendientes] = useState(false);
-  const [aniosYMesesVisibles, setAniosYMesesVisibles] = useState<AnioConMeses[]>([]);
+  const [aniosYMesesAMostrar, setAniosYMesesAMostrar] = useState<AnioConMeses[]>([]);
   const [mesesElegidos, setMesesElegidos] = useState<string[]>([]);
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
@@ -26,30 +27,35 @@ const GastosDelMes = () => {
     mensaje: '',
   });
 
-  const onAnioConMesesElegidos = async (mesesElegidos: string[], mesesVisibles: AnioConMeses[]) => {
-    if (!mesesVisibles.length) return;
+  const onAnioConMesesElegidos = async (mesesElegidos: string[], aniosYMesesAMostrarNuevos: AnioConMeses[]) => {
+    if (!aniosYMesesAMostrarNuevos.length) return;
 
-    let primerAnioConMeses = mesesVisibles[0];
-    let ultimoAnioConMeses = mesesVisibles[1] || mesesVisibles[0];
+    if (!SonIguales(aniosYMesesAMostrarNuevos, aniosYMesesAMostrar)) {
+      let primerAnioConMeses = aniosYMesesAMostrarNuevos[0];
+      let ultimoAnioConMeses = aniosYMesesAMostrarNuevos[1] || aniosYMesesAMostrarNuevos[0];
 
-    const ultimoMes = ultimoAnioConMeses.meses[ultimoAnioConMeses.meses.length - 1];
+      const ultimoMes = ultimoAnioConMeses.meses[ultimoAnioConMeses.meses.length - 1];
 
-    const fechaDesde = new Date(primerAnioConMeses.anio, months.indexOf(primerAnioConMeses.meses[0]));
-    const fechaHasta = new Date(ultimoAnioConMeses.anio, months.indexOf(ultimoMes));
+      const fechaDesde = new Date(primerAnioConMeses.anio, months.indexOf(primerAnioConMeses.meses[0]));
+      const fechaHasta = new Date(ultimoAnioConMeses.anio, months.indexOf(ultimoMes));
 
-    console.log(`Desde año y mes: ${fechaDesde.getFullYear()} - ${fechaDesde.getMonth() + 1}`);
-    console.log(`Hasta año y mes: ${fechaHasta.getFullYear()} - ${fechaHasta.getMonth() + 1}`);
-    const gastosEstimados: GastoEstimadoAnualUI[] = await obtenerGastosEstimadosPorAnio(fechaDesde, fechaHasta);
-    const categoriasColapsadasInicialmente = ['Viajes - Total mensual', 'Other - Total mensual'];
-    gastosEstimados
-      .filter((gasto) => categoriasColapsadasInicialmente.includes(gasto.descripcion))
-      .forEach((gasto) => (gasto.colapsado = true));
+      const gastosEstimados: GastoEstimadoAnualUI[] = await obtenerGastosEstimadosPorAnio(fechaDesde, fechaHasta);
+      const categoriasColapsadasInicialmente = ['Viajes - Total mensual', 'Other - Total mensual'];
+      gastosEstimados
+        .filter((gasto) => categoriasColapsadasInicialmente.includes(gasto.descripcion))
+        .forEach((gasto) => (gasto.colapsado = true));
 
-    setGastosEstimados(gastosEstimados);
-    setAniosYMesesVisibles(mesesVisibles);
+      setGastosEstimados(gastosEstimados);
+      setAniosYMesesAMostrar(aniosYMesesAMostrarNuevos);
+    }
+    const todosLosMesesAMostrar = aniosYMesesAMostrarNuevos.flatMap(({ meses }) => meses);
+    const mesesElegidosOrdenados = mesesElegidos.sort(
+      (a, b) => todosLosMesesAMostrar.indexOf(a) - todosLosMesesAMostrar.indexOf(b),
+    );
+    setMesesElegidos(mesesElegidosOrdenados);
   };
 
-  const mostrarInformacion = aniosYMesesVisibles.length > 0;
+  const mostrarInformacion = aniosYMesesAMostrar.length > 0;
 
   return (
     <Box>
@@ -78,7 +84,8 @@ const GastosDelMes = () => {
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
           <GastosEstimadosDelMesGrilla
             gastos={gastosEstimados}
-            aniosYMesesElegidos={aniosYMesesVisibles}
+            mesesElegidos={mesesElegidos}
+            aniosYMesesAMostrar={aniosYMesesAMostrar}
             onTieneCambiosPendientesChanged={setCambiosPendientes}
           />
         </Box>
@@ -88,4 +95,4 @@ const GastosDelMes = () => {
   );
 };
 
-export default GastosDelMes;
+export default PresupuestoDelMes;

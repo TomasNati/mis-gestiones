@@ -29,14 +29,20 @@ import { set } from 'zod';
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
-  aniosYMesesElegidos: AnioConMeses[];
+  aniosYMesesAMostrar: AnioConMeses[];
+  mesesElegidos: string[];
   onTieneCambiosPendientesChanged: (tieneCambiosPendientes: boolean) => void;
 }
 
-const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambiosPendientesChanged }: GastosEstimadosDelMesGrillaProps) => {
+const GastosEstimadosDelMesGrilla = ({
+  gastos,
+  aniosYMesesAMostrar,
+  mesesElegidos,
+  onTieneCambiosPendientesChanged,
+}: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnual[]>([]);
-  const [mesesVisibles, setMesesVisibles] = useState<string[]>(months);
+  const [mesesVisibles, setMesesVisibles] = useState<string[]>(aniosYMesesAMostrar.flatMap(({ meses }) => meses));
 
   const [hasUnsavedRows, setHasUnsavedRows] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -57,17 +63,13 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
   }, [gastos]);
 
   useEffect(() => {
-    if (aniosYMesesElegidos.length > 0) {
-      console.log(aniosYMesesElegidos);
-      const mesesAMostrar = aniosYMesesElegidos.flatMap(({ meses }) => meses);
-      console.log(mesesAMostrar);
-      const mesesOrdenados = mesesAMostrar?.sort((a, b) => months.indexOf(a) - months.indexOf(b));
-      console.log('Meses ordenados:', mesesOrdenados);
-      setMesesVisibles(mesesOrdenados);
+    if (aniosYMesesAMostrar.length > 0) {
+      const mesesAMostrar = aniosYMesesAMostrar.flatMap(({ meses }) => meses);
+      setMesesVisibles(mesesAMostrar);
     }
-  }, [aniosYMesesElegidos]);
+  }, [aniosYMesesAMostrar]);
 
-  const mesesColumns: GridColDef[] = mesesVisibles.map((month) => ({
+  const mesesColumns: GridColDef[] = mesesElegidos.map((month) => ({
     field: month,
     headerName: month,
     editable: true,
@@ -98,7 +100,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
   const onHasUnsavedRowsChanged = (hasUnsavedRows: boolean) => {
     setHasUnsavedRows(hasUnsavedRows);
     onTieneCambiosPendientesChanged(hasUnsavedRows);
-  }
+  };
 
   const onToggleSubcategoriesVisibility = (event: React.MouseEvent<HTMLButtonElement>, row: GastoEstimadoAnualUI) => {
     event.stopPropagation();
@@ -153,16 +155,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
     const rowValues = Array.from(apiRef.current.getRowModels().values());
     const gastosEstimadosDelMesYCategorias = rowValues
       .filter((gasto) => gasto.categoriaId === newRow.categoriaId)
-      .map((gasto) => {
-        console.log('Mes:', mes);
-        console.log('gasto de grilla:', gasto);
-        console.log('new row:', newRow);
-        if (gasto.id == newRow.id) {
-          return newRow[mes].estimado;
-        } else {
-          gasto[mes].estimado;
-        }
-      });
+      .map((gasto) => (gasto.id == newRow.id ? newRow[mes].estimado : gasto[mes].estimado || 0));
 
     const total = gastosEstimadosDelMesYCategorias.reduce((acc, gasto) => acc + gasto, 0);
     const categoriaRow = rowValues.find((gasto) => gasto.id === newRow.categoriaId);
@@ -180,7 +173,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
         const originalRow = unsavedChangesRef.current.rowsBeforeChange[rowId];
 
         for (const month of mesesAPersistir) {
-          const anioAUsar = aniosYMesesElegidos.find(({ meses }) => meses.includes(month));
+          const anioAUsar = aniosYMesesAMostrar.find(({ meses }) => meses.includes(month));
           if (newRow[month].modificado && anioAUsar) {
             gastoEstimadoDB = {
               anio: anioAUsar.anio,
@@ -204,10 +197,8 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
   };
 
   const actualizarGastosCategorias = (rowsToConsider: GridValidRowModel[]) => {
-    console.log(mesesVisibles);
-    for (const month of mesesVisibles) {
+    for (const month of mesesElegidos) {
       for (const newRow of rowsToConsider) {
-        console.log(month);
         const categoriaRowActualizada = actualizarGastosEstimadosDeCategoria(month, newRow);
         if (categoriaRowActualizada) apiRef.current.updateRows([categoriaRowActualizada]);
       }
@@ -229,7 +220,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
         console.log(error);
       }
     },
-    [mesesVisibles],
+    [mesesElegidos],
   );
 
   const discardChanges = useCallback(() => {
@@ -248,7 +239,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
     try {
       // Persist updates in the database
       setIsSaving(true);
-      await persistRowUpdates(unsavedChangesRef.current.unsavedRows, mesesVisibles);
+      await persistRowUpdates(unsavedChangesRef.current.unsavedRows, mesesElegidos);
       setIsSaving(false);
       onHasUnsavedRowsChanged(false);
       unsavedChangesRef.current = {
@@ -258,7 +249,7 @@ const GastosEstimadosDelMesGrilla = ({ gastos, aniosYMesesElegidos, onTieneCambi
     } catch (error) {
       setIsSaving(false);
     }
-  }, [apiRef, mesesVisibles]);
+  }, [apiRef, mesesElegidos]);
 
   const gastosActualizadosPorPorcentaje = useCallback(
     (gastosActualizados: GastoEstimadoAnualUI[]) => {

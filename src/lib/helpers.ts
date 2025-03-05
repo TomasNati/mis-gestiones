@@ -1,3 +1,4 @@
+import { AnioConMeses } from '@/components/comun/seleccionadorPeriodoHelper';
 import {
   CategoriaUIMovimiento,
   ConceptoExcelASubcategoria,
@@ -777,4 +778,36 @@ export const parseTextoSuenioTomi = (input: string): ImportarSuenioTomiDia[] => 
   });
 
   return result;
+};
+
+export const SonIguales = (aniosConMeses1: AnioConMeses[], aniosConMeses2: AnioConMeses[]): boolean => {
+  const esMismoAnioConMeses = (anioConMeses1: AnioConMeses, anioConMeses2: AnioConMeses) => {
+    if (anioConMeses1.anio !== anioConMeses2.anio) {
+      return false;
+    }
+
+    if (anioConMeses1.meses.length !== anioConMeses2.meses.length) {
+      return false;
+    }
+
+    for (let i = 0; i < anioConMeses1.meses.length; i++) {
+      if (anioConMeses1.meses[i] !== anioConMeses2.meses[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  if (aniosConMeses1.length !== aniosConMeses2.length) {
+    return false;
+  }
+
+  for (let i = 0; i < aniosConMeses1.length; i++) {
+    if (!esMismoAnioConMeses(aniosConMeses1[i], aniosConMeses2[i])) {
+      return false;
+    }
+  }
+
+  return true;
 };
