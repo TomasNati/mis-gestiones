@@ -1,3 +1,4 @@
+import { AnioConMeses } from '@/components/comun/seleccionadorPeriodoHelper';
 import {
   CategoriaUIMovimiento,
   ConceptoExcelASubcategoria,
@@ -779,19 +780,34 @@ export const parseTextoSuenioTomi = (input: string): ImportarSuenioTomiDia[] => 
   return result;
 };
 
-const rotateArray = <T>(arr: T[], positions: number, direction: 'left' | 'right'): T[] => {
-  const length = arr.length;
+export const SonIguales = (aniosConMeses1: AnioConMeses[], aniosConMeses2: AnioConMeses[]): boolean => {
+  const esMismoAnioConMeses = (anioConMeses1: AnioConMeses, anioConMeses2: AnioConMeses) => {
+    if (anioConMeses1.anio !== anioConMeses2.anio) {
+      return false;
+    }
 
-  // Normalize the number of positions
-  positions = positions % length;
-  if (positions < 0) {
-    positions += length;
+    if (anioConMeses1.meses.length !== anioConMeses2.meses.length) {
+      return false;
+    }
+
+    for (let i = 0; i < anioConMeses1.meses.length; i++) {
+      if (anioConMeses1.meses[i] !== anioConMeses2.meses[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  if (aniosConMeses1.length !== aniosConMeses2.length) {
+    return false;
   }
 
-  // Rotate the array based on direction
-  if (direction === 'left') {
-    return arr.slice(positions).concat(arr.slice(0, positions));
-  } else {
-    return arr.slice(-positions).concat(arr.slice(0, length - positions));
+  for (let i = 0; i < aniosConMeses1.length; i++) {
+    if (!esMismoAnioConMeses(aniosConMeses1[i], aniosConMeses2[i])) {
+      return false;
+    }
   }
+
+  return true;
 };

@@ -3,7 +3,14 @@
 import { obtenerMovimientosPorFecha, obtenerGastosEstimadosTotalesPorFecha } from '@/lib/orm/data';
 import { Box, Breadcrumbs, Divider, IconButton, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { GrupoMovimiento, MovimientoGastoGrilla, MovimientoUI, ResultadoAPI, months } from '@/lib/definitions';
+import {
+  AnioYMes,
+  GrupoMovimiento,
+  MovimientoGastoGrilla,
+  MovimientoUI,
+  ResultadoAPI,
+  months,
+} from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
 import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
@@ -12,11 +19,6 @@ import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graficos/';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
-
-interface AnioYMes {
-  anio: number;
-  mes: string;
-}
 
 const MovimientosDelMes = () => {
   const [anioYMes, setAnioYMes] = useState<AnioYMes>({

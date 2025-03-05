@@ -12,7 +12,7 @@ import {
   months,
   AgendaTomiDia,
   TipoEventoSuenio,
-} from '../definitions';
+} from '@/lib/definitions';
 import { db } from './database';
 import {
   categorias,
@@ -24,7 +24,7 @@ import {
   tomiAgendaEventoSuenio,
 } from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
-import { generateUUID, obtenerCategoriaUIMovimiento, transformCurrencyToNumber } from '../helpers';
+import { generateUUID, obtenerCategoriaUIMovimiento, transformCurrencyToNumber, obtenerDiasEnElMes } from '../helpers';
 
 type GastoPresupuestoItem = {
   id: string | null;
@@ -318,15 +318,17 @@ const obtenerTotales = (
   };
 };
 
-export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<GastoEstimadoAnual[]> => {
+export const obtenerGastosEstimadosPorAnio = async (desde: Date, hasta: Date): Promise<GastoEstimadoAnual[]> => {
   const resultado: GastoEstimadoAnual[] = [];
 
-  const fechaDesde = new Date(Date.UTC(anio, 0, 1, 0, 0, 0));
-  const fechaHasta = new Date(Date.UTC(anio, 11, 31, 23, 59, 59));
-
   try {
-    const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
-    const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
+    if (hasta.getFullYear() * 12 + hasta.getMonth() - (desde.getFullYear() * 12 + desde.getMonth()) > 11) {
+      throw new Error('El rango de fechas no puede ser mayor a 12 meses');
+    }
+    const fechaDesdeFiltro = new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), 1, 0, 0, 0));
+    const fechaHastaFiltro = new Date(
+      Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59),
+    );
 
     const dbGastosEstimados: GastoPresupuestoItem[] = await obtenerGastosEstimados(fechaDesdeFiltro, fechaHastaFiltro);
     const dbGastosReales: GastoPresupuestoItem[] = await obtenerGastosReales(fechaDesdeFiltro, fechaHastaFiltro);
@@ -351,7 +353,14 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
     }
 
     for (const fila of resultado) {
-      months.forEach((mes, mesIndex) => {
+      let currentDate = new Date(desde);
+
+      // Continue the loop until the current month/year is after the to month/year
+      while (currentDate <= hasta) {
+        const anio = currentDate.getFullYear();
+        const mesIndex = currentDate.getMonth();
+        const mes = months[mesIndex];
+
         const totalEstimado = obtenerTotales(
           anio,
           mesIndex,
@@ -371,7 +380,10 @@ export const obtenerGastosEstimadosPorAnio = async (anio: number): Promise<Gasto
           real: totalReal.totalMes,
           gastoEstimadoDBId: totalEstimado.gastoEstimadoId,
         };
-      });
+
+        // Increase the current date by 1 month
+        currentDate.setMonth(currentDate.getMonth() + 1);
+      }
     }
 
     return resultado;

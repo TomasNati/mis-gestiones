@@ -1267,3 +1267,8 @@ export type ImportarSuenioTomiDia = {
   id: string;
   eventos: ImportarSuenioTomiEvento[];
 };
+
+export interface AnioYMes {
+  anio: number;
+  mes: string;
+}

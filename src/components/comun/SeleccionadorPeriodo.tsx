@@ -18,25 +18,23 @@ const initialDate = new Date();
 
 interface SeleccionadorPeriodoProps {
   anio?: number;
-  setAnio?: (anio: number) => void;
   mes?: string;
-  meses?: string[];
-  setMes?: (mes: string) => void;
-  setMeses?: (meses: string[]) => void;
+  meses?: AnioConMeses[];
+  onAnioConMesesElegidos?: (mesesElegidos: string[], mesesVisibles: AnioConMeses[]) => void;
   setMesYAnio?: (mes: string, anio: number) => void;
   mesesExclusivos?: boolean;
+  disableChangeMonths?: boolean;
 }
 const SeleccionadorPeriodo = ({
   anio,
-  setAnio,
   mes,
   meses,
-  setMes,
   setMesYAnio,
-  setMeses,
+  onAnioConMesesElegidos,
   mesesExclusivos,
+  disableChangeMonths,
 }: SeleccionadorPeriodoProps) => {
-  const [mesesElegidos, setMesesElegidos] = useState<string[]>(meses || []);
+  const [mesesConAniosElegidos, setMesesConAniosElegidos] = useState<AnioConMeses[]>(meses || []);
   const [mesExclusivoElegido, setMesExclusivoElegido] = useState<string | null>(mes || null);
   const [fechaInicial, setFechaInicial] = useState<Date>(
     crearFecha(anio || initialDate.getFullYear(), mes || months[0]),
@@ -46,14 +44,17 @@ const SeleccionadorPeriodo = ({
 
   const updateFechaInicial = (newFechaInicial: Date) => {
     setFechaInicial(newFechaInicial);
-    setMesesAMostrar(obtenerMesesPorAnio(newFechaInicial));
+    const nuevosMesesAMostrar = obtenerMesesPorAnio(newFechaInicial);
+    setMesesAMostrar(nuevosMesesAMostrar);
+    return nuevosMesesAMostrar;
+  };
+
+  const updateAniosElegibles = (nuevosAnios: number[]) => {
+    const nuevosAniosElegibles = Array.from(new Set([...aniosElegibles, ...nuevosAnios])).sort((a, b) => b - a);
+    setAniosElegibles(nuevosAniosElegibles);
   };
 
   const onMoverMesesIzquierda = () => {
-    const mesesFlat = mesesAMostrar.flatMap(({ meses }) => meses);
-    if (mesExclusivoElegido === mesesFlat[mesesFlat.length - 1]) {
-      return;
-    }
     const nuevaFecha = moverFecha(fechaInicial, -1);
     updateFechaInicial(nuevaFecha);
   };
@@ -65,28 +66,40 @@ const SeleccionadorPeriodo = ({
 
   const onAnioElegido = (e: SelectChangeEvent<number>) => {
     const nuevoAnio = e.target.value as number;
-    const nuevoMes = mesExclusivoElegido || months[0];
-    updateFechaInicial(crearFecha(nuevoAnio, nuevoMes));
-    setMesYAnio && setMesYAnio(nuevoMes, nuevoAnio);
+    const primerMesElegido = (mesesExclusivos ? mesExclusivoElegido : mesesConAniosElegidos[0].meses[0]) || months[0];
+    const nuevosMesesAMostrar = updateFechaInicial(crearFecha(nuevoAnio, primerMesElegido));
+    if (mesesExclusivos) {
+      setMesYAnio && setMesYAnio(primerMesElegido, nuevoAnio);
+    } else {
+      setMesesConAniosElegidos([]);
+      onAnioConMesesElegidos && onAnioConMesesElegidos([], nuevosMesesAMostrar);
+    }
   };
 
   const onMesElegido = (_: React.MouseEvent<HTMLElement>, mes: string | null) => {
     const mesAMostrarElegido = mesesAMostrar.find(({ meses }) => meses.includes(mes || ''));
-    if (!mesAMostrarElegido) return;
+    if (!mesAMostrarElegido || !mes) return;
 
-    const anio = mesAMostrarElegido.anio;
-    const nuevosAniosElegibles = aniosElegibles.includes(anio)
-      ? aniosElegibles
-      : [...aniosElegibles, anio].sort((a, b) => b - a);
-
-    setAniosElegibles(nuevosAniosElegibles);
+    updateAniosElegibles([mesAMostrarElegido.anio]);
     setMesExclusivoElegido(mes);
-    setMesYAnio && setMesYAnio(mes || '', mesAMostrarElegido.anio);
+    setMesYAnio && setMesYAnio(mes, mesAMostrarElegido.anio);
   };
 
-  const onMesesElegidos = (_: React.MouseEvent<HTMLElement>, meses: string[]) => {
-    setMesesElegidos(meses);
-    setMeses && setMeses(meses);
+  const onMesesElegidos = (_: React.MouseEvent<HTMLElement>, nuevosMeses: string[]) => {
+    const nuevosMesesElegidos: AnioConMeses[] = [];
+
+    mesesAMostrar.forEach(({ anio, meses }) => {
+      const anioConMesesElegido = {
+        anio,
+        meses: meses.filter((mes) => nuevosMeses.includes(mes)),
+      };
+      if (anioConMesesElegido.meses.length > 0) {
+        nuevosMesesElegidos.push(anioConMesesElegido);
+      }
+    });
+    setMesesConAniosElegidos(nuevosMesesElegidos);
+    updateAniosElegibles(nuevosMesesElegidos.map(({ anio }) => anio));
+    onAnioConMesesElegidos && onAnioConMesesElegidos(nuevosMeses, mesesAMostrar);
   };
 
   const obtenerAnioDelMesActual = () => {
@@ -94,9 +107,30 @@ const SeleccionadorPeriodo = ({
     return fecha?.anio || fechaInicial.getFullYear();
   };
 
-  const mesesFlat = mesesAMostrar.flatMap(({ meses }) => meses);
-  const moverIzquierdaDisabled = mesExclusivoElegido === mesesFlat[mesesFlat.length - 1];
-  const moverADerechaDisabled = mesExclusivoElegido === mesesFlat[0];
+  const ultimoMesVisibleElegido = () => {
+    const mesesFlat = mesesAMostrar.flatMap(({ meses }) => meses);
+    const ultimoMesElegible = mesesFlat[mesesFlat.length - 1];
+    if (mesesExclusivos) {
+      return mesExclusivoElegido === ultimoMesElegible;
+    } else {
+      return mesesConAniosElegidos.flatMap(({ meses }) => meses).includes(ultimoMesElegible);
+    }
+  };
+
+  const primerMesVisibleElegido = () => {
+    const mesesFlat = mesesAMostrar.flatMap(({ meses }) => meses);
+    const primerMesElegible = mesesFlat[0];
+    if (mesesExclusivos) {
+      return mesExclusivoElegido === primerMesElegible;
+    } else {
+      return mesesConAniosElegidos.flatMap(({ meses }) => meses).includes(primerMesElegible);
+    }
+  };
+
+  const moverIzquierdaDisabled = disableChangeMonths || ultimoMesVisibleElegido();
+  const moverADerechaDisabled = disableChangeMonths || primerMesVisibleElegido();
+  const mesesElegidos = mesesConAniosElegidos.flatMap(({ meses }) => meses);
+
   const anioParaEnero = mesesAMostrar
     .find(({ meses }) => meses.includes('Enero'))
     ?.anio.toString()
