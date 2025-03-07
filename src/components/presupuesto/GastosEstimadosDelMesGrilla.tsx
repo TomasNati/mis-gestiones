@@ -293,6 +293,8 @@ const GastosEstimadosDelMesGrilla = ({
           },
         }}
         apiRef={apiRef}
+        getRowHeight={() => 'auto'}
+        getEstimatedRowHeight={() => 70}
         rows={rows}
         columns={columns}
         density="compact"
