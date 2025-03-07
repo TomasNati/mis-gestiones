@@ -10,7 +10,6 @@ import {
   DataGrid,
   GridColDef,
   GridRenderCellParams,
-  GridValueFormatterParams,
   useGridApiContext,
   GridRowId,
   GridRowsProp,
@@ -117,7 +116,7 @@ const MovimientosDelMesGrilla = ({
         }
         return <FechaEditInputCell {...params} />;
       },
-      valueFormatter: (params: GridValueFormatterParams<Date>) => params.value?.getDate(),
+      valueFormatter: (params: Date) => params?.getDate(),
       width: 100,
       editable: true,
     },
@@ -148,8 +147,8 @@ const MovimientosDelMesGrilla = ({
       ),
       editable: true,
       filterOperators: conceptoOperators,
-      valueFormatter: (params: GridValueFormatterParams<CategoriaUIMovimiento>) => {
-        const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(params.value?.subcategoriaId);
+      valueFormatter: (params: CategoriaUIMovimiento) => {
+        const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(params?.subcategoriaId);
         return concepto;
       },
       renderCell: ({ value }) => <span>{value?.nombre}</span>,
@@ -160,8 +159,8 @@ const MovimientosDelMesGrilla = ({
       width: 130,
       renderEditCell: renderTipoDePagoEditInputCell,
       renderCell: renderTipoDePago,
-      valueFormatter: (params: GridValueFormatterParams<string>) => {
-        switch (params.value) {
+      valueFormatter: (params: string) => {
+        switch (params) {
           case 'Debito':
             return 'Débito';
           case 'Credito':
@@ -180,17 +179,16 @@ const MovimientosDelMesGrilla = ({
       width: 120,
       renderEditCell: renderMontoEditInputCell,
       renderCell: ({ value }) => <span>{transformNumberToCurrenty(value)}</span>,
-      valueFormatter: (params) => params.value,
+      valueFormatter: (params) => params,
     },
     {
       field: 'comentarios',
       headerName: 'Detalle',
       editable: true,
       flex: 1,
-      valueFormatter: (params: GridValueFormatterParams) => {
-        const row = params.api.getRow(params.id || '') as MovimientoGastoGrilla;
+      valueFormatter: (value: string, row: MovimientoGastoGrilla) => {
         const [concepto, comentarios] = mapearSubcategoriasATiposDeConceptoExcel(row.concepto?.subcategoriaId);
-        return concepto === 'Servicios' ? comentarios : params.value;
+        return concepto === 'Servicios' ? comentarios : value;
       },
       renderCell: ({ value }) => <span>{value}</span>,
     },

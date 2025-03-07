@@ -16,33 +16,38 @@ import { MovimientoGastoGrilla, ResultadoAPI, CategoriaUIMovimiento, GrupoMovimi
 import { useState } from 'react';
 import { GrupoModal } from './editores/GrupoModal/GrupoModal';
 import { GastosProgressBar } from './GastosProgressBar';
+import { GridSlotsComponentsProps } from '@mui/x-data-grid';
 
-interface GrillaToolbarProps {
-  setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
-  setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
-  movimientosElegidos: MovimientoGastoGrilla[];
-  anio: number;
-  mes: number;
-  sumaTotalDelMes: number;
-  totalMensualEstimado: number;
-  onMovimientosEliminados: (resultado: ResultadoAPI) => void;
-  onRefrescarMovimientos: () => void;
-  onGuardarGrupoMovimiento: (grupoMovimiento: GrupoMovimiento) => void;
-  categoriasMovimiento: CategoriaUIMovimiento[];
+// augment the props for the toolbar slot
+declare module '@mui/x-data-grid' {
+  interface ToolbarPropsOverrides {
+    setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
+    setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
+    movimientosElegidos: MovimientoGastoGrilla[];
+    anio: number;
+    mes: number;
+    sumaTotalDelMes: number;
+    totalMensualEstimado: number;
+    onMovimientosEliminados: (resultado: ResultadoAPI) => void;
+    onRefrescarMovimientos: () => void;
+    onGuardarGrupoMovimiento: (grupoMovimiento: GrupoMovimiento) => void;
+    categoriasMovimiento: CategoriaUIMovimiento[];
+  }
 }
+
 const GrillaToolbar = ({
-  setRows,
-  setRowModesModel,
-  anio,
-  mes,
-  movimientosElegidos,
-  sumaTotalDelMes,
-  totalMensualEstimado,
-  onMovimientosEliminados,
-  onRefrescarMovimientos,
-  onGuardarGrupoMovimiento,
-  categoriasMovimiento,
-}: GrillaToolbarProps) => {
+  setRows = () => {},
+  setRowModesModel = () => {},
+  anio = new Date().getFullYear(),
+  mes = new Date().getMonth(),
+  movimientosElegidos = [],
+  sumaTotalDelMes = 0,
+  totalMensualEstimado = 0,
+  onMovimientosEliminados = () => {},
+  onRefrescarMovimientos = () => {},
+  onGuardarGrupoMovimiento = () => {},
+  categoriasMovimiento = [],
+}: NonNullable<GridSlotsComponentsProps['toolbar']>) => {
   const [openAgregarGrupo, setOpenAgregarGrupo] = useState(false);
 
   const handleAgregarGrupoOpen = () => {
@@ -58,7 +63,7 @@ const GrillaToolbar = ({
     const nuevoMovimiento = {
       id,
       isNew: true,
-      fecha: new Date(anio, mes, new Date().getDate()),
+      fecha: new Date(anio || 1900, mes, new Date().getDate()),
       concepto: null,
       monto: null,
       categoria: null,
@@ -132,5 +137,4 @@ const GrillaToolbar = ({
   );
 };
 
-export type { GrillaToolbarProps };
 export { GrillaToolbar };

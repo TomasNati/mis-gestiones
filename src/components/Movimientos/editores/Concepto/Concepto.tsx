@@ -19,7 +19,7 @@ const Concepto = ({
   size,
   label,
 }: ConceptoProps) => {
-  const ref = useRef<HTMLElement>();
+  const ref = useRef<HTMLElement>(null);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Tab') {
@@ -102,8 +102,8 @@ const conceptoOperators: GridFilterOperator<any, MovimientoGastoGrilla>[] = [
         return null;
       }
 
-      return (value) => {
-        const movimiento = value.row as MovimientoGastoGrilla;
+      return (_, row: MovimientoGastoGrilla) => {
+        const movimiento = row;
         return movimiento.concepto?.nombre?.toLowerCase().includes(filterItem.value.toLowerCase());
       };
     },

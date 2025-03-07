@@ -16,7 +16,7 @@ import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDel
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
-import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graficos/';
+// import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graficos/';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 
@@ -190,8 +190,8 @@ const MovimientosDelMes = () => {
               overflow: 'hidden',
             }}
           >
-            <TipoDeGastoPorMes movimientos={movimientos} />
-            <CrecimientoDeGastosEnElMes movimientos={movimientos} totalEstimado={totalMensualEstimado} />
+            {/* <TipoDeGastoPorMes movimientos={movimientos} />
+            <CrecimientoDeGastosEnElMes movimientos={movimientos} totalEstimado={totalMensualEstimado} /> */}
           </Box>
           <Divider>
             <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>

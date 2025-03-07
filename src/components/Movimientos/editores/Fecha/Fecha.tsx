@@ -10,6 +10,7 @@ import {
   GridTreeNode,
   useGridApiContext,
 } from '@mui/x-data-grid';
+import { AnyMySqlUpdateBase } from 'drizzle-orm/mysql-core';
 import { useImperativeHandle, useRef, useState } from 'react';
 
 interface FechaProps {
@@ -108,8 +109,9 @@ const applyFilterFecha = (filterItem: GridFilterItem) => {
     return null;
   }
 
-  return (value: GridCellParams<any, MovimientoGastoGrilla, MovimientoGastoGrilla, GridTreeNode>) => {
-    const movimiento = value.row as MovimientoGastoGrilla;
+  //return (value: GridCellParams<any, MovimientoGastoGrilla, MovimientoGastoGrilla, GridTreeNode>) => {
+  return (_: any, row: MovimientoGastoGrilla) => {
+    const movimiento = row;
     const dia = new Date(movimiento.fecha).getDate();
     switch (filterItem.operator) {
       case '<':

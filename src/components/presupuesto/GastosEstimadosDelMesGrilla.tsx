@@ -18,14 +18,13 @@ import {
   useGridApiRef,
 } from '@mui/x-data-grid';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { GrillaToolbar, GrillaToolbarProps } from './GrillaToolbar';
+import { GrillaToolbar } from './GrillaToolbar';
 import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
 import { AnioConMeses } from '../comun/seleccionadorPeriodoHelper';
-import { set } from 'zod';
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
@@ -94,7 +93,7 @@ const GastosEstimadosDelMesGrilla = ({
         </Box>
       );
     },
-    valueFormatter: (params) => (params.value as GastoEstimadoItemDelMes).estimado,
+    valueFormatter: (value: GastoEstimadoItemDelMes) => value.estimado,
   }));
 
   const onHasUnsavedRowsChanged = (hasUnsavedRows: boolean) => {
@@ -274,7 +273,7 @@ const GastosEstimadosDelMesGrilla = ({
 
   const sumaTotalDelMes = 0; // gastos.reduce((acc, movimiento) => acc + movimiento.monto, 0);
 
-  const toolbarProps: GrillaToolbarProps = {
+  const toolbarProps = {
     gastosEstimadosElegidos,
     gastosEstimados: rows as GastoEstimadoAnualUI[],
     mesesVisibles,
