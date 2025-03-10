@@ -132,6 +132,7 @@ const MovimientosDelMesGrilla = ({
       width: 250,
       renderEditCell: (params: GridRenderEditCellParams) => (
         <Concepto
+          size="grid"
           categoriasMovimiento={categoriasMovimiento}
           conceptoInicial={params.value}
           onTabPressed={() => focusOnField(params.id as string, 'tipoDeGasto', 'button')}
