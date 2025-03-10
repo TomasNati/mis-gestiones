@@ -43,6 +43,15 @@ const theme = createTheme({
       .MuiDataGrid-columnHeaders {
         background-color: #303335
       }
+
+      .MuiDataGrid-root .MuiInputBase-input.MuiOutlinedInput-input {
+        padding-top: 4px;
+        padding-bottom: 4px;
+      }
+
+      .MuiDataGrid-root .MuiDataGrid-cell.MuiDataGrid-cell--editing:focus-within {
+        outline: unset !important;
+      }
       `,
     },
     MuiAlert: {

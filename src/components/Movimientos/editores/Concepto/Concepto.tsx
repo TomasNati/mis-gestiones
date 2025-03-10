@@ -8,7 +8,7 @@ interface ConceptoProps {
   conceptoInicial?: CategoriaUIMovimiento | null;
   onConceptoModificado: (concepto: CategoriaUIMovimiento) => void;
   onTabPressed: () => void;
-  size?: 'small' | 'medium';
+  size?: 'small' | 'medium' | 'grid';
   label?: string;
 }
 const Concepto = ({
@@ -19,7 +19,7 @@ const Concepto = ({
   size,
   label,
 }: ConceptoProps) => {
-  const ref = useRef<HTMLElement>();
+  const ref = useRef<HTMLElement>(null);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Tab') {
@@ -27,18 +27,20 @@ const Concepto = ({
     }
   };
 
+  const finalSize = size === 'grid' ? undefined : size;
+
   return (
     <Box
       sx={{
         '& .input-concepto': {
           '> div': {
-            width: '250px',
+            width: '245px',
           },
           [`& .${autocompleteClasses.input}`]: {
             padding: '0 !important',
           },
           [`& .${outlinedInputClasses.root}`]: {
-            padding: '8px',
+            padding: size == 'grid' ? '4px' : '8.5px 14px !important',
           },
         },
       }}
@@ -52,7 +54,7 @@ const Concepto = ({
         groupBy={(option: CategoriaUIMovimiento) => option.categoriaNombre}
         getOptionLabel={(option: CategoriaUIMovimiento) => option.nombre}
         value={conceptoInicial}
-        size={size}
+        size={finalSize}
         onChange={(_, newValue) => {
           if (newValue) {
             onConceptoModificado(newValue);
@@ -102,8 +104,8 @@ const conceptoOperators: GridFilterOperator<any, MovimientoGastoGrilla>[] = [
         return null;
       }
 
-      return (value) => {
-        const movimiento = value.row as MovimientoGastoGrilla;
+      return (_, row: MovimientoGastoGrilla) => {
+        const movimiento = row;
         return movimiento.concepto?.nombre?.toLowerCase().includes(filterItem.value.toLowerCase());
       };
     },

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Unstable_Grid2';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import { Grid2 as Grid } from '@mui/material';
 
 export default function HomePage() {
   return (
@@ -13,16 +13,16 @@ export default function HomePage() {
           This app uses the Next.js App Router and Material UI v5.
         </Alert>
         <Grid container rowSpacing={3} columnSpacing={3}>
-          <Grid xs={6}>
+          <Grid size={{ xs: 6 }}>
             <span>hola</span>
           </Grid>
-          <Grid xs={6}>
+          <Grid size={{ xs: 6 }}>
             <span>hola</span>
           </Grid>
-          <Grid xs={6}>
+          <Grid size={{ xs: 6 }}>
             <span>hola</span>
           </Grid>
-          <Grid xs={6}>
+          <Grid size={{ xs: 6 }}>
             <span>hola</span>
           </Grid>
         </Grid>

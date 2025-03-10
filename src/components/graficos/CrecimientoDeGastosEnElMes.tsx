@@ -1,6 +1,6 @@
 import { MovimientoGastoGrilla } from '@/lib/definitions';
 import { transformNumberToCurrenty } from '@/lib/helpers';
-import { LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line, ReferenceLine } from 'recharts';
+import { LineChart } from '@mui/x-charts/LineChart';
 
 type GastoPorDia = {
   dia: number;
@@ -48,16 +48,32 @@ const CrecimientoDeGastosEnElMes = ({
   });
 
   return (
-    <LineChart width={700} height={300} data={gastosAcumuladosPorDia}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="dia" />
-      <YAxis />
-      <Tooltip formatter={(value: number) => transformNumberToCurrenty(value)} />
-      <Legend />
-      <Line type="monotone" dataKey="totalAcumulado" stroke="#8884d8" name="Acumulado" />
-      <Line type="monotone" dataKey="totalPorDia" stroke="#82ca9d" name="Gastos del día" />
-      <Line type="monotone" dataKey="pendienteDeGastar" stroke="red" name="Pendiente de gastar" />
-    </LineChart>
+    <LineChart
+      width={700}
+      height={300}
+      dataset={gastosAcumuladosPorDia}
+      series={[
+        {
+          dataKey: 'pendienteDeGastar',
+          valueFormatter: (item) => transformNumberToCurrenty(item || 0) || '',
+          label: 'Pendiente de gastar',
+          color: 'red',
+        },
+        {
+          dataKey: 'totalAcumulado',
+          valueFormatter: (item) => transformNumberToCurrenty(item || 0) || '',
+          label: 'Total acumulado',
+          color: '#8884d8',
+        },
+        {
+          dataKey: 'totalPorDia',
+          valueFormatter: (item) => transformNumberToCurrenty(item || 0) || '',
+          label: 'Total por día',
+          color: '#82ca9d',
+        },
+      ]}
+      xAxis={[{ dataKey: 'dia', label: 'Dia' }]} // Defines the X-axis property
+    />
   );
 };
 

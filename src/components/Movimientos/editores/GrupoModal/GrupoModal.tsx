@@ -1,6 +1,6 @@
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { Autocomplete, Box, Button, DialogContent, Grid, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, DialogContent, Grid2 as Grid, TextField } from '@mui/material';
 import { obtenerDiasEnElMes } from '@/lib/helpers';
 import { Fecha } from '../Fecha/Fecha';
 import { TipoDePagoEdicion } from '../TipoDePago/TipoDePago';
@@ -189,7 +189,7 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
             },
           }}
         >
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Box display="flex" alignItems="center" sx={{ paddingTop: '5px', paddingBottom: '3px', gap: '3px' }}>
               <Fecha
                 size="small"
@@ -243,12 +243,12 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
               </Box>
             </Box>
           </Grid>{' '}
-          <Grid item xs={12} className="gridItem-small">
+          <Grid size={{ xs: 12 }} className="gridItem-small">
             <Button color="primary" startIcon={<AddIcon />} onClick={handleAgregarFila}>
               Agregar movimiento
             </Button>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             {grupoMovimiento.filas.map((fila) => (
               <FilaGrupoModal
                 key={fila.id}

@@ -9,10 +9,7 @@ export type NextAppDirEmotionCacheProviderProps = {
   /** This is the options passed to createCache() from 'import createCache from "@emotion/cache"' */
   options: Omit<OptionsOfCreateCache, 'insertionPoint'>;
   /** By default <CacheProvider /> from 'import { CacheProvider } from "@emotion/react"' */
-  CacheProvider?: (props: {
-    value: EmotionCache;
-    children: React.ReactNode;
-  }) => React.JSX.Element | null;
+  CacheProvider?: (props: { value: EmotionCache; children: React.ReactNode }) => React.JSX.Element | null;
   children: React.ReactNode;
 };
 
@@ -61,7 +58,7 @@ export default function NextAppDirEmotionCacheProvider(props: NextAppDirEmotionC
 
       if (typeof style !== 'boolean') {
         if (isGlobal) {
-          globals.push({ name, style });
+          globals.push({ name, style: style || '' });
         } else {
           styles += style;
           dataEmotionAttribute += ` ${name}`;
