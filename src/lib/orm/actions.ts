@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { eq, inArray } from 'drizzle-orm';
+import { between, eq, inArray } from 'drizzle-orm';
 import {
   ImportarMovimientoUI,
   ImportarResult,
@@ -375,6 +375,28 @@ const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<Importa
   return Promise.resolve(resultadoFinal);
 };
 
+const eliminarHorasSuenioTomi = async (anio: number, mes: number): Promise<void> => {
+  try {
+    const fechaDesde = new Date(Date.UTC(anio, mes - 1, 1, 0, 0, 0));
+    const fechaHasta = new Date(Date.UTC(anio, mes, 0, 23, 59, 59));
+
+    const ids = await db
+      .select({ id: tomiAgendaDia.id })
+      .from(tomiAgendaDia)
+      .where(between(tomiAgendaDia.fecha, fechaDesde, fechaHasta));
+
+    const idsArray = ids.map((record) => record.id);
+
+    if (idsArray.length === 0) return Promise.resolve();
+
+    await db.delete(tomiAgendaEventoSuenio).where(inArray(tomiAgendaEventoSuenio.dia, idsArray));
+    await db.delete(tomiAgendaDia).where(inArray(tomiAgendaDia.id, idsArray));
+  } catch (error: unknown) {
+    return Promise.reject(error);
+  }
+  return Promise.resolve();
+};
+
 const importarHorasSuenioTomi = async ({ anio, mes, textoAImportar }: ImportarUI): Promise<ImportarResult> => {
   const resultadoFinal: ImportarResult = {
     lineasInvalidas: [],
@@ -393,6 +415,9 @@ const importarHorasSuenioTomi = async ({ anio, mes, textoAImportar }: ImportarUI
   const datosAImportar = parseTextoSuenioTomi(textoAImportar);
 
   try {
+    // Borro datos previos
+    await eliminarHorasSuenioTomi(anio, mes);
+
     const registrosAInsertarDias = [];
 
     // Iterate over each day of the month
