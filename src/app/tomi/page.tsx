@@ -15,6 +15,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import { EditarDiaModal } from '@/components/tomi/EditarDiaModal';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { actualizarAgendaTomiDia } from '@/lib/orm/actions';
+import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 
 const anio = new Date().getFullYear();
 const mes = months[new Date().getMonth()];
@@ -23,6 +25,11 @@ const Suenio = () => {
   const [dias, setDias] = useState<AgendaTomiDia[]>([]);
   const [openEditarDia, setOpenEditarDia] = useState(false);
   const [diaAEditar, setDiaAEditar] = useState<AgendaTomiDia | null>(null);
+  const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
+    open: false,
+    severity: 'success',
+    mensaje: '',
+  });
 
   const handleEditarDiaClose = () => {
     setDiaAEditar(null);
@@ -46,6 +53,7 @@ const Suenio = () => {
           id: generateUUID(),
           fecha: new Date(currentDate),
           eventos: [],
+          esNuevo: true,
         });
       }
       currentDate.setDate(currentDate.getDate() + 1);
@@ -67,10 +75,26 @@ const Suenio = () => {
     setOpenEditarDia(true);
   };
 
-  const onActualizarDia = (dia: AgendaTomiDia) => {
+  const onActualizarDia = async (dia: AgendaTomiDia) => {
     const diaAActualizar = dias.find((d) => d.id === dia.id);
     if (diaAActualizar) {
       diaAActualizar.eventos = dia.eventos;
+      const resultado = await actualizarAgendaTomiDia(diaAActualizar);
+      if (resultado.error) {
+        setConfigNotificacion({
+          open: true,
+          severity: 'error',
+          mensaje: resultado.error,
+        });
+      } else {
+        diaAActualizar.esNuevo = false;
+        diaAActualizar.eventos.forEach((evento) => (evento.tipoDeActualizacion = undefined));
+        setConfigNotificacion({
+          open: true,
+          severity: 'success',
+          mensaje: 'Movimientos agregados correctamente',
+        });
+      }
       setDias([...dias]);
     }
 
@@ -144,6 +168,7 @@ const Suenio = () => {
           </TableContainer>
         </Box>
       </Container>
+      <Notificacion configuracionProp={configNotificacion} />
     </LocalizationProvider>
   );
 };

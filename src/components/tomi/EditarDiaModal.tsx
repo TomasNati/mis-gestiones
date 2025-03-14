@@ -40,6 +40,9 @@ export const EditarDiaModal = ({ open, onClose, diaAEditar, onActualizarDia }: E
     if (eventoModificado) {
       eventoModificado.hora = evento.hora;
       eventoModificado.tipo = evento.tipo;
+      if (eventoModificado.tipoDeActualizacion != 'nuevo') {
+        eventoModificado.tipoDeActualizacion = 'modificado';
+      }
       setDia({ ...dia });
     }
   };
@@ -50,7 +53,7 @@ export const EditarDiaModal = ({ open, onClose, diaAEditar, onActualizarDia }: E
       id: generateUUID(),
       hora: ultimoEvento?.hora || '00:00',
       tipo: ultimoEvento?.tipo === 'Dormido' ? 'Despierto' : 'Dormido',
-      esNuevo: true,
+      tipoDeActualizacion: 'nuevo',
     };
     setDia({ ...dia, eventos: [...dia.eventos, newEvento] });
   };
@@ -60,11 +63,11 @@ export const EditarDiaModal = ({ open, onClose, diaAEditar, onActualizarDia }: E
     if (!eventoAEliminar) {
       return;
     }
-    if (eventoAEliminar.esNuevo) {
+    if (eventoAEliminar.tipoDeActualizacion === 'nuevo') {
       setDia({ ...dia, eventos: dia.eventos.filter((e) => e.id !== evento.id) });
       return;
     }
-    eventoAEliminar.eliminado = true;
+    eventoAEliminar.tipoDeActualizacion = 'eliminado';
     setDia({ ...dia });
   };
 
@@ -88,7 +91,7 @@ export const EditarDiaModal = ({ open, onClose, diaAEditar, onActualizarDia }: E
             />
           </Box>
           {dia.eventos
-            .filter(({ eliminado }) => !eliminado)
+            .filter(({ tipoDeActualizacion }) => tipoDeActualizacion != 'eliminado')
             .map((evento) => (
               <DormidoDespiertoPicker
                 key={evento.id}
