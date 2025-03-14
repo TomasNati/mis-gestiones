@@ -1249,6 +1249,8 @@ export interface EventoSuenio {
   hora: string;
   comentarios?: string;
   tipo: TipoEventoSuenio;
+  esNuevo?: boolean;
+  eliminado?: boolean;
 }
 
 export interface AgendaTomiDia {
