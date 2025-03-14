@@ -16,6 +16,7 @@ import {
   GastoEstimadoDB,
   ResultadoAPICrear,
   ResultadoCrearMovimiento,
+  AgendaTomiDia,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
@@ -463,6 +464,59 @@ const importarHorasSuenioTomi = async ({ anio, mes, textoAImportar }: ImportarUI
   }
 
   return Promise.resolve(resultadoFinal);
+};
+
+export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<{ error: string }> => {
+  const resultado = {
+    error: '',
+  };
+  try {
+    if (dia.esNuevo) {
+      await db.insert(tomiAgendaDia).values({
+        id: dia.id,
+        fecha: dia.fecha,
+      });
+    }
+
+    const eventosAEliminar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'eliminado');
+    const eventosAInsertar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'nuevo');
+    const eventosAModificar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'modificado');
+
+    if (eventosAEliminar.length > 0) {
+      const ids = eventosAEliminar.map((evento) => evento.id);
+      await db.delete(tomiAgendaEventoSuenio).where(inArray(tomiAgendaEventoSuenio.id, ids));
+    }
+
+    if (eventosAInsertar.length > 0) {
+      const eventosAInsertarDB = eventosAInsertar.map((evento) => ({
+        id: evento.id,
+        dia: dia.id,
+        hora: evento.hora,
+        tipo: evento.tipo,
+      }));
+      await db.insert(tomiAgendaEventoSuenio).values(eventosAInsertarDB);
+    }
+
+    if (eventosAModificar.length > 0) {
+      eventosAModificar.forEach(async (evento) => {
+        await db
+          .update(tomiAgendaEventoSuenio)
+          .set({
+            hora: evento.hora,
+            tipo: evento.tipo,
+          })
+          .where(eq(tomiAgendaEventoSuenio.id, evento.id));
+      });
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultado.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+    } else {
+      resultado.error = ` Error al insertar en base de datos: ${error}.\n`;
+    }
+  }
+
+  return resultado;
 };
 
 export const persistirGastoEstimado = async ({

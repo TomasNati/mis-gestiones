@@ -1249,8 +1249,7 @@ export interface EventoSuenio {
   hora: string;
   comentarios?: string;
   tipo: TipoEventoSuenio;
-  esNuevo?: boolean;
-  eliminado?: boolean;
+  tipoDeActualizacion?: 'nuevo' | 'modificado' | 'eliminado';
 }
 
 export interface AgendaTomiDia {
@@ -1258,6 +1257,7 @@ export interface AgendaTomiDia {
   fecha: Date;
   comentarios?: string;
   eventos: EventoSuenio[];
+  esNuevo?: boolean;
 }
 
 export type ImportarSuenioTomiEvento = {
