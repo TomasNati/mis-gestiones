@@ -71,8 +71,12 @@ export const obtenerDiasEnElMes = (fecha: Date) => {
   return diasEnElMes;
 };
 
-export const formatDate = (date: Date, showHour: boolean = false): string => {
-  const options: Intl.DateTimeFormatOptions = {
+export const formatDate = (
+  date: Date,
+  showHour: boolean = false,
+  customOptions: Intl.DateTimeFormatOptions = {},
+): string => {
+  const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -81,6 +85,8 @@ export const formatDate = (date: Date, showHour: boolean = false): string => {
     second: showHour ? '2-digit' : undefined,
     hour12: false,
   };
+
+  const options = { ...defaultOptions, ...customOptions };
 
   return date.toLocaleString('es-AR', options).replace(/, /, ' ');
 };

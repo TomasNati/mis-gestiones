@@ -15,6 +15,8 @@ const timeStringToMinutes = (time: string): number => {
 };
 
 const transformSegments = (segments: EventoSuenio[], estadoSuenioPrevio: TipoEventoSuenio): ResultSegment[] => {
+  if (segments.length === 0) return [];
+
   let start = 0;
   const result: ResultSegment[] = [];
 
