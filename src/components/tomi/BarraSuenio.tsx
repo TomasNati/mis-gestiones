@@ -44,6 +44,17 @@ const transformSegments = (segments: EventoSuenio[], estadoSuenioPrevio: TipoEve
 
 const LinearProgressWithLabel = ({ tipo, start, end, hora }: ResultSegment) => {
   const showLabel = end < 1440;
+
+  let durationLabel = null;
+  if (tipo === 'Dormido') {
+    const durationMinutes = end - start;
+    const durationHours = Math.floor(durationMinutes / 60);
+    const durationRemainingMinutes = durationMinutes % 60;
+    durationLabel = `${durationHours > 0 ? `${durationHours}h ` : ''}${
+      durationRemainingMinutes > 0 ? `${durationRemainingMinutes}m` : ''
+    }`;
+  }
+
   return (
     <Box position="relative" display="flex" alignItems="center" flexDirection="column">
       <Box width="100%" mr={1}>
@@ -63,6 +74,20 @@ const LinearProgressWithLabel = ({ tipo, start, end, hora }: ResultSegment) => {
         <Box position="absolute" right="-10px" top="-20px">
           <Typography variant="caption" color="textSecondary">
             {hora}
+          </Typography>
+        </Box>
+      ) : null}
+      {durationLabel ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <Typography variant="caption" color="textPrimary">
+            {durationLabel}
           </Typography>
         </Box>
       ) : null}
