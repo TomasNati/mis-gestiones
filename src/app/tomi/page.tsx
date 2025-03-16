@@ -7,7 +7,7 @@ import { obtenerAgendaTomiDias } from '@/lib/orm/data';
 import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { obtenerDiaYDiaDeLaSemana } from '@/lib/helpers';
 import BarraSuenio from '@/components/tomi/BarraSuenio';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AgendaTomiDia, months } from '@/lib/definitions';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import { generateUUID } from '@/lib/helpers';
@@ -30,6 +30,13 @@ const Suenio = () => {
     severity: 'success',
     mensaje: '',
   });
+
+  useEffect(() => {
+    const obtenerDatosIniciales = async () =>{
+      await oneMesYAnioChanged(mes, anio);
+    }
+    obtenerDatosIniciales();
+  }, []);
 
   const handleEditarDiaClose = () => {
     setDiaAEditar(null);
