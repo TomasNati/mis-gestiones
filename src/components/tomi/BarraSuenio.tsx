@@ -1,6 +1,7 @@
 import React from 'react';
-import { LinearProgress, Box, Typography } from '@mui/material';
+import { LinearProgress, Box, Typography, duration } from '@mui/material';
 import { EventoSuenio, TipoEventoSuenio } from '@/lib/definitions';
+import { timeStringToMinutes, minutesToTimeString } from '@/lib/helpers';
 
 interface ResultSegment {
   tipo: TipoEventoSuenio;
@@ -8,11 +9,6 @@ interface ResultSegment {
   end: number;
   hora: string;
 }
-
-const timeStringToMinutes = (time: string): number => {
-  const [hours, minutes, _] = time.split(':').map(Number);
-  return hours * 60 + minutes;
-};
 
 const transformSegments = (segments: EventoSuenio[], estadoSuenioPrevio: TipoEventoSuenio): ResultSegment[] => {
   if (segments.length === 0) return [];
@@ -48,11 +44,7 @@ const LinearProgressWithLabel = ({ tipo, start, end, hora }: ResultSegment) => {
   let durationLabel = null;
   if (tipo === 'Dormido') {
     const durationMinutes = end - start;
-    const durationHours = Math.floor(durationMinutes / 60);
-    const durationRemainingMinutes = durationMinutes % 60;
-    durationLabel = `${durationHours > 0 ? `${durationHours}h ` : ''}${
-      durationRemainingMinutes > 0 ? `${durationRemainingMinutes}m` : ''
-    }`;
+    durationLabel = minutesToTimeString(durationMinutes);
   }
 
   return (
