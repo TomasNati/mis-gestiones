@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import { AgendaTomiDia } from '@/lib/definitions';
 import { obtenerAgendaTomiDias } from '@/lib/orm/data';
-import { formatDate, timeStringToMinutes } from '@/lib/helpers';
+import { formatDate, minutesToTimeString, timeStringToMinutes } from '@/lib/helpers';
 import { BarChart } from '@mui/x-charts/BarChart';
 
 interface DiaDescripcion {
@@ -14,7 +14,7 @@ const obtenerHorasDeSuenio = (dia: AgendaTomiDia): number => {
   let minutoStart = 0;
   return dia.eventos.reduce((acc, evento) => {
     const minutosEnd = timeStringToMinutes(evento.hora);
-    if (evento.tipo === 'Dormido') {
+    if (evento.tipo === 'Despierto') {
       return acc + (minutosEnd - minutoStart);
     }
     minutoStart = minutosEnd;
@@ -33,7 +33,7 @@ const SuenioTomi = ({ desde, hasta }: SuenioTomiProps) => {
     const obtenerDatosIniciales = async () => {
       const datos = await obtenerAgendaTomiDias(desde, hasta);
       const diasConDescripcion: DiaDescripcion[] = datos.map((dia) => ({
-        fecha: formatDate(dia.fecha),
+        fecha: formatDate(dia.fecha).split('-').reverse().slice(0, 2).join('/'),
         horasDeSuenio: obtenerHorasDeSuenio(dia),
       }));
 
@@ -42,19 +42,39 @@ const SuenioTomi = ({ desde, hasta }: SuenioTomiProps) => {
     obtenerDatosIniciales();
   }, []);
 
+  if (dias.length > 0) console.log(dias);
+
   return (
     <div>
       <BarChart
-        width={600}
+        width={800}
         height={300}
-        series={[{ dataKey: 'horasDeSuenio' }]}
-        xAxis={[{ dataKey: 'fecha' }]}
+        grid={{ horizontal: true }}
+        series={[
+          {
+            dataKey: 'horasDeSuenio',
+            valueFormatter: (value) => (value ? minutesToTimeString(value) : '0'),
+          },
+        ]}
+        yAxis={[
+          {
+            dataKey: 'horasDeSuenio',
+            valueFormatter: (value) => (value ? (value / 60).toFixed(1) : '0'),
+          },
+        ]}
+        xAxis={[
+          {
+            dataKey: 'fecha',
+            scaleType: 'band',
+            valueFormatter: (value) => value.slice(0, -5),
+          },
+        ]}
         dataset={dias.map(({ fecha, horasDeSuenio }) => ({ fecha, horasDeSuenio }))}
         margin={{
-          top: 5,
+          top: 20,
           right: 30,
-          left: 20,
-          bottom: 5,
+          left: 50,
+          bottom: 50,
         }}
       ></BarChart>
     </div>
