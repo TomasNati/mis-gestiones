@@ -29,7 +29,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { actualizarAgendaTomiDia } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { SuenioTomi } from '@/components/graficos';
+import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
 
 const anio = new Date().getFullYear();
 const mes = months[new Date().getMonth()];
@@ -174,12 +174,14 @@ const Suenio = () => {
             sx={{
               height: mostrandoGrafico ? '100%' : 0,
               display: 'flex',
+              flexDirection: 'column',
               justifyContent: 'space-evenly',
               alignItems: 'center',
               overflow: 'hidden',
             }}
           >
             <SuenioTomi rangoFechas={rangoFechas} diasIniciales={diasAGraficar} />
+            <SuenioAnualTomi fechaHasta={fechaDiaActual} />
           </Box>
           <Divider>
             <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>

@@ -2,25 +2,13 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import { AgendaTomiDia } from '@/lib/definitions';
 import { obtenerAgendaTomiDias } from '@/lib/orm/data';
-import { formatDate, minutesToTimeString, timeStringToMinutes } from '@/lib/helpers';
+import { formatDate, minutesToTimeString, obtenerMinutosDeSuenio } from '@/lib/helpers';
 import { BarChart } from '@mui/x-charts/BarChart';
 
 interface DiaDescripcion {
   fecha: string;
   minutosDeSuenio: number;
 }
-
-const obtenerHorasDeSuenio = (dia: AgendaTomiDia): number => {
-  let minutoStart = 0;
-  return dia.eventos.reduce((acc, evento) => {
-    const minutosEnd = timeStringToMinutes(evento.hora);
-    if (evento.tipo === 'Despierto') {
-      return acc + (minutosEnd - minutoStart);
-    }
-    minutoStart = minutosEnd;
-    return acc;
-  }, 0);
-};
 
 interface SuenioTomiProps {
   rangoFechas?: { desde: Date; hasta: Date };
@@ -37,13 +25,15 @@ const SuenioTomi = ({ rangoFechas, diasIniciales }: SuenioTomiProps) => {
       }
       const diasConDescripcion: DiaDescripcion[] = datos.map((dia) => ({
         fecha: formatDate(dia.fecha, false, { timeZone: 'UTC' }).split('-').reverse().slice(0, 2).join('/'),
-        minutosDeSuenio: obtenerHorasDeSuenio(dia),
+        minutosDeSuenio: obtenerMinutosDeSuenio(dia),
       }));
 
       setDias(diasConDescripcion);
     };
     obtenerDatosIniciales();
   }, [rangoFechas, diasIniciales]);
+
+  if (!dias.length) return null;
 
   return (
     <div>

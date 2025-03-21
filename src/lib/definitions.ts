@@ -1274,3 +1274,8 @@ export interface AnioYMes {
   anio: number;
   mes: string;
 }
+
+export interface SuenioTomiPorPeriodo {
+  fecha: Date;
+  horasDeSuenio: number;
+}

@@ -12,6 +12,7 @@ import {
   months,
   AgendaTomiDia,
   TipoEventoSuenio,
+  SuenioTomiPorPeriodo,
 } from '@/lib/definitions';
 import { db } from './database';
 import {
@@ -24,7 +25,13 @@ import {
   tomiAgendaEventoSuenio,
 } from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
-import { generateUUID, obtenerCategoriaUIMovimiento, transformCurrencyToNumber, obtenerDiasEnElMes } from '../helpers';
+import {
+  generateUUID,
+  obtenerCategoriaUIMovimiento,
+  transformCurrencyToNumber,
+  obtenerDiasEnElMes,
+  obtenerHorasDeSuenio,
+} from '../helpers';
 
 type GastoPresupuestoItem = {
   id: string | null;
@@ -465,4 +472,32 @@ export const obtenerAgendaTomiDias = async (fechaDesde: Date, fechaHasta: Date):
     console.error('Database Error:', error);
     throw new Error('Error al obtener obtenerAgendaTomiDias');
   }
+};
+
+export const obtenerSuenioTomiPorPeriodo = async (
+  hasta: Date,
+  mesesAIncluir: number = 12,
+): Promise<SuenioTomiPorPeriodo[]> => {
+  const fechaDesde = new Date(Date.UTC(hasta.getFullYear(), hasta.getMonth() - mesesAIncluir + 1, 1));
+  const dias = await obtenerAgendaTomiDias(fechaDesde, hasta);
+
+  const suenioPorPeriodo: SuenioTomiPorPeriodo[] = [];
+
+  let currentDate = new Date(fechaDesde);
+
+  while (currentDate <= hasta) {
+    const diasEnElMes = dias.filter(
+      ({ fecha }) =>
+        fecha.getUTCFullYear() == currentDate.getUTCFullYear() && fecha.getUTCMonth() == currentDate.getUTCMonth(),
+    );
+
+    const horasDeSuenio = diasEnElMes.reduce((acc, dia) => acc + obtenerHorasDeSuenio(dia), 0);
+    suenioPorPeriodo.push({
+      fecha: new Date(currentDate),
+      horasDeSuenio: horasDeSuenio / diasEnElMes.length,
+    });
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+
+  return suenioPorPeriodo;
 };

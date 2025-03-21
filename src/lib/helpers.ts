@@ -11,6 +11,7 @@ import {
   GastoEstimadoAnualUI,
   GastoEstimadoItemDelMes,
   ImportarSuenioTomiDia,
+  AgendaTomiDia,
 } from './definitions';
 
 export const logMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info'): void => {
@@ -849,3 +850,17 @@ export const SonIguales = (aniosConMeses1: AnioConMeses[], aniosConMeses2: AnioC
 
   return true;
 };
+
+export const obtenerMinutosDeSuenio = (dia: AgendaTomiDia): number => {
+  let minutoStart = 0;
+  return dia.eventos.reduce((acc, evento) => {
+    const minutosEnd = timeStringToMinutes(evento.hora);
+    if (evento.tipo === 'Despierto') {
+      return acc + (minutosEnd - minutoStart);
+    }
+    minutoStart = minutosEnd;
+    return acc;
+  }, 0);
+};
+
+export const obtenerHorasDeSuenio = (dia: AgendaTomiDia): number => obtenerMinutosDeSuenio(dia) / 60;
