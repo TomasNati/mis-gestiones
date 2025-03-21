@@ -39,8 +39,9 @@ const fecha30DiasAtras = new Date(Date.UTC(anio, months.indexOf(mes), new Date()
 const Suenio = () => {
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [dias, setDias] = useState<AgendaTomiDia[]>([]);
+  const [diasAGraficar, setDiasAGraficar] = useState<AgendaTomiDia[]>([]);
   const [openEditarDia, setOpenEditarDia] = useState(false);
-  const [rangoFechas, setRangoFechas] = useState<{ desde: Date; hasta: Date }>({
+  const [rangoFechas, setRangoFechas] = useState<{ desde: Date; hasta: Date } | undefined>({
     desde: fecha30DiasAtras,
     hasta: fechaDiaActual,
   });
@@ -86,6 +87,15 @@ const Suenio = () => {
       currentDate.setDate(currentDate.getDate() + 1);
     }
     setDias(diasCompletos);
+
+    if (fechaHasta <= fechaDiaActual) {
+      setDiasAGraficar(dias);
+      setRangoFechas(undefined);
+    } else {
+      const fecha30DiasAtras = new Date(Date.UTC(anio, months.indexOf(mes), new Date().getDate() - 30));
+      setDiasAGraficar([]);
+      setRangoFechas({ desde: fecha30DiasAtras, hasta: fechaDiaActual });
+    }
   };
 
   const obtenerEstadoSuenioDiaAnterior = (index: number) => {
@@ -169,7 +179,7 @@ const Suenio = () => {
               overflow: 'hidden',
             }}
           >
-            <SuenioTomi desde={rangoFechas.desde} hasta={rangoFechas.hasta} />
+            <SuenioTomi rangoFechas={rangoFechas} diasIniciales={diasAGraficar} />
           </Box>
           <Divider>
             <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>

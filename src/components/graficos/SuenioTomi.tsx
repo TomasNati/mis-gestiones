@@ -7,7 +7,7 @@ import { BarChart } from '@mui/x-charts/BarChart';
 
 interface DiaDescripcion {
   fecha: string;
-  horasDeSuenio: number;
+  minutosDeSuenio: number;
 }
 
 const obtenerHorasDeSuenio = (dia: AgendaTomiDia): number => {
@@ -23,26 +23,27 @@ const obtenerHorasDeSuenio = (dia: AgendaTomiDia): number => {
 };
 
 interface SuenioTomiProps {
-  desde: Date;
-  hasta: Date;
+  rangoFechas?: { desde: Date; hasta: Date };
+  diasIniciales?: AgendaTomiDia[];
 }
-const SuenioTomi = ({ desde, hasta }: SuenioTomiProps) => {
+const SuenioTomi = ({ rangoFechas, diasIniciales }: SuenioTomiProps) => {
   const [dias, setDias] = useState<DiaDescripcion[]>([]);
 
   useEffect(() => {
     const obtenerDatosIniciales = async () => {
-      const datos = await obtenerAgendaTomiDias(desde, hasta);
+      let datos = diasIniciales || [];
+      if (!datos.length && rangoFechas) {
+        datos = await obtenerAgendaTomiDias(rangoFechas.desde, rangoFechas.hasta);
+      }
       const diasConDescripcion: DiaDescripcion[] = datos.map((dia) => ({
-        fecha: formatDate(dia.fecha).split('-').reverse().slice(0, 2).join('/'),
-        horasDeSuenio: obtenerHorasDeSuenio(dia),
+        fecha: formatDate(dia.fecha, false, { timeZone: 'UTC' }).split('-').reverse().slice(0, 2).join('/'),
+        minutosDeSuenio: obtenerHorasDeSuenio(dia),
       }));
 
       setDias(diasConDescripcion);
     };
     obtenerDatosIniciales();
-  }, []);
-
-  if (dias.length > 0) console.log(dias);
+  }, [rangoFechas, diasIniciales]);
 
   return (
     <div>
@@ -52,14 +53,19 @@ const SuenioTomi = ({ desde, hasta }: SuenioTomiProps) => {
         grid={{ horizontal: true }}
         series={[
           {
-            dataKey: 'horasDeSuenio',
+            dataKey: 'minutosDeSuenio',
             valueFormatter: (value) => (value ? minutesToTimeString(value) : '0'),
           },
         ]}
         yAxis={[
           {
-            dataKey: 'horasDeSuenio',
+            dataKey: 'minutosDeSuenio',
             valueFormatter: (value) => (value ? (value / 60).toFixed(1) : '0'),
+            colorMap: {
+              type: 'piecewise',
+              thresholds: [6 * 60, 8 * 60, 10 * 60], // hora * minutos
+              colors: ['#df5e5e', 'orange', '#199db3', '#58ff58bf'],
+            },
           },
         ]}
         xAxis={[
@@ -69,7 +75,7 @@ const SuenioTomi = ({ desde, hasta }: SuenioTomiProps) => {
             valueFormatter: (value) => value.slice(0, -5),
           },
         ]}
-        dataset={dias.map(({ fecha, horasDeSuenio }) => ({ fecha, horasDeSuenio }))}
+        dataset={dias.map((dia) => ({ ...dia }))}
         margin={{
           top: 20,
           right: 30,
