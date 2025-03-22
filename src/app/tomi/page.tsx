@@ -116,6 +116,7 @@ const Suenio = () => {
     const diaAActualizar = dias.find((d) => d.id === dia.id);
     if (diaAActualizar) {
       diaAActualizar.eventos = dia.eventos;
+      diaAActualizar.comentarios = dia.comentarios;
       const resultado = await actualizarAgendaTomiDia(diaAActualizar);
       if (resultado.error) {
         setConfigNotificacion({
@@ -192,6 +193,7 @@ const Suenio = () => {
                 <TableRow>
                   <TableCell width={120}>Fecha</TableCell>
                   <TableCell>Eventos</TableCell>
+                  <TableCell width={200}>Comentarios</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -217,6 +219,7 @@ const Suenio = () => {
                     <TableCell sx={{ paddingBottom: '0px' }}>
                       <BarraSuenio data={dia.eventos} estadoSuenioPrevio={obtenerEstadoSuenioDiaAnterior(index)} />
                     </TableCell>
+                    <TableCell sx={{ paddingBottom: '0px' }}>{dia.comentarios}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -1,6 +1,6 @@
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { Box, Button, DialogContent } from '@mui/material';
+import { Box, Button, DialogContent, TextField } from '@mui/material';
 import { AgendaTomiDia, EventoSuenio } from '@/lib/definitions';
 import { formatDate } from '@/lib/helpers';
 import { useState } from 'react';
@@ -71,12 +71,16 @@ export const EditarDiaModal = ({ open, onClose, diaAEditar, onActualizarDia }: E
     setDia({ ...dia });
   };
 
+  const onComentariosChanged = (comentarios: string) => {
+    setDia({ ...dia, comentarios });
+  };
+
   return (
     <Dialog onClose={handleClose} open={open}>
       <DialogTitle>{diaDisplay}</DialogTitle>
       <DialogContent
         sx={{
-          width: '300px',
+          width: '450px',
         }}
       >
         <Box>
@@ -100,6 +104,17 @@ export const EditarDiaModal = ({ open, onClose, diaAEditar, onActualizarDia }: E
                 onDelete={onDeleteEvento}
               />
             ))}
+          <Box sx={{ marginTop: 2 }}>
+            <TextField
+              label="Comentarios"
+              fullWidth
+              multiline
+              rows={3}
+              value={dia.comentarios || ''}
+              onChange={(e) => onComentariosChanged(e.target.value)}
+              variant="outlined"
+            />
+          </Box>
         </Box>
       </DialogContent>
       <Box display="flex" justifyContent="center" sx={{ padding: '8px' }} gap={2}>

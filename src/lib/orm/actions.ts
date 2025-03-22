@@ -475,7 +475,15 @@ export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<{ err
       await db.insert(tomiAgendaDia).values({
         id: dia.id,
         fecha: dia.fecha,
+        comentarios: dia.comentarios,
       });
+    } else {
+      await db
+        .update(tomiAgendaDia)
+        .set({
+          comentarios: dia.comentarios,
+        })
+        .where(eq(tomiAgendaDia.id, dia.id));
     }
 
     const eventosAEliminar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'eliminado');
