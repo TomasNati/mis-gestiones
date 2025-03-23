@@ -479,11 +479,12 @@ export const obtenerSuenioTomiPorPeriodo = async (
   mesesAIncluir: number = 12,
 ): Promise<SuenioTomiPorPeriodo[]> => {
   const fechaDesde = new Date(Date.UTC(hasta.getFullYear(), hasta.getMonth() - mesesAIncluir + 1, 1));
-  const dias = await obtenerAgendaTomiDias(fechaDesde, hasta);
+  const fechaHasta = new Date(Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59));
+  const dias = await obtenerAgendaTomiDias(fechaDesde, fechaHasta);
 
   const suenioPorPeriodo: SuenioTomiPorPeriodo[] = [];
 
-  let currentDate = new Date(fechaDesde);
+  let currentDate = new Date(Date.UTC(fechaDesde.getUTCFullYear(), fechaDesde.getUTCMonth(), 1));
 
   while (currentDate <= hasta) {
     const diasEnElMes = dias.filter(
@@ -496,7 +497,7 @@ export const obtenerSuenioTomiPorPeriodo = async (
       fecha: new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 10)),
       horasDeSuenio: horasDeSuenio / diasEnElMes.length,
     });
-    currentDate.setMonth(currentDate.getMonth() + 1);
+    currentDate.setUTCMonth(currentDate.getUTCMonth() + 1);
   }
 
   return suenioPorPeriodo;
