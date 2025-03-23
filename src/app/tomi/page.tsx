@@ -15,6 +15,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
 } from '@mui/material';
 import { obtenerDiaYDiaDeLaSemana } from '@/lib/helpers';
 import BarraSuenio from '@/components/tomi/BarraSuenio';
@@ -28,7 +29,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { actualizarAgendaTomiDia } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
-import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import { ExpandMore, ExpandLess, CommentOutlined } from '@mui/icons-material';
 import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
 
 const anio = new Date().getFullYear();
@@ -192,34 +193,42 @@ const Suenio = () => {
               <TableHead>
                 <TableRow>
                   <TableCell width={120}>Fecha</TableCell>
+                  <TableCell width={50}></TableCell>
                   <TableCell>Eventos</TableCell>
-                  <TableCell width={200}>Comentarios</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {dias.map((dia, index) => (
-                  <TableRow key={dia.id}>
+                  <TableRow key={dia.id} sx={{ borderBottom: '1px solid rgba(81, 81, 81, 1)' }}>
+                    <TableCell sx={{ borderBottom: 'none' }}>
+                      <Box>{obtenerDiaYDiaDeLaSemana(dia.fecha)}</Box>
+                    </TableCell>
                     <TableCell
-                      width={150}
+                      width={50}
                       sx={{
-                        paddingBottom: '8px',
-                        paddingTop: '8px',
+                        padding: '11px 0px',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
+                        borderBottom: 'none',
                       }}
                     >
-                      <Box>{obtenerDiaYDiaDeLaSemana(dia.fecha)}</Box>
                       <Button
                         sx={{ minWidth: '0px', padding: '5px', '& span': { marginLeft: '3px', marginRight: '0px' } }}
                         startIcon={<EditIcon />}
                         onClick={() => onOpenEditarDia(dia)}
                       />
+                      {dia.comentarios && dia.comentarios.trim() !== '' && (
+                        <Tooltip title={dia.comentarios}>
+                          <Box sx={{ display: 'flex' }}>
+                            <CommentOutlined />
+                          </Box>
+                        </Tooltip>
+                      )}
                     </TableCell>
-                    <TableCell sx={{ paddingBottom: '0px' }}>
+                    <TableCell sx={{ paddingBottom: '0px', borderBottom: 'none' }}>
                       <BarraSuenio data={dia.eventos} estadoSuenioPrevio={obtenerEstadoSuenioDiaAnterior(index)} />
                     </TableCell>
-                    <TableCell sx={{ paddingBottom: '0px' }}>{dia.comentarios}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
