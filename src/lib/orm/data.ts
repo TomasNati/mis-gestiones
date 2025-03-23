@@ -493,7 +493,7 @@ export const obtenerSuenioTomiPorPeriodo = async (
 
     const horasDeSuenio = diasEnElMes.reduce((acc, dia) => acc + obtenerHorasDeSuenio(dia), 0);
     suenioPorPeriodo.push({
-      fecha: new Date(currentDate),
+      fecha: new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 10)),
       horasDeSuenio: horasDeSuenio / diasEnElMes.length,
     });
     currentDate.setMonth(currentDate.getMonth() + 1);

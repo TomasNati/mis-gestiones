@@ -31,6 +31,7 @@ import { actualizarAgendaTomiDia } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { ExpandMore, ExpandLess, CommentOutlined } from '@mui/icons-material';
 import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
+import theme from '@/components/ThemeRegistry/theme';
 
 const anio = new Date().getFullYear();
 const mes = months[new Date().getMonth()];
@@ -220,8 +221,15 @@ const Suenio = () => {
                       />
                       {dia.comentarios && dia.comentarios.trim() !== '' && (
                         <Tooltip title={dia.comentarios}>
-                          <Box sx={{ display: 'flex' }}>
-                            <CommentOutlined />
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              '&:hover': {
+                                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
+                              },
+                            }}
+                          >
+                            <CommentOutlined sx={{ color: theme.palette.primary.main }} />
                           </Box>
                         </Tooltip>
                       )}
