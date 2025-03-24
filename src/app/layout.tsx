@@ -19,7 +19,8 @@ export const metadata = {
   description: 'Mis gestiones diarias',
 };
 
-const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH = 150;
+const ICON_WIDTH = 45;
 
 const LINKS = [
   { text: 'Tomi', href: '/tomi', icon: HomeIcon },
@@ -43,6 +44,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 boxSizing: 'border-box',
                 height: 'auto',
                 bottom: 0,
+              },
+              '& .MuiListItemIcon-root': {
+                minWidth: ICON_WIDTH,
               },
             }}
             variant="permanent"
