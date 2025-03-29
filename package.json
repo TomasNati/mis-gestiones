@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,css,md,json}'"
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,css,md,json}'",
+    "vercel": "vercel dev"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -26,6 +27,7 @@
     "next": "15.2.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "tsconfig-paths": "^4.2.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

@@ -45,7 +45,7 @@ type GastoPresupuestoItem = {
   esEstimado?: boolean;
 };
 
-const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
+export const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
   // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
   // For this method, caching data seems to be a good idea, so this is commented out
   // noStore();
