@@ -1,6 +1,6 @@
 import '../_setup';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { obtenerSubCategorias } from '@/lib/orm/data';
+import { obtenerSubCategorias } from '../src/lib/orm/data';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const subcategorias = await obtenerSubCategorias();

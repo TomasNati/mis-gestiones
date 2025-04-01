@@ -13,7 +13,7 @@ import {
   AgendaTomiDia,
   TipoEventoSuenio,
   SuenioTomiPorPeriodo,
-} from '@/lib/definitions';
+} from '../definitions';
 import { db } from './database';
 import {
   categorias,
