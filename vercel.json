@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "build": {
-    "env": {
-      "TS_NODE_PROJECT": "tsconfig.json"
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "./tsconfig.json"
     }
-  },
-  "ignoreCommand": "echo 'No files ignored'"
+  }
 }
