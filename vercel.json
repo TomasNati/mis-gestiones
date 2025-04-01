@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "build": {
+    "env": {
+      "TS_NODE_PROJECT": "tsconfig.json"
+    }
+  },
+  "ignoreCommand": "echo 'No files ignored'"
+}
