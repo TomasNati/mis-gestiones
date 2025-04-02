@@ -160,7 +160,7 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
   return Promise.resolve(categoriasUIMovimiento);
 };
 
-const obtenerMovimientos = async (
+export const obtenerMovimientos = async (
   limiteDeMovimientos?: number,
   fechaDesde?: Date,
   fechaHasta?: Date,
