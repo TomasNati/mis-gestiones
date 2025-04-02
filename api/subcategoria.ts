@@ -1,4 +1,3 @@
-import '../_setup';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { obtenerSubCategorias } from '../src/lib/orm/data';
 
