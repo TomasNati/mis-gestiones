@@ -30,22 +30,20 @@ import {
 import { db } from './database';
 import {
   GastoEstimadoAInsertarDB,
-  TomiAgendaEventoSuenioDB,
   gastoEstimado,
   movimientosGasto,
   tomiAgendaDia,
   tomiAgendaEventoSuenio,
 } from './tables';
-import { error } from 'console';
 
 const FormMovimientoSchema = z.object({
   id: z.string(),
-  comentarios: z.string().optional(),
+  comentarios: z.string().nullable().optional(),
   fecha: z.date({
     invalid_type_error: 'Por favor elegir una fecha',
   }),
   subcategoriaId: z.string(),
-  detalleSubcategoriaId: z.string().optional(),
+  detalleSubcategoriaId: z.string().nullable().optional(),
   tipoDeGasto: z.enum(['Credito', 'Debito', 'Efectivo'], {
     invalid_type_error: 'Por favor elegir un tipo de gasto',
   }),
@@ -66,7 +64,7 @@ const GastoEstimadoSchema = z
   })
   .omit({ id: true });
 
-export async function crearMovimientos(nuevosMovimientos: MovimientoUI[]) {
+export async function crearMovimientos(nuevosMovimientos: MovimientoUI[], revalidate = true) {
   const resultadoFinal: ResultadoAPICrear = {
     exitoso: true,
     errores: [],
@@ -83,9 +81,12 @@ export async function crearMovimientos(nuevosMovimientos: MovimientoUI[]) {
       resultadoFinal.idsCreados.push(id);
     }
   }
-  //Revalidate the cache
-  revalidatePath('/finanzas');
-  revalidatePath('/finanzas/movimientosDelMes');
+  if (revalidate) {
+    //Revalidate the cache
+    revalidatePath('/finanzas');
+    revalidatePath('/finanzas/movimientosDelMes');
+  }
+
   return resultadoFinal;
 }
 
@@ -170,7 +171,9 @@ export async function crearMovimiento(nuevoMovimiento: MovimientoUI): Promise<Re
   const camposValidados = CrearMovimiento.safeParse(nuevoMovimiento);
   if (!camposValidados.success) {
     const errores = camposValidados.error.flatten().fieldErrors;
-    resultado.error = 'Hubo errores de validación.';
+    resultado.error = Object.entries(errores)
+      .map(([campo, mensajes]) => `${campo}: ${mensajes?.join(', ')}`)
+      .join('; ');
   } else {
     const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
     const fechaString = fecha.toISOString().replace('T', ' ');
