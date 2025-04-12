@@ -1,5 +1,5 @@
 import { SafeParseReturnType, z } from 'zod';
-import { MovimientoUI } from '../definitions';
+import { MovimientoUI, AgendaTomiDia, EventoSuenio } from '../definitions';
 
 const FormMovimientoSchema = z.object({
   id: z.string(),
@@ -39,11 +39,83 @@ const CrearGastoEstimadoSchema = GastoEstimadoSchema.omit({ id: true });
 type CrearGastoEstimado = z.infer<typeof CrearGastoEstimadoSchema>;
 type SafeParseCrearGastoEstimado = SafeParseReturnType<CrearGastoEstimado, CrearGastoEstimado>;
 
+const TipoEventoSuenioSchema = z.enum(['Despierto', 'Dormido']);
+
+const EventoSuenioSchema = z.object({
+  id: z.string(),
+  hora: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'La hora debe tener el formato hh:mm (24 horas)',
+  }), // Validate "hh:mm" format
+  comentarios: z.string().optional(),
+  tipo: TipoEventoSuenioSchema,
+  tipoDeActualizacion: z.enum(['nuevo', 'modificado', 'eliminado']).optional(),
+});
+
+const CrearEventoSuenioSchema = EventoSuenioSchema.omit({ id: true });
+
+const AgendaTomiDiaSchema = z.object({
+  id: z.string(),
+  fecha: z.date(),
+  comentarios: z.string().optional(),
+  eventos: z.array(EventoSuenioSchema),
+  esNuevo: z.boolean().optional(),
+});
+
+const CrearAgendaTomiDiaSchema = AgendaTomiDiaSchema.omit({ id: true }).extend({
+  eventos: z.array(CrearEventoSuenioSchema),
+});
+
+type CrearAgendaTomiDia = z.infer<typeof CrearAgendaTomiDiaSchema>;
+type EditarAgendaTomiDia = z.infer<typeof AgendaTomiDiaSchema>;
+type SafeParseCrearAgendaTomiDia = SafeParseReturnType<CrearAgendaTomiDia, CrearAgendaTomiDia>;
+type SafeParseEditarAgendaTomiDia = SafeParseReturnType<EditarAgendaTomiDia, EditarAgendaTomiDia>;
+
+type CrearEventoSuenio = z.infer<typeof CrearEventoSuenioSchema>;
+type EditarEventoSuenio = z.infer<typeof EventoSuenioSchema>;
+type SafeParseTypeCrearEventoSuenio = SafeParseReturnType<CrearEventoSuenio, CrearEventoSuenio>;
+type SafeParseEditarEventoSuenio = SafeParseReturnType<EditarEventoSuenio, EditarEventoSuenio>;
+
 const processErrors = (error: z.ZodError) => {
   const errores = error.flatten().fieldErrors;
   return Object.entries(errores)
     .map(([campo, mensajes]) => `${campo}: ${mensajes?.join(', ')}`)
     .join('; ');
+};
+
+export const validarCrearAgendaTomiDia = (agenda: AgendaTomiDia): [SafeParseCrearAgendaTomiDia, string] => {
+  const result = CrearAgendaTomiDiaSchema.safeParse(agenda);
+  let errors = '';
+  if (!result.success) {
+    errors = processErrors(result.error);
+  }
+  return [result, errors];
+};
+
+export const validarActualizarAgendaTomiDia = (agenda: AgendaTomiDia): [SafeParseEditarAgendaTomiDia, string] => {
+  const result = AgendaTomiDiaSchema.safeParse(agenda);
+  let errors = '';
+  if (!result.success) {
+    errors = processErrors(result.error);
+  }
+  return [result, errors];
+};
+
+export const validarCrearEventoSuenio = (evento: EventoSuenio): [SafeParseEditarEventoSuenio, string] => {
+  const result = EventoSuenioSchema.safeParse(evento);
+  let errors = '';
+  if (!result.success) {
+    errors = processErrors(result.error);
+  }
+  return [result, errors];
+};
+
+export const validarActualizarEventoSuenio = (evento: EventoSuenio): [SafeParseEditarEventoSuenio, string] => {
+  const result = EventoSuenioSchema.safeParse(evento);
+  let errors = '';
+  if (!result.success) {
+    errors = processErrors(result.error);
+  }
+  return [result, errors];
 };
 
 export const validarCrearMovimiento = (movimiento: MovimientoUI): [SafeParseCrearMovimiento, string] => {

@@ -36,7 +36,15 @@ import {
   tomiAgendaEventoSuenio,
 } from './tables';
 
-import { validarActualizarMovimiento, validarCrearGastoEstimado, validarCrearMovimiento } from './validaciones';
+import {
+  validarActualizarMovimiento,
+  validarCrearGastoEstimado,
+  validarCrearMovimiento,
+  validarActualizarAgendaTomiDia,
+  validarCrearAgendaTomiDia,
+  validarActualizarEventoSuenio,
+  validarCrearEventoSuenio,
+} from './validaciones';
 
 export async function crearMovimientos(nuevosMovimientos: MovimientoUI[], revalidate = true) {
   const resultadoFinal: ResultadoAPICrear = {
@@ -437,16 +445,50 @@ const importarHorasSuenioTomi = async ({ anio, mes, textoAImportar }: ImportarUI
   return Promise.resolve(resultadoFinal);
 };
 
-export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<{ error: string }> => {
-  const resultado = {
-    error: '',
+export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<ResultadoAPI> => {
+  const resultado: ResultadoAPI = {
+    errores: [],
+    exitoso: true,
   };
+
   try {
+    const [valResDia, error] = dia.esNuevo ? validarCrearAgendaTomiDia(dia) : validarActualizarAgendaTomiDia(dia);
+
+    if (!valResDia.success) {
+      resultado.errores = [error];
+      return resultado;
+    }
+
+    const eventosAEliminar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'eliminado');
+    const eventosAInsertar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'nuevo');
+    const eventosAModificar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'modificado');
+
+    eventosAInsertar.forEach((evento) => {
+      const [valRes, error] = validarCrearEventoSuenio(evento);
+      if (!valRes.success) {
+        resultado.errores.push(error);
+      }
+    });
+
+    eventosAModificar.forEach((evento) => {
+      const [valRes, error] = validarActualizarEventoSuenio(evento);
+      if (!valRes.success) {
+        resultado.errores.push(error);
+      }
+    });
+
+    if (resultado.errores.length > 0) {
+      resultado.exitoso = false;
+      return resultado;
+    }
+
+    const diaSafe = valResDia.data;
+
     if (dia.esNuevo) {
       await db.insert(tomiAgendaDia).values({
         id: dia.id,
-        fecha: dia.fecha,
-        comentarios: dia.comentarios,
+        fecha: diaSafe.fecha,
+        comentarios: diaSafe.comentarios,
       });
     } else {
       await db
@@ -456,10 +498,6 @@ export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<{ err
         })
         .where(eq(tomiAgendaDia.id, dia.id));
     }
-
-    const eventosAEliminar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'eliminado');
-    const eventosAInsertar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'nuevo');
-    const eventosAModificar = dia.eventos.filter((evento) => evento.tipoDeActualizacion === 'modificado');
 
     if (eventosAEliminar.length > 0) {
       const ids = eventosAEliminar.map((evento) => evento.id);
@@ -489,9 +527,9 @@ export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<{ err
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      resultado.error = `Error al insertar en base de datos: ${error.message}.\n ${error.stack}`;
+      resultado.errores = [`Error al insertar en base de datos: ${error.message}.\n ${error.stack}`];
     } else {
-      resultado.error = ` Error al insertar en base de datos: ${error}.\n`;
+      resultado.errores = [` Error al insertar en base de datos: ${error}.\n`];
     }
   }
 
