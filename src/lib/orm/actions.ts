@@ -36,33 +36,7 @@ import {
   tomiAgendaEventoSuenio,
 } from './tables';
 
-const FormMovimientoSchema = z.object({
-  id: z.string(),
-  comentarios: z.string().nullable().optional(),
-  fecha: z.date({
-    invalid_type_error: 'Por favor elegir una fecha',
-  }),
-  subcategoriaId: z.string(),
-  detalleSubcategoriaId: z.string().nullable().optional(),
-  tipoDeGasto: z.enum(['Credito', 'Debito', 'Efectivo'], {
-    invalid_type_error: 'Por favor elegir un tipo de gasto',
-  }),
-  monto: z.coerce.number().gt(0, { message: 'Por favor ingresar un monto mayor a $0.' }),
-});
-
-const CrearMovimiento = FormMovimientoSchema.omit({ id: true });
-
-const GastoEstimadoSchema = z
-  .object({
-    id: z.string(),
-    subcategoria: z.string(),
-    fecha: z.date({
-      invalid_type_error: 'Por favor elegir una fecha',
-    }),
-    monto: z.coerce.number().gte(0, { message: 'Por favor ingresar un monto mayor o igual a $0.' }),
-    comentarios: z.string().optional(),
-  })
-  .omit({ id: true });
+import { validarActualizarMovimiento, validarCrearGastoEstimado, validarCrearMovimiento } from './validaciones';
 
 export async function crearMovimientos(nuevosMovimientos: MovimientoUI[], revalidate = true) {
   const resultadoFinal: ResultadoAPICrear = {
@@ -121,14 +95,11 @@ export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<Re
   };
   let resultadoMensaje = '';
 
-  const camposValidados = CrearMovimiento.safeParse(movimiento);
-  if (!camposValidados.success) {
-    const errores = camposValidados.error.flatten().fieldErrors;
-    resultadoMensaje = 'Hubo errores de validación.';
-  } else if (!movimiento.id) {
-    resultadoMensaje = 'El movimiento a actualizar no tiene id';
+  const [movimientoSafe, error] = validarActualizarMovimiento(movimiento);
+  if (!movimientoSafe.success) {
+    resultadoMensaje = error;
   } else {
-    const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
+    const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios, id } = movimientoSafe.data;
     const fechaString = fecha.toISOString().replace('T', ' ');
     const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
 
@@ -143,7 +114,7 @@ export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<Re
           tipodepago: tipoDeGasto,
           comentarios: comentarios || null,
         })
-        .where(eq(movimientosGasto.id, movimiento.id));
+        .where(eq(movimientosGasto.id, id));
     } catch (error: unknown) {
       if (error instanceof Error) {
         resultadoMensaje = `Error al actualizar en base de datos: ${error.message}.\n ${error.stack}`;
@@ -168,14 +139,11 @@ export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<Re
 export async function crearMovimiento(nuevoMovimiento: MovimientoUI): Promise<ResultadoCrearMovimiento> {
   const resultado: ResultadoCrearMovimiento = {};
 
-  const camposValidados = CrearMovimiento.safeParse(nuevoMovimiento);
-  if (!camposValidados.success) {
-    const errores = camposValidados.error.flatten().fieldErrors;
-    resultado.error = Object.entries(errores)
-      .map(([campo, mensajes]) => `${campo}: ${mensajes?.join(', ')}`)
-      .join('; ');
+  const [movimientoSafe, error] = validarCrearMovimiento(nuevoMovimiento);
+  if (!movimientoSafe.success) {
+    resultado.error = error;
   } else {
-    const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = camposValidados.data;
+    const { fecha, subcategoriaId, detalleSubcategoriaId, tipoDeGasto, monto, comentarios } = movimientoSafe.data;
     const fechaString = fecha.toISOString().replace('T', ' ');
     const detalleSubcategoriaIdFinal = detalleSubcategoriaId ? detalleSubcategoriaId : null;
 
@@ -551,10 +519,9 @@ export const persistirGastoEstimado = async ({
     monto,
   };
 
-  const camposValidados = GastoEstimadoSchema.safeParse(objetoGastoEstimado);
-  if (!camposValidados.success) {
-    const errores = camposValidados.error.flatten().fieldErrors;
-    resultado.error = `Hubo errores de validación: ${errores}`;
+  const [{ success }, error] = validarCrearGastoEstimado(objetoGastoEstimado);
+  if (!success) {
+    resultado.error = `Hubo errores de validación: ${error}`;
   } else {
     try {
       if (objetoGastoEstimado.id) {
