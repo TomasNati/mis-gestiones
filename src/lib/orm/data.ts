@@ -446,7 +446,7 @@ export const obtenerAgendaTomiDias = async (fechaDesde: Date, fechaHasta: Date):
       if (dia) {
         dia.eventos.push({
           id: dbResult.id,
-          hora: dbResult.hora,
+          hora: dbResult.hora.slice(0, 5),
           tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
           comentarios: dbResult.comentarios || '',
         });
@@ -458,7 +458,7 @@ export const obtenerAgendaTomiDias = async (fechaDesde: Date, fechaHasta: Date):
           eventos: [
             {
               id: dbResult.id,
-              hora: dbResult.hora,
+              hora: dbResult.hora.slice(0, 5),
               tipo: (dbResult.tipo as TipoEventoSuenio) || 'Despierto',
               comentarios: dbResult.comentarios || '',
             },

@@ -120,7 +120,7 @@ const Suenio = () => {
       diaAActualizar.eventos = dia.eventos;
       diaAActualizar.comentarios = dia.comentarios;
       const resultado = await actualizarAgendaTomiDia(diaAActualizar);
-      if (resultado.errores) {
+      if (resultado.errores?.length > 0) {
         setConfigNotificacion({
           open: true,
           severity: 'error',
