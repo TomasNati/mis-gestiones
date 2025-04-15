@@ -115,6 +115,19 @@ export type MovimientoUI = {
   filaId: number;
 };
 
+export type EstadoUIMovimiento = 'deleted' | 'updated' | 'added';
+
+export type MovimientoPayloadMobile = {
+  id: string;
+  comentarios?: string;
+  fecha: Date;
+  categoria: string;
+  concepto: CategoriaUIMovimiento;
+  tipoDeGasto: TipoDeMovimientoGasto;
+  monto: number;
+  state?: EstadoUIMovimiento;
+};
+
 export type CategoriaUIMovimiento = {
   id: string;
   nombre: string;

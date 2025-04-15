@@ -72,7 +72,7 @@ export async function crearMovimientos(nuevosMovimientos: MovimientoUI[], revali
   return resultadoFinal;
 }
 
-export async function eliminarMovimientos(ids: string[]) {
+export async function eliminarMovimientos(ids: string[], revalidate = true) {
   const resultadoFinal: ResultadoAPI = {
     exitoso: true,
     errores: [],
@@ -90,13 +90,16 @@ export async function eliminarMovimientos(ids: string[]) {
     }
     resultadoFinal.errores.push(resultadoMensaje);
   }
-  //Revalidate the cache
-  revalidatePath('/finanzas');
-  revalidatePath('/finanzas/movimientosDelMes');
+  if (revalidate) {
+    //Revalidate the cache
+    revalidatePath('/finanzas');
+    revalidatePath('/finanzas/movimientosDelMes');
+  }
+
   return resultadoFinal;
 }
 
-export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<ResultadoAPI> {
+export async function actualizarMovimiento(movimiento: MovimientoUI, revalidate = true): Promise<ResultadoAPI> {
   const resultadoFinal: ResultadoAPI = {
     exitoso: true,
     errores: [],
@@ -137,10 +140,13 @@ export async function actualizarMovimiento(movimiento: MovimientoUI): Promise<Re
       resultadoFinal.exitoso = false;
     }
   }
-  //Revalidate the cache
-  revalidatePath('/finanzas');
-  revalidatePath('/finanzas/movimientosDelMes');
-  revalidatePath('/finanzas/presupuestoDelMes');
+  if (revalidate) {
+    //Revalidate the cache
+    revalidatePath('/finanzas');
+    revalidatePath('/finanzas/movimientosDelMes');
+    revalidatePath('/finanzas/presupuestoDelMes');
+  }
+
   return resultadoFinal;
 }
 
