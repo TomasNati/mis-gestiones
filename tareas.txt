@@ -2,7 +2,6 @@ BUGS / TODOS:
 
 - En la página de presupuesto, mejorar los colores: si está cerca de llegar: amarillo, si se pasó por poco: rojo, si se pasó por mucho: morado. Algo así.
 - En la página de presupuesto, permitir elegir meses consecutivos entre años diferentees.
-- Tech debt: actualizar la versión de Next.JS a la última estable. Ver si el paquete de gráficos es compatible.
 - Movimientos: modificar para poder hacer un bulk update, como en presupuesto.
 
 
@@ -22,8 +21,9 @@ join finanzas_subcategoria fs2 on fg.subcategoria  = fs2.id
 join finanzas_categoria fc on fs2.categoria = fc.id
 order by fc.nombre , fs2.nombre 
 
-
-[ ] Gráficos: https://recharts.org/en-US/guide/getting-started 
+[ ] Vencimientos:
+    * Agregar un administrador: altas/bajas/modificaciones.
+    * Permito copiar vencimientos del año pasado, como en la app Vencimientos? 
 [ ] Grilla de movimientos:
     .La altura automática se puede mejorar, tal vez usando flex para toda la página de  Movimientos del mes
 [ ] Un skeleton o loader al menos cuando se carguen los movimientos

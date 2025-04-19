@@ -56,6 +56,24 @@ export const movimientosGasto = misgestiones.table('finanzas_movimientogasto', {
 
 export type MovimientoGastoDB = InferSelectModel<typeof movimientosGasto>;
 
+export const vencimiento = misgestiones.table('finanzas_vencimiento', {
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => generateUUID()),
+  subcategoria: uuid('subcategoria')
+    .references(() => subcategorias.id)
+    .notNull(),
+  fecha: timestamp('fecha', { withTimezone: false }).notNull(),
+  monto: numeric('monto', { precision: 12, scale: 2 }).notNull(),
+  esPagoAnual: boolean('espagoanual').notNull().default(false),
+  comentarios: text('comentarios'),
+  active: boolean('active').notNull().default(true),
+  //if exists, indicates that the vencimiento was paid
+  movimientoGasto: uuid('movimientogasto').references(() => movimientosGasto.id),
+});
+export type VencimientoDB = InferSelectModel<typeof vencimiento>;
+export type VencimientoAInsertarDB = Omit<VencimientoDB, 'id' | 'active'>;
+
 export const gastoEstimado = misgestiones.table('finanzas_gastoestimado', {
   id: uuid('id')
     .primaryKey()
