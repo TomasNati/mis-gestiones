@@ -100,7 +100,7 @@ export const validarActualizarAgendaTomiDia = (agenda: AgendaTomiDia): [SafePars
   return [result, errors];
 };
 
-export const validarCrearEventoSuenio = (evento: EventoSuenio): [SafeParseEditarEventoSuenio, string] => {
+export const validarCrearEventoSuenio = (evento: EventoSuenio): [SafeParseTypeCrearEventoSuenio, string] => {
   const result = EventoSuenioSchema.safeParse(evento);
   let errors = '';
   if (!result.success) {
@@ -148,6 +148,28 @@ export const validarCrearGastoEstimado = (gastoEstimado: any): [SafeParseCrearGa
 
 export const validarActualizarGastoEstimado = (gastoEstimado: any): [SafeParseTypeEditarGastoEstimado, string] => {
   const result = GastoEstimadoSchema.safeParse(gastoEstimado);
+  let errors = '';
+  if (!result.success) {
+    errors = processErrors(result.error);
+  }
+  return [result, errors];
+};
+
+// Schema for validating query parameters
+const dateRangeSchema = z.object({
+  desde: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'desde must be a valid date',
+  }),
+  hasta: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'hasta must be a valid date',
+  }),
+});
+
+type DateRange = z.infer<typeof dateRangeSchema>;
+type SafeParseDateRange = SafeParseReturnType<DateRange, DateRange>;
+
+export const validarRangoFechas = (query: { desde: string; hasta: string }): [SafeParseDateRange, string] => {
+  const result = dateRangeSchema.safeParse(query);
   let errors = '';
   if (!result.success) {
     errors = processErrors(result.error);

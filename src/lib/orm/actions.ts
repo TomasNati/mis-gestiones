@@ -454,7 +454,7 @@ const importarHorasSuenioTomi = async ({ anio, mes, textoAImportar }: ImportarUI
 export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<ResultadoAPI> => {
   const resultado: ResultadoAPI = {
     errores: [],
-    exitoso: true,
+    exitoso: false,
   };
 
   try {
@@ -532,6 +532,7 @@ export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<Resul
       });
     }
   } catch (error: unknown) {
+    console.log('Error al actualizar el día:', error);
     if (error instanceof Error) {
       resultado.errores = [`Error al insertar en base de datos: ${error.message}.\n ${error.stack}`];
     } else {
@@ -539,6 +540,7 @@ export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<Resul
     }
   }
 
+  resultado.exitoso = resultado.errores.length === 0;
   return resultado;
 };
 
