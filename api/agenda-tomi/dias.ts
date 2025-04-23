@@ -21,7 +21,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { desde, hasta } = result.data;
 
       // Call obtenerAgendaTomiDias
-      const agendaTomiDias = await obtenerAgendaTomiDias(new Date(desde), new Date(hasta));
+      const desdeUTC = new Date(desde);
+      desdeUTC.setUTCHours(0, 0, 0, 0);
+
+      const hastaUTC = new Date(hasta);
+      hastaUTC.setUTCHours(23, 59, 59, 999);
+      const agendaTomiDias = await obtenerAgendaTomiDias(desdeUTC, hastaUTC);
       return res.status(200).json(agendaTomiDias);
     }
 
@@ -55,9 +60,12 @@ const parseAgendaTomiDiaFromBody = (body: any): AgendaTomiDia => {
     throw new Error('The "fecha" field is required');
   }
 
+  const fechaUTC = new Date(fecha);
+  fechaUTC.setUTCHours(0, 0, 0, 0);
+
   return {
     id,
-    fecha: new Date(fecha), // Convert fecha to a Date object
+    fecha: fechaUTC,
     comentarios: comentarios || '',
     eventos: Array.isArray(eventos)
       ? eventos.map((evento) => ({
