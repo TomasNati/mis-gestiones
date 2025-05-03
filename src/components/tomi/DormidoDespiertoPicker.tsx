@@ -77,8 +77,6 @@ const DormidoDespiertoPicker = ({ evento, onEventoChange, onDelete }: DormidoDes
 
   const onDormidoDespierdoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     evento.tipo = event.target.checked ? 'Despierto' : 'Dormido';
-    console.log(evento);
-    console.log(event.target.checked);
     onEventoChange(evento);
   };
 
