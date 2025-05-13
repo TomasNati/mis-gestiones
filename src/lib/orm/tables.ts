@@ -65,11 +65,11 @@ export const vencimiento = misgestiones.table('finanzas_vencimiento', {
     .notNull(),
   fecha: timestamp('fecha', { withTimezone: false }).notNull(),
   monto: numeric('monto', { precision: 12, scale: 2 }).notNull(),
-  esPagoAnual: boolean('espagoanual').notNull().default(false),
+  esAnual: boolean('esanual').notNull().default(false),
   comentarios: text('comentarios'),
   active: boolean('active').notNull().default(true),
   //if exists, indicates that the vencimiento was paid
-  movimientoGasto: uuid('movimientogasto').references(() => movimientosGasto.id),
+  pago: uuid('pago').references(() => movimientosGasto.id),
 });
 export type VencimientoDB = InferSelectModel<typeof vencimiento>;
 export type VencimientoAInsertarDB = Omit<VencimientoDB, 'id' | 'active'>;

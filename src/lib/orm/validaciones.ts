@@ -39,6 +39,26 @@ const CrearGastoEstimadoSchema = GastoEstimadoSchema.omit({ id: true });
 type CrearGastoEstimado = z.infer<typeof CrearGastoEstimadoSchema>;
 type SafeParseCrearGastoEstimado = SafeParseReturnType<CrearGastoEstimado, CrearGastoEstimado>;
 
+const VencimientoSchema = z.object({
+  id: z.string(),
+  subcategoria: z.string(),
+  fecha: z.date({
+    invalid_type_error: 'Por favor elegir una fecha',
+  }),
+  monto: z.coerce.number().gte(0, { message: 'Por favor ingresar un monto mayor o igual a $0.' }),
+  comentarios: z.string().optional(),
+  esAnual: z.boolean(),
+  pago: z.string(),
+});
+
+type Vencimiento = z.infer<typeof VencimientoSchema>;
+type SafeParseTypeEditVencimiento = SafeParseReturnType<Vencimiento, Vencimiento>;
+
+const CrearVencimientoSchema = VencimientoSchema.omit({ id: true });
+
+type CrearVencimiento = z.infer<typeof CrearVencimientoSchema>;
+type SafeParseCrearVencimiento = SafeParseReturnType<CrearVencimiento, CrearVencimiento>;
+
 const TipoEventoSuenioSchema = z.enum(['Despierto', 'Dormido']);
 
 const EventoSuenioSchema = z.object({
@@ -148,6 +168,24 @@ export const validarCrearGastoEstimado = (gastoEstimado: any): [SafeParseCrearGa
 
 export const validarActualizarGastoEstimado = (gastoEstimado: any): [SafeParseTypeEditarGastoEstimado, string] => {
   const result = GastoEstimadoSchema.safeParse(gastoEstimado);
+  let errors = '';
+  if (!result.success) {
+    errors = processErrors(result.error);
+  }
+  return [result, errors];
+};
+
+export const validarCrearVencimiento = (vencimiento: any): [SafeParseCrearVencimiento, string] => {
+  const result = CrearVencimientoSchema.safeParse(vencimiento);
+  let errors = '';
+  if (!result.success) {
+    errors = processErrors(result.error);
+  }
+  return [result, errors];
+};
+
+export const validarActualizarVencimiento = (vencimiento: any): [SafeParseTypeEditVencimiento, string] => {
+  const result = VencimientoSchema.safeParse(vencimiento);
   let errors = '';
   if (!result.success) {
     errors = processErrors(result.error);
