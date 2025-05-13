@@ -1255,6 +1255,25 @@ export interface GrupoMovimiento {
   filas: InfoFilaMovimientoGrupo[];
 }
 
+export interface VencimientoUI {
+  id: string;
+  subcategoria: {
+    id: string;
+    descripcion: string;
+  };
+  fecha: Date;
+  monto: number;
+  esAnual: boolean;
+  comentarios: string;
+  estricto?: boolean;
+  fechaConfirmada?: boolean;
+  pago?: {
+    id: string;
+    monto: number;
+    fecha: Date;
+  };
+}
+
 export type TipoEventoSuenio = 'Despierto' | 'Dormido';
 
 export interface EventoSuenio {

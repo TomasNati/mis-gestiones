@@ -13,6 +13,7 @@ import {
   AgendaTomiDia,
   TipoEventoSuenio,
   SuenioTomiPorPeriodo,
+  VencimientoUI,
 } from '../definitions';
 import { db } from './database';
 import {
@@ -23,6 +24,7 @@ import {
   subcategorias,
   tomiAgendaDia,
   tomiAgendaEventoSuenio,
+  vencimiento,
 } from './tables';
 import { eq, and, desc, between, asc } from 'drizzle-orm';
 import {
@@ -420,6 +422,72 @@ export const obtenerGastosEstimadosTotalesPorFecha = async (fecha: Date): Promis
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Error al obtener los gastos estimados');
+  }
+};
+
+export const obtenerVencimientos = async (desde: Date, hasta: Date): Promise<VencimientoUI[]> => {
+  let resultado: VencimientoUI[] = [];
+
+  try {
+    const fechaDesdeFiltro = new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), 1, 0, 0, 0));
+    const fechaHastaFiltro = new Date(
+      Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59),
+    );
+
+    const dbResults = await db
+      .select({
+        id: vencimiento.id,
+        subcategoria: {
+          id: subcategorias.id,
+          nombre: subcategorias.nombre,
+          categoriaNombre: categorias.nombre,
+        },
+        fecha: vencimiento.fecha,
+        monto: vencimiento.monto,
+        esAnual: vencimiento.esAnual,
+        comentarios: vencimiento.comentarios,
+        estricto: vencimiento.estricto,
+        fechaConfirmada: vencimiento.fechaConfirmada,
+        pago: {
+          id: movimientosGasto.id,
+          fecha: movimientosGasto.fecha,
+          monto: movimientosGasto.monto,
+        },
+      })
+      .from(vencimiento)
+      .innerJoin(subcategorias, and(eq(vencimiento.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
+      .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
+      .leftJoin(movimientosGasto, and(eq(vencimiento.pago, movimientosGasto.id), eq(movimientosGasto.active, true)))
+      .where(and(eq(vencimiento.active, true), between(vencimiento.fecha, fechaDesdeFiltro, fechaHastaFiltro)));
+
+    resultado = dbResults.map((dbRecord) => {
+      const res: VencimientoUI = {
+        id: dbRecord.id,
+        fecha: dbRecord.fecha,
+        monto: Number.parseFloat(dbRecord.monto),
+        esAnual: dbRecord.esAnual,
+        estricto: dbRecord.estricto || false,
+        comentarios: dbRecord.comentarios || '',
+        fechaConfirmada: dbRecord.fechaConfirmada || false,
+        subcategoria: {
+          id: dbRecord.subcategoria.id,
+          descripcion: `${dbRecord.subcategoria.categoriaNombre} - ${dbRecord.subcategoria.nombre}`,
+        },
+      };
+      if (dbRecord.pago) {
+        res.pago = {
+          id: dbRecord.pago.id,
+          monto: Number.parseFloat(dbRecord.pago.monto),
+          fecha: dbRecord.pago.fecha,
+        };
+      }
+      return res;
+    });
+
+    return resultado;
+  } catch (error) {
+    console.error('Error:', error);
+    throw new Error('Error al obtener los vencimientos');
   }
 };
 
