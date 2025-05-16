@@ -24,7 +24,7 @@
     "@vercel/postgres": "^0.5.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
-    "drizzle-orm": "^0.43.1",
+    "drizzle-orm": "^0.42.0",
     "math-expression-evaluator": "^2.0.5",
     "next": "15.2.1",
     "react": "19.0.0",
@@ -55,6 +55,6 @@
     "@types/react-dom": "19.0.4"
   },
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   }
 }

@@ -1,7 +1,6 @@
 import { InferSelectModel } from 'drizzle-orm';
 import { text, uuid, varchar, boolean, pgSchema, numeric, timestamp, time } from 'drizzle-orm/pg-core';
 import { generateUUID } from '../helpers';
-import { act } from 'react-dom/test-utils';
 
 export const misgestiones = pgSchema('misgestiones');
 
