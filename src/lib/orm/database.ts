@@ -1,5 +1,7 @@
-import { drizzle } from 'drizzle-orm/vercel-postgres';
-import { sql } from '@vercel/postgres';
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+import { config } from 'dotenv';
 
-// Use this object to send drizzle queries to your DB
-export const db = drizzle(sql);
+config({ path: '.env' });
+const sql = neon(process.env.DATABASE_URL!);
+export const db = drizzle({ client: sql });
