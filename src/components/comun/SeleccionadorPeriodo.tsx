@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { crearFecha, obtenerMesesPorAnio, moverFecha, AnioConMeses } from './seleccionadorPeriodoHelper';
 
 const initialDate = new Date();

@@ -12,10 +12,14 @@ const today = new Date();
 const tenMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 10, today.getDate());
 const anio = tenMonthsAgo.getFullYear();
 const mes = tenMonthsAgo.getMonth();
+const anioConMesActual: AnioConMeses = {
+  anio: today.getFullYear(),
+  meses: [months[today.getMonth()]],
+};
 
 const Vencimientos = () => {
   const [aniosYMesesAMostrar, setAniosYMesesAMostrar] = useState<AnioConMeses[]>([]);
-  const [mesesElegidos, setMesesElegidos] = useState<string[]>([]);
+  const [mesesElegidos, setMesesElegidos] = useState<string[]>(anioConMesActual.meses);
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
 
   const onAnioConMesesElegidos = async (mesesElegidos: string[], aniosYMesesAMostrarNuevos: AnioConMeses[]) => {
@@ -36,8 +40,9 @@ const Vencimientos = () => {
   return (
     <Box>
       <SeleccionadorPeriodo
-        anio={anio}
-        mes={months[mes]}
+        anio={anioConMesActual.anio}
+        mes={anioConMesActual.meses[0]}
+        meses={[anioConMesActual]}
         onAnioConMesesElegidos={onAnioConMesesElegidos}
         disableChangeMonths={false}
       />
