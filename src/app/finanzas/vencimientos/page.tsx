@@ -16,8 +16,8 @@ const Vencimientos = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <FilterComponent />
       <Box>
+        <FilterComponent />
         {mostrarInformacion && (
           <Box sx={{ height: '100%' }}>
             <TableContainer component={Paper}>

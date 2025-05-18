@@ -1274,6 +1274,15 @@ export interface VencimientoUI {
   };
 }
 
+export interface BuscarVencimientosPayload {
+  desde: Date | null;
+  hasta: Date | null;
+  concepto: string | null;
+  esAnual: boolean | null;
+  estricto: boolean | null;
+  pagado: boolean | null;
+}
+
 export type TipoEventoSuenio = 'Despierto' | 'Dormido';
 
 export interface EventoSuenio {

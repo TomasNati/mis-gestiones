@@ -127,6 +127,22 @@ export const setDateAsUTC = (fecha: Date): Date => {
   return new Date(fecha.toUTCString());
 };
 
+export const toUTC = (original: Date, dateOnly = true): Date => {
+  const utcDate = new Date(
+    Date.UTC(
+      original.getUTCFullYear(),
+      original.getUTCMonth(),
+      original.getUTCDate(),
+      dateOnly ? 0 : original.getUTCHours(),
+      dateOnly ? 0 : original.getUTCMinutes(),
+      dateOnly ? 0 : original.getUTCSeconds(),
+      dateOnly ? 0 : original.getUTCMilliseconds(),
+    ),
+  );
+
+  return utcDate;
+};
+
 /**
  * Converts a time string in the format "HH:MM" to the total number of minutes.
  *
