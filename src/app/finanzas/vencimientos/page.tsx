@@ -1,9 +1,9 @@
 'use client';
 
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
-import { VencimientoUI } from '@/lib/definitions';
+import { Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
 import { formatDate } from '@/lib/helpers';
-import { obtenerVencimientos } from '@/lib/orm/data';
+import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
 import { TableContainer, Paper, TableHead, TableRow, TableCell, TableBody, Table, Box } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -13,12 +13,32 @@ import { ButtonBar } from '@/components/vencimientos/ButtonBar/ButtonBar';
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
+  const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
+
+  useEffect(() => {
+    const fetchTiposDeVencimientos = async () => {
+      const subcategorias = await obtenerSubCategorias(TipoDeGasto.Fijo);
+      //sort subcategorias by categoria
+      subcategorias.sort((a, b) => {
+        if (a.nombre < b.nombre) {
+          return -1;
+        }
+        if (a.nombre > b.nombre) {
+          return 1;
+        }
+        return 0;
+      });
+      setTiposDeVencimientos(subcategorias);
+    };
+    fetchTiposDeVencimientos();
+  }, []);
+
   const mostrarInformacion = true;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
-        <FilterComponent />
+        <FilterComponent tiposDeVencimientos={tiposDeVencimientos} />
         <ButtonBar />
         {mostrarInformacion && (
           <Box sx={{ height: '100%' }}>

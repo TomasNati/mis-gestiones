@@ -47,11 +47,16 @@ type GastoPresupuestoItem = {
   esEstimado?: boolean;
 };
 
-export const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
+export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<Subcategoria[]> => {
   // avoids caching. See explanation on https://nextjs.org/learn/dashboard-app/static-and-dynamic-rendering.
   // For this method, caching data seems to be a good idea, so this is commented out
   // noStore();
   try {
+    const whereConditions = [eq(subcategorias.active, true)];
+    if (tipoDeGasto) {
+      whereConditions.push(eq(subcategorias.tipoDeGasto, tipoDeGasto));
+    }
+
     const result = await db
       .select({
         id: subcategorias.id,
@@ -62,7 +67,7 @@ export const obtenerSubCategorias = async (): Promise<Subcategoria[]> => {
       })
       .from(subcategorias)
       .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
-      .where(eq(subcategorias.active, true))
+      .where(and(...whereConditions))
       .orderBy(subcategorias.nombre);
 
     const subcategoriasUI = result.map((subcategoriaDB) => ({

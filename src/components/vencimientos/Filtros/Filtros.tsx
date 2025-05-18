@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import {
@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { styles } from './Filtros.styles';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import { BuscarVencimientosPayload } from '@/lib/definitions';
+import { BuscarVencimientosPayload, Subcategoria } from '@/lib/definitions';
 import { toUTC } from '@/lib/helpers';
 
 type FiltersTypes = dayjs.Dayjs | string | boolean | null;
@@ -22,22 +22,31 @@ type FiltersTypes = dayjs.Dayjs | string | boolean | null;
 interface Filters {
   desde: dayjs.Dayjs | null;
   hasta: dayjs.Dayjs | null;
-  concepto: string | null;
+  tipo: string | null;
   esAnual: boolean | null;
   estricto: boolean | null;
   pagado: boolean | null;
   [index: string]: FiltersTypes;
 }
 
-const FilterComponent = () => {
+interface FilterComponentProps {
+  tiposDeVencimientos: Subcategoria[];
+}
+
+const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
+  const [tipos, setTipos] = useState<Subcategoria[]>([]);
   const [filters, setFilters] = useState<Filters>({
     desde: dayjs().startOf('month'),
     hasta: dayjs().endOf('month'),
-    concepto: '',
+    tipo: '',
     esAnual: false,
     estricto: false,
     pagado: false,
   });
+
+  useEffect(() => {
+    setTipos(tiposDeVencimientos);
+  }, [tiposDeVencimientos]);
 
   const handleChange = (field: string, value: FiltersTypes) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -70,11 +79,14 @@ const FilterComponent = () => {
         sx={styles.datePicker}
       />
 
-      <FormControl size="small" sx={styles.concepto}>
-        <InputLabel>Concepto</InputLabel>
-        <Select value={filters.concepto} label="Concepto" onChange={(e) => handleChange('concepto', e.target.value)}>
-          <MenuItem value="val1">Val1</MenuItem>
-          <MenuItem value="val2">Val2</MenuItem>
+      <FormControl size="small" sx={styles.tipo}>
+        <InputLabel>Tipo</InputLabel>
+        <Select value={filters.Tipo} label="Tipo" onChange={(e) => handleChange('tipo', e.target.value)}>
+          {tipos.map(({ id, nombre }) => (
+            <MenuItem value={id} key={id}>
+              {nombre}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControlLabel

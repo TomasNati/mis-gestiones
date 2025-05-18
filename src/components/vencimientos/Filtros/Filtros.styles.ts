@@ -2,7 +2,7 @@ import { SxProps } from '@mui/system';
 
 interface FiltrosStyles {
   datePicker: SxProps;
-  concepto: SxProps;
+  tipo: SxProps;
 }
 
 export const styles: FiltrosStyles = {
@@ -12,5 +12,5 @@ export const styles: FiltrosStyles = {
       padding: '9px',
     },
   },
-  concepto: { width: '250px' },
+  tipo: { width: '250px' },
 };
