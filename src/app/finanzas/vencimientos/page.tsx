@@ -9,6 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
 import { FilterComponent } from '@/components/vencimientos/Filtros/Filtros';
+import { ButtonBar } from '@/components/vencimientos/ButtonBar/ButtonBar';
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
@@ -18,6 +19,7 @@ const Vencimientos = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
         <FilterComponent />
+        <ButtonBar />
         {mostrarInformacion && (
           <Box sx={{ height: '100%' }}>
             <TableContainer component={Paper}>
