@@ -11,18 +11,20 @@ import {
   Box,
   IconButton,
   Grid2,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
 import { styles } from './Filtros.styles';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { BuscarVencimientosPayload, Subcategoria } from '@/lib/definitions';
 import { toUTC } from '@/lib/helpers';
 
-type FiltersTypes = dayjs.Dayjs | string | boolean | null;
+type FiltersTypes = dayjs.Dayjs | Subcategoria | boolean | null;
 
 interface Filters {
   desde: dayjs.Dayjs | null;
   hasta: dayjs.Dayjs | null;
-  tipo: string | null;
+  tipo: Subcategoria | null;
   esAnual: boolean | null;
   estricto: boolean | null;
   pagado: boolean | null;
@@ -38,7 +40,7 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
   const [filters, setFilters] = useState<Filters>({
     desde: dayjs().startOf('month'),
     hasta: dayjs().endOf('month'),
-    tipo: '',
+    tipo: null,
     esAnual: false,
     estricto: false,
     pagado: false,
@@ -55,6 +57,7 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
   const buscarVencimientos = () => {
     const payload: BuscarVencimientosPayload = {
       ...filters,
+      tipo: filters.tipo ? filters.tipo.id : null,
       desde: filters.desde ? toUTC(filters.desde.toDate()) : null,
       hasta: filters.hasta ? toUTC(filters.hasta.toDate()) : null,
     };
@@ -79,15 +82,15 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
         sx={styles.datePicker}
       />
 
-      <FormControl size="small" sx={styles.tipo}>
-        <InputLabel>Tipo</InputLabel>
-        <Select value={filters.Tipo} label="Tipo" onChange={(e) => handleChange('tipo', e.target.value)}>
-          {tipos.map(({ id, nombre }) => (
-            <MenuItem value={id} key={id}>
-              {nombre}
-            </MenuItem>
-          ))}
-        </Select>
+      <FormControl sx={styles.tipo}>
+        <Autocomplete
+          options={tipos}
+          getOptionLabel={(option: Subcategoria) => option.nombre}
+          value={filters.tipo}
+          renderInput={(params) => <TextField {...params} label="Tipo" />}
+          onChange={(_, value) => handleChange('tipo', value)}
+          size="small"
+        />
       </FormControl>
       <FormControlLabel
         control={
