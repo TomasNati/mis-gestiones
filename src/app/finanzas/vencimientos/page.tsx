@@ -10,10 +10,15 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
 import { FilterComponent } from '@/components/vencimientos/Filtros/Filtros';
 import { ButtonBar } from '@/components/vencimientos/ButtonBar/ButtonBar';
+import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
   const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
+  const [showAgregarEditarModal, setShowAgregarEditarModal] = useState(false);
+
+  const handleOpenAgregarEditar = () => setShowAgregarEditarModal(true);
+  const handleCloseAgregarEditar = () => setShowAgregarEditarModal(false);
 
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
@@ -39,7 +44,7 @@ const Vencimientos = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
         <FilterComponent tiposDeVencimientos={tiposDeVencimientos} />
-        <ButtonBar />
+        <ButtonBar onAdd={handleOpenAgregarEditar} />
         {mostrarInformacion && (
           <Box sx={{ height: '100%' }}>
             <TableContainer component={Paper}>
@@ -62,6 +67,14 @@ const Vencimientos = () => {
             </TableContainer>
           </Box>
         )}
+        {showAgregarEditarModal ? (
+          <AgregarEditarModal
+            tiposDeVencimiento={tiposDeVencimientos}
+            onClose={handleCloseAgregarEditar}
+            onGuardar={handleCloseAgregarEditar}
+            open={showAgregarEditarModal}
+          />
+        ) : null}
       </Box>
     </LocalizationProvider>
   );
