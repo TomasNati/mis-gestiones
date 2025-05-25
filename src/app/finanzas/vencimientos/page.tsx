@@ -17,8 +17,11 @@ const Vencimientos = () => {
   const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
   const [showAgregarEditarModal, setShowAgregarEditarModal] = useState(false);
 
-  const handleOpenAgregarEditar = () => setShowAgregarEditarModal(true);
-  const handleCloseAgregarEditar = () => setShowAgregarEditarModal(false);
+  const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
+  const handleGuardarMovimiento = (vencimiento: VencimientoUI) => {
+    console.log(vencimiento);
+    setShowAgregarEditarModal(false);
+  };
 
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
@@ -44,7 +47,7 @@ const Vencimientos = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
         <FilterComponent tiposDeVencimientos={tiposDeVencimientos} />
-        <ButtonBar onAdd={handleOpenAgregarEditar} />
+        <ButtonBar onAdd={toggleOpenAgregarEditar} />
         {mostrarInformacion && (
           <Box sx={{ height: '100%' }}>
             <TableContainer component={Paper}>
@@ -70,8 +73,8 @@ const Vencimientos = () => {
         {showAgregarEditarModal ? (
           <AgregarEditarModal
             tiposDeVencimiento={tiposDeVencimientos}
-            onClose={handleCloseAgregarEditar}
-            onGuardar={handleCloseAgregarEditar}
+            onClose={toggleOpenAgregarEditar}
+            onGuardar={handleGuardarMovimiento}
             open={showAgregarEditarModal}
           />
         ) : null}

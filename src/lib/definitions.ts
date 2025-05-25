@@ -1256,7 +1256,7 @@ export interface GrupoMovimiento {
 }
 
 export interface VencimientoUI {
-  id: string;
+  id?: string;
   subcategoria: {
     id: string;
     descripcion: string;
