@@ -1,19 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import {
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
-  FormControl,
-  InputLabel,
-  Box,
-  IconButton,
-  Grid2,
-  Autocomplete,
-  TextField,
-} from '@mui/material';
+import { FormControlLabel, Checkbox, FormControl, IconButton, Grid2, Autocomplete, TextField } from '@mui/material';
 import { styles } from './Filtros.styles';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { BuscarVencimientosPayload, Subcategoria } from '@/lib/definitions';
@@ -33,17 +21,18 @@ interface Filters {
 
 interface FilterComponentProps {
   tiposDeVencimientos: Subcategoria[];
+  onBuscar: (payload: BuscarVencimientosPayload) => void;
 }
 
-const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
+const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps) => {
   const [tipos, setTipos] = useState<Subcategoria[]>([]);
   const [filters, setFilters] = useState<Filters>({
     desde: dayjs().startOf('month'),
     hasta: dayjs().endOf('month'),
     tipo: null,
-    esAnual: false,
-    estricto: false,
-    pagado: false,
+    esAnual: null,
+    estricto: null,
+    pagado: null,
   });
 
   useEffect(() => {
@@ -54,6 +43,13 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleCheckboxChange = (field: string, value: boolean) => {
+    setFilters((prev) => {
+      const newValue = prev[field] === false ? true : prev[field] === true ? null : false;
+      return { ...prev, [field]: newValue };
+    });
+  };
+
   const buscarVencimientos = () => {
     const payload: BuscarVencimientosPayload = {
       ...filters,
@@ -62,7 +58,7 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
       hasta: filters.hasta ? toUTC(filters.hasta.toDate()) : null,
     };
 
-    console.log(payload);
+    onBuscar(payload);
   };
 
   return (
@@ -95,8 +91,9 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
       <FormControlLabel
         control={
           <Checkbox
-            checked={filters.esAnual === null ? undefined : filters.esAnual}
-            onChange={(e) => handleChange('esAnual', e.target.checked)}
+            checked={filters.esAnual === true}
+            indeterminate={filters.esAnual === null}
+            onChange={(e) => handleCheckboxChange('esAnual', e.target.checked)}
           />
         }
         label="Es Anual"
@@ -104,8 +101,9 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
       <FormControlLabel
         control={
           <Checkbox
-            checked={filters.estricto === null ? undefined : filters.estricto}
-            onChange={(e) => handleChange('estricto', e.target.checked)}
+            checked={filters.estricto === true}
+            indeterminate={filters.estricto === null}
+            onChange={(e) => handleCheckboxChange('estricto', e.target.checked)}
           />
         }
         label="Estricto"
@@ -113,8 +111,9 @@ const FilterComponent = ({ tiposDeVencimientos }: FilterComponentProps) => {
       <FormControlLabel
         control={
           <Checkbox
-            checked={filters.pagado === null ? undefined : filters.pagado}
-            onChange={(e) => handleChange('pagado', e.target.checked)}
+            checked={filters.pagado === true}
+            indeterminate={filters.pagado === null}
+            onChange={(e) => handleCheckboxChange('pagado', e.target.checked)}
           />
         }
         label="Pagado"

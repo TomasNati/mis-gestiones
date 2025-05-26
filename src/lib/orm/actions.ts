@@ -1,6 +1,5 @@
 'use server';
 
-import { z } from 'zod';
 import { between, eq, inArray } from 'drizzle-orm';
 import {
   ImportarMovimientoUI,
@@ -12,11 +11,11 @@ import {
   ImportarUI,
   conceptoExcelGastosEstimadosTemplate,
   ConceptoExcelGastosEstimadoFila,
-  GastoEstimadoItemDelMes,
   GastoEstimadoDB,
   ResultadoAPICrear,
   ResultadoCrearMovimiento,
   AgendaTomiDia,
+  VencimientoUI,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
@@ -34,6 +33,7 @@ import {
   movimientosGasto,
   tomiAgendaDia,
   tomiAgendaEventoSuenio,
+  vencimiento as vencimientoDB,
 } from './tables';
 
 import {
@@ -44,6 +44,8 @@ import {
   validarCrearAgendaTomiDia,
   validarActualizarEventoSuenio,
   validarCrearEventoSuenio,
+  validarCrearVencimiento,
+  validarActualizarVencimiento,
 } from './validaciones';
 
 export async function crearMovimientos(nuevosMovimientos: MovimientoUI[], revalidate = true) {
@@ -359,6 +361,62 @@ const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<Importa
   revalidatePath('/finanzas');
   revalidatePath('/finanzas/movimientosDelMes');
   return Promise.resolve(resultadoFinal);
+};
+
+export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<ResultadoAPI> => {
+  const resultado: ResultadoAPI = {
+    errores: [],
+    exitoso: false,
+  };
+
+  try {
+    if (vencimiento.id) {
+      const [valRes, error] = validarActualizarVencimiento(vencimiento);
+      if (!valRes.success) {
+        resultado.errores = [error];
+        return resultado;
+      }
+
+      await db
+        .update(vencimientoDB)
+        .set({
+          subcategoria: vencimiento.subcategoria.id,
+          fecha: vencimiento.fecha,
+          monto: vencimiento.monto.toString(),
+          comentarios: vencimiento.comentarios || null,
+          esAnual: vencimiento.esAnual,
+          estricto: vencimiento.estricto || false,
+          fechaConfirmada: vencimiento.fechaConfirmada || false,
+        })
+        .where(eq(vencimientoDB.id, vencimiento.id));
+    } else {
+      const [valRes, error] = validarCrearVencimiento(vencimiento);
+      if (!valRes.success) {
+        resultado.errores = [error];
+        return resultado;
+      }
+
+      const vencimientoSafe = valRes.data;
+      await db.insert(vencimientoDB).values({
+        subcategoria: vencimientoSafe.subcategoria.id,
+        fecha: vencimientoSafe.fecha,
+        monto: vencimientoSafe.monto.toString(),
+        comentarios: vencimientoSafe.comentarios || null,
+        esAnual: vencimientoSafe.esAnual,
+        estricto: vencimientoSafe.estricto || false,
+        fechaConfirmada: vencimientoSafe.fechaConfirmada || false,
+      });
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultado.errores = [`Error al actualizar en base de datos: ${error.message}.\n ${error.stack}`];
+    } else {
+      resultado.errores = [` Error al actualizar en base de datos: ${error}.\n`];
+    }
+  }
+
+  resultado.exitoso = resultado.errores.length === 0;
+  return resultado;
 };
 
 const eliminarHorasSuenioTomi = async (anio: number, mes: number): Promise<void> => {

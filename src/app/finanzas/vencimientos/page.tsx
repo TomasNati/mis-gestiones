@@ -1,7 +1,6 @@
 'use client';
 
-import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
-import { Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
+import { BuscarVencimientosPayload, Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
 import { formatDate } from '@/lib/helpers';
 import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
 import { TableContainer, Paper, TableHead, TableRow, TableCell, TableBody, Table, Box } from '@mui/material';
@@ -11,18 +10,14 @@ import { useEffect, useState } from 'react';
 import { FilterComponent } from '@/components/vencimientos/Filtros/Filtros';
 import { ButtonBar } from '@/components/vencimientos/ButtonBar/ButtonBar';
 import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
+import { persistirVencimiento } from '@/lib/orm/actions';
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
   const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
   const [showAgregarEditarModal, setShowAgregarEditarModal] = useState(false);
 
-  const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
-  const handleGuardarMovimiento = (vencimiento: VencimientoUI) => {
-    console.log(vencimiento);
-    setShowAgregarEditarModal(false);
-  };
-
+  
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
       const subcategorias = await obtenerSubCategorias(TipoDeGasto.Fijo);
@@ -41,12 +36,25 @@ const Vencimientos = () => {
     fetchTiposDeVencimientos();
   }, []);
 
+  const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
+
+  const handleGuardarMovimiento = async (vencimiento: VencimientoUI) => {
+    const result = await persistirVencimiento(vencimiento);
+    console.log('Resultado de persistir vencimiento:', result);
+    setShowAgregarEditarModal(false);
+  };
+
+  const handleBuscarVencimientos = async (payload: BuscarVencimientosPayload) => {
+    const vencimientosObtenidos = await obtenerVencimientos(payload);
+    setVencimientos(vencimientosObtenidos);
+  };
+
   const mostrarInformacion = true;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
-        <FilterComponent tiposDeVencimientos={tiposDeVencimientos} />
+        <FilterComponent tiposDeVencimientos={tiposDeVencimientos} onBuscar={handleBuscarVencimientos} />
         <ButtonBar onAdd={toggleOpenAgregarEditar} />
         {mostrarInformacion && (
           <Box sx={{ height: '100%' }}>

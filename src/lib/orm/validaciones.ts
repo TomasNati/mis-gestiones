@@ -1,5 +1,5 @@
 import { SafeParseReturnType, z } from 'zod';
-import { MovimientoUI, AgendaTomiDia, EventoSuenio } from '../definitions';
+import { MovimientoUI, AgendaTomiDia, EventoSuenio, VencimientoUI } from '../definitions';
 
 const FormMovimientoSchema = z.object({
   id: z.string(),
@@ -41,14 +41,21 @@ type SafeParseCrearGastoEstimado = SafeParseReturnType<CrearGastoEstimado, Crear
 
 const VencimientoSchema = z.object({
   id: z.string(),
-  subcategoria: z.string(),
+  subcategoria: z
+    .object({
+      id: z.string(),
+    })
+    .refine((val) => val.id !== '', {
+      message: 'Por favor elegir una subcategoría',
+    }),
   fecha: z.date({
     invalid_type_error: 'Por favor elegir una fecha',
   }),
   monto: z.coerce.number().gte(0, { message: 'Por favor ingresar un monto mayor o igual a $0.' }),
   comentarios: z.string().optional(),
   esAnual: z.boolean(),
-  pago: z.string(),
+  estricto: z.boolean().optional(),
+  fechaConfirmada: z.boolean().optional(),
 });
 
 type Vencimiento = z.infer<typeof VencimientoSchema>;
@@ -175,7 +182,7 @@ export const validarActualizarGastoEstimado = (gastoEstimado: any): [SafeParseTy
   return [result, errors];
 };
 
-export const validarCrearVencimiento = (vencimiento: any): [SafeParseCrearVencimiento, string] => {
+export const validarCrearVencimiento = (vencimiento: VencimientoUI): [SafeParseCrearVencimiento, string] => {
   const result = CrearVencimientoSchema.safeParse(vencimiento);
   let errors = '';
   if (!result.success) {
@@ -184,7 +191,7 @@ export const validarCrearVencimiento = (vencimiento: any): [SafeParseCrearVencim
   return [result, errors];
 };
 
-export const validarActualizarVencimiento = (vencimiento: any): [SafeParseTypeEditVencimiento, string] => {
+export const validarActualizarVencimiento = (vencimiento: VencimientoUI): [SafeParseTypeEditVencimiento, string] => {
   const result = VencimientoSchema.safeParse(vencimiento);
   let errors = '';
   if (!result.success) {

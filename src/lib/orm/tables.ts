@@ -67,7 +67,7 @@ export const vencimiento = misgestiones.table('finanzas_vencimiento', {
   esAnual: boolean('esanual').notNull().default(false),
   comentarios: text('comentarios'),
   active: boolean('active').notNull().default(true),
-  estricto: boolean('active').default(false),
+  estricto: boolean('estricto').default(false),
   fechaConfirmada: boolean('fechaconfirmada').default(false),
   //if exists, indicates that the vencimiento was paid
   pago: uuid('pago').references(() => movimientosGasto.id),

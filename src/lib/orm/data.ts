@@ -14,6 +14,7 @@ import {
   TipoEventoSuenio,
   SuenioTomiPorPeriodo,
   VencimientoUI,
+  BuscarVencimientosPayload,
 } from '../definitions';
 import { db } from './database';
 import {
@@ -26,7 +27,7 @@ import {
   tomiAgendaEventoSuenio,
   vencimiento,
 } from './tables';
-import { eq, and, desc, between, asc } from 'drizzle-orm';
+import { eq, and, desc, between, asc, isNotNull } from 'drizzle-orm';
 import {
   generateUUID,
   obtenerCategoriaUIMovimiento,
@@ -430,14 +431,42 @@ export const obtenerGastosEstimadosTotalesPorFecha = async (fecha: Date): Promis
   }
 };
 
-export const obtenerVencimientos = async (desde: Date, hasta: Date): Promise<VencimientoUI[]> => {
+export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): Promise<VencimientoUI[]> => {
   let resultado: VencimientoUI[] = [];
 
   try {
-    const fechaDesdeFiltro = new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), 1, 0, 0, 0));
-    const fechaHastaFiltro = new Date(
-      Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59),
-    );
+    const { desde, hasta, esAnual, estricto, pagado, tipo } = payload;
+    const queryFilters = [];
+
+    if (desde || hasta) {
+      const desdeUTC =
+        desde != null
+          ? new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), 1, 0, 0, 0))
+          : new Date(Date.UTC(1900, 0, 1));
+
+      const hastaUTC =
+        hasta != null
+          ? new Date(Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59))
+          : new Date(Date.UTC(2100, 0, 1));
+
+      queryFilters.push(between(vencimiento.fecha, desdeUTC, hastaUTC));
+    }
+
+    if (esAnual !== undefined && esAnual !== null) {
+      queryFilters.push(eq(vencimiento.esAnual, esAnual));
+    }
+
+    if (estricto !== undefined && estricto !== null) {
+      queryFilters.push(eq(vencimiento.estricto, estricto));
+    }
+
+    if (pagado !== undefined && pagado !== null) {
+      queryFilters.push(isNotNull(vencimiento.pago));
+    }
+
+    if (tipo) {
+      queryFilters.push(eq(vencimiento.subcategoria, tipo));
+    }
 
     const dbResults = await db
       .select({
@@ -463,7 +492,7 @@ export const obtenerVencimientos = async (desde: Date, hasta: Date): Promise<Ven
       .innerJoin(subcategorias, and(eq(vencimiento.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
       .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
       .leftJoin(movimientosGasto, and(eq(vencimiento.pago, movimientosGasto.id), eq(movimientosGasto.active, true)))
-      .where(and(eq(vencimiento.active, true), between(vencimiento.fecha, fechaDesdeFiltro, fechaHastaFiltro)));
+      .where(and(eq(vencimiento.active, true), ...queryFilters));
 
     resultado = dbResults.map((dbRecord) => {
       const res: VencimientoUI = {
