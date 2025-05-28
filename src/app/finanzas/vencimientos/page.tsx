@@ -1,7 +1,7 @@
 'use client';
 
 import { BuscarVencimientosPayload, Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
-import { formatDate } from '@/lib/helpers';
+import { formatDate, transformNumberToCurrenty } from '@/lib/helpers';
 import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
 import { TableContainer, Paper, TableHead, TableRow, TableCell, TableBody, Table, Box } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -11,13 +11,49 @@ import { FilterComponent } from '@/components/vencimientos/Filtros/Filtros';
 import { ButtonBar } from '@/components/vencimientos/ButtonBar/ButtonBar';
 import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
 import { persistirVencimiento } from '@/lib/orm/actions';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+
+const columns: GridColDef[] = [
+  {
+    field: 'subcategoria',
+    headerName: 'Subcategoría',
+    width: 250,
+    valueGetter: (row: { descripcion: string }) => row.descripcion,
+  },
+  {
+    field: 'fecha',
+    headerName: 'Fecha',
+    width: 150,
+    valueGetter: (fecha: Date) => formatDate(fecha, false, { timeZone: 'UTC' }),
+  },
+  {
+    field: 'monto',
+    headerName: 'Monto',
+    width: 150,
+    type: 'number',
+    valueGetter: (monto: number) => transformNumberToCurrenty(monto),
+  },
+  {
+    field: 'esAnual',
+    headerName: 'Es Anual',
+    width: 100,
+    type: 'boolean',
+    valueGetter: (esAnual: boolean) => esAnual,
+  },
+  {
+    field: 'estricto',
+    headerName: 'Estricto',
+    width: 100,
+    type: 'boolean',
+    valueGetter: (estricto: boolean) => estricto,
+  },
+];
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
   const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
   const [showAgregarEditarModal, setShowAgregarEditarModal] = useState(false);
 
-  
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
       const subcategorias = await obtenerSubCategorias(TipoDeGasto.Fijo);
@@ -46,38 +82,31 @@ const Vencimientos = () => {
 
   const handleBuscarVencimientos = async (payload: BuscarVencimientosPayload) => {
     const vencimientosObtenidos = await obtenerVencimientos(payload);
+    console.log('Vencimientos obtenidos:', vencimientosObtenidos);
     setVencimientos(vencimientosObtenidos);
   };
-
-  const mostrarInformacion = true;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
         <FilterComponent tiposDeVencimientos={tiposDeVencimientos} onBuscar={handleBuscarVencimientos} />
         <ButtonBar onAdd={toggleOpenAgregarEditar} />
-        {mostrarInformacion && (
-          <Box sx={{ height: '100%' }}>
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Día</TableCell>
-                    <TableCell>Descripción</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {vencimientos.map(({ fecha, subcategoria, id }) => (
-                    <TableRow key={id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                      <TableCell>{formatDate(fecha)}</TableCell>
-                      <TableCell>{subcategoria.descripcion}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        )}
+        <Box sx={{ width: '100%' }}>
+          <DataGrid
+            rows={vencimientos}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 50,
+                },
+              },
+            }}
+            pageSizeOptions={[50, 100, 200]}
+            checkboxSelection
+            disableRowSelectionOnClick
+          />
+        </Box>
         {showAgregarEditarModal ? (
           <AgregarEditarModal
             tiposDeVencimiento={tiposDeVencimientos}
