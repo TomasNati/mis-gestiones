@@ -28,7 +28,7 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
   const [tipos, setTipos] = useState<Subcategoria[]>([]);
   const [filters, setFilters] = useState<Filters>({
     desde: dayjs().startOf('month'),
-    hasta: dayjs().endOf('month'),
+    hasta: dayjs().add(1, 'month').endOf('month'),
     tipo: null,
     esAnual: null,
     estricto: null,
