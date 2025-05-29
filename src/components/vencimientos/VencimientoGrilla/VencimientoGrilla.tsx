@@ -4,9 +4,17 @@ import { formatDate, transformNumberToCurrenty } from '@/lib/helpers';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColDef,
+  GridRowId,
+  GridRowSelectionModel,
+  GridRowsProp,
+} from '@mui/x-data-grid';
 import { Box } from '@mui/material';
-import  {Toolbar} from './Toolbar/Toolbar';
+import { Toolbar } from './Toolbar/Toolbar';
+import { useEffect, useState } from 'react';
 
 interface VencimientosGrillaProps {
   vencimientos: VencimientoUI[];
@@ -17,7 +25,20 @@ interface VencimientosGrillaProps {
   onCopy: (vencimiento: VencimientoUI) => void;
 }
 
-export const VencimientosGrilla = ({vencimientos, isLoading, onDelete, onEdit, onAdd, onCopy} : VencimientosGrillaProps) => {
+export const VencimientosGrilla = ({
+  vencimientos,
+  isLoading,
+  onDelete,
+  onEdit,
+  onAdd,
+  onCopy,
+}: VencimientosGrillaProps) => {
+  const [vencimientosElegidos, setVencimientosElegidos] = useState<VencimientoUI[]>([]);
+  const [rows, setRows] = useState<GridRowsProp>(vencimientos);
+
+  useEffect(() => {
+    setRows(vencimientos);
+  }, [vencimientos]);
 
   const columns: GridColDef[] = [
     {
@@ -93,7 +114,7 @@ export const VencimientosGrilla = ({vencimientos, isLoading, onDelete, onEdit, o
   const handleEditClick = (id: string) => () => {
     const vencimiento = vencimientos.find((v) => v.id === id);
     if (vencimiento) {
-     onEdit(vencimiento);
+      onEdit(vencimiento);
     }
   };
 
@@ -108,10 +129,15 @@ export const VencimientosGrilla = ({vencimientos, isLoading, onDelete, onEdit, o
     }
   };
 
+  const handleSelectionChange = (rowSelectionModel: GridRowSelectionModel) => {
+    const vencimentosElegidos = rows.filter(({ id }) => rowSelectionModel.includes(id as GridRowId));
+    setVencimientosElegidos(vencimentosElegidos as VencimientoUI[]);
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
       <DataGrid
-        rows={vencimientos}
+        rows={rows}
         columns={columns}
         initialState={{
           pagination: {
@@ -121,15 +147,17 @@ export const VencimientosGrilla = ({vencimientos, isLoading, onDelete, onEdit, o
           },
         }}
         pageSizeOptions={[50, 100, 200]}
+        checkboxSelection
         disableRowSelectionOnClick
         loading={isLoading}
-        slots={ { toolbar: Toolbar }}
+        onRowSelectionModelChange={handleSelectionChange}
+        slots={{ toolbar: Toolbar }}
         slotProps={{
           toolbar: {
-              handleAddClick: onAdd,
-            },
-          }
-        }
+            handleAddClick: onAdd,
+            vencimientosElegidos,
+          },
+        }}
       />
     </Box>
   );
