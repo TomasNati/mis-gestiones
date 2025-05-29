@@ -27,7 +27,7 @@ import {
   tomiAgendaEventoSuenio,
   vencimiento,
 } from './tables';
-import { eq, and, desc, between, asc, isNotNull } from 'drizzle-orm';
+import { eq, and, desc, between, asc, isNotNull, inArray } from 'drizzle-orm';
 import {
   generateUUID,
   obtenerCategoriaUIMovimiento,
@@ -435,7 +435,7 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
   let resultado: VencimientoUI[] = [];
 
   try {
-    const { desde, hasta, esAnual, estricto, pagado, tipo } = payload;
+    const { desde, hasta, esAnual, estricto, pagado, tipos } = payload;
     const queryFilters = [];
 
     if (desde || hasta) {
@@ -464,8 +464,8 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
       queryFilters.push(isNotNull(vencimiento.pago));
     }
 
-    if (tipo) {
-      queryFilters.push(eq(vencimiento.subcategoria, tipo));
+    if (tipos?.length) {
+      queryFilters.push(inArray(vencimiento.subcategoria, tipos));
     }
 
     const dbResults = await db

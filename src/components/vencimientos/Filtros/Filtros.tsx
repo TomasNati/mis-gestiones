@@ -7,12 +7,12 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { BuscarVencimientosPayload, Subcategoria } from '@/lib/definitions';
 import { toUTC } from '@/lib/helpers';
 
-type FiltersTypes = dayjs.Dayjs | Subcategoria | boolean | null;
+type FiltersTypes = dayjs.Dayjs | Subcategoria[] | boolean | null;
 
 interface Filters {
   desde: dayjs.Dayjs | null;
   hasta: dayjs.Dayjs | null;
-  tipo: Subcategoria | null;
+  tipos: Subcategoria[] | null;
   esAnual: boolean | null;
   estricto: boolean | null;
   pagado: boolean | null;
@@ -29,7 +29,7 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
   const [filters, setFilters] = useState<Filters>({
     desde: dayjs().startOf('month'),
     hasta: dayjs().add(1, 'month').endOf('month'),
-    tipo: null,
+    tipos: null,
     esAnual: null,
     estricto: null,
     pagado: null,
@@ -50,10 +50,14 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
     });
   };
 
+  const handleTiposChange = (value: Subcategoria[]) => {
+    setFilters((prev) => ({ ...prev, tipos: value }));
+  };
+
   const buscarVencimientos = () => {
     const payload: BuscarVencimientosPayload = {
       ...filters,
-      tipo: filters.tipo ? filters.tipo.id : null,
+      tipos: filters.tipos?.map(({ id }) => id) || null,
       desde: filters.desde ? toUTC(filters.desde.toDate()) : null,
       hasta: filters.hasta ? toUTC(filters.hasta.toDate()) : null,
     };
@@ -82,9 +86,11 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
         <Autocomplete
           options={tipos}
           getOptionLabel={(option: Subcategoria) => option.nombre}
-          value={filters.tipo}
+          value={filters.tipos || []}
+          multiple
+          filterSelectedOptions
           renderInput={(params) => <TextField {...params} label="Tipo" />}
-          onChange={(_, value) => handleChange('tipo', value)}
+          onChange={(_, value) => handleTiposChange(value)}
           size="small"
         />
       </FormControl>

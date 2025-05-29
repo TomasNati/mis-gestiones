@@ -1277,7 +1277,7 @@ export interface VencimientoUI {
 export interface BuscarVencimientosPayload {
   desde: Date | null;
   hasta: Date | null;
-  tipo: string | null;
+  tipos: string[] | null;
   esAnual: boolean | null;
   estricto: boolean | null;
   pagado: boolean | null;

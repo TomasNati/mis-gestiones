@@ -1,9 +1,7 @@
 'use client';
 
 import { BuscarVencimientosPayload, Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
-
 import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
-
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
@@ -55,7 +53,7 @@ const Vencimientos = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box>
+      <Box display={'flex'} flexDirection="column" gap={2} padding={2}>
         <FilterComponent tiposDeVencimientos={tiposDeVencimientos} onBuscar={handleBuscarVencimientos} />
         <VencimientosGrilla
           vencimientos={vencimientos}
