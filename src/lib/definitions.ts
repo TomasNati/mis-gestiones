@@ -1255,6 +1255,12 @@ export interface GrupoMovimiento {
   filas: InfoFilaMovimientoGrupo[];
 }
 
+export interface VencimientoPago {
+  id: string;
+  monto: number;
+  fecha: Date;
+}
+
 export interface VencimientoUI {
   id?: string;
   subcategoria: {
@@ -1267,11 +1273,7 @@ export interface VencimientoUI {
   comentarios: string;
   estricto?: boolean;
   fechaConfirmada?: boolean;
-  pago?: {
-    id: string;
-    monto: number;
-    fecha: Date;
-  };
+  pago?: VencimientoPago;
 }
 
 export interface BuscarVencimientosPayload {

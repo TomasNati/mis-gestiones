@@ -27,7 +27,7 @@ import {
   tomiAgendaEventoSuenio,
   vencimiento,
 } from './tables';
-import { eq, and, desc, between, asc, isNotNull, inArray } from 'drizzle-orm';
+import { eq, and, desc, between, asc, isNotNull, inArray, sql } from 'drizzle-orm';
 import {
   generateUUID,
   obtenerCategoriaUIMovimiento,
@@ -491,7 +491,15 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
       .from(vencimiento)
       .innerJoin(subcategorias, and(eq(vencimiento.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
       .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
-      .leftJoin(movimientosGasto, and(eq(vencimiento.pago, movimientosGasto.id), eq(movimientosGasto.active, true)))
+      .leftJoin(
+        movimientosGasto,
+        and(
+          eq(vencimiento.subcategoria, movimientosGasto.subcategoria),
+          sql`EXTRACT(MONTH FROM ${vencimiento.fecha}) = EXTRACT(MONTH FROM ${movimientosGasto.fecha})`,
+          sql`EXTRACT(YEAR FROM ${vencimiento.fecha}) = EXTRACT(YEAR FROM ${movimientosGasto.fecha})`,
+          eq(movimientosGasto.active, true),
+        ),
+      )
       .where(and(eq(vencimiento.active, true), ...queryFilters));
 
     resultado = dbResults.map((dbRecord) => {

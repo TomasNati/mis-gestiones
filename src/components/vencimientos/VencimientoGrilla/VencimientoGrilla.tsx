@@ -1,5 +1,4 @@
-
-import {  VencimientoUI } from '@/lib/definitions';
+import { VencimientoPago, VencimientoUI } from '@/lib/definitions';
 import { formatDate, transformNumberToCurrenty } from '@/lib/helpers';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -91,18 +90,25 @@ export const VencimientosGrilla = ({
       valueFormatter: (monto: number) => transformNumberToCurrenty(monto),
     },
     {
+      field: 'pago',
+      headerName: 'Pagado',
+      width: 100,
+      type: 'boolean',
+      valueGetter: (pago: VencimientoPago | undefined) => !!pago,
+    },
+    {
+      field: 'fechaConfirmada',
+      headerName: 'Fecha Confirmada',
+      width: 100,
+      type: 'boolean',
+      valueGetter: (estricto: boolean) => estricto,
+    },
+    {
       field: 'esAnual',
       headerName: 'Es Anual',
       width: 100,
       type: 'boolean',
       valueGetter: (esAnual: boolean) => esAnual,
-    },
-    {
-      field: 'estricto',
-      headerName: 'Estricto',
-      width: 100,
-      type: 'boolean',
-      valueGetter: (estricto: boolean) => estricto,
     },
     {
       field: 'comentarios',
@@ -148,6 +154,7 @@ export const VencimientosGrilla = ({
         }}
         pageSizeOptions={[50, 100, 200]}
         checkboxSelection
+        density="compact"
         disableRowSelectionOnClick
         loading={isLoading}
         onRowSelectionModelChange={handleSelectionChange}
