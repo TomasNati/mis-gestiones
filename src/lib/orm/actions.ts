@@ -24,6 +24,7 @@ import {
   mapearTiposDeConceptoExcelASubcategorias,
   obtenerTipoDeMovimientoGasto,
   parseTextoSuenioTomi,
+  toUTC,
   transformCurrencyToNumber,
 } from '../helpers';
 import { db } from './database';
@@ -369,6 +370,8 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
     exitoso: false,
   };
 
+  const fechaUTC = toUTC(vencimiento.fecha);
+
   try {
     if (vencimiento.id) {
       const [valRes, error] = validarActualizarVencimiento(vencimiento);
@@ -381,7 +384,7 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
         .update(vencimientoDB)
         .set({
           subcategoria: vencimiento.subcategoria.id,
-          fecha: vencimiento.fecha,
+          fecha: fechaUTC,
           monto: vencimiento.monto.toString(),
           comentarios: vencimiento.comentarios || null,
           esAnual: vencimiento.esAnual,
@@ -399,7 +402,7 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
       const vencimientoSafe = valRes.data;
       await db.insert(vencimientoDB).values({
         subcategoria: vencimientoSafe.subcategoria.id,
-        fecha: vencimientoSafe.fecha,
+        fecha: fechaUTC,
         monto: vencimientoSafe.monto.toString(),
         comentarios: vencimientoSafe.comentarios || null,
         esAnual: vencimientoSafe.esAnual,

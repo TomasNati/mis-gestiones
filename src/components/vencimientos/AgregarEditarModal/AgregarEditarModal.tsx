@@ -13,12 +13,14 @@ import { styles } from './AgregarEditarModal.styles';
 import { useEffect, useState } from 'react';
 import { DatePicker, validateDate } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { Subcategoria, VencimientoUI } from '@/lib/definitions';
+import { Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
 import { toUTC } from '@/lib/helpers';
+import { vencimiento } from '@/lib/orm/tables';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
 
 interface FormState {
+  id: string | undefined;
   fecha: dayjs.Dayjs | null;
   tipo: Subcategoria | null;
   monto: string;
@@ -29,6 +31,7 @@ interface FormState {
 }
 
 const defaultState: FormState = {
+  id: undefined,
   fecha: dayjs(),
   tipo: null,
   monto: '',
@@ -43,11 +46,31 @@ interface AgregarEditarModalProps {
   open: boolean;
   onClose: () => void;
   onGuardar: (vencimiento: VencimientoUI) => void;
+  vencimiento?: VencimientoUI;
 }
 
-export const AgregarEditarModal = ({ tiposDeVencimiento, open, onClose, onGuardar }: AgregarEditarModalProps) => {
-  const [form, setForm] = useState<FormState>(defaultState);
+export const AgregarEditarModal = ({
+  tiposDeVencimiento,
+  open,
+  vencimiento,
+  onClose,
+  onGuardar,
+}: AgregarEditarModalProps) => {
   const [errors, setErrors] = useState<string[]>([]);
+  const [form, setForm] = useState<FormState>(
+    vencimiento
+      ? {
+          id: vencimiento.id,
+          fecha: dayjs(vencimiento.fecha),
+          tipo: tiposDeVencimiento.find(({ id }) => id == vencimiento.subcategoria.id) || null,
+          monto: vencimiento.monto.toString(),
+          anual: vencimiento.esAnual,
+          estricto: vencimiento.estricto === undefined ? false : vencimiento.estricto,
+          fechaConfirmada: vencimiento.fechaConfirmada === undefined ? false : vencimiento.fechaConfirmada,
+          comentarios: vencimiento.comentarios,
+        }
+      : defaultState,
+  );
 
   useEffect(() => {
     setErrors(validateForm(form));
@@ -63,6 +86,7 @@ export const AgregarEditarModal = ({ tiposDeVencimiento, open, onClose, onGuarda
   const handleGuardar = () => {
     if (!errors.length) {
       const vencimiento: VencimientoUI = {
+        id: form.id,
         fecha: toUTC(form.fecha?.toDate() || new Date()),
         monto: Number(form.monto),
         comentarios: form.comentarios,
@@ -116,6 +140,7 @@ export const AgregarEditarModal = ({ tiposDeVencimiento, open, onClose, onGuarda
             value={form.tipo}
             renderInput={(params) => <TextField {...params} label="Tipo" />}
             onChange={(_, value) => handleChange('tipo', value)}
+            getOptionKey={(option: Subcategoria) => option.id}
             size="small"
           />
           <TextField

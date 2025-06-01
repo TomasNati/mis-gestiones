@@ -16,6 +16,10 @@ const Vencimientos = () => {
   const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
   const [showAgregarEditarModal, setShowAgregarEditarModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [vencimientoAEditar, setVencimientoAEditar] = useState<VencimientoUI | undefined>(undefined);
+  const [buscarVencimientoPayload, setBuscarVencimientoPayload] = useState<BuscarVencimientosPayload>(
+    {} as BuscarVencimientosPayload,
+  );
 
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
@@ -37,16 +41,25 @@ const Vencimientos = () => {
 
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
 
+  const handleEditarMovimiento = (vencimiento: VencimientoUI) => {
+    setVencimientoAEditar(vencimiento);
+    setShowAgregarEditarModal(true);
+  };
+
   const handleGuardarMovimiento = async (vencimiento: VencimientoUI) => {
     const result = await persistirVencimiento(vencimiento);
-    console.log('Resultado de persistir vencimiento:', result);
     setShowAgregarEditarModal(false);
+    buscarVencimientos(buscarVencimientoPayload);
   };
 
   const handleBuscarVencimientos = async (payload: BuscarVencimientosPayload) => {
+    setBuscarVencimientoPayload(payload);
+    buscarVencimientos(payload);
+  };
+
+  const buscarVencimientos = async (payload: BuscarVencimientosPayload) => {
     setIsLoading(true);
     const vencimientosObtenidos = await obtenerVencimientos(payload);
-    console.log('Vencimientos obtenidos:', vencimientosObtenidos);
     setVencimientos(vencimientosObtenidos);
     setIsLoading(false);
   };
@@ -58,7 +71,7 @@ const Vencimientos = () => {
         <VencimientosGrilla
           vencimientos={vencimientos}
           isLoading={isLoading}
-          onEdit={toggleOpenAgregarEditar}
+          onEdit={handleEditarMovimiento}
           onDelete={() => {}}
           onAdd={toggleOpenAgregarEditar}
           onCopy={() => {}}
@@ -69,6 +82,7 @@ const Vencimientos = () => {
             onClose={toggleOpenAgregarEditar}
             onGuardar={handleGuardarMovimiento}
             open={showAgregarEditarModal}
+            vencimiento={vencimientoAEditar}
           />
         ) : null}
       </Box>
