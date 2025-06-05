@@ -11,11 +11,11 @@ import {
 } from '@mui/material';
 import { styles } from './AgregarEditarModal.styles';
 import { useEffect, useState } from 'react';
-import { DatePicker, validateDate } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
+import { MovimientoDeVencimiento, Subcategoria, TipoDeMovimientoGasto, VencimientoUI } from '@/lib/definitions';
 import { toUTC } from '@/lib/helpers';
-import { vencimiento } from '@/lib/orm/tables';
+import { obtenerMovimientosParaVencimientos } from '@/lib/orm/data';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
 
@@ -23,6 +23,7 @@ interface FormState {
   id: string | undefined;
   fecha: dayjs.Dayjs | null;
   tipo: Subcategoria | null;
+  pagoId?: string | null;
   monto: string;
   anual: boolean;
   estricto: boolean;
@@ -38,6 +39,7 @@ const defaultState: FormState = {
   anual: false,
   estricto: false,
   fechaConfirmada: false,
+  pagoId: null,
   comentarios: '',
 };
 
@@ -57,6 +59,20 @@ export const AgregarEditarModal = ({
   onGuardar,
 }: AgregarEditarModalProps) => {
   const [errors, setErrors] = useState<string[]>([]);
+
+  const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>(
+    vencimiento?.pago
+      ? [
+          {
+            id: vencimiento.pago.id,
+            fecha: vencimiento.pago.fecha,
+            monto: vencimiento.pago.monto,
+            comentarios: vencimiento.pago.comentarios,
+          },
+        ]
+      : [],
+  );
+
   const [form, setForm] = useState<FormState>(
     vencimiento
       ? {
@@ -68,6 +84,7 @@ export const AgregarEditarModal = ({
           estricto: vencimiento.estricto === undefined ? false : vencimiento.estricto,
           fechaConfirmada: vencimiento.fechaConfirmada === undefined ? false : vencimiento.fechaConfirmada,
           comentarios: vencimiento.comentarios,
+          pagoId: vencimiento.pago?.id || null,
         }
       : defaultState,
   );
@@ -75,6 +92,17 @@ export const AgregarEditarModal = ({
   useEffect(() => {
     setErrors(validateForm(form));
   }, []);
+
+  const handleTipoChanged = async (tipo: Subcategoria | null) => {
+    handleChange('tipo', tipo);
+    if (!tipo) {
+      return;
+    }
+    const hasta = dayjs().toDate();
+    const desde = dayjs().subtract(15, 'day').toDate();
+    const posiblesMovimientos = await obtenerMovimientosParaVencimientos(desde, hasta, tipo.id);
+    setPosiblesPagos(posiblesMovimientos);
+  };
 
   const handleChange = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     const newForm = { ...form, [key]: value };
@@ -97,6 +125,14 @@ export const AgregarEditarModal = ({
         },
         estricto: form.estricto,
         fechaConfirmada: form.fechaConfirmada,
+        pago: form.pagoId
+          ? {
+              id: form.pagoId,
+              fecha: new Date(),
+              monto: 0,
+              comentarios: '',
+            }
+          : undefined,
       };
       onGuardar(vencimiento);
     }
@@ -125,7 +161,7 @@ export const AgregarEditarModal = ({
   return (
     <Dialog onClose={(_, reason) => handleClose(reason)} open={open}>
       <DialogTitle>Agregar vencimiento</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ width: 380 }}>
         <Box display="flex" flexDirection="column" gap={1.5} maxWidth={350} paddingTop={'5px'}>
           <DatePicker
             label="Fecha"
@@ -139,8 +175,19 @@ export const AgregarEditarModal = ({
             getOptionLabel={(option: Subcategoria) => option.nombre}
             value={form.tipo}
             renderInput={(params) => <TextField {...params} label="Tipo" />}
-            onChange={(_, value) => handleChange('tipo', value)}
+            onChange={(_, value) => handleTipoChanged(value)}
             getOptionKey={(option: Subcategoria) => option.id}
+            size="small"
+          />
+          <Autocomplete
+            options={posiblesPagos}
+            getOptionLabel={(option: MovimientoDeVencimiento) =>
+              `${option.fecha.toLocaleDateString()} - $${option.monto}`
+            }
+            value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
+            renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
+            onChange={(_, value) => handleChange('pagoId', value ? value.id : null)}
+            getOptionKey={(option: MovimientoDeVencimiento) => option.id}
             size="small"
           />
           <TextField

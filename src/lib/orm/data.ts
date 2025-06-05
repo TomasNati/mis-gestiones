@@ -15,6 +15,7 @@ import {
   SuenioTomiPorPeriodo,
   VencimientoUI,
   BuscarVencimientosPayload,
+  MovimientoDeVencimiento,
 } from '../definitions';
 import { db } from './database';
 import {
@@ -166,6 +167,55 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
   });
 
   return Promise.resolve(categoriasUIMovimiento);
+};
+
+export const obtenerMovimientosParaVencimientos = async (
+  fechaDesde: Date,
+  fechaHasta: Date,
+  subcategoriaId: string,
+): Promise<MovimientoDeVencimiento[]> => {
+  try {
+    const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
+    const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
+
+    const result = await db
+      .select({
+        id: movimientosGasto.id,
+        fecha: movimientosGasto.fecha,
+        tipoDeGasto: movimientosGasto.tipodepago,
+        monto: movimientosGasto.monto,
+        comentarios: movimientosGasto.comentarios,
+      })
+      .from(movimientosGasto)
+      .innerJoin(
+        subcategorias,
+        and(
+          eq(movimientosGasto.subcategoria, subcategorias.id),
+          eq(subcategorias.active, true),
+          eq(subcategorias.id, subcategoriaId),
+        ),
+      )
+      .where(
+        and(eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesdeFiltro, fechaHastaFiltro)),
+      )
+      .orderBy(desc(movimientosGasto.fecha));
+
+    const movimientos: MovimientoDeVencimiento[] = result.map((movimientoDB) => {
+      const movimiento: MovimientoDeVencimiento = {
+        id: movimientoDB.id,
+        fecha: movimientoDB.fecha,
+        monto: Number.parseFloat(movimientoDB.monto),
+        comentarios: movimientoDB.comentarios || undefined,
+      };
+
+      return movimiento;
+    });
+
+    return movimientos;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener los movimientos');
+  }
 };
 
 export const obtenerMovimientos = async (
@@ -495,8 +545,9 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
         movimientosGasto,
         and(
           eq(vencimiento.subcategoria, movimientosGasto.subcategoria),
-          sql`EXTRACT(MONTH FROM ${vencimiento.fecha}) = EXTRACT(MONTH FROM ${movimientosGasto.fecha})`,
-          sql`EXTRACT(YEAR FROM ${vencimiento.fecha}) = EXTRACT(YEAR FROM ${movimientosGasto.fecha})`,
+          // sql`EXTRACT(MONTH FROM ${vencimiento.fecha}) = EXTRACT(MONTH FROM ${movimientosGasto.fecha})`,
+          // sql`EXTRACT(YEAR FROM ${vencimiento.fecha}) = EXTRACT(YEAR FROM ${movimientosGasto.fecha})`,
+          sql`${movimientosGasto.fecha} BETWEEN (${vencimiento.fecha}::date - INTERVAL '15 days') AND ${vencimiento.fecha}`,
           eq(movimientosGasto.active, true),
         ),
       )

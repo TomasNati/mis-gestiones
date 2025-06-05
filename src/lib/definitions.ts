@@ -68,6 +68,13 @@ export type MovimientoGasto = {
   monto: number;
 };
 
+export interface MovimientoDeVencimiento {
+  id: string;
+  comentarios?: string;
+  fecha: Date;
+  monto: number;
+}
+
 export type MovimientoGastoGrilla = {
   id: string;
   comentarios?: string;
@@ -1259,6 +1266,7 @@ export interface VencimientoPago {
   id: string;
   monto: number;
   fecha: Date;
+  comentarios?: string;
 }
 
 export interface VencimientoUI {
