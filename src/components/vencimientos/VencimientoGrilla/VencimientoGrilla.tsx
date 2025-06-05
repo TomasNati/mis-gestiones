@@ -13,7 +13,7 @@ import {
 } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
 import { Toolbar } from './Toolbar/Toolbar';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface VencimientosGrillaProps {
   vencimientos: VencimientoUI[];
@@ -33,11 +33,7 @@ export const VencimientosGrilla = ({
   onCopy,
 }: VencimientosGrillaProps) => {
   const [vencimientosElegidos, setVencimientosElegidos] = useState<VencimientoUI[]>([]);
-  const [rows, setRows] = useState<GridRowsProp>(vencimientos);
-
-  useEffect(() => {
-    setRows(vencimientos);
-  }, [vencimientos]);
+  const rows: GridRowsProp = vencimientos;
 
   const columns: GridColDef[] = [
     {
@@ -152,6 +148,7 @@ export const VencimientosGrilla = ({
             },
           },
         }}
+        sortModel={[{ field: 'fecha', sort: 'asc' }]}
         pageSizeOptions={[50, 100, 200]}
         checkboxSelection
         density="compact"

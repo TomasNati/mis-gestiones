@@ -422,6 +422,30 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
   return resultado;
 };
 
+export const eliminarVencimiento = async (id: string): Promise<ResultadoAPI> => {
+  const resultado: ResultadoAPI = {
+    errores: [],
+    exitoso: false,
+  };
+  try {
+    await db.delete(vencimientoDB).where(eq(vencimientoDB.id, id));
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultado.errores = [`Error al eliminar en base de datos: ${error.message}.\n ${error.stack}`];
+    } else {
+      resultado.errores = [` Error al eliminar en base de datos: ${error}.\n`];
+    }
+  }
+  resultado.exitoso = resultado.errores.length === 0;
+  if (resultado.exitoso) {
+    // Revalidate the cache
+    revalidatePath('/finanzas/vencimientos');
+  } else {
+    logMessage(resultado.errores.join('\n'), 'error');
+  }
+  return resultado;
+};
+
 const eliminarHorasSuenioTomi = async (anio: number, mes: number): Promise<void> => {
   try {
     const fechaDesde = new Date(Date.UTC(anio, mes - 1, 1, 0, 0, 0));

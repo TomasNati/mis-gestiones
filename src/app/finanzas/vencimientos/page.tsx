@@ -7,9 +7,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
 import { FilterComponent } from '@/components/vencimientos/Filtros/Filtros';
 import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
-import { persistirVencimiento } from '@/lib/orm/actions';
+import { persistirVencimiento, eliminarVencimiento } from '@/lib/orm/actions';
 import { Box } from '@mui/material';
 import { VencimientosGrilla } from '@/components/vencimientos/VencimientoGrilla/VencimientoGrilla';
+import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
@@ -20,6 +21,11 @@ const Vencimientos = () => {
   const [buscarVencimientoPayload, setBuscarVencimientoPayload] = useState<BuscarVencimientosPayload>(
     {} as BuscarVencimientosPayload,
   );
+  const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
+    open: false,
+    severity: 'success',
+    mensaje: '',
+  });
 
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
@@ -37,6 +43,7 @@ const Vencimientos = () => {
       setTiposDeVencimientos(subcategorias);
     };
     fetchTiposDeVencimientos();
+    buscarVencimientos({} as BuscarVencimientosPayload);
   }, []);
 
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
@@ -46,15 +53,49 @@ const Vencimientos = () => {
     setShowAgregarEditarModal(true);
   };
 
-  const handleGuardarMovimiento = async (vencimiento: VencimientoUI) => {
-    const result = await persistirVencimiento(vencimiento);
-    setShowAgregarEditarModal(false);
-    buscarVencimientos(buscarVencimientoPayload);
+  const handleGuardarVencimiento = async (vencimiento: VencimientoUI) => {
+    const resultado = await persistirVencimiento(vencimiento);
+    if (!resultado.exitoso) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: resultado.errores.join('\n'),
+      });
+    } else {
+      setConfigNotificacion({
+        open: true,
+        severity: 'success',
+        mensaje: vencimiento.id ? 'Vencimiento agregados correctamente' : 'Vencimiento actualizado correctamente',
+      });
+      setShowAgregarEditarModal(false);
+      buscarVencimientos(buscarVencimientoPayload);
+    }
   };
 
   const handleBuscarVencimientos = async (payload: BuscarVencimientosPayload) => {
     setBuscarVencimientoPayload(payload);
     buscarVencimientos(payload);
+  };
+
+  const handleEliminarVencimiento = async (id: string) => {
+    const resultado = await eliminarVencimiento(id);
+    if (resultado.exitoso) {
+      buscarVencimientos(buscarVencimientoPayload);
+    }
+    if (!resultado.exitoso) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: resultado.errores.join('\n'),
+      });
+    } else {
+      setConfigNotificacion({
+        open: true,
+        severity: 'success',
+        mensaje: 'vencimiento eliminado correctamente',
+      });
+      buscarVencimientos(buscarVencimientoPayload);
+    }
   };
 
   const buscarVencimientos = async (payload: BuscarVencimientosPayload) => {
@@ -72,7 +113,7 @@ const Vencimientos = () => {
           vencimientos={vencimientos}
           isLoading={isLoading}
           onEdit={handleEditarMovimiento}
-          onDelete={() => {}}
+          onDelete={handleEliminarVencimiento}
           onAdd={toggleOpenAgregarEditar}
           onCopy={() => {}}
         />
@@ -80,12 +121,13 @@ const Vencimientos = () => {
           <AgregarEditarModal
             tiposDeVencimiento={tiposDeVencimientos}
             onClose={toggleOpenAgregarEditar}
-            onGuardar={handleGuardarMovimiento}
+            onGuardar={handleGuardarVencimiento}
             open={showAgregarEditarModal}
             vencimiento={vencimientoAEditar}
           />
         ) : null}
       </Box>
+      <Notificacion configuracionProp={configNotificacion} />
     </LocalizationProvider>
   );
 };
