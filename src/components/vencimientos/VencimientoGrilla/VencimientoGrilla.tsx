@@ -11,9 +11,31 @@ import {
   GridRowSelectionModel,
   GridRowsProp,
 } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
+import { Box, styled } from '@mui/material';
 import { Toolbar } from './Toolbar/Toolbar';
 import { useState } from 'react';
+import dayjs from 'dayjs';
+
+const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
+  '& .row-pagado': {
+    backgroundColor: theme.palette.success.dark,
+    '&:hover': {
+      backgroundColor: theme.palette.success.main,
+    },
+  },
+  '& .row-warning': {
+    backgroundColor: theme.palette.warning.dark,
+    '&:hover': {
+      backgroundColor: theme.palette.warning.main,
+    },
+  },
+  '& .row-danger': {
+    backgroundColor: theme.palette.error.dark,
+    '&:hover': {
+      backgroundColor: theme.palette.error.main,
+    },
+  },
+}));
 
 interface VencimientosGrillaProps {
   vencimientos: VencimientoUI[];
@@ -86,16 +108,9 @@ export const VencimientosGrilla = ({
       valueFormatter: (monto: number) => transformNumberToCurrenty(monto),
     },
     {
-      field: 'pago',
-      headerName: 'Pagado',
-      width: 100,
-      type: 'boolean',
-      valueGetter: (pago: VencimientoPago | undefined) => !!pago,
-    },
-    {
       field: 'fechaConfirmada',
       headerName: 'Fecha Confirmada',
-      width: 100,
+      width: 150,
       type: 'boolean',
       valueGetter: (estricto: boolean) => estricto,
     },
@@ -136,9 +151,26 @@ export const VencimientosGrilla = ({
     setVencimientosElegidos(vencimentosElegidos as VencimientoUI[]);
   };
 
+  const getRowClassName = (params: any) => {
+    const { pago, fecha } = params.row;
+    if (pago) return 'row-pagado';
+
+    const fechaDate = dayjs(fecha);
+    const now = dayjs();
+
+    if (fechaDate.isSame(now, 'day') || fechaDate.isBefore(now, 'day')) {
+      return 'row-danger';
+    }
+    const diff = fechaDate.diff(now, 'day');
+    if (diff >= 1 && diff <= 3) {
+      return 'row-warning';
+    }
+    return '';
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
-      <DataGrid
+      <StyledDataGrid
         rows={rows}
         columns={columns}
         initialState={{
@@ -155,6 +187,7 @@ export const VencimientosGrilla = ({
         disableRowSelectionOnClick
         loading={isLoading}
         onRowSelectionModelChange={handleSelectionChange}
+        getRowClassName={getRowClassName}
         slots={{ toolbar: Toolbar }}
         slotProps={{
           toolbar: {
