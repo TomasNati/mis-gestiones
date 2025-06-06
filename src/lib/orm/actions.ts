@@ -390,6 +390,7 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
           esAnual: vencimiento.esAnual,
           estricto: vencimiento.estricto || false,
           fechaConfirmada: vencimiento.fechaConfirmada || false,
+          pago: vencimiento.pago?.id || null,
         })
         .where(eq(vencimientoDB.id, vencimiento.id));
     } else {
@@ -408,6 +409,7 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
         esAnual: vencimientoSafe.esAnual,
         estricto: vencimientoSafe.estricto || false,
         fechaConfirmada: vencimientoSafe.fechaConfirmada || false,
+        pago: vencimientoSafe.pago?.id || null,
       });
     }
   } catch (error: unknown) {

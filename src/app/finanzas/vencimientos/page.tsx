@@ -1,7 +1,13 @@
 'use client';
 
-import { BuscarVencimientosPayload, Subcategoria, TipoDeGasto, VencimientoUI } from '@/lib/definitions';
-import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
+import {
+  BuscarVencimientosPayload,
+  MovimientoDeVencimiento,
+  Subcategoria,
+  TipoDeGasto,
+  VencimientoUI,
+} from '@/lib/definitions';
+import { obtenerMovimientosParaVencimientos, obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
@@ -18,6 +24,7 @@ const Vencimientos = () => {
   const [showAgregarEditarModal, setShowAgregarEditarModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [vencimientoAEditar, setVencimientoAEditar] = useState<VencimientoUI | undefined>(undefined);
+  const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>([]);
   const [buscarVencimientoPayload, setBuscarVencimientoPayload] = useState<BuscarVencimientosPayload>(
     {} as BuscarVencimientosPayload,
   );
@@ -48,7 +55,14 @@ const Vencimientos = () => {
 
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
 
-  const handleEditarMovimiento = (vencimiento: VencimientoUI) => {
+  const handleAgregarVencimiento = () => {
+    setVencimientoAEditar(undefined);
+    setShowAgregarEditarModal(true);
+  };
+
+  const handleEditarMovimiento = async (vencimiento: VencimientoUI) => {
+    const posiblesMovimientos = await obtenerMovimientosParaVencimientos(vencimiento.subcategoria.id);
+    setPosiblesPagos(posiblesMovimientos);
     setVencimientoAEditar(vencimiento);
     setShowAgregarEditarModal(true);
   };
@@ -114,7 +128,7 @@ const Vencimientos = () => {
           isLoading={isLoading}
           onEdit={handleEditarMovimiento}
           onDelete={handleEliminarVencimiento}
-          onAdd={toggleOpenAgregarEditar}
+          onAdd={handleAgregarVencimiento}
           onCopy={() => {}}
         />
         {showAgregarEditarModal ? (
@@ -124,6 +138,7 @@ const Vencimientos = () => {
             onGuardar={handleGuardarVencimiento}
             open={showAgregarEditarModal}
             vencimiento={vencimientoAEditar}
+            pagos={posiblesPagos}
           />
         ) : null}
       </Box>

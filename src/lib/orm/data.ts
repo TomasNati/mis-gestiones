@@ -35,7 +35,9 @@ import {
   transformCurrencyToNumber,
   obtenerDiasEnElMes,
   obtenerHorasDeSuenio,
+  toUTC,
 } from '../helpers';
+import dayjs from 'dayjs';
 
 type GastoPresupuestoItem = {
   id: string | null;
@@ -170,13 +172,11 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
 };
 
 export const obtenerMovimientosParaVencimientos = async (
-  fechaDesde: Date,
-  fechaHasta: Date,
   subcategoriaId: string,
 ): Promise<MovimientoDeVencimiento[]> => {
   try {
-    const fechaDesdeFiltro = fechaDesde || new Date(Date.UTC(1900, 0, 1));
-    const fechaHastaFiltro = fechaHasta || new Date(Date.UTC(2100, 0, 1));
+    const fechaDesdeFiltro = toUTC(dayjs().subtract(15, 'day').toDate());
+    const fechaHastaFiltro = toUTC(dayjs().toDate());
 
     const result = await db
       .select({
@@ -541,16 +541,7 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
       .from(vencimiento)
       .innerJoin(subcategorias, and(eq(vencimiento.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
       .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
-      .leftJoin(
-        movimientosGasto,
-        and(
-          eq(vencimiento.subcategoria, movimientosGasto.subcategoria),
-          // sql`EXTRACT(MONTH FROM ${vencimiento.fecha}) = EXTRACT(MONTH FROM ${movimientosGasto.fecha})`,
-          // sql`EXTRACT(YEAR FROM ${vencimiento.fecha}) = EXTRACT(YEAR FROM ${movimientosGasto.fecha})`,
-          sql`${movimientosGasto.fecha} BETWEEN (${vencimiento.fecha}::date - INTERVAL '15 days') AND ${vencimiento.fecha}`,
-          eq(movimientosGasto.active, true),
-        ),
-      )
+      .leftJoin(movimientosGasto, and(eq(vencimiento.pago, movimientosGasto.id), eq(movimientosGasto.active, true)))
       .where(and(eq(vencimiento.active, true), ...queryFilters));
 
     resultado = dbResults.map((dbRecord) => {

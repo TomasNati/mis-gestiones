@@ -45,6 +45,7 @@ const defaultState: FormState = {
 
 interface AgregarEditarModalProps {
   tiposDeVencimiento: Subcategoria[];
+  pagos?: MovimientoDeVencimiento[];
   open: boolean;
   onClose: () => void;
   onGuardar: (vencimiento: VencimientoUI) => void;
@@ -53,25 +54,14 @@ interface AgregarEditarModalProps {
 
 export const AgregarEditarModal = ({
   tiposDeVencimiento,
+  pagos = [],
   open,
   vencimiento,
   onClose,
   onGuardar,
 }: AgregarEditarModalProps) => {
   const [errors, setErrors] = useState<string[]>([]);
-
-  const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>(
-    vencimiento?.pago
-      ? [
-          {
-            id: vencimiento.pago.id,
-            fecha: vencimiento.pago.fecha,
-            monto: vencimiento.pago.monto,
-            comentarios: vencimiento.pago.comentarios,
-          },
-        ]
-      : [],
-  );
+  const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>(pagos);
 
   const [form, setForm] = useState<FormState>(
     vencimiento
@@ -98,10 +88,9 @@ export const AgregarEditarModal = ({
     if (!tipo) {
       return;
     }
-    const hasta = dayjs().toDate();
-    const desde = dayjs().subtract(15, 'day').toDate();
-    const posiblesMovimientos = await obtenerMovimientosParaVencimientos(desde, hasta, tipo.id);
+    const posiblesMovimientos = await obtenerMovimientosParaVencimientos(tipo.id);
     setPosiblesPagos(posiblesMovimientos);
+    handleChange('pagoId', posiblesMovimientos?.[0].id || null);
   };
 
   const handleChange = <K extends keyof FormState>(key: K, value: FormState[K]) => {

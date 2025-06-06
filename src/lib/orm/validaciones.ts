@@ -56,6 +56,11 @@ const VencimientoSchema = z.object({
   esAnual: z.boolean(),
   estricto: z.boolean().optional(),
   fechaConfirmada: z.boolean().optional(),
+  pago: z
+    .object({
+      id: z.string(),
+    })
+    .optional(),
 });
 
 type Vencimiento = z.infer<typeof VencimientoSchema>;
