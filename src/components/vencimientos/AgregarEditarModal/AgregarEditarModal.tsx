@@ -13,11 +13,14 @@ import { styles } from './AgregarEditarModal.styles';
 import { useEffect, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { MovimientoDeVencimiento, Subcategoria, TipoDeMovimientoGasto, VencimientoUI } from '@/lib/definitions';
-import { toUTC } from '@/lib/helpers';
+import { formatDate, toUTC } from '@/lib/helpers';
 import { obtenerMovimientosParaVencimientos } from '@/lib/orm/data';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
+
+dayjs.extend(utc);
 
 interface FormState {
   id: string | undefined;
@@ -67,7 +70,7 @@ export const AgregarEditarModal = ({
     vencimiento
       ? {
           id: vencimiento.id,
-          fecha: dayjs(vencimiento.fecha),
+          fecha: dayjs.utc(vencimiento.fecha),
           tipo: tiposDeVencimiento.find(({ id }) => id == vencimiento.subcategoria.id) || null,
           monto: vencimiento.monto.toString(),
           anual: vencimiento.esAnual,
@@ -154,10 +157,11 @@ export const AgregarEditarModal = ({
         <Box display="flex" flexDirection="column" gap={1.5} maxWidth={350} paddingTop={'5px'}>
           <DatePicker
             label="Fecha"
-            value={form.fecha}
+            value={dayjs.utc(form.fecha)}
             onChange={(date) => handleChange('fecha', date)}
             slotProps={{ textField: { fullWidth: true } }}
             sx={styles.datePicker}
+            format="DD/MM/YYYY"
           />
           <Autocomplete
             options={tiposDeVencimiento}
@@ -171,7 +175,7 @@ export const AgregarEditarModal = ({
           <Autocomplete
             options={posiblesPagos}
             getOptionLabel={(option: MovimientoDeVencimiento) =>
-              `${option.fecha.toLocaleDateString()} - $${option.monto}`
+              `${formatDate(option.fecha, false, { timeZone: 'UTC' })} - $${option.monto}`
             }
             value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
             renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
