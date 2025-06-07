@@ -195,10 +195,6 @@ const MovimientosDelMesGrilla = ({
     },
   ];
 
-  const handleProcesarMovimientoUpdateError = (params: any) => {
-    console.error('Error al actualizar el movimiento', params);
-  };
-
   const processRowUpdate = async (newRow: GridRowModel, originalRow: GridRowModel) => {
     const { id, fecha, concepto, tipoDeGasto, monto, isNew } = newRow;
     const valido = id && fecha && !!concepto && tipoDeGasto !== null && monto && monto > 0.01;
