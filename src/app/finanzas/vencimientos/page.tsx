@@ -112,6 +112,10 @@ const Vencimientos = () => {
     }
   };
 
+  const handleCopyVencimientos = async (ids: string[]) => {
+    console.log(ids);
+  };
+
   const buscarVencimientos = async (payload: BuscarVencimientosPayload) => {
     setIsLoading(true);
     const vencimientosObtenidos = await obtenerVencimientos(payload);
@@ -129,7 +133,7 @@ const Vencimientos = () => {
           onEdit={handleEditarMovimiento}
           onDelete={handleEliminarVencimiento}
           onAdd={handleAgregarVencimiento}
-          onCopy={() => {}}
+          onCopy={handleCopyVencimientos}
         />
         {showAgregarEditarModal ? (
           <AgregarEditarModal

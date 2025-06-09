@@ -2,7 +2,6 @@ import { VencimientoPago, VencimientoUI } from '@/lib/definitions';
 import { formatDate, transformNumberToCurrenty } from '@/lib/helpers';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -43,7 +42,7 @@ interface VencimientosGrillaProps {
   onEdit: (vencimiento: VencimientoUI) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
-  onCopy: (vencimiento: VencimientoUI) => void;
+  onCopy: (ids: string[]) => void;
 }
 
 export const VencimientosGrilla = ({
@@ -66,12 +65,6 @@ export const VencimientosGrilla = ({
       cellClassName: 'actions',
       getActions: ({ id }) => {
         return [
-          <GridActionsCellItem
-            icon={<ContentCopyIcon />}
-            label="Copy"
-            onClick={handleCopyClick(id.toString())}
-            color="inherit"
-          />,
           <GridActionsCellItem
             icon={<EditIcon />}
             label="Edit"
@@ -139,12 +132,7 @@ export const VencimientosGrilla = ({
     onDelete(id);
   };
 
-  const handleCopyClick = (id: string) => () => {
-    const vencimiento = vencimientos.find((v) => v.id === id);
-    if (vencimiento) {
-      onCopy(vencimiento);
-    }
-  };
+  const handleCopyClick = (ids: string[]) => onCopy(ids);
 
   const handleSelectionChange = (rowSelectionModel: GridRowSelectionModel) => {
     const vencimentosElegidos = rows.filter(({ id }) => rowSelectionModel.includes(id as GridRowId));
@@ -192,6 +180,7 @@ export const VencimientosGrilla = ({
         slotProps={{
           toolbar: {
             handleAddClick: onAdd,
+            handleCopyClick,
             vencimientosElegidos,
           },
         }}
