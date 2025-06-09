@@ -176,7 +176,7 @@ export const obtenerMovimientosParaVencimientos = async (
 ): Promise<MovimientoDeVencimiento[]> => {
   try {
     const fechaDesdeFiltro = toUTC(dayjs().subtract(15, 'day').toDate());
-    const fechaHastaFiltro = toUTC(dayjs().toDate());
+    const fechaHastaFiltro = toUTC(dayjs().add(2, 'day').toDate());
 
     const result = await db
       .select({
