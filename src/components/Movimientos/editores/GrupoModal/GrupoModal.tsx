@@ -56,12 +56,14 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
     setCategoriasMov([...categoriasSugeridas, ...restantesCategorias]);
   }, [categoriasMovimiento]);
 
-  const handleClose = () => {
-    setGrupoMovimiento({
-      dia: 1,
-      filas: [],
-    });
-    onClose();
+  const handleClose = (reason: string) => {
+    if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+      setGrupoMovimiento({
+        dia: 1,
+        filas: [],
+      });
+      onClose();
+    }
   };
 
   const validarDatos = (grupoMovimiento: GrupoMovimiento) => {
@@ -98,7 +100,7 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
       return;
     }
     onGuardar(grupoMovimiento);
-    handleClose();
+    handleClose('save');
   };
 
   const handleAgregarFila = () => {
@@ -172,7 +174,7 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
   const restoChecked = grupoMovimiento.filas.some((fila) => fila.esRestoDelMonto);
 
   return (
-    <Dialog onClose={handleClose} open={open}>
+    <Dialog onClose={(_, reason) => handleClose(reason)} open={open}>
       <DialogTitle>Agregar grupo de movimientos</DialogTitle>
       <DialogContent
         sx={{
@@ -268,7 +270,7 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
         <Button onClick={handleGuardar} color="primary" variant="contained" disabled={errors.length > 0}>
           Guardar
         </Button>
-        <Button onClick={handleClose} color="secondary" sx={{ marginRight: '8px' }}>
+        <Button onClick={() => handleClose('close')} color="secondary" sx={{ marginRight: '8px' }}>
           Cancelar
         </Button>
       </Box>
