@@ -448,6 +448,37 @@ export const eliminarVencimiento = async (id: string): Promise<ResultadoAPI> => 
   return resultado;
 };
 
+export const copiarVencimientos = async ({
+  vencimientosACopiar,
+  fechaDeCopiado,
+}: {
+  vencimientosACopiar: VencimientoUI[];
+  fechaDeCopiado: Date;
+}) => {
+  const resultado: ResultadoAPI = {
+    errores: [],
+    exitoso: false,
+  };
+
+  try {
+    for (const vencimiento of vencimientosACopiar) {
+      const nuevoVencimiento = { ...vencimiento, fecha: fechaDeCopiado };
+      console.log('Copiando vencimiento:', nuevoVencimiento);
+      //TODO : COPIAR VENCIMIENTO
+      //await db.insert(vencimientoDB).values(nuevoVencimiento);
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      resultado.errores = [`Error al copiar en base de datos: ${error.message}.\n ${error.stack}`];
+    } else {
+      resultado.errores = [` Error al copiar en base de datos: ${error}.\n`];
+    }
+  }
+
+  resultado.exitoso = resultado.errores.length === 0;
+  return resultado;
+};
+
 const eliminarHorasSuenioTomi = async (anio: number, mes: number): Promise<void> => {
   try {
     const fechaDesde = new Date(Date.UTC(anio, mes - 1, 1, 0, 0, 0));

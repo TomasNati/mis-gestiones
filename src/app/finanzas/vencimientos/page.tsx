@@ -13,15 +13,18 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
 import { FilterComponent } from '@/components/vencimientos/Filtros/Filtros';
 import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
-import { persistirVencimiento, eliminarVencimiento } from '@/lib/orm/actions';
+import { persistirVencimiento, eliminarVencimiento, copiarVencimientos } from '@/lib/orm/actions';
 import { Box } from '@mui/material';
 import { VencimientosGrilla } from '@/components/vencimientos/VencimientoGrilla/VencimientoGrilla';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
+import { CopiarModal } from '@/components/vencimientos/CopiarModal/CopiarModal';
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
   const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
   const [showAgregarEditarModal, setShowAgregarEditarModal] = useState(false);
+  const [showCopiarModal, setShowCopiarModal] = useState(false);
+  const [idsACopiar, setIdsACopiar] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [vencimientoAEditar, setVencimientoAEditar] = useState<VencimientoUI | undefined>(undefined);
   const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>([]);
@@ -112,8 +115,44 @@ const Vencimientos = () => {
     }
   };
 
-  const handleCopyVencimientos = async (ids: string[]) => {
-    console.log(ids);
+  const handleCopyVencimientosClicked = async (ids: string[]) => {
+    setIdsACopiar(ids);
+    setShowCopiarModal(true);
+  };
+
+  const handleCopiarVencimientos = async (fecha: Date) => {
+    setIsLoading(true);
+    const vencimientosACopiar = vencimientos.filter((v) => idsACopiar.includes(v.id || ''));
+    if (vencimientosACopiar.length === 0) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: 'No hay vencimientos seleccionados para copiar',
+      });
+      setShowCopiarModal(false);
+      setIsLoading(false);
+      return;
+    }
+    const resultado = await copiarVencimientos({
+      vencimientosACopiar,
+      fechaDeCopiado: fecha,
+    });
+    if (resultado.exitoso) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'success',
+        mensaje: 'Vencimientos copiados correctamente',
+      });
+      buscarVencimientos(buscarVencimientoPayload);
+    } else {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: resultado.errores.join('\n'),
+      });
+    }
+    setShowCopiarModal(false);
+    setIsLoading(false);
   };
 
   const buscarVencimientos = async (payload: BuscarVencimientosPayload) => {
@@ -133,7 +172,7 @@ const Vencimientos = () => {
           onEdit={handleEditarMovimiento}
           onDelete={handleEliminarVencimiento}
           onAdd={handleAgregarVencimiento}
-          onCopy={handleCopyVencimientos}
+          onCopy={handleCopyVencimientosClicked}
         />
         {showAgregarEditarModal ? (
           <AgregarEditarModal
@@ -143,6 +182,13 @@ const Vencimientos = () => {
             open={showAgregarEditarModal}
             vencimiento={vencimientoAEditar}
             pagos={posiblesPagos}
+          />
+        ) : null}
+        {showCopiarModal ? (
+          <CopiarModal
+            open={showCopiarModal}
+            onCopiar={handleCopiarVencimientos}
+            onClose={() => setShowCopiarModal(false)}
           />
         ) : null}
       </Box>
