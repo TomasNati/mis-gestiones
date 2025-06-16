@@ -11,13 +11,14 @@ import { obtenerMovimientosParaVencimientos, obtenerSubCategorias, obtenerVencim
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
-import { FilterComponent } from '@/components/vencimientos/Filtros/Filtros';
+import { FilterComponent, FILTERS_DEFAULT } from '@/components/vencimientos/Filtros/Filtros';
 import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
 import { persistirVencimiento, eliminarVencimiento, copiarVencimientos } from '@/lib/orm/actions';
 import { Box } from '@mui/material';
 import { VencimientosGrilla } from '@/components/vencimientos/VencimientoGrilla/VencimientoGrilla';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { CopiarModal } from '@/components/vencimientos/CopiarModal/CopiarModal';
+import { toUTC } from '@/lib/helpers';
 
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
@@ -52,8 +53,17 @@ const Vencimientos = () => {
       });
       setTiposDeVencimientos(subcategorias);
     };
+
     fetchTiposDeVencimientos();
-    buscarVencimientos({} as BuscarVencimientosPayload);
+
+    buscarVencimientos({
+      desde: toUTC(FILTERS_DEFAULT.desde?.toDate() || new Date()),
+      hasta: toUTC(FILTERS_DEFAULT.hasta?.toDate() || new Date()),
+      tipos: null,
+      esAnual: null,
+      estricto: null,
+      pagado: null,
+    });
   }, []);
 
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);

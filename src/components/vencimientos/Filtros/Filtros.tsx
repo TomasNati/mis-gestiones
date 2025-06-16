@@ -9,6 +9,15 @@ import { toUTC } from '@/lib/helpers';
 
 type FiltersTypes = dayjs.Dayjs | Subcategoria[] | boolean | null;
 
+export const FILTERS_DEFAULT: Filters = {
+  desde: dayjs().startOf('month'),
+  hasta: dayjs().endOf('month').startOf('day'),
+  tipos: null,
+  esAnual: null,
+  estricto: null,
+  pagado: null,
+};
+
 interface Filters {
   desde: dayjs.Dayjs | null;
   hasta: dayjs.Dayjs | null;
@@ -26,14 +35,7 @@ interface FilterComponentProps {
 
 const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps) => {
   const [tipos, setTipos] = useState<Subcategoria[]>([]);
-  const [filters, setFilters] = useState<Filters>({
-    desde: dayjs().startOf('month'),
-    hasta: dayjs().add(1, 'month').endOf('month'),
-    tipos: null,
-    esAnual: null,
-    estricto: null,
-    pagado: null,
-  });
+  const [filters, setFilters] = useState<Filters>({ ...FILTERS_DEFAULT });
 
   useEffect(() => {
     setTipos(tiposDeVencimientos);
@@ -58,8 +60,8 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
     const payload: BuscarVencimientosPayload = {
       ...filters,
       tipos: filters.tipos?.map(({ id }) => id) || null,
-      desde: filters.desde ? toUTC(filters.desde.toDate()) : null,
-      hasta: filters.hasta ? toUTC(filters.hasta.toDate()) : null,
+      desde: filters.desde ? filters.desde.toDate() : null,
+      hasta: filters.hasta ? filters.hasta.toDate() : null,
     };
 
     onBuscar(payload);
