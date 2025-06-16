@@ -8,6 +8,7 @@ interface CopiarModalStyles {
 export const styles: CopiarModalStyles = {
   datePicker: {
     width: '160px',
+    marginTop: '6px',
     '& input': {
       padding: '9px',
     },

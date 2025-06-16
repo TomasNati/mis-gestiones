@@ -11,7 +11,7 @@ interface CopiarModalProps {
 }
 
 export const CopiarModal = ({ onCopiar, onClose, open }: CopiarModalProps) => {
-  const [fechaDeCopiado, setFechaDeCopiado] = useState<dayjs.Dayjs | null>(dayjs());
+  const [fechaDeCopiado, setFechaDeCopiado] = useState<dayjs.Dayjs | null>(dayjs().add(1, 'month'));
 
   const handleCopiar = () => {
     if (fechaDeCopiado) {

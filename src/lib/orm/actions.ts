@@ -462,11 +462,18 @@ export const copiarVencimientos = async ({
 
   try {
     for (const vencimiento of vencimientosACopiar) {
+      const nuevaFecha = new Date(
+        fechaDeCopiado.getFullYear(),
+        fechaDeCopiado.getMonth(),
+        vencimiento.fecha.getUTCDate(),
+        0,
+        0,
+        0,
+        0,
+      );
       const nuevoVencimiento: VencimientoUI = {
         id: generateUUID(),
-        fecha: toUTC(
-          new Date(fechaDeCopiado.getFullYear(), fechaDeCopiado.getMonth(), vencimiento.fecha.getDate(), 0, 0, 0, 0),
-        ),
+        fecha: nuevaFecha,
         monto: 0,
         fechaConfirmada: false,
         subcategoria: vencimiento.subcategoria,
