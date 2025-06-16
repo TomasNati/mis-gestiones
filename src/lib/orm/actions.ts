@@ -462,10 +462,34 @@ export const copiarVencimientos = async ({
 
   try {
     for (const vencimiento of vencimientosACopiar) {
-      const nuevoVencimiento = { ...vencimiento, fecha: fechaDeCopiado };
-      console.log('Copiando vencimiento:', nuevoVencimiento);
-      //TODO : COPIAR VENCIMIENTO
-      //await db.insert(vencimientoDB).values(nuevoVencimiento);
+      const nuevoVencimiento: VencimientoUI = {
+        id: generateUUID(),
+        fecha: toUTC(
+          new Date(fechaDeCopiado.getFullYear(), fechaDeCopiado.getMonth(), vencimiento.fecha.getDate(), 0, 0, 0, 0),
+        ),
+        monto: 0,
+        fechaConfirmada: false,
+        subcategoria: vencimiento.subcategoria,
+        esAnual: vencimiento.esAnual,
+        comentarios: '',
+      };
+
+      const [valRes, error] = validarCrearVencimiento(nuevoVencimiento);
+      if (!valRes.success) {
+        resultado.errores = [error];
+        return resultado;
+      }
+      const vencimientoSafe = valRes.data;
+      await db.insert(vencimientoDB).values({
+        subcategoria: vencimientoSafe.subcategoria.id,
+        fecha: vencimientoSafe.fecha,
+        monto: vencimientoSafe.monto.toString(),
+        comentarios: vencimientoSafe.comentarios || null,
+        esAnual: vencimientoSafe.esAnual,
+        estricto: vencimientoSafe.estricto || false,
+        fechaConfirmada: vencimientoSafe.fechaConfirmada || false,
+        pago: vencimientoSafe.pago?.id || null,
+      });
     }
   } catch (error: unknown) {
     if (error instanceof Error) {

@@ -489,17 +489,14 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
     const queryFilters = [];
 
     if (desde || hasta) {
-      const desdeUTC =
-        desde != null
-          ? new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), 1, 0, 0, 0))
-          : new Date(Date.UTC(1900, 0, 1));
+      const desdeFilter = desde
+        ? new Date(Date.UTC(desde.getUTCFullYear(), desde.getUTCMonth(), desde.getUTCDate(), 0, 0, 0))
+        : new Date(Date.UTC(1900, 0, 1));
+      const hastaFilter = hasta
+        ? new Date(Date.UTC(hasta.getUTCFullYear(), hasta.getUTCMonth(), hasta.getUTCDate(), 23, 59, 59))
+        : new Date(Date.UTC(2100, 0, 1));
 
-      const hastaUTC =
-        hasta != null
-          ? new Date(Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59))
-          : new Date(Date.UTC(2100, 0, 1));
-
-      queryFilters.push(between(vencimiento.fecha, desdeUTC, hastaUTC));
+      queryFilters.push(between(vencimiento.fecha, desdeFilter, hastaFilter));
     }
 
     if (esAnual !== undefined && esAnual !== null) {
