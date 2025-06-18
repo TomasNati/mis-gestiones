@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import { FormControlLabel, Checkbox, FormControl, IconButton, Grid2, Autocomplete, TextField } from '@mui/material';
+import {
+  FormControlLabel,
+  Checkbox,
+  FormControl,
+  IconButton,
+  Grid2,
+  Autocomplete,
+  TextField,
+  Box,
+  Button,
+} from '@mui/material';
 import { styles } from './Filtros.styles';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { BuscarVencimientosPayload, Subcategoria } from '@/lib/definitions';
-import { toUTC } from '@/lib/helpers';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 type FiltersTypes = dayjs.Dayjs | Subcategoria[] | boolean | null;
 
@@ -67,6 +78,21 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
     onBuscar(payload);
   };
 
+  const onMoverMesesIzquierda = () => {
+    setFilters((prev) => ({
+      ...prev,
+      desde: prev.desde ? prev.desde.subtract(1, 'month').startOf('month') : null,
+      hasta: prev.hasta ? prev.hasta.subtract(1, 'month').endOf('month').startOf('day') : null,
+    }));
+  };
+  const onMoverMesesDerecha = () => {
+    setFilters((prev) => ({
+      ...prev,
+      desde: prev.desde ? prev.desde.add(1, 'month').startOf('month') : null,
+      hasta: prev.hasta ? prev.hasta.add(1, 'month').endOf('month').startOf('day') : null,
+    }));
+  };
+
   return (
     <Grid2 container spacing={2}>
       <DatePicker
@@ -83,6 +109,10 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
         minDate={filters.desde || undefined}
         sx={styles.datePicker}
       />
+      <Box sx={styles.buttonsContainer}>
+        <Button variant="outlined" startIcon={<ChevronLeftIcon />} onClick={onMoverMesesIzquierda} />
+        <Button variant="outlined" startIcon={<ChevronRightIcon />} onClick={onMoverMesesDerecha} />
+      </Box>
 
       <FormControl sx={styles.tipo}>
         <Autocomplete

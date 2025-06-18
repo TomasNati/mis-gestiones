@@ -3,6 +3,7 @@ import { SxProps } from '@mui/system';
 interface FiltrosStyles {
   datePicker: SxProps;
   tipo: SxProps;
+  buttonsContainer: SxProps;
 }
 
 export const styles: FiltrosStyles = {
@@ -13,4 +14,11 @@ export const styles: FiltrosStyles = {
     },
   },
   tipo: { width: '250px' },
+  buttonsContainer: {
+    display: 'flex',
+    gap: '9px',
+    '& button': {
+      height: '41px',
+    },
+  },
 };
