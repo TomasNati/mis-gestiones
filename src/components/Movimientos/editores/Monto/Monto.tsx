@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, useEffect } from 'react';
 import { TextField, Tooltip } from '@mui/material';
 import Mexp from 'math-expression-evaluator';
 import { GridColDef, GridRenderCellParams, useGridApiContext } from '@mui/x-data-grid';
+import { MontoTooltip } from './MontoTooltip';
 
 const mexp = new Mexp();
 
@@ -60,27 +61,10 @@ const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInpu
         .match(/[+-]?[^+-]+/g) // Match each term with its sign
         ?.map((term) => term.trim())
         .join('\n') || ''
-    : inputValue;
+    : '';
 
   return (
-    <Tooltip
-      title={
-        <span>
-          {tooltip.split('\n').map((line, idx) => (
-            <React.Fragment key={idx}>
-              {line}
-              <br />
-            </React.Fragment>
-          ))}
-          <>
-            {'------------------'}
-            <br />
-            {formulaValue ? `${formulaValue}` : 'No hay resultado'}
-          </>
-        </span>
-      }
-      arrow
-    >
+    <MontoTooltip tooltip={tooltip} formulaValue={formulaValue}>
       <TextField
         value={inputValue}
         onChange={handleChange}
@@ -91,7 +75,7 @@ const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInpu
         size={size}
         disabled={disabled}
       />
-    </Tooltip>
+    </MontoTooltip>
   );
 };
 
