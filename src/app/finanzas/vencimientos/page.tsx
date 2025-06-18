@@ -20,6 +20,15 @@ import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificaci
 import { CopiarModal } from '@/components/vencimientos/CopiarModal/CopiarModal';
 import { toUTC } from '@/lib/helpers';
 
+const buscarVencimientoPayloadDefault: BuscarVencimientosPayload = {
+  desde: toUTC(FILTERS_DEFAULT.desde?.toDate() || new Date()),
+  hasta: toUTC(FILTERS_DEFAULT.hasta?.toDate() || new Date()),
+  tipos: null,
+  esAnual: null,
+  estricto: null,
+  pagado: null,
+};
+
 const Vencimientos = () => {
   const [vencimientos, setVencimientos] = useState<VencimientoUI[]>([]);
   const [tiposDeVencimientos, setTiposDeVencimientos] = useState<Subcategoria[]>([]);
@@ -29,9 +38,9 @@ const Vencimientos = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [vencimientoAEditar, setVencimientoAEditar] = useState<VencimientoUI | undefined>(undefined);
   const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>([]);
-  const [buscarVencimientoPayload, setBuscarVencimientoPayload] = useState<BuscarVencimientosPayload>(
-    {} as BuscarVencimientosPayload,
-  );
+  const [buscarVencimientoPayload, setBuscarVencimientoPayload] = useState<BuscarVencimientosPayload>({
+    ...buscarVencimientoPayloadDefault,
+  });
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
@@ -56,14 +65,7 @@ const Vencimientos = () => {
 
     fetchTiposDeVencimientos();
 
-    buscarVencimientos({
-      desde: toUTC(FILTERS_DEFAULT.desde?.toDate() || new Date()),
-      hasta: toUTC(FILTERS_DEFAULT.hasta?.toDate() || new Date()),
-      tipos: null,
-      esAnual: null,
-      estricto: null,
-      pagado: null,
-    });
+    buscarVencimientos(buscarVencimientoPayload);
   }, []);
 
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
