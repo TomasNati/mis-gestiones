@@ -53,25 +53,45 @@ const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInpu
     setInputValue(previousInputValue);
   };
 
-  // return formulaValue ? (
-  //   <Tooltip title={formulaValue} arrow>
-  //     <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
-  //   </Tooltip>
-  // ) : (
-  //   <TextField label="Enter formula" value={inputValue} onChange={handleChange} onBlur={() => handleBlur()} />
-  // );
+  // Split tooltip if inputValue starts with '=' using + or - as separators
+  const tooltip = inputValue.startsWith('=')
+    ? inputValue
+        .slice(1)
+        .match(/[+-]?[^+-]+/g) // Match each term with its sign
+        ?.map((term) => term.trim())
+        .join('\n') || ''
+    : inputValue;
 
   return (
-    <TextField
-      value={inputValue}
-      onChange={handleChange}
-      onBlur={() => handleBlur()}
-      onFocus={handleFocus}
-      onKeyDown={handleOnKeyDown}
-      label={label}
-      size={size}
-      disabled={disabled}
-    />
+    <Tooltip
+      title={
+        <span>
+          {tooltip.split('\n').map((line, idx) => (
+            <React.Fragment key={idx}>
+              {line}
+              <br />
+            </React.Fragment>
+          ))}
+          <>
+            {'------------------'}
+            <br />
+            {formulaValue ? `${formulaValue}` : 'No hay resultado'}
+          </>
+        </span>
+      }
+      arrow
+    >
+      <TextField
+        value={inputValue}
+        onChange={handleChange}
+        onBlur={() => handleBlur()}
+        onFocus={handleFocus}
+        onKeyDown={handleOnKeyDown}
+        label={label}
+        size={size}
+        disabled={disabled}
+      />
+    </Tooltip>
   );
 };
 
