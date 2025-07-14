@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Layout } from '@/components/Layout/Layout';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import ThemeRegistry from '@/components/ThemeRegistry/ThemeRegistry';
 
 export const metadata = {
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeRegistry>
           <Layout>{children}</Layout>
         </ThemeRegistry>
+        <SpeedInsights />
       </body>
     </html>
   );
