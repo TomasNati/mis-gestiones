@@ -69,7 +69,7 @@ export const vencimiento = misgestiones.table('finanzas_vencimiento', {
   active: boolean('active').notNull().default(true),
   estricto: boolean('estricto').default(false),
   fechaConfirmada: boolean('fechaconfirmada').default(false),
-  //if exists, indicates that the vencimiento was paid
+  // if exists, indicates that the vencimiento was paid
   pago: uuid('pago').references(() => movimientosGasto.id),
 });
 export type VencimientoDB = InferSelectModel<typeof vencimiento>;

@@ -5,6 +5,7 @@ import {
   GridRowsProp,
   GridToolbarContainer,
   GridToolbarExport,
+  GridSlotsComponentsProps,
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -16,7 +17,6 @@ import { MovimientoGastoGrilla, ResultadoAPI, CategoriaUIMovimiento, GrupoMovimi
 import { useState } from 'react';
 import { GrupoModal } from './editores/GrupoModal/GrupoModal';
 import { GastosProgressBar } from './GastosProgressBar';
-import { GridSlotsComponentsProps } from '@mui/x-data-grid';
 
 // augment the props for the toolbar slot
 declare module '@mui/x-data-grid' {

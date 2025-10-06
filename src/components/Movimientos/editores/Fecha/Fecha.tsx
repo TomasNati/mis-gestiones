@@ -109,7 +109,6 @@ const applyFilterFecha = (filterItem: GridFilterItem) => {
     return null;
   }
 
-  //return (value: GridCellParams<any, MovimientoGastoGrilla, MovimientoGastoGrilla, GridTreeNode>) => {
   return (_: any, row: MovimientoGastoGrilla) => {
     const movimiento = row;
     const dia = new Date(movimiento.fecha).getDate();

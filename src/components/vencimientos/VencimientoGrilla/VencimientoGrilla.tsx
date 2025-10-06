@@ -83,12 +83,14 @@ export const VencimientosGrilla = ({
             className="textPrimary"
             onClick={handleEditClick(id.toString())}
             color="inherit"
+            key="edit"
           />,
           <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Delete"
             onClick={handleDeleteClick(id.toString())}
             color="inherit"
+            key="delete"
           />,
         ];
       },

@@ -912,7 +912,7 @@ export const conceptoExcelGastosEstimadosTemplate: ConceptoExcelGastosEstimadoFi
     indice: 103,
     descripcion: 'Tablet + funda',
     tipo: 'subcategoria',
-    subcategoriaId: '50e1ce59-a52e-4185-a487-acf84a584717', //Uso la misma que hardware
+    subcategoriaId: '50e1ce59-a52e-4185-a487-acf84a584717', // Uso la misma que hardware
   },
   {
     indice: 104,

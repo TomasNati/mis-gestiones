@@ -50,7 +50,7 @@ const Vencimientos = () => {
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
       const subcategorias = await obtenerSubCategorias(TipoDeGasto.Fijo);
-      //sort subcategorias by categoria
+      // sort subcategorias by categoria
       subcategorias.sort((a, b) => {
         if (a.nombre < b.nombre) {
           return -1;

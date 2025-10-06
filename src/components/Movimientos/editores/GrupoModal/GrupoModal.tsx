@@ -1,7 +1,7 @@
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { Autocomplete, Box, Button, DialogContent, Grid2 as Grid, TextField } from '@mui/material';
-import { obtenerDiasEnElMes } from '@/lib/helpers';
+import { obtenerDiasEnElMes, generateUUID } from '@/lib/helpers';
 import { Fecha } from '../Fecha/Fecha';
 import { TipoDePagoEdicion } from '../TipoDePago/TipoDePago';
 import {
@@ -12,7 +12,6 @@ import {
 } from '@/lib/definitions';
 import AddIcon from '@mui/icons-material/Add';
 import { useState, useEffect } from 'react';
-import { generateUUID } from '@/lib/helpers';
 import { FilaGrupoModal } from './FilaGrupoModal';
 import { NumberInput } from '../Monto/Monto';
 

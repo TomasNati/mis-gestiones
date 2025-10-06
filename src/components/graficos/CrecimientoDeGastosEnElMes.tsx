@@ -42,8 +42,8 @@ const CrecimientoDeGastosEnElMes = ({
 
   gastosAcumuladosPorDia.forEach((gasto, index) => {
     gasto.totalAcumulado = gastosAcumuladosPorDia
-      .slice(0, index + 1) //obtengo todos los dias hasta el actual
-      .reduce((acc, gasto) => acc + gasto.totalPorDia, 0); //sumo los gastos de cada dia
+      .slice(0, index + 1) // obtengo todos los dias hasta el actual
+      .reduce((acc, gasto) => acc + gasto.totalPorDia, 0); // sumo los gastos de cada dia
     gasto.pendienteDeGastar -= gasto.totalAcumulado;
   });
 

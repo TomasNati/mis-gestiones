@@ -799,7 +799,7 @@ export const exportarGastosEstimados = (gastos: GastoEstimadoAnualUI[], meses: s
   // Create a temporary link to download the file
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', `resultado.csv`);
+  link.setAttribute('download', 'resultado.csv');
   link.click();
 
   // Cleanup

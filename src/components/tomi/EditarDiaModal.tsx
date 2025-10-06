@@ -2,11 +2,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { Box, Button, DialogContent, TextField } from '@mui/material';
 import { AgendaTomiDia, EventoSuenio } from '@/lib/definitions';
-import { formatDate } from '@/lib/helpers';
+import { formatDate, generateUUID } from '@/lib/helpers';
 import { useState } from 'react';
 import { DormidoDespiertoPicker } from './DormidoDespiertoPicker';
 import AddIcon from '@mui/icons-material/Add';
-import { generateUUID } from '@/lib/helpers';
 
 interface EditarDiaModalProps {
   open: boolean;

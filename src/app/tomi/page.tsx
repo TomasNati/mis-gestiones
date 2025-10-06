@@ -17,12 +17,11 @@ import {
   TableRow,
   Tooltip,
 } from '@mui/material';
-import { obtenerDiaYDiaDeLaSemana } from '@/lib/helpers';
+import { obtenerDiaYDiaDeLaSemana, generateUUID } from '@/lib/helpers';
 import BarraSuenio from '@/components/tomi/BarraSuenio';
 import { useEffect, useState } from 'react';
 import { AgendaTomiDia, months } from '@/lib/definitions';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
-import { generateUUID } from '@/lib/helpers';
 import EditIcon from '@mui/icons-material/Edit';
 import { EditarDiaModal } from '@/components/tomi/EditarDiaModal';
 import { LocalizationProvider } from '@mui/x-date-pickers';

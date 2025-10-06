@@ -85,7 +85,7 @@ const MovimientosDelMesGrilla = ({
   useEffect(() => {
     const fetchConceptos = async () => {
       const categoriasMovimiento = await obtenerCategoriasDeMovimientos();
-      //sort subcategorias by categoria
+      // sort subcategorias by categoria
       categoriasMovimiento.sort((a, b) => {
         if (a.categoriaNombre < b.categoriaNombre) {
           return -1;
