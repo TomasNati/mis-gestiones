@@ -27,19 +27,19 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.42.0",
     "math-expression-evaluator": "^2.0.5",
-    "next": "15.3.2",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "next": "15.5.4",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "19.1.4",
-    "@types/react-dom": "19.1.5",
+    "@types/react": "19.2.0",
+    "@types/react-dom": "19.2.0",
     "autoprefixer": "^10",
     "drizzle-kit": "^0.31.1",
     "eslint": "^8.54.0",
-    "eslint-config-next": "15.3.2",
+    "eslint-config-next": "15.5.4",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.0",
@@ -52,8 +52,8 @@
     "typescript": "^5"
   },
   "resolutions": {
-    "@types/react": "19.1.4",
-    "@types/react-dom": "19.1.5"
+    "@types/react": "19.2.0",
+    "@types/react-dom": "19.2.0"
   },
   "engines": {
     "node": "20.x"

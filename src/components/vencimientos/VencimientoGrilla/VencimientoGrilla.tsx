@@ -56,6 +56,18 @@ export const VencimientosGrilla = ({
   const [vencimientosElegidos, setVencimientosElegidos] = useState<VencimientoUI[]>([]);
   const rows: GridRowsProp = vencimientos;
 
+  const formatPagoRealizado = (pago: VencimientoPago | null, vencimiento: VencimientoUI) => {
+    if (!pago) return '';
+
+    const { fecha, monto: montoPagado } = pago;
+    const fechaFormateada = formatDate(fecha, false, { timeZone: 'UTC' });
+
+    if (vencimiento.monto !== montoPagado) {
+      return `${fechaFormateada} - ${transformNumberToCurrenty(montoPagado)}`;
+    }
+    return `${fechaFormateada}`;
+  };
+
   const columns: GridColDef[] = [
     {
       field: 'actions',
@@ -91,7 +103,11 @@ export const VencimientosGrilla = ({
       field: 'fecha',
       headerName: 'Fecha',
       width: 150,
-      valueFormatter: (fecha: Date) => formatDate(fecha, false, { timeZone: 'UTC' }),
+      valueFormatter: (fecha: Date, row: VencimientoUI) => {
+        const formattedDate = formatDate(fecha, false, { timeZone: 'UTC' });
+        const questionMark = !row.fechaConfirmada ? ' (?)' : '';
+        return `${formattedDate}${questionMark}`;
+      },
     },
     {
       field: 'monto',
@@ -101,18 +117,17 @@ export const VencimientosGrilla = ({
       valueFormatter: (monto: number) => transformNumberToCurrenty(monto),
     },
     {
-      field: 'fechaConfirmada',
-      headerName: 'Fecha Confirmada',
-      width: 150,
-      type: 'boolean',
-      valueGetter: (estricto: boolean) => estricto,
-    },
-    {
       field: 'esAnual',
-      headerName: 'Es Anual',
+      headerName: 'Anual',
       width: 100,
       type: 'boolean',
       valueGetter: (esAnual: boolean) => esAnual,
+    },
+    {
+      field: 'pago',
+      headerName: 'Pago',
+      width: 200,
+      valueFormatter: (pago: VencimientoPago | null, row: VencimientoUI) => formatPagoRealizado(pago, row),
     },
     {
       field: 'comentarios',
