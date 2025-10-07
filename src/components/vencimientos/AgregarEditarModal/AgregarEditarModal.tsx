@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { MovimientoDeVencimiento, Subcategoria, TipoDeMovimientoGasto, VencimientoUI } from '@/lib/definitions';
+import { MovimientoDeVencimiento, Subcategoria, VencimientoUI } from '@/lib/definitions';
 import { formatDate, toUTC } from '@/lib/helpers';
 import { obtenerMovimientosParaVencimientos } from '@/lib/orm/data';
 

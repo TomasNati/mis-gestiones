@@ -11,7 +11,7 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 
 const DRAWER_WIDTH = 200;
 const DRAWER_COLLAPSED_WIDTH = 85;
@@ -34,7 +34,7 @@ const LINKS = [
 
 const PLACEHOLDER_LINKS = [{ text: 'Settings', icon: SettingsIcon }];
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
+const Layout = ({ children }: { children: ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 

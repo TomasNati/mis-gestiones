@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
-import { TextField, Tooltip } from '@mui/material';
+import { TextField } from '@mui/material';
 import Mexp from 'math-expression-evaluator';
 import { GridColDef, GridRenderCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { MontoTooltip } from './MontoTooltip';
@@ -32,7 +32,7 @@ const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInpu
       if (!isNaN(result)) {
         setFormulaValue(result.toString()); // Update input value with result
       }
-    } catch (error) {
+    } catch {
       setFormulaValue(''); // Display error if evaluation fails
     }
     setInputValue(event.target.value);

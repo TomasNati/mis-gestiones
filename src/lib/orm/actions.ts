@@ -232,7 +232,7 @@ const importarPresupuestos = async (datos: ImportarUI): Promise<ImportarResult> 
         throw new Error('No es un número');
       }
       conceptoExcelGastosEstimados[i].monto = monto === null ? undefined : monto;
-    } catch (error) {
+    } catch {
       resultadoFinal.lineasInvalidas.push({
         linea: i.toString(),
         razon: `El monto ${lineas[i]} no es un número`,

@@ -1,9 +1,9 @@
 import { CategoriaUIMovimiento, InfoFilaMovimientoGrupo } from '@/lib/definitions';
-import { Box, TextField, Button, FormControlLabel, Checkbox, FormControl, FormLabel } from '@mui/material';
+import { Box, TextField, Button, Checkbox, FormControl, FormLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NumberInput } from '@/components/Movimientos/editores/Monto/Monto';
 import { Concepto } from '../Concepto/Concepto';
-import { useState, ChangeEvent } from 'react';
+import { ChangeEvent } from 'react';
 
 interface FilaGrupoModalProps {
   fila: InfoFilaMovimientoGrupo;

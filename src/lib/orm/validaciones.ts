@@ -172,7 +172,6 @@ export const validarCrearGastoEstimado = (gastoEstimado: any): [SafeParseCrearGa
   const result = CrearGastoEstimadoSchema.safeParse(gastoEstimado);
   let errors = '';
   if (!result.success) {
-    const errores = result.error.flatten().fieldErrors;
     errors = processErrors(result.error);
   }
   return [result, errors];

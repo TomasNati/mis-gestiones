@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { z } from 'zod';
 import { actualizarAgendaTomiDia } from '../../src/lib/orm/actions';
 import { obtenerAgendaTomiDias } from '../../src/lib/orm/data';
 import { validarRangoFechas } from '../../src/lib/orm/validaciones';

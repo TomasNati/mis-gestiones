@@ -2,16 +2,13 @@ import { MovimientoGastoGrilla } from '@/lib/definitions';
 import { focusOnField, obtenerDiasEnElMes } from '@/lib/helpers';
 import { TextField } from '@mui/material';
 import {
-  GridCellParams,
   GridFilterInputValueProps,
   GridFilterItem,
   GridFilterOperator,
   GridRenderCellParams,
-  GridTreeNode,
   useGridApiContext,
 } from '@mui/x-data-grid';
-import { AnyMySqlUpdateBase } from 'drizzle-orm/mysql-core';
-import { useImperativeHandle, useRef, useState } from 'react';
+import { useImperativeHandle, useRef, useState, ChangeEvent, FC, KeyboardEvent, Ref } from 'react';
 
 interface FechaProps {
   initialValue?: number;
@@ -22,10 +19,10 @@ interface FechaProps {
   size?: 'small' | 'medium';
 }
 
-const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, onTabPressed, label, size }) => {
+const Fecha: FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, onTabPressed, label, size }) => {
   const [value, setValue] = useState<number | undefined>(initialValue);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newValue = parseInt(event.target.value);
 
     if (isNaN(newValue)) {
@@ -37,7 +34,7 @@ const Fecha: React.FC<FechaProps> = ({ initialValue = 1, onChange, diasDelMes, o
     }
   };
 
-  const handleTabPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleTabPress = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Tab') {
       onTabPressed();
     }
@@ -79,14 +76,14 @@ function FechaFilterInput(props: GridFilterInputValueProps) {
   const { item, applyValue, focusElementRef } = props;
   const [value, setValue] = useState(item.value || '');
 
-  const fechaRef: React.Ref<any> = useRef(null);
+  const fechaRef: Ref<any> = useRef(null);
   useImperativeHandle(focusElementRef, () => ({
     focus: () => {
       fechaRef?.current?.querySelector('input').focus();
     },
   }));
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
     applyValue({ ...item, value: event.target.value });
   };

@@ -1,5 +1,5 @@
 import { TipoDeMovimientoGasto } from '@/lib/definitions';
-import { useState } from 'react';
+import { useState, KeyboardEvent } from 'react';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -64,7 +64,7 @@ const TipoDePagoEdicion = ({
     onTipoDePagoChange(tipoDePago);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key.toLowerCase() === 'e') {
       onTipoDePagoModificado(TipoDeMovimientoGasto.Efectivo);
     } else if (event.key.toLowerCase() === 'd') {

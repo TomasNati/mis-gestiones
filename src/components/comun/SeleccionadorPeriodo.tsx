@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { useState } from 'react';
+import { useState, MouseEvent } from 'react';
 import { crearFecha, obtenerMesesPorAnio, moverFecha, AnioConMeses } from './seleccionadorPeriodoHelper';
 
 const initialDate = new Date();
@@ -76,7 +76,7 @@ const SeleccionadorPeriodo = ({
     }
   };
 
-  const onMesElegido = (_: React.MouseEvent<HTMLElement>, mes: string | null) => {
+  const onMesElegido = (_: MouseEvent<HTMLElement>, mes: string | null) => {
     const mesAMostrarElegido = mesesAMostrar.find(({ meses }) => meses.includes(mes || ''));
     if (!mesAMostrarElegido || !mes) return;
 
@@ -85,7 +85,7 @@ const SeleccionadorPeriodo = ({
     setMesYAnio && setMesYAnio(mes, mesAMostrarElegido.anio);
   };
 
-  const onMesesElegidos = (_: React.MouseEvent<HTMLElement>, nuevosMeses: string[]) => {
+  const onMesesElegidos = (_: MouseEvent<HTMLElement>, nuevosMeses: string[]) => {
     const nuevosMesesElegidos: AnioConMeses[] = [];
 
     mesesAMostrar.forEach(({ anio, meses }) => {
@@ -196,7 +196,7 @@ const SeleccionadorPeriodo = ({
         >
           {mesesAMostrar
             .flatMap(({ meses }) => meses)
-            .map((mes, index) => (
+            .map((mes) => (
               <ToggleButton
                 key={mes}
                 value={mes}
