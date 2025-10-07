@@ -1,5 +1,5 @@
 import React from 'react';
-import { LinearProgress, Box, Typography, duration } from '@mui/material';
+import { LinearProgress, Box, Typography } from '@mui/material';
 import { EventoSuenio, TipoEventoSuenio } from '@/lib/definitions';
 import { timeStringToMinutes, minutesToTimeString } from '@/lib/helpers';
 

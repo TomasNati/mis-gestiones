@@ -1,10 +1,7 @@
 import React, { useState, ChangeEvent } from 'react';
 import { TextField } from '@mui/material';
-import Mexp from 'math-expression-evaluator';
 import { GridColDef, GridRenderCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { GastoEstimadoItemDelMes } from '@/lib/definitions';
-
-const mexp = new Mexp();
 
 interface NumberInputProps {
   onBlur: (value?: number) => void;

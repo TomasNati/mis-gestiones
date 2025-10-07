@@ -17,7 +17,7 @@ import {
   DataGridProps,
   useGridApiRef,
 } from '@mui/x-data-grid';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, MouseEvent } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
 import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -25,6 +25,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
 import { AnioConMeses } from '../comun/seleccionadorPeriodoHelper';
+// import { HTMLButtonElement}
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
@@ -101,7 +102,7 @@ const GastosEstimadosDelMesGrilla = ({
     onTieneCambiosPendientesChanged(hasUnsavedRows);
   };
 
-  const onToggleSubcategoriesVisibility = (event: React.MouseEvent<HTMLButtonElement>, row: GastoEstimadoAnualUI) => {
+  const onToggleSubcategoriesVisibility = (event: MouseEvent<HTMLButtonElement>, row: GastoEstimadoAnualUI) => {
     event.stopPropagation();
     const nuevoValorColapsado = !row.colapsado;
 
@@ -245,7 +246,7 @@ const GastosEstimadosDelMesGrilla = ({
         unsavedRows: {},
         rowsBeforeChange: {},
       };
-    } catch (error) {
+    } catch {
       setIsSaving(false);
     }
   }, [apiRef, mesesElegidos]);

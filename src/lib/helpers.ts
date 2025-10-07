@@ -150,7 +150,7 @@ export const toUTC = (original: Date, dateOnly = true): Date => {
  * @returns The total number of minutes represented by the time string.
  */
 export const timeStringToMinutes = (time: string): number => {
-  const [hours, minutes, _] = time.split(':').map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
 };
 
@@ -240,7 +240,8 @@ export const obtenerCategoriaUIMovimiento = ({
   return categoriaUIMovimiento;
 };
 
-export const actualizarSubcategoria = (categoriaUI: CategoriaUIMovimiento, movimiento: MovimientoGasto) => {
+export const actualizarSubcategoria = (categoriaUI: CategoriaUIMovimiento) => {
+  // , movimiento: MovimientoGasto) => {
   if (categoriaUI.detalleSubcategoriaId) {
     //   movimiento.subcategoria =  {
     //     id: categoriaUI.subcategoriaId,
@@ -359,7 +360,7 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
     case TiposDeConceptoExcel.Mejoras:
       resultado.subcategoriaId = '8a962fce-890e-4cc8-8065-6eeb0b7db638';
       break;
-    case TiposDeConceptoExcel.Servicios:
+    case TiposDeConceptoExcel.Servicios: {
       resultado.sinComentarios = true;
 
       let comentarioAjustado = comentario;
@@ -457,6 +458,7 @@ export const mapearTiposDeConceptoExcelASubcategorias = (
           break;
       }
       break;
+    }
     case TiposDeConceptoExcel.HijosOtros:
       resultado.subcategoriaId = 'ce16188d-8926-4115-9678-f899ab692337';
       break;
@@ -660,6 +662,7 @@ export const mapearSubcategoriasATiposDeConceptoExcel = (
       break;
     case 'c7682c23-aacb-4cd1-8169-ac63248c1233':
       tipoDeConcepto = TiposDeConceptoExcel.Otras;
+      break;
     case 'a544c67b-969b-486c-a859-6e1087da9858':
       tipoDeConcepto = TiposDeConceptoExcel.Peluqueria_belleza;
       break;

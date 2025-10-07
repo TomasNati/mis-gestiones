@@ -56,7 +56,7 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCheckboxChange = (field: string, value: boolean) => {
+  const handleCheckboxChange = (field: string) => {
     setFilters((prev) => {
       const newValue = prev[field] === false ? true : prev[field] === true ? null : false;
       return { ...prev, [field]: newValue };
@@ -131,7 +131,7 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
           <Checkbox
             checked={filters.esAnual === true}
             indeterminate={filters.esAnual === null}
-            onChange={(e) => handleCheckboxChange('esAnual', e.target.checked)}
+            onChange={() => handleCheckboxChange('esAnual')}
           />
         }
         label="Es Anual"
@@ -141,7 +141,7 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
           <Checkbox
             checked={filters.estricto === true}
             indeterminate={filters.estricto === null}
-            onChange={(e) => handleCheckboxChange('estricto', e.target.checked)}
+            onChange={() => handleCheckboxChange('estricto')}
           />
         }
         label="Estricto"
@@ -151,7 +151,7 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
           <Checkbox
             checked={filters.pagado === true}
             indeterminate={filters.pagado === null}
-            onChange={(e) => handleCheckboxChange('pagado', e.target.checked)}
+            onChange={() => handleCheckboxChange('pagado')}
           />
         }
         label="Pagado"

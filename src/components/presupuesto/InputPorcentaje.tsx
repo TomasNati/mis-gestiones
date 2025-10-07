@@ -1,8 +1,8 @@
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import Icon from '@mui/material/Icon';
 import { styled } from '@mui/material/styles';
 import PercentIcon from '@mui/icons-material/Percent';
+import { ChangeEvent } from 'react';
 
 const NumberInput = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-root': {
@@ -36,7 +36,7 @@ interface PercentageTextFieldProps {
 }
 
 const PercentageTextField = ({ onChange, disabled }: PercentageTextFieldProps) => {
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     const regex = /^(?:\d{0,2}(?:\.\d)?)?$/;
 

@@ -1,7 +1,7 @@
 import { CategoriaUIMovimiento, MovimientoGastoGrilla } from '@/lib/definitions';
 import { Autocomplete, Box, TextField, autocompleteClasses, outlinedInputClasses } from '@mui/material';
 import { GridFilterInputValueProps, GridFilterOperator } from '@mui/x-data-grid';
-import { useImperativeHandle, useRef, useState } from 'react';
+import { useImperativeHandle, useRef, useState, KeyboardEvent, Ref, ChangeEvent } from 'react';
 
 interface ConceptoProps {
   categoriasMovimiento: CategoriaUIMovimiento[];
@@ -21,7 +21,7 @@ const Concepto = ({
 }: ConceptoProps) => {
   const ref = useRef<HTMLElement>(null);
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Tab') {
       onTabPressed();
     }
@@ -70,14 +70,14 @@ function ConceptoFilterInput(props: GridFilterInputValueProps) {
   const { item, applyValue, focusElementRef } = props;
   const [value, setValue] = useState(item.value || '');
 
-  const conceptoRef: React.Ref<any> = useRef(null);
+  const conceptoRef: Ref<any> = useRef(null);
   useImperativeHandle(focusElementRef, () => ({
     focus: () => {
       conceptoRef?.current?.querySelector('input').focus();
     },
   }));
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
     applyValue({ ...item, value: event.target.value });
   };
@@ -99,7 +99,7 @@ const conceptoOperators: GridFilterOperator<any, MovimientoGastoGrilla>[] = [
   {
     label: 'Contains',
     value: 'contains',
-    getApplyFilterFn: (filterItem, column) => {
+    getApplyFilterFn: (filterItem) => {
       if (!filterItem.field || !filterItem.value || !filterItem.operator) {
         return null;
       }

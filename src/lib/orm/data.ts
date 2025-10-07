@@ -28,7 +28,7 @@ import {
   tomiAgendaEventoSuenio,
   vencimiento,
 } from './tables';
-import { eq, and, desc, between, asc, isNotNull, inArray, sql } from 'drizzle-orm';
+import { eq, and, desc, between, asc, isNotNull, inArray } from 'drizzle-orm';
 import {
   generateUUID,
   obtenerCategoriaUIMovimiento,

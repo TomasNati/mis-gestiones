@@ -1,6 +1,6 @@
 import { MovimientoGastoGrilla } from '@/lib/definitions';
 import { transformNumberToCurrenty } from '@/lib/helpers';
-import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
+import { PieChart } from '@mui/x-charts/PieChart';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 

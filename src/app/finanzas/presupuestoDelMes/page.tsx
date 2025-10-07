@@ -20,8 +20,8 @@ const PresupuestoDelMes = () => {
   const [aniosYMesesAMostrar, setAniosYMesesAMostrar] = useState<AnioConMeses[]>([]);
   const [mesesElegidos, setMesesElegidos] = useState<string[]>([]);
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
-  const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
-  const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
+  const [mostrandoGrilla] = useState(true);
+  const [configNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
     mensaje: '',

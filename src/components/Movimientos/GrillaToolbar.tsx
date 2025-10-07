@@ -88,7 +88,6 @@ const GrillaToolbar = ({
   const sumaDeMovimientosElegidos = movimientosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
   const sumaFormateada = transformNumberToCurrenty(sumaDeMovimientosElegidos);
   const sumaTotalFormateada = transformNumberToCurrenty(sumaTotalDelMes);
-  const pendiente = totalMensualEstimado - sumaTotalDelMes;
 
   return (
     <GridToolbarContainer sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 3 }}>

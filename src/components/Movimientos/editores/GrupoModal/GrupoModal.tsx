@@ -11,7 +11,7 @@ import {
   TipoDeMovimientoGasto,
 } from '@/lib/definitions';
 import AddIcon from '@mui/icons-material/Add';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FocusEvent } from 'react';
 import { FilaGrupoModal } from './FilaGrupoModal';
 import { NumberInput } from '../Monto/Monto';
 
@@ -151,7 +151,7 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
     setErrors(validarDatos(nuevoMovimiento));
   };
 
-  const handleEstablecimientoBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+  const handleEstablecimientoBlur = (event: FocusEvent<HTMLInputElement>) => {
     const inputValue = (event.target as HTMLInputElement).value;
     handleEstablecimientoUpdated(inputValue);
   };

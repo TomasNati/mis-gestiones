@@ -1,5 +1,5 @@
 import { Snackbar, Alert } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, SyntheticEvent } from 'react';
 
 type ConfiguracionNotificacion = {
   open: boolean;
@@ -17,7 +17,7 @@ const Notificacion = ({ configuracionProp }: INotificacionProps) => {
     setConfigNotificacion(configuracionProp);
   }, [configuracionProp]);
 
-  const onOcultarMensaje = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const onOcultarMensaje = (event?: SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
