@@ -2,7 +2,7 @@
 
 import { obtenerMovimientosPorFecha, obtenerGastosEstimadosTotalesPorFecha } from '@/lib/orm/data';
 import { Box, Breadcrumbs, Divider, IconButton, Link, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   AnioYMes,
   GrupoMovimiento,
@@ -34,7 +34,7 @@ const MovimientosDelMes = () => {
   });
   const [totalMensualEstimado, setTotalMensualEstimado] = useState(0);
 
-  const obtenerMovimientos = async (): Promise<MovimientoGastoGrilla[]> => {
+  const obtenerMovimientos = useCallback(async (): Promise<MovimientoGastoGrilla[]> => {
     const fecha = new Date(anioYMes.anio, months.indexOf(anioYMes.mes), 1);
     const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
 
@@ -52,7 +52,7 @@ const MovimientosDelMes = () => {
       mov.fecha = setDateAsUTC(mov.fecha);
     });
     return movimientosOrdenados;
-  };
+  }, [anioYMes]);
 
   useEffect(() => {
     const refrescarMovimientos = async () => {
@@ -61,7 +61,7 @@ const MovimientosDelMes = () => {
     };
 
     refrescarMovimientos();
-  }, [anioYMes]);
+  }, [anioYMes, obtenerMovimientos]);
 
   const oneMesYAnioChanged = async (mesNuevo: string, anioNuevo: number) => {
     setAnioYMes({ anio: anioNuevo, mes: mesNuevo });

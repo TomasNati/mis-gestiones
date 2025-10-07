@@ -84,7 +84,7 @@ export const AgregarEditarModal = ({
 
   useEffect(() => {
     setErrors(validateForm(form));
-  }, []);
+  }, [form]);
 
   const handleTipoChanged = async (tipo: Subcategoria | null) => {
     handleChange('tipo', tipo);

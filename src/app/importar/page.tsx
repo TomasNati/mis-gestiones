@@ -58,7 +58,7 @@ const Importar = () => {
       }
     };
     importarDatosNuevos();
-  }, [importar]);
+  }, [importar, anio, mes, tipo, textoAImportar]);
 
   return (
     <Container>

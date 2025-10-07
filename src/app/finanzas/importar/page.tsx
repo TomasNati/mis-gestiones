@@ -58,7 +58,7 @@ const Importar = () => {
       }
     };
     importarMovimientosNuevos();
-  }, [importar]);
+  }, [importar, anio, mes, tipo, textoAImportar]);
 
   return (
     <Container>

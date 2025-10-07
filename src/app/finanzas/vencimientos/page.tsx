@@ -66,7 +66,7 @@ const Vencimientos = () => {
     fetchTiposDeVencimientos();
 
     buscarVencimientos(buscarVencimientoPayload);
-  }, []);
+  }, [buscarVencimientoPayload]);
 
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
 
