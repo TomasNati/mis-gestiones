@@ -7,7 +7,7 @@ import {
   TipoDeGasto,
   VencimientoUI,
 } from '@/lib/definitions';
-import { obtenerMovimientosParaVencimientos, obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
+import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ import { VencimientosGrilla } from '@/components/vencimientos/VencimientoGrilla/
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { CopiarModal } from '@/components/vencimientos/CopiarModal/CopiarModal';
 import { toUTC } from '@/lib/helpers';
+import { obtenerMovimientosParaVencimientosUI } from '@/components/vencimientos/vencimientosUtils';
 
 const buscarVencimientoPayloadDefault: BuscarVencimientosPayload = {
   desde: toUTC(FILTERS_DEFAULT.desde?.toDate() || new Date()),
@@ -76,7 +77,10 @@ const Vencimientos = () => {
   };
 
   const handleEditarMovimiento = async (vencimiento: VencimientoUI) => {
-    const posiblesMovimientos = await obtenerMovimientosParaVencimientos(vencimiento.subcategoria.id);
+    const posiblesMovimientos = await obtenerMovimientosParaVencimientosUI(
+      vencimiento.subcategoria.id,
+      vencimiento.pago,
+    );
     setPosiblesPagos(posiblesMovimientos);
     setVencimientoAEditar(vencimiento);
     setShowAgregarEditarModal(true);

@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { MovimientoDeVencimiento, Subcategoria, VencimientoUI } from '@/lib/definitions';
 import { formatDate, toUTC } from '@/lib/helpers';
-import { obtenerMovimientosParaVencimientos } from '@/lib/orm/data';
+import { obtenerMovimientosParaVencimientosUI } from '@/components/vencimientos/vencimientosUtils';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
 
@@ -87,17 +87,23 @@ export const AgregarEditarModal = ({
   }, [form]);
 
   const handleTipoChanged = async (tipo: Subcategoria | null) => {
-    handleChange('tipo', tipo);
     if (!tipo) {
+      handleChangeSimple('tipo', tipo);
       return;
     }
-    const posiblesMovimientos = await obtenerMovimientosParaVencimientos(tipo.id);
+    const posiblesMovimientos = await obtenerMovimientosParaVencimientosUI(tipo.id);
     setPosiblesPagos(posiblesMovimientos);
-    handleChange('pagoId', posiblesMovimientos?.[0].id || null);
+    handleChange([
+      ['tipo', tipo],
+      ['pagoId', posiblesMovimientos?.[0]?.id || null],
+    ]);
   };
 
-  const handleChange = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    const newForm = { ...form, [key]: value };
+  const handleChangeSimple = <K extends keyof FormState>(key: K, value: FormState[K]) => handleChange([[key, value]]);
+
+  const handleChange = <K extends keyof FormState>(changes: [key: K, value: FormState[K]][]) => {
+    let newForm = { ...form };
+    changes.forEach(([key, value]) => (newForm = { ...newForm, [key]: value }));
     const errorsFound = validateForm(newForm);
     setErrors(errorsFound);
     setForm(newForm);
@@ -158,7 +164,7 @@ export const AgregarEditarModal = ({
           <DatePicker
             label="Fecha"
             value={dayjs.utc(form.fecha)}
-            onChange={(date) => handleChange('fecha', date)}
+            onChange={(date) => handleChangeSimple('fecha', date)}
             slotProps={{ textField: { fullWidth: true } }}
             sx={styles.datePicker}
             format="DD/MM/YYYY"
@@ -179,7 +185,7 @@ export const AgregarEditarModal = ({
             }
             value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
             renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
-            onChange={(_, value) => handleChange('pagoId', value ? value.id : null)}
+            onChange={(_, value) => handleChangeSimple('pagoId', value ? value.id : null)}
             getOptionKey={(option: MovimientoDeVencimiento) => option.id}
             size="small"
           />
@@ -187,23 +193,25 @@ export const AgregarEditarModal = ({
             label="Monto"
             type="number"
             value={form.monto}
-            onChange={(e) => handleChange('monto', e.target.value)}
+            onChange={(e) => handleChangeSimple('monto', e.target.value)}
             fullWidth
             size="small"
           />
           <FormControlLabel
-            control={<Checkbox checked={form.anual} onChange={(e) => handleChange('anual', e.target.checked)} />}
+            control={<Checkbox checked={form.anual} onChange={(e) => handleChangeSimple('anual', e.target.checked)} />}
             label="Anual"
           />
           <FormControlLabel
-            control={<Checkbox checked={form.estricto} onChange={(e) => handleChange('estricto', e.target.checked)} />}
+            control={
+              <Checkbox checked={form.estricto} onChange={(e) => handleChangeSimple('estricto', e.target.checked)} />
+            }
             label="Estricto"
           />
           <FormControlLabel
             control={
               <Checkbox
                 checked={form.fechaConfirmada}
-                onChange={(e) => handleChange('fechaConfirmada', e.target.checked)}
+                onChange={(e) => handleChangeSimple('fechaConfirmada', e.target.checked)}
               />
             }
             label="Fecha Confirmada"
@@ -214,7 +222,7 @@ export const AgregarEditarModal = ({
             multiline
             rows={3}
             value={form.comentarios || ''}
-            onChange={(e) => handleChange('comentarios', e.target.value)}
+            onChange={(e) => handleChangeSimple('comentarios', e.target.value)}
             variant="outlined"
           />
         </Box>
