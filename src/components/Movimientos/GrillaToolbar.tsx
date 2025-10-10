@@ -60,10 +60,15 @@ const GrillaToolbar = ({
 
   const handleAgregarNuevoMovimiento = () => {
     const id = generateUUID();
+    const fechaActual = new Date();
+    const dia = fechaActual.getFullYear() === anio && fechaActual.getMonth() === mes 
+      ? fechaActual.getDate()
+      : 1;
+
     const nuevoMovimiento = {
       id,
       isNew: true,
-      fecha: new Date(anio || 1900, mes, new Date().getDate()),
+      fecha: new Date(anio || 1900, mes, dia),
       concepto: null,
       monto: null,
       categoria: null,
