@@ -10,14 +10,24 @@ import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
+import ApiOutlinedIcon from '@mui/icons-material/ApiOutlined';
 import Link from 'next/link';
-import { useState, ReactNode } from 'react';
+import { useState, ReactNode, ElementType, HTMLAttributeAnchorTarget } from 'react';
 
 const DRAWER_WIDTH = 200;
 const DRAWER_COLLAPSED_WIDTH = 85;
 const ICON_WIDTH = 45;
 
-const LINKS = [
+interface LinkItem {
+  text: string;
+  href: string;
+  icon: ElementType;
+  submenu?: LinkItem[] | null;
+  target?: HTMLAttributeAnchorTarget;
+}
+
+const LINKS: LinkItem[] = [
   { text: 'Tomi', href: '/tomi', icon: FaceOutlinedIcon, submenu: null },
   {
     text: 'Finanzas',
@@ -32,7 +42,74 @@ const LINKS = [
   { text: 'Importar', href: '/importar', icon: FileUploadIcon, submenu: null },
 ];
 
-const PLACEHOLDER_LINKS = [{ text: 'Settings', icon: SettingsIcon }];
+const PLACEHOLDER_LINKS: LinkItem[] = [
+  {
+    text: 'Settings',
+    icon: SettingsIcon,
+    href: '/settings',
+    submenu: [
+      { text: 'Admin', href: 'https://mis-gestiones-admin.vercel.app/', icon: TuneOutlinedIcon, target: '_blank' },
+      {
+        text: 'API Access',
+        href: 'https://mis-gestiones-backend.vercel.app/docs',
+        icon: ApiOutlinedIcon,
+        target: '_blank',
+      },
+    ],
+  },
+];
+
+interface LinkItemComponentProps {
+  text: string;
+  href: string;
+  icon: ElementType;
+  submenu?: LinkItem[] | null;
+  target?: HTMLAttributeAnchorTarget;
+  toggleSubmenu: (href: string) => void;
+  collapsed?: boolean;
+  openSubmenu: string | null;
+}
+
+const LinkItemComponent = ({
+  text,
+  href,
+  icon: Icon,
+  submenu,
+  target,
+  toggleSubmenu,
+  collapsed,
+  openSubmenu,
+}: LinkItemComponentProps) => (
+  <>
+    <ListItem disablePadding>
+      <ListItemButton
+        component={submenu ? 'div' : Link} // Use 'div' if there's a submenu
+        href={submenu ? undefined : href}
+        target={target}
+        onClick={() => submenu && toggleSubmenu(href)}
+      >
+        <ListItemIcon>
+          <Icon />
+        </ListItemIcon>
+        {collapsed ? null : <ListItemText primary={text} />}
+      </ListItemButton>
+    </ListItem>
+    {submenu && openSubmenu === href && (
+      <List sx={{ pl: 4 }}>
+        {submenu.map(({ text: subText, href: subHref, icon: SubIcon, target: SubTarget }) => (
+          <ListItem key={subHref} disablePadding>
+            <ListItemButton component={Link} href={subHref} target={SubTarget}>
+              <ListItemIcon>
+                <SubIcon />
+              </ListItemIcon>
+              {collapsed ? null : <ListItemText primary={subText} />}
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    )}
+  </>
+);
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -79,47 +156,32 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <List>
           {LINKS.map(({ text, href, icon: Icon, submenu }) => (
             <div key={href}>
-              <ListItem disablePadding>
-                <ListItemButton
-                  component={submenu ? 'div' : Link} // Use 'div' if there's a submenu
-                  href={submenu ? undefined : href}
-                  onClick={() => submenu && toggleSubmenu(href)}
-                >
-                  <ListItemIcon>
-                    <Icon />
-                  </ListItemIcon>
-                  {collapsed ? null : <ListItemText primary={text} />}
-                </ListItemButton>
-              </ListItem>
-              {/* Render Submenu */}
-              {submenu && openSubmenu === href && (
-                <List sx={{ pl: 4 }}>
-                  {submenu.map(({ text: subText, href: subHref, icon: Icon }) => (
-                    <ListItem key={subHref} disablePadding>
-                      <ListItemButton component={Link} href={subHref}>
-                        <ListItemIcon>
-                          <Icon />
-                        </ListItemIcon>
-                        {collapsed ? null : <ListItemText primary={subText} />}
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              <LinkItemComponent
+                text={text}
+                href={href}
+                icon={Icon}
+                submenu={submenu}
+                toggleSubmenu={toggleSubmenu}
+                openSubmenu={openSubmenu}
+                collapsed={collapsed}
+              />
             </div>
           ))}
         </List>
         <Divider sx={{ mt: 'auto' }} />
         <List>
-          {PLACEHOLDER_LINKS.map(({ text, icon: Icon }) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  <Icon />
-                </ListItemIcon>
-                {collapsed ? null : <ListItemText primary={text} />}
-              </ListItemButton>
-            </ListItem>
+          {PLACEHOLDER_LINKS.map(({ text, icon: Icon, href, submenu }) => (
+            <div key={href}>
+              <LinkItemComponent
+                text={text}
+                href={href}
+                icon={Icon}
+                submenu={submenu}
+                toggleSubmenu={toggleSubmenu}
+                openSubmenu={openSubmenu}
+                collapsed={collapsed}
+              />
+            </div>
           ))}
         </List>
       </Drawer>
