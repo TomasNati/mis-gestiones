@@ -48,13 +48,8 @@ const PLACEHOLDER_LINKS: LinkItem[] = [
     icon: SettingsIcon,
     href: '/settings',
     submenu: [
-      { text: 'Admin', href: 'https://mis-gestiones-admin.vercel.app/', icon: TuneOutlinedIcon, target: '_blank' },
-      {
-        text: 'API Access',
-        href: 'https://mis-gestiones-backend.vercel.app/docs',
-        icon: ApiOutlinedIcon,
-        target: '_blank',
-      },
+      { text: 'Admin', href: '/settings/admin', icon: TuneOutlinedIcon },
+      { text: 'API Access', href: '/settings/api', icon: ApiOutlinedIcon },
     ],
   },
 ];
