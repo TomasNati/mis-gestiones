@@ -1,5 +1,23 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Backups de base de datos
+Comando:
+```bash
+pg_dump \
+  --host=localhost \
+  --port=5432 \
+  --username=myuser \
+  --dbname=mydatabase \
+  --schema=myschema \
+  --file=/path/to/myschema_backup.sql \
+  --format=plain \
+  --verbose
+```
+Se pedirá la contraseña.
+
+Ubicación de archivos de backup:
+- Google Drive > Finanzas > Backups-MisGestiones
+
 ## Getting Started
 
 First, run the development server:
