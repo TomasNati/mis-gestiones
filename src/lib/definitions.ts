@@ -9,20 +9,21 @@ export enum TipoDeMovimientoGasto {
   Efectivo = 'Efectivo',
 }
 
-export type Categoria = {
-  id: string;
+export interface Entidad {
   nombre: string;
-  comentarios?: string;
   active: boolean;
+}
+
+export type Categoria = Entidad & {
+  id: string;
+  comentarios?: string;
 };
 
-export type Subcategoria = {
+export type Subcategoria = Entidad & {
   id: string;
   comentarios?: string;
   categoria: Categoria;
   tipoDeGasto: TipoDeGasto;
-  nombre: string;
-  active: boolean;
 };
 
 export type SubcategoriaDB = {
@@ -81,7 +82,7 @@ export type MovimientoGastoGrilla = {
   id: string;
   comentarios?: string;
   fecha: Date;
-  categoria: string;
+  categoria: Entidad;
   concepto: CategoriaUIMovimiento;
   tipoDeGasto: TipoDeMovimientoGasto;
   monto: number;

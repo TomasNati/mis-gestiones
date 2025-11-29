@@ -300,7 +300,10 @@ export const obtenerMovimientos = async (
 
     return movimientos.map((movimiento) => ({
       ...movimiento,
-      categoria: movimiento.subcategoria.categoria.nombre,
+      categoria: {
+        nombre: movimiento.subcategoria.categoria.nombre,
+        active: movimiento.subcategoria.categoria.active,
+      },
       concepto: obtenerCategoriaUIMovimiento(movimiento),
     }));
   } catch (error) {

@@ -4,6 +4,7 @@ import {
   TipoDeMovimientoGasto,
   ResultadoAPI,
   GrupoMovimiento,
+  Entidad,
 } from '@/lib/definitions';
 import Box from '@mui/material/Box';
 import {
@@ -28,6 +29,7 @@ import { GrillaToolbar } from './GrillaToolbar';
 import { FechaEditInputCell, fechaOperators } from './editores/Fecha/Fecha';
 import { focusOnField, mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
 import { renderMontoEditInputCell } from './editores/Monto/Monto';
+import { EntidadNombre } from '@/components/comun/EntidadNombre';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -125,6 +127,7 @@ const MovimientosDelMesGrilla = ({
       headerName: 'Categoría',
       width: 100,
       disableExport: true,
+      renderCell: ({ value }: { value?: Entidad }) => <EntidadNombre {...value} />,
     },
     {
       field: 'concepto',
@@ -152,12 +155,7 @@ const MovimientosDelMesGrilla = ({
         const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(params?.subcategoriaId);
         return concepto;
       },
-      renderCell: ({ value }: { value?: CategoriaUIMovimiento }) =>
-        value?.active === false ? (
-          <span style={{ opacity: 0.6, color: '#999' }}>{value?.nombre}</span>
-        ) : (
-          <span>{value?.nombre}</span>
-        ),
+      renderCell: ({ value }: { value?: CategoriaUIMovimiento }) => <EntidadNombre {...value} />,
     },
     {
       field: 'tipoDeGasto',
