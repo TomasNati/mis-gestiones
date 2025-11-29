@@ -152,7 +152,12 @@ const MovimientosDelMesGrilla = ({
         const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(params?.subcategoriaId);
         return concepto;
       },
-      renderCell: ({ value }) => <span>{value?.nombre}</span>,
+      renderCell: ({ value }: { value?: CategoriaUIMovimiento }) =>
+        value?.active === false ? (
+          <span style={{ opacity: 0.6, color: '#999' }}>{value?.nombre}</span>
+        ) : (
+          <span>{value?.nombre}</span>
+        ),
     },
     {
       field: 'tipoDeGasto',

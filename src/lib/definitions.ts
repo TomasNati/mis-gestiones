@@ -13,6 +13,7 @@ export type Categoria = {
   id: string;
   nombre: string;
   comentarios?: string;
+  active: boolean;
 };
 
 export type Subcategoria = {
@@ -21,6 +22,7 @@ export type Subcategoria = {
   categoria: Categoria;
   tipoDeGasto: TipoDeGasto;
   nombre: string;
+  active: boolean;
 };
 
 export type SubcategoriaDB = {
@@ -138,7 +140,9 @@ export type MovimientoPayloadMobile = {
 export type CategoriaUIMovimiento = {
   id: string;
   nombre: string;
+  active: boolean;
   categoriaNombre: string;
+  categoriaActive: boolean;
   subcategoriaId: string;
   detalleSubcategoriaId?: string;
 };
