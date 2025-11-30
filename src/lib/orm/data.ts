@@ -201,11 +201,7 @@ export const obtenerMovimientosParaVencimientos = async (
       .from(movimientosGasto)
       .innerJoin(
         subcategorias,
-        and(
-          eq(movimientosGasto.subcategoria, subcategorias.id),
-          eq(subcategorias.active, true),
-          eq(subcategorias.id, subcategoriaId),
-        ),
+        and(eq(movimientosGasto.subcategoria, subcategorias.id), eq(subcategorias.id, subcategoriaId)),
       )
       .where(
         and(eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesdeFiltro, fechaHastaFiltro)),
