@@ -48,6 +48,13 @@ const Vencimientos = () => {
     mensaje: '',
   });
 
+  const buscarVencimientos = async (payload: BuscarVencimientosPayload) => {
+    setIsLoading(true);
+    const vencimientosObtenidos = await obtenerVencimientos(payload);
+    setVencimientos(vencimientosObtenidos);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     const fetchTiposDeVencimientos = async () => {
       const subcategorias = await obtenerSubCategorias(TipoDeGasto.Fijo);
@@ -64,9 +71,15 @@ const Vencimientos = () => {
       setTiposDeVencimientos(subcategorias);
     };
 
-    fetchTiposDeVencimientos();
+    const fetchVencimientos = async () => {
+      setIsLoading(true);
+      const vencimientosObtenidos = await obtenerVencimientos(buscarVencimientoPayload);
+      setVencimientos(vencimientosObtenidos);
+      setIsLoading(false);
+    };
 
-    buscarVencimientos(buscarVencimientoPayload);
+    fetchTiposDeVencimientos();
+    fetchVencimientos();
   }, [buscarVencimientoPayload]);
 
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
@@ -168,13 +181,6 @@ const Vencimientos = () => {
       });
     }
     setShowCopiarModal(false);
-    setIsLoading(false);
-  };
-
-  const buscarVencimientos = async (payload: BuscarVencimientosPayload) => {
-    setIsLoading(true);
-    const vencimientosObtenidos = await obtenerVencimientos(payload);
-    setVencimientos(vencimientosObtenidos);
     setIsLoading(false);
   };
 

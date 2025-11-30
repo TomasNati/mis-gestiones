@@ -20,6 +20,24 @@ const establecimientos = ['Changomás', 'Farmacity', 'Oriente', 'Super Más', 'V
 const categoriaDiarioSugeridos = ['Comida', 'Gaseosas', 'Alcohol', 'Cig', 'Productos personales'];
 const categoriaHogarSugeridos = ['Cosas para la casa'];
 
+const initializeCategoriaMovimientos = (categoriasMovimiento: CategoriaUIMovimiento[]) => {
+  const categoriasFiltradas = categoriasMovimiento.filter(
+    (categoria) =>
+      (categoriaDiarioSugeridos.includes(categoria.nombre) && categoria.categoriaNombre === 'Diario') ||
+      (categoriaHogarSugeridos.includes(categoria.nombre) && categoria.categoriaNombre === 'Hogar'),
+  );
+  const restantesCategorias = categoriasMovimiento.filter(
+    (categoria) => !categoriasFiltradas.some((cat) => cat.id === categoria.id),
+  );
+
+  const categoriasSugeridas: CategoriaUIMovimiento[] = categoriasFiltradas.map((categoria) => ({
+    ...categoria,
+    categoriaNombre: 'Sugeridos',
+  }));
+
+  return [...categoriasSugeridas, ...restantesCategorias];
+};
+
 export interface GrupoModalProps {
   open: boolean;
   onClose: () => void;
@@ -31,29 +49,12 @@ export interface GrupoModalProps {
 
 export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovimiento }: GrupoModalProps) => {
   const [errors, setErrors] = useState<string[]>([]);
-  const [categoriasMov, setCategoriasMov] = useState<CategoriaUIMovimiento[]>([]);
   const [grupoMovimiento, setGrupoMovimiento] = useState<GrupoMovimiento>({
     dia: 1,
     filas: [],
   });
 
-  useEffect(() => {
-    const categoriasFiltradas = categoriasMovimiento.filter(
-      (categoria) =>
-        (categoriaDiarioSugeridos.includes(categoria.nombre) && categoria.categoriaNombre === 'Diario') ||
-        (categoriaHogarSugeridos.includes(categoria.nombre) && categoria.categoriaNombre === 'Hogar'),
-    );
-    const restantesCategorias = categoriasMovimiento.filter(
-      (categoria) => !categoriasFiltradas.some((cat) => cat.id === categoria.id),
-    );
-
-    const categoriasSugeridas: CategoriaUIMovimiento[] = categoriasFiltradas.map((categoria) => ({
-      ...categoria,
-      categoriaNombre: 'Sugeridos',
-    }));
-
-    setCategoriasMov([...categoriasSugeridas, ...restantesCategorias]);
-  }, [categoriasMovimiento]);
+  const categoriasMov = initializeCategoriaMovimientos(categoriasMovimiento);
 
   const handleClose = (reason: string) => {
     if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {

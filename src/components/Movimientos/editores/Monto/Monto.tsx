@@ -19,12 +19,6 @@ const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInpu
   const [formulaValue, setFormulaValue] = useState<string>(valorInicial || '');
   const [previousInputValue, setPreviousInputValue] = useState<string>(valorInicial || '');
 
-  useEffect(() => {
-    setInputValue(valorInicial || '');
-    setFormulaValue(valorInicial || '');
-    setPreviousInputValue(valorInicial || '');
-  }, [valorInicial]);
-
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const valueToEval = event.target.value.startsWith('=') ? event.target.value.slice(1) : event.target.value;
     try {

@@ -232,26 +232,14 @@ export const obtenerCategoriaUIMovimiento = ({
     nombre: detalleSubcategoria
       ? `(${detalleSubcategoria.subcategoria.nombre}) ${detalleSubcategoria.nombre}`
       : subcategoria.nombre,
+    active: subcategoria.active,
     categoriaNombre: subcategoria.categoria.nombre,
+    categoriaActive: subcategoria.categoria.active,
     subcategoriaId: subcategoria.id,
     detalleSubcategoriaId: detalleSubcategoria?.id,
   };
 
   return categoriaUIMovimiento;
-};
-
-export const actualizarSubcategoria = (categoriaUI: CategoriaUIMovimiento) => {
-  // , movimiento: MovimientoGasto) => {
-  if (categoriaUI.detalleSubcategoriaId) {
-    //   movimiento.subcategoria =  {
-    //     id: categoriaUI.subcategoriaId,
-    //     nombre: '', categoria: ''}
-    //   movimiento.detalleSubcategoria = categoriaUI.detalleSubcategoriaId;
-    // } else {
-    //   movimiento.subcategoria = categoriaUI.subcategoriaId;
-    //   movimiento.detalleSubcategoria = null;
-    // }
-  }
 };
 
 export const focusOnField = (id: string, field: string, inputSelector: string = 'input') =>

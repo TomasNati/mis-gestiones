@@ -66,8 +66,10 @@ export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<S
         id: subcategorias.id,
         nombre: subcategorias.nombre,
         tipoDeGasto: subcategorias.tipoDeGasto,
+        active: subcategorias.active,
         categoriaId: categorias.id,
         categoriaNombre: categorias.nombre,
+        categoriaActive: categorias.active,
       })
       .from(subcategorias)
       .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
@@ -78,9 +80,11 @@ export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<S
       id: subcategoriaDB.id,
       nombre: subcategoriaDB.nombre,
       tipoDeGasto: subcategoriaDB.tipoDeGasto as TipoDeGasto,
+      active: subcategoriaDB.active,
       categoria: {
         id: subcategoriaDB.categoriaId,
         nombre: subcategoriaDB.categoriaNombre,
+        active: subcategoriaDB.categoriaActive,
       },
     }));
 
@@ -103,8 +107,10 @@ const obtenerDetalleSubCategorias = async (): Promise<DetalleSubcategoria[]> => 
         subCategoriaId: subcategorias.id,
         subCategoriaNombre: subcategorias.nombre,
         subCategoriaTipoDeGasto: subcategorias.tipoDeGasto,
+        subcategoriaActive: subcategorias.active,
         categoriaId: categorias.id,
         categoriaNombre: categorias.nombre,
+        categoriaActive: categorias.active,
       })
       .from(detalleSubcategorias)
       .innerJoin(
@@ -122,9 +128,11 @@ const obtenerDetalleSubCategorias = async (): Promise<DetalleSubcategoria[]> => 
         id: detalleSubcategoriaDB.subCategoriaId,
         nombre: detalleSubcategoriaDB.subCategoriaNombre,
         tipoDeGasto: detalleSubcategoriaDB.subCategoriaTipoDeGasto as TipoDeGasto,
+        active: detalleSubcategoriaDB.subcategoriaActive,
         categoria: {
           id: detalleSubcategoriaDB.categoriaId,
           nombre: detalleSubcategoriaDB.categoriaNombre,
+          active: detalleSubcategoriaDB.subcategoriaActive,
         },
       },
     }));
@@ -153,8 +161,10 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
       categoriasUIMovimiento.push({
         id: subcategoria.id,
         nombre: subcategoria.nombre,
+        active: subcategoria.active,
         subcategoriaId: subcategoria.id,
         categoriaNombre: subcategoria.categoria.nombre,
+        categoriaActive: subcategoria.categoria.active,
       });
     });
 
@@ -163,8 +173,10 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
       id: detalleSubcategoria.id,
       nombre: `(${detalleSubcategoria.subcategoria.nombre}) ${detalleSubcategoria.nombre}`,
       subcategoriaId: detalleSubcategoria.subcategoria.id,
+      active: detalleSubcategoria.subcategoria.active,
       detalleSubcategoriaId: detalleSubcategoria.id,
       categoriaNombre: detalleSubcategoria.subcategoria.categoria.nombre,
+      categoriaActive: detalleSubcategoria.subcategoria.categoria.active,
     });
   });
 
@@ -189,11 +201,7 @@ export const obtenerMovimientosParaVencimientos = async (
       .from(movimientosGasto)
       .innerJoin(
         subcategorias,
-        and(
-          eq(movimientosGasto.subcategoria, subcategorias.id),
-          eq(subcategorias.active, true),
-          eq(subcategorias.id, subcategoriaId),
-        ),
+        and(eq(movimientosGasto.subcategoria, subcategorias.id), eq(subcategorias.id, subcategoriaId)),
       )
       .where(
         and(eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesdeFiltro, fechaHastaFiltro)),
@@ -241,19 +249,15 @@ export const obtenerMovimientos = async (
         subCategoriaId: subcategorias.id,
         subCategoriaNombre: subcategorias.nombre,
         subCategoriaTipoDeGasto: subcategorias.tipoDeGasto,
+        subcategoriaActive: subcategorias.active,
         categoriaId: categorias.id,
         categoriaNombre: categorias.nombre,
+        categoriaActive: categorias.active,
       })
       .from(movimientosGasto)
-      .innerJoin(
-        subcategorias,
-        and(eq(movimientosGasto.subcategoria, subcategorias.id), eq(subcategorias.active, true)),
-      )
-      .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
-      .leftJoin(
-        detalleSubcategorias,
-        and(eq(movimientosGasto.detallesubcategoria, detalleSubcategorias.id), eq(detalleSubcategorias.active, true)),
-      )
+      .innerJoin(subcategorias, and(eq(movimientosGasto.subcategoria, subcategorias.id)))
+      .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id)))
+      .leftJoin(detalleSubcategorias, and(eq(movimientosGasto.detallesubcategoria, detalleSubcategorias.id)))
       .where(
         and(eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesdeFiltro, fechaHastaFiltro)),
       )
@@ -271,9 +275,11 @@ export const obtenerMovimientos = async (
           id: movimientoDB.subCategoriaId,
           nombre: movimientoDB.subCategoriaNombre,
           tipoDeGasto: movimientoDB.subCategoriaTipoDeGasto as TipoDeGasto,
+          active: movimientoDB.subcategoriaActive,
           categoria: {
             id: movimientoDB.categoriaId,
             nombre: movimientoDB.categoriaNombre,
+            active: movimientoDB.categoriaActive,
           },
         },
       };
@@ -290,7 +296,10 @@ export const obtenerMovimientos = async (
 
     return movimientos.map((movimiento) => ({
       ...movimiento,
-      categoria: movimiento.subcategoria.categoria.nombre,
+      categoria: {
+        nombre: movimiento.subcategoria.categoria.nombre,
+        active: movimiento.subcategoria.categoria.active,
+      },
       concepto: obtenerCategoriaUIMovimiento(movimiento),
     }));
   } catch (error) {

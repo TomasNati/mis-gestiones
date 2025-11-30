@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Switch, IconButton, styled } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
@@ -70,14 +70,20 @@ interface DormidoDespiertoPickerProps {
 const DormidoDespiertoPicker = ({ evento, onEventoChange, onDelete }: DormidoDespiertoPickerProps) => {
   const onHoraChanged = (newValue: Dayjs | null) => {
     if (newValue) {
-      evento.hora = newValue.format('HH:mm');
-      onEventoChange(evento);
+      const eventoUpdated = {
+        ...evento,
+        hora: newValue.format('HH:mm'),
+      };
+      onEventoChange(eventoUpdated);
     }
   };
 
   const onDormidoDespierdoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    evento.tipo = event.target.checked ? 'Despierto' : 'Dormido';
-    onEventoChange(evento);
+    const eventoUpdated: EventoSuenio = {
+      ...evento,
+      tipo: event.target.checked ? 'Despierto' : 'Dormido',
+    };
+    onEventoChange(eventoUpdated);
   };
 
   return (
