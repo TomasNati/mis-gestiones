@@ -25,7 +25,13 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
 import { AnioConMeses } from '../comun/seleccionadorPeriodoHelper';
-// import { HTMLButtonElement}
+
+const initializeFilas = (gastos: GastoEstimadoAnualUI[]) => {
+  const categoriasColapsadasIds = gastos.filter(({ colapsado }) => colapsado).map(({ id }) => id);
+  const rowsFiltered = gastos.filter((r) => !r.categoriaId || !categoriasColapsadasIds.includes(r.categoriaId));
+
+  return rowsFiltered;
+};
 
 interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
@@ -40,12 +46,11 @@ const GastosEstimadosDelMesGrilla = ({
   mesesElegidos,
   onTieneCambiosPendientesChanged,
 }: GastosEstimadosDelMesGrillaProps) => {
-  const [rows, setRows] = useState<GridRowsProp>([]);
+  const [rows, setRows] = useState<GridRowsProp>(initializeFilas(gastos));
   const [gastosEstimadosElegidos, setGastosEstimadosElegidos] = useState<GastoEstimadoAnual[]>([]);
-  const [mesesVisibles, setMesesVisibles] = useState<string[]>(aniosYMesesAMostrar.flatMap(({ meses }) => meses));
-
   const [hasUnsavedRows, setHasUnsavedRows] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
   const unsavedChangesRef = useRef<{
     unsavedRows: Record<GridRowId, GridValidRowModel>;
     rowsBeforeChange: Record<GridRowId, GridValidRowModel>;
@@ -56,18 +61,7 @@ const GastosEstimadosDelMesGrilla = ({
 
   const apiRef = useGridApiRef();
 
-  useEffect(() => {
-    const categoriasColapsadasIds = gastos.filter(({ colapsado }) => colapsado).map(({ id }) => id);
-    const rowsFiltered = gastos.filter((r) => !r.categoriaId || !categoriasColapsadasIds.includes(r.categoriaId));
-    setRows([...rowsFiltered]);
-  }, [gastos]);
-
-  useEffect(() => {
-    if (aniosYMesesAMostrar.length > 0) {
-      const mesesAMostrar = aniosYMesesAMostrar.flatMap(({ meses }) => meses);
-      setMesesVisibles(mesesAMostrar);
-    }
-  }, [aniosYMesesAMostrar]);
+  const mesesVisibles = aniosYMesesAMostrar.flatMap(({ meses }) => meses);
 
   const mesesColumns: GridColDef[] = mesesElegidos.map((month) => ({
     field: month,

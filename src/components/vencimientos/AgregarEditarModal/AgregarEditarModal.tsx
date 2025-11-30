@@ -17,6 +17,7 @@ import utc from 'dayjs/plugin/utc';
 import { MovimientoDeVencimiento, Subcategoria, VencimientoUI } from '@/lib/definitions';
 import { formatDate, toUTC } from '@/lib/helpers';
 import { obtenerMovimientosParaVencimientosUI } from '@/components/vencimientos/vencimientosUtils';
+import { vencimiento } from '@/lib/orm/tables';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
 
@@ -46,6 +47,35 @@ const defaultState: FormState = {
   comentarios: '',
 };
 
+const mapVencimientoToForm = (tiposDeVencimiento: Subcategoria[], vencimiento?: VencimientoUI): FormState =>
+  vencimiento
+    ? {
+        id: vencimiento.id,
+        fecha: dayjs.utc(vencimiento.fecha),
+        tipo: tiposDeVencimiento.find(({ id }) => id == vencimiento.subcategoria.id) || null,
+        monto: vencimiento.monto.toString(),
+        anual: vencimiento.esAnual,
+        estricto: vencimiento.estricto === undefined ? false : vencimiento.estricto,
+        fechaConfirmada: vencimiento.fechaConfirmada === undefined ? false : vencimiento.fechaConfirmada,
+        comentarios: vencimiento.comentarios,
+        pagoId: vencimiento.pago?.id || null,
+      }
+    : defaultState;
+
+const validateForm = (form: FormState) => {
+  const errorsFound = [];
+  if (!form.fecha) {
+    errorsFound.push('La fecha es requerida');
+  }
+  if (!form.tipo) {
+    errorsFound.push('El tipo de vencimiento es requerido');
+  }
+  if (!isNumber(form.monto)) {
+    errorsFound.push('El monto es inválido');
+  }
+  return errorsFound;
+};
+
 interface AgregarEditarModalProps {
   tiposDeVencimiento: Subcategoria[];
   pagos?: MovimientoDeVencimiento[];
@@ -63,28 +93,9 @@ export const AgregarEditarModal = ({
   onClose,
   onGuardar,
 }: AgregarEditarModalProps) => {
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<string[]>(validateForm(mapVencimientoToForm(tiposDeVencimiento, vencimiento)));
   const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>(pagos);
-
-  const [form, setForm] = useState<FormState>(
-    vencimiento
-      ? {
-          id: vencimiento.id,
-          fecha: dayjs.utc(vencimiento.fecha),
-          tipo: tiposDeVencimiento.find(({ id }) => id == vencimiento.subcategoria.id) || null,
-          monto: vencimiento.monto.toString(),
-          anual: vencimiento.esAnual,
-          estricto: vencimiento.estricto === undefined ? false : vencimiento.estricto,
-          fechaConfirmada: vencimiento.fechaConfirmada === undefined ? false : vencimiento.fechaConfirmada,
-          comentarios: vencimiento.comentarios,
-          pagoId: vencimiento.pago?.id || null,
-        }
-      : defaultState,
-  );
-
-  useEffect(() => {
-    setErrors(validateForm(form));
-  }, [form]);
+  const [form, setForm] = useState<FormState>(mapVencimientoToForm(tiposDeVencimiento, vencimiento));
 
   const handleTipoChanged = async (tipo: Subcategoria | null) => {
     if (!tipo) {
@@ -140,20 +151,6 @@ export const AgregarEditarModal = ({
     if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
       onClose();
     }
-  };
-
-  const validateForm = (form: FormState) => {
-    const errorsFound = [];
-    if (!form.fecha) {
-      errorsFound.push('La fecha es requerida');
-    }
-    if (!form.tipo) {
-      errorsFound.push('El tipo de vencimiento es requerido');
-    }
-    if (!isNumber(form.monto)) {
-      errorsFound.push('El monto es inválido');
-    }
-    return errorsFound;
   };
 
   return (

@@ -53,13 +53,6 @@ const Suenio = () => {
     mensaje: '',
   });
 
-  useEffect(() => {
-    const obtenerDatosIniciales = async () => {
-      await oneMesYAnioChanged(mes, anio);
-    };
-    obtenerDatosIniciales();
-  }, []);
-
   const handleEditarDiaClose = () => {
     setDiaAEditar(null);
     setOpenEditarDia(false);
@@ -98,6 +91,13 @@ const Suenio = () => {
       setRangoFechas({ desde: fecha30DiasAtras, hasta: fechaDiaActual });
     }
   };
+
+  useEffect(() => {
+    const obtenerDatosIniciales = async () => {
+      await oneMesYAnioChanged(mes, anio);
+    };
+    obtenerDatosIniciales();
+  }, []);
 
   const obtenerEstadoSuenioDiaAnterior = (index: number) => {
     if (index === 0) {

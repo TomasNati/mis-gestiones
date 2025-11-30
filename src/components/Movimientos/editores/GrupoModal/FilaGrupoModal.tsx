@@ -24,27 +24,41 @@ const FilaGrupoModal = ({
   restoEnabled,
 }: FilaGrupoModalProps) => {
   const handleRestoChecked = (event: ChangeEvent<HTMLInputElement>) => {
-    fila.esRestoDelMonto = event.target.checked;
-    if (fila.esRestoDelMonto) {
-      fila.monto = totalMonto ? totalMonto - parcialMonto : undefined;
+    const filaEditada: InfoFilaMovimientoGrupo = {
+      ...fila,
+      esRestoDelMonto: event.target.checked,
+    };
+
+    if (filaEditada.esRestoDelMonto) {
+      filaEditada.monto = totalMonto ? totalMonto - parcialMonto : undefined;
     }
-    onFilaEditada(fila);
+    onFilaEditada(filaEditada);
   };
 
   const onMontoChanged = (nuevoMonto?: number) => {
-    fila.monto = nuevoMonto;
-    onFilaEditada(fila);
+    const filaEditada: InfoFilaMovimientoGrupo = {
+      ...fila,
+      monto: nuevoMonto,
+    };
+
+    onFilaEditada(filaEditada);
   };
 
   const onConceptoChanged = (nuevoConcepto?: CategoriaUIMovimiento) => {
-    fila.concepto = nuevoConcepto;
-    onFilaEditada(fila);
+    const filaEditada: InfoFilaMovimientoGrupo = {
+      ...fila,
+      concepto: nuevoConcepto,
+    };
+
+    onFilaEditada(filaEditada);
   };
 
   const onComentariosChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    const nuevosComentarios = event.target.value;
-    fila.comentario = nuevosComentarios;
-    onFilaEditada(fila);
+    const filaEditada: InfoFilaMovimientoGrupo = {
+      ...fila,
+      comentario: event.target.value,
+    };
+    onFilaEditada(filaEditada);
   };
 
   return (
