@@ -318,7 +318,18 @@ export const obtenerMovimientosPorFecha = async (fecha: Date): Promise<Movimient
   return await obtenerMovimientos(undefined, fechaDesde, fechaHasta);
 };
 
-const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoPresupuestoItem[]> => {
+const obtenerGastosEstimados = async (
+  fechaDesde: Date,
+  fechaHasta: Date,
+  incluirInactivos: boolean,
+): Promise<GastoPresupuestoItem[]> => {
+  const whereConditions = [eq(subcategorias.active, true)];
+  const joinCategoriasConditions = [eq(subcategorias.categoria, categorias.id)];
+
+  if (!incluirInactivos) {
+    joinCategoriasConditions.push(eq(categorias.active, true));
+  }
+
   const dbResults: GastoPresupuestoItem[] = await db
     .select({
       id: gastoEstimado?.id,
@@ -331,7 +342,7 @@ const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promi
       categoriaId: categorias.id,
     })
     .from(subcategorias)
-    .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
+    .innerJoin(categorias, and(...joinCategoriasConditions))
     .leftJoin(
       gastoEstimado,
       and(
@@ -340,7 +351,7 @@ const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promi
         between(gastoEstimado.fecha, fechaDesde, fechaHasta),
       ),
     )
-    .where(eq(subcategorias.active, true))
+    .where(incluirInactivos ? undefined : and(...whereConditions))
     .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
 
   dbResults.forEach((gasto) => (gasto.esEstimado = true));
@@ -348,7 +359,20 @@ const obtenerGastosEstimados = async (fechaDesde: Date, fechaHasta: Date): Promi
   return dbResults;
 };
 
-const obtenerGastosReales = async (fechaDesde: Date, fechaHasta: Date): Promise<GastoPresupuestoItem[]> => {
+const obtenerGastosReales = async (
+  fechaDesde: Date,
+  fechaHasta: Date,
+  incluirInactivos: boolean,
+): Promise<GastoPresupuestoItem[]> => {
+  const whereConditions = [eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesde, fechaHasta)];
+  const joinSubcategoriasConditions = [eq(movimientosGasto.subcategoria, subcategorias.id)];
+  const joinCategoriasConditions = [eq(subcategorias.categoria, categorias.id)];
+
+  if (!incluirInactivos) {
+    joinSubcategoriasConditions.push(eq(subcategorias.active, true));
+    joinCategoriasConditions.push(eq(categorias.active, true));
+  }
+
   const dbResults: GastoPresupuestoItem[] = await db
     .select({
       id: movimientosGasto.id,
@@ -361,9 +385,9 @@ const obtenerGastosReales = async (fechaDesde: Date, fechaHasta: Date): Promise<
       categoriaId: categorias.id,
     })
     .from(movimientosGasto)
-    .innerJoin(subcategorias, and(eq(movimientosGasto.subcategoria, subcategorias.id), eq(subcategorias.active, true)))
-    .innerJoin(categorias, and(eq(subcategorias.categoria, categorias.id), eq(categorias.active, true)))
-    .where(and(eq(movimientosGasto.active, true), between(movimientosGasto.fecha, fechaDesde, fechaHasta)))
+    .innerJoin(subcategorias, and(...joinSubcategoriasConditions))
+    .innerJoin(categorias, and(...joinCategoriasConditions))
+    .where(and(...whereConditions))
     .orderBy(asc(categorias.nombre), asc(subcategorias.nombre));
 
   return dbResults;
@@ -392,7 +416,11 @@ const obtenerTotales = (
   };
 };
 
-export const obtenerGastosEstimadosPorAnio = async (desde: Date, hasta: Date): Promise<GastoEstimadoAnual[]> => {
+export const obtenerGastosEstimadosPorAnio = async (
+  desde: Date,
+  hasta: Date,
+  incluirInactivos: boolean,
+): Promise<GastoEstimadoAnual[]> => {
   const resultado: GastoEstimadoAnual[] = [];
 
   try {
@@ -404,8 +432,18 @@ export const obtenerGastosEstimadosPorAnio = async (desde: Date, hasta: Date): P
       Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59),
     );
 
-    const dbGastosEstimados: GastoPresupuestoItem[] = await obtenerGastosEstimados(fechaDesdeFiltro, fechaHastaFiltro);
-    const dbGastosReales: GastoPresupuestoItem[] = await obtenerGastosReales(fechaDesdeFiltro, fechaHastaFiltro);
+    console.log({ incluirInactivos });
+
+    const dbGastosEstimados: GastoPresupuestoItem[] = await obtenerGastosEstimados(
+      fechaDesdeFiltro,
+      fechaHastaFiltro,
+      incluirInactivos,
+    );
+    const dbGastosReales: GastoPresupuestoItem[] = await obtenerGastosReales(
+      fechaDesdeFiltro,
+      fechaHastaFiltro,
+      incluirInactivos,
+    );
 
     for (const gastoDB of dbGastosEstimados) {
       if (!resultado.find((gasto) => gasto.id === gastoDB.categoriaId)) {

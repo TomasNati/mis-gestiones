@@ -17,7 +17,7 @@ import {
   DataGridProps,
   useGridApiRef,
 } from '@mui/x-data-grid';
-import { useEffect, useState, useRef, useCallback, MouseEvent } from 'react';
+import { useState, useRef, useCallback, MouseEvent } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
 import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
