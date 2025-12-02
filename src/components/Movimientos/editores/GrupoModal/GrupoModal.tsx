@@ -126,15 +126,24 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
     setErrors(validarDatos(nuevoGrupoMovimiento));
   };
 
-  const handleEditarFila = (fila: InfoFilaMovimientoGrupo) => {
-    const { filas } = grupoMovimiento;
-    const nuevasFilas = filas.map((f) => (f.id === fila.id ? fila : f));
+  const actualizarFilaConRestoMonto = (filas: InfoFilaMovimientoGrupo[], totalMonto?: number) => {
+    const nuevasFilas = [...filas];
     const filaRestoMonto = nuevasFilas.find((f) => f.esRestoDelMonto);
     if (filaRestoMonto) {
       filaRestoMonto.monto = 0;
+      filaRestoMonto.id = generateUUID(); //as the id is the key for FilaGrupoModal, change the id so the fila is refreshed
       const sumaMontos = nuevasFilas.reduce((acc, f) => acc + (f.monto || 0), 0);
-      filaRestoMonto.monto = grupoMovimiento.totalMonto ? grupoMovimiento.totalMonto - sumaMontos : 0;
+      filaRestoMonto.monto = totalMonto ? totalMonto - sumaMontos : 0;
     }
+
+    return nuevasFilas;
+  };
+
+  const handleEditarFila = (fila: InfoFilaMovimientoGrupo) => {
+    const { filas } = grupoMovimiento;
+    let nuevasFilas = filas.map((f) => (f.id === fila.id ? fila : f));
+    fila.id = generateUUID(); //as the id is the key for FilaGrupoModal, change the id so the fila is refreshed
+    nuevasFilas = actualizarFilaConRestoMonto(nuevasFilas, grupoMovimiento.totalMonto);
     const nuevoGrupoMovimiento = { ...grupoMovimiento, filas: nuevasFilas };
     setGrupoMovimiento(nuevoGrupoMovimiento);
     setErrors(validarDatos(nuevoGrupoMovimiento));
@@ -165,6 +174,7 @@ export const GrupoModal = ({ onClose, onGuardar, open, anio, mes, categoriasMovi
 
   const handleTotalUpdated = (total?: number) => {
     const nuevoMovimiento = { ...grupoMovimiento, totalMonto: total };
+    nuevoMovimiento.filas = actualizarFilaConRestoMonto(nuevoMovimiento.filas, total);
     setGrupoMovimiento(nuevoMovimiento);
     setErrors(validarDatos(nuevoMovimiento));
   };
