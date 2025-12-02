@@ -17,7 +17,7 @@ import {
   DataGridProps,
   useGridApiRef,
 } from '@mui/x-data-grid';
-import { useState, useRef, useCallback, MouseEvent } from 'react';
+import { useState, useRef, useCallback, MouseEvent, useEffect } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
 import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -37,6 +37,7 @@ interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
   aniosYMesesAMostrar: AnioConMeses[];
   mesesElegidos: string[];
+  isLoading: boolean;
   onTieneCambiosPendientesChanged: (tieneCambiosPendientes: boolean) => void;
 }
 
@@ -44,6 +45,7 @@ const GastosEstimadosDelMesGrilla = ({
   gastos,
   aniosYMesesAMostrar,
   mesesElegidos,
+  isLoading,
   onTieneCambiosPendientesChanged,
 }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>(initializeFilas(gastos));
@@ -60,6 +62,10 @@ const GastosEstimadosDelMesGrilla = ({
   });
 
   const apiRef = useGridApiRef();
+
+  useEffect(() => {
+    setRows(initializeFilas(gastos));
+  }, [gastos]);
 
   const mesesVisibles = aniosYMesesAMostrar.flatMap(({ meses }) => meses);
 
@@ -314,7 +320,7 @@ const GastosEstimadosDelMesGrilla = ({
             },
           },
         }}
-        loading={isSaving}
+        loading={isSaving || isLoading}
         pageSizeOptions={[25, 50, 100]}
         onRowSelectionModelChange={handleSelectionChange}
         processRowUpdate={processRowUpdate}

@@ -22,6 +22,7 @@ const PresupuestoDelMes = () => {
   const [gastosEstimados, setGastosEstimados] = useState<GastoEstimadoAnualUI[]>([]);
   const [mostrandoGrilla] = useState(true);
   const [incluirInactivos, setIncluirInactivos] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [configNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
@@ -43,7 +44,7 @@ const PresupuestoDelMes = () => {
 
       const fechaDesde = new Date(primerAnioConMeses.anio, months.indexOf(primerAnioConMeses.meses[0]));
       const fechaHasta = new Date(ultimoAnioConMeses.anio, months.indexOf(ultimoMes));
-
+      setIsLoading(true);
       const gastosEstimados: GastoEstimadoAnualUI[] = await obtenerGastosEstimadosPorAnio(
         fechaDesde,
         fechaHasta,
@@ -56,6 +57,7 @@ const PresupuestoDelMes = () => {
 
       setGastosEstimados(gastosEstimados);
       setAniosYMesesAMostrar(aniosYMesesAMostrarNuevos);
+      setIsLoading(false);
     }
     const todosLosMesesAMostrar = aniosYMesesAMostrarNuevos.flatMap(({ meses }) => meses);
     const mesesElegidosOrdenados = mesesElegidos.sort(
@@ -119,6 +121,7 @@ const PresupuestoDelMes = () => {
         <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
           <GastosEstimadosDelMesGrilla
             gastos={gastosEstimados}
+            isLoading={isLoading}
             mesesElegidos={mesesElegidos}
             aniosYMesesAMostrar={aniosYMesesAMostrar}
             onTieneCambiosPendientesChanged={setCambiosPendientes}

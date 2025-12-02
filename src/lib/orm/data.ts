@@ -432,8 +432,6 @@ export const obtenerGastosEstimadosPorAnio = async (
       Date.UTC(hasta.getFullYear(), hasta.getMonth(), obtenerDiasEnElMes(hasta), 23, 59, 59),
     );
 
-    console.log({ incluirInactivos });
-
     const dbGastosEstimados: GastoPresupuestoItem[] = await obtenerGastosEstimados(
       fechaDesdeFiltro,
       fechaHastaFiltro,
