@@ -17,7 +17,7 @@ import {
   DataGridProps,
   useGridApiRef,
 } from '@mui/x-data-grid';
-import { useEffect, useState, useRef, useCallback, MouseEvent } from 'react';
+import { useState, useRef, useCallback, MouseEvent, useEffect } from 'react';
 import { GrillaToolbar } from './GrillaToolbar';
 import { IconButton, SxProps } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -25,6 +25,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
 import { AnioConMeses } from '../comun/seleccionadorPeriodoHelper';
+import { EntidadNombre } from '@/components/comun/EntidadNombre';
 
 const initializeFilas = (gastos: GastoEstimadoAnualUI[]) => {
   const categoriasColapsadasIds = gastos.filter(({ colapsado }) => colapsado).map(({ id }) => id);
@@ -37,6 +38,7 @@ interface GastosEstimadosDelMesGrillaProps {
   gastos: GastoEstimadoAnualUI[];
   aniosYMesesAMostrar: AnioConMeses[];
   mesesElegidos: string[];
+  isLoading: boolean;
   onTieneCambiosPendientesChanged: (tieneCambiosPendientes: boolean) => void;
 }
 
@@ -44,6 +46,7 @@ const GastosEstimadosDelMesGrilla = ({
   gastos,
   aniosYMesesAMostrar,
   mesesElegidos,
+  isLoading,
   onTieneCambiosPendientesChanged,
 }: GastosEstimadosDelMesGrillaProps) => {
   const [rows, setRows] = useState<GridRowsProp>(initializeFilas(gastos));
@@ -60,6 +63,10 @@ const GastosEstimadosDelMesGrilla = ({
   });
 
   const apiRef = useGridApiRef();
+
+  useEffect(() => {
+    setRows(initializeFilas(gastos));
+  }, [gastos]);
 
   const mesesVisibles = aniosYMesesAMostrar.flatMap(({ meses }) => meses);
 
@@ -139,6 +146,9 @@ const GastosEstimadosDelMesGrilla = ({
       field: 'descripcion',
       headerName: 'Descripcion',
       width: 250,
+      renderCell: ({ row }: GridCellParams<GastoEstimadoAnualUI>) => (
+        <EntidadNombre active={row.activo} nombre={row.descripcion} />
+      ),
     },
     ...mesesColumns,
   ];
@@ -298,6 +308,10 @@ const GastosEstimadosDelMesGrilla = ({
           '& .MuiDataGrid-main': {
             height: 'calc(99vh - 255px)',
           },
+          '& .MuiDataGrid-cell': {
+            display: 'flex',
+            alignItems: 'center',
+          },
         }}
         apiRef={apiRef}
         getRowHeight={() => 'auto'}
@@ -314,7 +328,7 @@ const GastosEstimadosDelMesGrilla = ({
             },
           },
         }}
-        loading={isSaving}
+        loading={isSaving || isLoading}
         pageSizeOptions={[25, 50, 100]}
         onRowSelectionModelChange={handleSelectionChange}
         processRowUpdate={processRowUpdate}
