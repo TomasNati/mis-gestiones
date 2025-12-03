@@ -25,6 +25,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderGastoEstimadoEditInputCell } from './editores/GastoEstimadoDelMes';
 import { persistirGastoEstimado } from '@/lib/orm/actions';
 import { AnioConMeses } from '../comun/seleccionadorPeriodoHelper';
+import { EntidadNombre } from '@/components/comun/EntidadNombre';
 
 const initializeFilas = (gastos: GastoEstimadoAnualUI[]) => {
   const categoriasColapsadasIds = gastos.filter(({ colapsado }) => colapsado).map(({ id }) => id);
@@ -145,6 +146,9 @@ const GastosEstimadosDelMesGrilla = ({
       field: 'descripcion',
       headerName: 'Descripcion',
       width: 250,
+      renderCell: ({ row }: GridCellParams<GastoEstimadoAnualUI>) => (
+        <EntidadNombre active={row.activo} nombre={row.descripcion} />
+      ),
     },
     ...mesesColumns,
   ];
@@ -303,6 +307,10 @@ const GastosEstimadosDelMesGrilla = ({
         sx={{
           '& .MuiDataGrid-main': {
             height: 'calc(99vh - 255px)',
+          },
+          '& .MuiDataGrid-cell': {
+            display: 'flex',
+            alignItems: 'center',
           },
         }}
         apiRef={apiRef}

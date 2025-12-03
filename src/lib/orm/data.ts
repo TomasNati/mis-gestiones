@@ -49,6 +49,7 @@ type GastoPresupuestoItem = {
   categoriaNombre: string;
   categoriaId: string;
   esEstimado?: boolean;
+  activo: boolean;
 };
 
 export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<Subcategoria[]> => {
@@ -340,6 +341,7 @@ const obtenerGastosEstimados = async (
       subCategoriaId: subcategorias.id,
       categoriaNombre: categorias.nombre,
       categoriaId: categorias.id,
+      activo: categorias.active && subcategorias.active,
     })
     .from(subcategorias)
     .innerJoin(categorias, and(...joinCategoriasConditions))
@@ -383,6 +385,7 @@ const obtenerGastosReales = async (
       subCategoriaId: subcategorias.id,
       categoriaNombre: categorias.nombre,
       categoriaId: categorias.id,
+      activo: categorias.active && subcategorias.active,
     })
     .from(movimientosGasto)
     .innerJoin(subcategorias, and(...joinSubcategoriasConditions))
@@ -449,6 +452,7 @@ export const obtenerGastosEstimadosPorAnio = async (
           id: gastoDB.categoriaId,
           dbId: `categoria-${generateUUID()}`,
           descripcion: `${gastoDB.categoriaNombre} - Total mensual`,
+          activo: gastoDB.activo,
         });
       }
 
@@ -458,6 +462,7 @@ export const obtenerGastosEstimadosPorAnio = async (
           dbId: gastoDB.id,
           categoriaId: gastoDB.categoriaId,
           descripcion: `-------------  ${gastoDB.subCategoriaNombre}`,
+          activo: gastoDB.activo,
         });
       }
     }
