@@ -3,7 +3,7 @@ import { Box, TextField, Button, Checkbox, FormControl, FormLabel } from '@mui/m
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NumberInput } from '@/components/Movimientos/editores/Monto/Monto';
 import { Concepto } from '../Concepto/Concepto';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 interface FilaGrupoModalProps {
   fila: InfoFilaMovimientoGrupo;
@@ -23,6 +23,8 @@ const FilaGrupoModal = ({
   parcialMonto,
   restoEnabled,
 }: FilaGrupoModalProps) => {
+  const [localComentario, setLocalComentario] = useState(fila.comentario || '');
+
   const handleRestoChecked = (event: ChangeEvent<HTMLInputElement>) => {
     const filaEditada: InfoFilaMovimientoGrupo = {
       ...fila,
@@ -53,10 +55,10 @@ const FilaGrupoModal = ({
     onFilaEditada(filaEditada);
   };
 
-  const onComentariosChanged = (event: ChangeEvent<HTMLInputElement>) => {
+  const onComentariosBlur = () => {
     const filaEditada: InfoFilaMovimientoGrupo = {
       ...fila,
-      comentario: event.target.value,
+      comentario: localComentario,
     };
     onFilaEditada(filaEditada);
   };
@@ -115,7 +117,14 @@ const FilaGrupoModal = ({
         label="Concepto"
         size="small"
       />
-      <TextField label="Comentarios" variant="outlined" size="small" onChange={onComentariosChanged} />
+      <TextField
+        label="Comentarios"
+        variant="outlined"
+        size="small"
+        onChange={(e) => setLocalComentario(e.target.value)}
+        onBlur={onComentariosBlur}
+        value={localComentario}
+      />
       <Button
         sx={{ minWidth: '0px', padding: '5px', '& span': { marginLeft: '3px', marginRight: '0px' } }}
         startIcon={<DeleteIcon />}
