@@ -30,6 +30,7 @@ import { FechaEditInputCell, fechaOperators } from './editores/Fecha/Fecha';
 import { focusOnField, mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
 import { renderMontoEditInputCell } from './editores/Monto/Monto';
 import { EntidadNombre } from '@/components/comun/EntidadNombre';
+import { TextWithCopy } from '@/components/comun/TextWithCopy';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -180,9 +181,9 @@ const MovimientosDelMesGrilla = ({
       headerName: 'Monto',
       type: 'number',
       editable: true,
-      width: 120,
+      width: 150,
       renderEditCell: renderMontoEditInputCell,
-      renderCell: ({ value }) => <span>{transformNumberToCurrenty(value)}</span>,
+      renderCell: ({ value }) => <TextWithCopy displayText={transformNumberToCurrenty(value) || ''} copyText={value} />,
       valueFormatter: (params) => params,
     },
     {
@@ -194,7 +195,7 @@ const MovimientosDelMesGrilla = ({
         const [concepto, comentarios] = mapearSubcategoriasATiposDeConceptoExcel(row.concepto?.subcategoriaId);
         return concepto === 'Servicios' ? comentarios : value;
       },
-      renderCell: ({ value }) => <span>{value}</span>,
+      renderCell: ({ value }) => <TextWithCopy displayText={value || ''} copyButtonAlignment="right" />,
     },
   ];
 
