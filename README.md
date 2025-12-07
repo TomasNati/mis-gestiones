@@ -1,7 +1,9 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Backups de base de datos
+
 Comando:
+
 ```bash
 pg_dump \
   --host=localhost \
@@ -13,10 +15,63 @@ pg_dump \
   --format=plain \
   --verbose
 ```
+
 Se pedirá la contraseña.
 
 Ubicación de archivos de backup:
+
 - Google Drive > Finanzas > Backups-MisGestiones
+
+## Correr funciones de API
+
+1. Instalar Vercel CLI
+
+```bash
+npm i -g vercel
+```
+
+2. Luego ejecutar vercel:
+
+```bash
+vercel dev
+```
+
+3. Autenticarse a través de la web, siguiendo las instrucciones de la consola. Setear las demás opciones como se ven debajo:
+
+```bash
+vercel dev
+Vercel CLI 49.1.1
+> NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
+> This information is used to shape the CLI roadmap and prioritize features.
+> You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
+> https://vercel.com/docs/cli/about-telemetry
+> No existing credentials found. Please log in:
+
+  Visit https://vercel.com/oauth/device?user_code=BSTC-BPML
+
+  Congratulations! You are now signed in.
+
+  To deploy something, run `vercel`.
+
+  💡 To deploy every commit automatically,
+  connect a Git Repository (vercel.link/git (https://vercel.link/git)).
+? Set up and develop “~\Proyectos\mis-gestiones”? yes
+? Which scope should contain your project? Andres Asteasuain projects
+? Found project “andres-asetasuains-projects/mis-gestiones”. Link to it? yes
+🔗  Linked to andres-asetasuains-projects/mis-gestiones (created .vercel)
+? Would you like to pull environment variables now? yes
+> Downloading `development` Environment Variables for andres-asetasuains-projects/mis-gestiones
+✅  Created .env.local file  [315ms]
+> Running Dev Command “next dev --port $PORT”
+   ▲ Next.js 15.5.4
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.36:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 8.4s
+> Ready! Available at http://localhost:3000
+```
 
 ## Getting Started
 
