@@ -131,7 +131,7 @@ export type MovimientoPayloadMobile = {
   id: string;
   comentarios?: string;
   fecha: Date;
-  categoria: string;
+  categoria: Entidad;
   concepto: CategoriaUIMovimiento;
   tipoDeGasto: TipoDeMovimientoGasto;
   monto: number;
