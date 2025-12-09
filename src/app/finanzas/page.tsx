@@ -1,4 +1,5 @@
-import * as React from 'react';
+'use client';
+
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -7,9 +8,20 @@ import { Button } from '@mui/material';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import NextLink from 'next/link';
 import { Movimientos } from '@/components/Movimientos';
+import { useEffect, useState } from 'react';
+import { MovimientoGastoGrilla } from '@/lib/definitions';
 
-const Finanzas = async () => {
-  const movimientosDashboard = await obtenerUltimosMovimientos();
+const Finanzas = () => {
+  const [movimientosDashboard, setMovimientosDashboard] = useState<MovimientoGastoGrilla[]>([]);
+
+  useEffect(() => {
+    const fetchMovimientos = async () => {
+      const movimientos = await obtenerUltimosMovimientos();
+      setMovimientosDashboard(movimientos);
+    };
+
+    fetchMovimientos();
+  }, []);
 
   return (
     <Container>
