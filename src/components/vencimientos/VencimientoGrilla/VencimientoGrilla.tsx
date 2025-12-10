@@ -19,18 +19,21 @@ import dayjs from 'dayjs';
 const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
   '& .row-pagado': {
     backgroundColor: theme.palette.success.dark,
+    '& [data-field=esAnual] svg': { color: 'rgb(66 197 255)' },
     '&:hover': {
       backgroundColor: theme.palette.success.main,
     },
   },
   '& .row-warning': {
     backgroundColor: theme.palette.warning.dark,
+    '& [data-field=esAnual] svg': { color: 'rgb(178 9 172 / 86%)' },
     '&:hover': {
       backgroundColor: theme.palette.warning.main,
     },
   },
   '& .row-danger': {
     backgroundColor: theme.palette.error.dark,
+    '& [data-field=esAnual] svg': { color: '#8fb8e1' },
     '&:hover': {
       backgroundColor: theme.palette.error.main,
     },
@@ -162,14 +165,14 @@ export const VencimientosGrilla = ({
     const { pago, fecha } = params.row;
     if (pago) return 'row-pagado';
 
-    const fechaDate = dayjs(fecha);
-    const now = dayjs();
+    const fechaDate = dayjs.utc(fecha).startOf('day');
+    const now = dayjs.utc().startOf('day');
 
-    if (fechaDate.isSame(now, 'day') || fechaDate.isBefore(now, 'day')) {
-      return 'row-danger';
-    }
     const diff = fechaDate.diff(now, 'day');
-    if (diff >= 1 && diff <= 3) {
+
+    if (diff <= 1) {
+      return 'row-danger';
+    } else if (diff >= 2 && diff <= 3) {
       return 'row-warning';
     }
     return '';
