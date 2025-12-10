@@ -2,6 +2,7 @@ import { VencimientoPago, VencimientoUI } from '@/lib/definitions';
 import { formatDate, transformNumberToCurrenty } from '@/lib/helpers';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import HdrAutoOutlinedIcon from '@mui/icons-material/HdrAutoOutlined';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -124,6 +125,7 @@ export const VencimientosGrilla = ({
       width: 100,
       type: 'boolean',
       valueGetter: (esAnual: boolean) => esAnual,
+      renderCell: (params) => (params.value ? <HdrAutoOutlinedIcon color="primary" /> : null),
     },
     {
       field: 'pago',
