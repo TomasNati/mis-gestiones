@@ -54,7 +54,6 @@ const VencimientoSchema = z.object({
   monto: z.coerce.number().gte(0, { message: 'Por favor ingresar un monto mayor o igual a $0.' }),
   comentarios: z.string().optional(),
   esAnual: z.boolean(),
-  estricto: z.boolean().optional(),
   fechaConfirmada: z.boolean().optional(),
   pago: z
     .object({

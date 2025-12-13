@@ -1285,7 +1285,6 @@ export interface VencimientoUI {
   monto: number;
   esAnual: boolean;
   comentarios: string;
-  estricto?: boolean;
   fechaConfirmada?: boolean;
   pago?: VencimientoPago;
 }
@@ -1295,7 +1294,6 @@ export interface BuscarVencimientosPayload {
   hasta: Date | null;
   tipos: string[] | null;
   esAnual: boolean | null;
-  estricto: boolean | null;
   pagado: boolean | null;
 }
 

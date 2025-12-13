@@ -388,7 +388,6 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
           monto: vencimiento.monto.toString(),
           comentarios: vencimiento.comentarios || null,
           esAnual: vencimiento.esAnual,
-          estricto: vencimiento.estricto || false,
           fechaConfirmada: vencimiento.fechaConfirmada || false,
           pago: vencimiento.pago?.id || null,
         })
@@ -407,7 +406,6 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
         monto: vencimientoSafe.monto.toString(),
         comentarios: vencimientoSafe.comentarios || null,
         esAnual: vencimientoSafe.esAnual,
-        estricto: vencimientoSafe.estricto || false,
         fechaConfirmada: vencimientoSafe.fechaConfirmada || false,
         pago: vencimientoSafe.pago?.id || null,
       });
@@ -493,7 +491,6 @@ export const copiarVencimientos = async ({
         monto: vencimientoSafe.monto.toString(),
         comentarios: vencimientoSafe.comentarios || null,
         esAnual: vencimientoSafe.esAnual,
-        estricto: vencimientoSafe.estricto || false,
         fechaConfirmada: vencimientoSafe.fechaConfirmada || false,
         pago: vencimientoSafe.pago?.id || null,
       });

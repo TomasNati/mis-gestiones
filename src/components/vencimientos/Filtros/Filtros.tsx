@@ -25,7 +25,6 @@ export const FILTERS_DEFAULT: Filters = {
   hasta: dayjs().endOf('month').startOf('day'),
   tipos: null,
   esAnual: null,
-  estricto: null,
   pagado: null,
 };
 
@@ -34,7 +33,6 @@ interface Filters {
   hasta: dayjs.Dayjs | null;
   tipos: Subcategoria[] | null;
   esAnual: boolean | null;
-  estricto: boolean | null;
   pagado: boolean | null;
   [index: string]: FiltersTypes;
 }
@@ -135,16 +133,6 @@ const FilterComponent = ({ tiposDeVencimientos, onBuscar }: FilterComponentProps
           />
         }
         label="Es Anual"
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={filters.estricto === true}
-            indeterminate={filters.estricto === null}
-            onChange={() => handleCheckboxChange('estricto')}
-          />
-        }
-        label="Estricto"
       />
       <FormControlLabel
         control={

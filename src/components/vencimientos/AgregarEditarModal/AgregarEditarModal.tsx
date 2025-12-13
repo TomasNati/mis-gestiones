@@ -30,7 +30,6 @@ interface FormState {
   pagoId?: string | null;
   monto: string;
   anual: boolean;
-  estricto: boolean;
   fechaConfirmada: boolean;
   comentarios: string;
 }
@@ -41,7 +40,6 @@ const defaultState: FormState = {
   tipo: null,
   monto: '',
   anual: false,
-  estricto: false,
   fechaConfirmada: false,
   pagoId: null,
   comentarios: '',
@@ -55,7 +53,6 @@ const mapVencimientoToForm = (tiposDeVencimiento: Subcategoria[], vencimiento?: 
         tipo: tiposDeVencimiento.find(({ id }) => id == vencimiento.subcategoria.id) || null,
         monto: vencimiento.monto.toString(),
         anual: vencimiento.esAnual,
-        estricto: vencimiento.estricto === undefined ? false : vencimiento.estricto,
         fechaConfirmada: vencimiento.fechaConfirmada === undefined ? false : vencimiento.fechaConfirmada,
         comentarios: vencimiento.comentarios,
         pagoId: vencimiento.pago?.id || null,
@@ -132,7 +129,6 @@ export const AgregarEditarModal = ({
           id: form.tipo?.id || '',
           descripcion: '',
         },
-        estricto: form.estricto,
         fechaConfirmada: form.fechaConfirmada,
         pago: form.pagoId
           ? {
@@ -197,12 +193,6 @@ export const AgregarEditarModal = ({
           <FormControlLabel
             control={<Checkbox checked={form.anual} onChange={(e) => handleChangeSimple('anual', e.target.checked)} />}
             label="Anual"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox checked={form.estricto} onChange={(e) => handleChangeSimple('estricto', e.target.checked)} />
-            }
-            label="Estricto"
           />
           <FormControlLabel
             control={

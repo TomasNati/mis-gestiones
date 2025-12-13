@@ -26,7 +26,6 @@ const buscarVencimientoPayloadDefault: BuscarVencimientosPayload = {
   hasta: toUTC(FILTERS_DEFAULT.hasta?.toDate() || new Date()),
   tipos: null,
   esAnual: null,
-  estricto: null,
   pagado: null,
 };
 

@@ -535,7 +535,7 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
   let resultado: VencimientoUI[] = [];
 
   try {
-    const { desde, hasta, esAnual, estricto, pagado, tipos } = payload;
+    const { desde, hasta, esAnual, pagado, tipos } = payload;
     const queryFilters = [];
 
     if (desde || hasta) {
@@ -551,10 +551,6 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
 
     if (esAnual !== undefined && esAnual !== null) {
       queryFilters.push(eq(vencimiento.esAnual, esAnual));
-    }
-
-    if (estricto !== undefined && estricto !== null) {
-      queryFilters.push(eq(vencimiento.estricto, estricto));
     }
 
     if (pagado !== undefined && pagado !== null) {
@@ -577,7 +573,6 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
         monto: vencimiento.monto,
         esAnual: vencimiento.esAnual,
         comentarios: vencimiento.comentarios,
-        estricto: vencimiento.estricto,
         fechaConfirmada: vencimiento.fechaConfirmada,
         pago: {
           id: movimientosGasto.id,
@@ -597,7 +592,6 @@ export const obtenerVencimientos = async (payload: BuscarVencimientosPayload): P
         fecha: dbRecord.fecha,
         monto: Number.parseFloat(dbRecord.monto),
         esAnual: dbRecord.esAnual,
-        estricto: dbRecord.estricto || false,
         comentarios: dbRecord.comentarios || '',
         fechaConfirmada: dbRecord.fechaConfirmada || false,
         subcategoria: {
