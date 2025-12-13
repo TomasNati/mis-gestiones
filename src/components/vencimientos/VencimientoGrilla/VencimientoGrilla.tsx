@@ -109,10 +109,15 @@ export const VencimientosGrilla = ({
       field: 'fecha',
       headerName: 'Fecha',
       width: 150,
-      valueFormatter: (fecha: Date, row: VencimientoUI) => {
-        const formattedDate = formatDate(fecha, false, { timeZone: 'UTC' });
-        const questionMark = !row.fechaConfirmada ? ' (?)' : '';
-        return `${formattedDate}${questionMark}`;
+      renderCell: (params) => {
+        const row: VencimientoUI = params.row;
+        const formattedDate = formatDate(params.value, false, { timeZone: 'UTC' });
+        return (
+          <span style={!row.fechaConfirmada ? { fontStyle: 'italic', opacity: 0.75 } : undefined}>
+            {formattedDate}
+            {!row.fechaConfirmada && ' (?)'}
+          </span>
+        );
       },
     },
     {
