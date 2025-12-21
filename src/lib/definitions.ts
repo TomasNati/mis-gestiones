@@ -328,7 +328,7 @@ export const months = [
   'Diciembre',
 ];
 
-export const years = [2025, 2024, 2023, 2022];
+export const years = [2027, 2026, 2025, 2024, 2023, 2022];
 
 export interface ConceptoExcelASubcategoria {
   subcategoriaId: string;
