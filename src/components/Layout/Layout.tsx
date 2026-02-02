@@ -12,6 +12,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import ApiOutlinedIcon from '@mui/icons-material/ApiOutlined';
+import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined';
 import Link from 'next/link';
 import { useState, ReactNode, ElementType, HTMLAttributeAnchorTarget } from 'react';
 
@@ -37,6 +38,7 @@ const LINKS: LinkItem[] = [
       { text: 'Movimientos', href: '/finanzas/movimientosDelMes', icon: PaymentsIcon },
       { text: 'Presupuesto', href: '/finanzas/presupuestoDelMes', icon: BarChartIcon },
       { text: 'Vencimientos', href: '/finanzas/vencimientos', icon: ScheduleIcon },
+      { text: 'Buscar Movimientos', href: '/finanzas/buscarMovimientos', icon: ManageSearchOutlinedIcon },
     ],
   },
   { text: 'Importar', href: '/importar', icon: FileUploadIcon, submenu: null },

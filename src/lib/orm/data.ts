@@ -16,6 +16,7 @@ import {
   VencimientoUI,
   BuscarVencimientosPayload,
   MovimientoDeVencimiento,
+  Categoria,
 } from '../definitions';
 import { db } from './database';
 import {
@@ -50,6 +51,31 @@ type GastoPresupuestoItem = {
   categoriaId: string;
   esEstimado?: boolean;
   activo: boolean;
+};
+
+export const obtenerCategorias = async (): Promise<Categoria[]> => {
+  try {
+    const result = await db
+      .select({
+        id: categorias.id,
+        nombre: categorias.nombre,
+        active: categorias.active,
+      })
+      .from(categorias)
+      .where(eq(categorias.active, true))
+      .orderBy(categorias.nombre);
+
+    const categoriasUI: Categoria[] = result.map((categoriaDB) => ({
+      id: categoriaDB.id,
+      nombre: categoriaDB.nombre,
+      active: categoriaDB.active,
+    }));
+
+    return categoriasUI;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener las categorias');
+  }
 };
 
 export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<Subcategoria[]> => {
