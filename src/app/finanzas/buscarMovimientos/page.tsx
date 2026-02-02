@@ -1,6 +1,6 @@
 'use client';
 
-import { Subcategoria, Categoria } from "@/lib/definitions";
+import { Categoria, Subcategoria } from '@/lib/definitions';
 import { obtenerCategorias, obtenerSubCategorias } from "@/lib/orm/data";
 import { FiltrosMovimientos } from "@/components/FiltrosMovimientos";
 import { useEffect, useState } from "react";
@@ -27,8 +27,8 @@ const BuscarMovimientos = () => {
         const [subcategorias, categorias] = await Promise.all(promises);
         subcategorias.sort(sortByNombre);
         categorias.sort(sortByNombre);
-        setSubcategorias(subcategorias);
         setCategorias(categorias);
+        setSubcategorias(subcategorias as Subcategoria[]);
       };
   
       fetchSubcategoriasAndCategorias();

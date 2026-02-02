@@ -103,7 +103,7 @@ export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<S
       .where(and(...whereConditions))
       .orderBy(subcategorias.nombre);
 
-    const subcategoriasUI = result.map((subcategoriaDB) => ({
+    const subcategoriasUI: Subcategoria[] = result.map((subcategoriaDB) => ({
       id: subcategoriaDB.id,
       nombre: subcategoriaDB.nombre,
       tipoDeGasto: subcategoriaDB.tipoDeGasto as TipoDeGasto,
