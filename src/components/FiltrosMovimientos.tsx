@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { FormControl, IconButton, Grid2, Autocomplete, TextField, Chip } from '@mui/material';
@@ -48,6 +48,10 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
   const [filters, setFilters] = useState<Filters>({ ...FILTERS_DEFAULT });
   const [filteredSubcategorias, setFilteredSubcategorias] = useState<CategoriaUIMovimiento[]>(subcategorias);
 
+  useEffect(() => {
+    setFilteredSubcategorias(subcategorias);
+  }, [subcategorias]);
+
   const tiposDePago = [TipoDeMovimientoGasto.Efectivo, TipoDeMovimientoGasto.Credito, TipoDeMovimientoGasto.Debito];
 
   const handleChange = (field: string, value: FiltersTypes) => {
@@ -59,15 +63,20 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
   };
 
   const handleCategoriasChange = (value: Categoria[]) => {
-    const newFilteredSubcategorias = subcategorias.filter((subcat) =>
-      value.some((cat) => cat.id === subcat.categoriaId),
-    );
+    let updatedSelectedSubcategorias: CategoriaUIMovimiento[] = filters.subcategorias || [];
 
-    const updatedSelectedSubcategorias = (filters.subcategorias || []).filter((subcat) =>
-      newFilteredSubcategorias.some((newSubcat) => newSubcat.id === subcat.id),
-    );
+    if (value.length > 0) {
+      const newFilteredSubcategorias = subcategorias.filter((subcat) =>
+        value.some((cat) => cat.id === subcat.categoriaId),
+      );
 
-    setFilteredSubcategorias(newFilteredSubcategorias);
+      updatedSelectedSubcategorias = (filters.subcategorias || []).filter((subcat) =>
+        newFilteredSubcategorias.some((newSubcat) => newSubcat.id === subcat.id),
+      );
+
+      setFilteredSubcategorias(newFilteredSubcategorias);
+    }
+
     setFilters((prev) => ({ ...prev, categorias: value, subcategorias: updatedSelectedSubcategorias }));
   };
 
