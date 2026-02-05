@@ -144,6 +144,7 @@ export type CategoriaUIMovimiento = {
   active: boolean;
   categoriaNombre: string;
   categoriaActive: boolean;
+  categoriaId: string;
   subcategoriaId: string;
   detalleSubcategoriaId?: string;
 };

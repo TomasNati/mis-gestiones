@@ -235,6 +235,7 @@ export const obtenerCategoriaUIMovimiento = ({
     active: subcategoria.active,
     categoriaNombre: subcategoria.categoria.nombre,
     categoriaActive: subcategoria.categoria.active,
+    categoriaId: subcategoria.categoria.id,
     subcategoriaId: subcategoria.id,
     detalleSubcategoriaId: detalleSubcategoria?.id,
   };

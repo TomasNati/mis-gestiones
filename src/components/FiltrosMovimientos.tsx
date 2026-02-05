@@ -1,22 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import {
-  FormControlLabel,
-  Checkbox,
-  FormControl,
-  IconButton,
-  Grid2,
-  Autocomplete,
-  TextField,
-  Box,
-  Button,
-} from '@mui/material';
+import { FormControl, IconButton, Grid2, Autocomplete, TextField, Chip } from '@mui/material';
 import { styles } from './FiltrosMovimientos.styles';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import { BuscarVencimientosPayload, Subcategoria, Categoria, TipoDeMovimientoGasto } from '@/lib/definitions';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import {
+  BuscarVencimientosPayload,
+  Subcategoria,
+  Categoria,
+  TipoDeMovimientoGasto,
+  CategoriaUIMovimiento,
+} from '@/lib/definitions';
 
 type FiltersTypes = dayjs.Dayjs | Subcategoria[] | Categoria[] | boolean | number | string | null | string[];
 
@@ -35,23 +29,24 @@ interface Filters {
   desde: dayjs.Dayjs | null;
   hasta: dayjs.Dayjs | null;
   categorias: Categoria[] | null;
-  subcategorias: Subcategoria[] | null;
+  subcategorias: CategoriaUIMovimiento[] | null;
   tiposDePago: string[] | null;
   montoMinimo: number | null;
   montoMaximo: number | null;
   detalle: string | null;
- 
+
   [index: string]: FiltersTypes;
 }
 
 interface FiltrosMovimientosProps {
-  subcategorias: Subcategoria[];
+  subcategorias: CategoriaUIMovimiento[];
   categorias: Categoria[];
   onBuscar: (payload: BuscarVencimientosPayload) => void;
 }
 
 const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovimientosProps) => {
   const [filters, setFilters] = useState<Filters>({ ...FILTERS_DEFAULT });
+  const [filteredSubcategorias, setFilteredSubcategorias] = useState<CategoriaUIMovimiento[]>(subcategorias);
 
   const tiposDePago = [TipoDeMovimientoGasto.Efectivo, TipoDeMovimientoGasto.Credito, TipoDeMovimientoGasto.Debito];
 
@@ -59,12 +54,21 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubcategoriasChange = (value: Subcategoria[]) => {
+  const handleSubcategoriasChange = (value: CategoriaUIMovimiento[]) => {
     setFilters((prev) => ({ ...prev, subcategorias: value }));
   };
 
   const handleCategoriasChange = (value: Categoria[]) => {
-    setFilters((prev) => ({ ...prev, categorias: value }));
+    const newFilteredSubcategorias = subcategorias.filter((subcat) =>
+      value.some((cat) => cat.id === subcat.categoriaId),
+    );
+
+    const updatedSelectedSubcategorias = (filters.subcategorias || []).filter((subcat) =>
+      newFilteredSubcategorias.some((newSubcat) => newSubcat.id === subcat.id),
+    );
+
+    setFilteredSubcategorias(newFilteredSubcategorias);
+    setFilters((prev) => ({ ...prev, categorias: value, subcategorias: updatedSelectedSubcategorias }));
   };
 
   const buscarVencimientos = () => {
@@ -81,7 +85,7 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
     };
     console.log('Buscar movimientos con payload:', payload);
 
-   // onBuscar(payload);
+    // onBuscar(payload);
   };
 
   return (
@@ -116,9 +120,19 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
       </FormControl>
       <FormControl sx={styles.dropdown}>
         <Autocomplete
-          options={subcategorias}
-          getOptionLabel={(option: Subcategoria) => option.nombre}
-          getOptionKey={(option: Subcategoria) => option.id}
+          options={filteredSubcategorias}
+          groupBy={(option: CategoriaUIMovimiento) => option.categoriaNombre}
+          getOptionLabel={(option: CategoriaUIMovimiento) => option.nombre}
+          getOptionKey={(option: CategoriaUIMovimiento) => option.id}
+          renderTags={(value, getTagProps) =>
+            value.map((option, index) => (
+              <Chip
+                label={`(${option.categoriaNombre}) ${option.nombre}`}
+                {...getTagProps({ index })}
+                key={option.id}
+              />
+            ))
+          }
           value={filters.subcategorias || []}
           multiple
           disableCloseOnSelect
@@ -163,28 +177,28 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
           onChange={(e) => handleChange('montoMaximo', e.target.value ? parseFloat(e.target.value) : null)}
           size="small"
           slotProps={{
-        input: {
-          startAdornment: <span style={{ paddingRight: '5px' }}>$</span>,
-        },
+            input: {
+              startAdornment: <span style={{ paddingRight: '5px' }}>$</span>,
+            },
           }}
           sx={{
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': {
-            borderColor: 'primary.main',
-          },
-          '&:hover fieldset': {
-            borderColor: 'primary.main',
-          },
-          '&.Mui-focused fieldset': {
-            borderColor: 'primary.main',
-          },
-        },
-        '& .MuiInputLabel-root': {
-          color: 'primary.main',
-        },
-        '& .Mui-focused .MuiInputLabel-root': {
-          color: 'primary.main',
-        },
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': {
+                borderColor: 'primary.main',
+              },
+              '&:hover fieldset': {
+                borderColor: 'primary.main',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: 'primary.main',
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: 'primary.main',
+            },
+            '& .Mui-focused .MuiInputLabel-root': {
+              color: 'primary.main',
+            },
           }}
         />
       </FormControl>

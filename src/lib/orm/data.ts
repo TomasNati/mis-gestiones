@@ -192,6 +192,7 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
         subcategoriaId: subcategoria.id,
         categoriaNombre: subcategoria.categoria.nombre,
         categoriaActive: subcategoria.categoria.active,
+        categoriaId: subcategoria.categoria.id,
       });
     });
 
@@ -204,6 +205,7 @@ export const obtenerCategoriasDeMovimientos = async (): Promise<CategoriaUIMovim
       detalleSubcategoriaId: detalleSubcategoria.id,
       categoriaNombre: detalleSubcategoria.subcategoria.categoria.nombre,
       categoriaActive: detalleSubcategoria.subcategoria.categoria.active,
+      categoriaId: detalleSubcategoria.subcategoria.categoria.id,
     });
   });
 
