@@ -1298,6 +1298,26 @@ export interface BuscarVencimientosPayload {
   pagado: boolean | null;
 }
 
+export interface BuscarMovimientosResponse {
+  movimientos: MovimientoGasto[];
+  page_number: number;
+  page_size: number;
+  total: number;
+}
+
+export interface BuscarMovimientosPayload {
+  categoriaIds?: string[] | null;
+  subcategoriaIds?: string[] | null;
+  tiposDePago?: TipoDeMovimientoGasto[] | null;
+  monto_min?: number | null;
+  monto_max?: number | null;
+  comentario?: string | null;
+  desde_fecha?: string | null;
+  hasta_fecha?: string | null;
+  page_size?: number;
+  page_number?: number;
+}
+
 export type TipoEventoSuenio = 'Despierto' | 'Dormido';
 
 export interface EventoSuenio {

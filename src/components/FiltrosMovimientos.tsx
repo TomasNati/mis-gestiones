@@ -10,6 +10,7 @@ import {
   Categoria,
   TipoDeMovimientoGasto,
   CategoriaUIMovimiento,
+  BuscarMovimientosPayload,
 } from '@/lib/definitions';
 
 type FiltersTypes = dayjs.Dayjs | Subcategoria[] | Categoria[] | boolean | number | string | null | string[];
@@ -41,7 +42,7 @@ interface Filters {
 interface FiltrosMovimientosProps {
   subcategorias: CategoriaUIMovimiento[];
   categorias: Categoria[];
-  onBuscar: () => void;
+  onBuscar: (filtros: BuscarMovimientosPayload) => void;
 }
 
 const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovimientosProps) => {
@@ -81,20 +82,17 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
   };
 
   const buscarVencimientos = () => {
-    const payload = {
-      ...filters,
-      categorias: filters.categorias?.map(({ id }) => id) || null,
-      subcategorias: filters.subcategorias?.map(({ id }) => id) || null,
-      tiposDePago: filters.tiposDePago,
-      montoMinimo: filters.montoMinimo,
-      montoMaximo: filters.montoMaximo,
-      detalle: filters.detalle,
-      desde: filters.desde ? filters.desde.toDate() : null,
-      hasta: filters.hasta ? filters.hasta.toDate() : null,
+    const payload: BuscarMovimientosPayload = {
+      categoriaIds: filters.categorias?.map(({ id }) => id) || null,
+      subcategoriaIds: filters.subcategorias?.map(({ id }) => id) || null,
+      tiposDePago: (filters.tiposDePago as TipoDeMovimientoGasto[]) || null,
+      monto_min: filters.montoMinimo,
+      monto_max: filters.montoMaximo,
+      comentario: filters.detalle,
+      desde_fecha: filters.desde ? filters.desde.toISOString() : null,
+      hasta_fecha: filters.hasta ? filters.hasta.toISOString() : null,
     };
-    console.log('Buscar movimientos con payload:', payload);
-
-    onBuscar();
+    onBuscar(payload);
   };
 
   return (
