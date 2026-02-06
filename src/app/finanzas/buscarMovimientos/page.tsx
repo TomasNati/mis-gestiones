@@ -44,10 +44,28 @@ const BuscarMovimientos = () => {
       fetchSubcategoriasAndCategorias();
     }, []);
 
+  const handleBuscar = async () => {
+    try {
+      const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:3000/api';
+      console.log({ url: `${backendBaseUrl}/movimientos-gasto` });
+      const res = await fetch(`${backendBaseUrl}/movimientos-gasto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      const data = await res.json();
+
+      console.log('Search results:', data);
+    } catch (err: any) {
+      console.error('Error searching:', err);
+    }
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <h2>Buscar Movimientos</h2>
-      <FiltrosMovimientos subcategorias={subcategorias} categorias={categorias} onBuscar={() => {}} />
+      <FiltrosMovimientos subcategorias={subcategorias} categorias={categorias} onBuscar={handleBuscar} />
     </LocalizationProvider>
   );
 
