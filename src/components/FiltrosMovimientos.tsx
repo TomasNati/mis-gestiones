@@ -41,7 +41,7 @@ interface Filters {
 interface FiltrosMovimientosProps {
   subcategorias: CategoriaUIMovimiento[];
   categorias: Categoria[];
-  onBuscar: (payload: BuscarVencimientosPayload) => void;
+  onBuscar: () => void;
 }
 
 const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovimientosProps) => {
@@ -94,7 +94,7 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
     };
     console.log('Buscar movimientos con payload:', payload);
 
-    // onBuscar(payload);
+    onBuscar();
   };
 
   return (
