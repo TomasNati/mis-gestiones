@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import { FormControl, IconButton, Grid2, Autocomplete, TextField, Chip } from '@mui/material';
+import { FormControl, IconButton, Grid2, Autocomplete, TextField, Chip, Button } from '@mui/material';
 import { styles } from './FiltrosMovimientos.styles';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import {
@@ -16,8 +16,8 @@ import {
 type FiltersTypes = dayjs.Dayjs | Subcategoria[] | Categoria[] | boolean | number | string | null | string[];
 
 export const FILTERS_DEFAULT: Filters = {
-  desde: dayjs().startOf('month'),
-  hasta: dayjs().endOf('month').startOf('day'),
+  desde: null,
+  hasta: null,
   categorias: null,
   subcategorias: null,
   tiposDePago: null,
@@ -88,11 +88,16 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
       tiposDePago: (filters.tiposDePago as TipoDeMovimientoGasto[]) || null,
       monto_min: filters.montoMinimo,
       monto_max: filters.montoMaximo,
-      comentario: filters.detalle,
+      comentarios: filters.detalle,
       desde_fecha: filters.desde ? filters.desde.toISOString() : null,
       hasta_fecha: filters.hasta ? filters.hasta.toISOString() : null,
     };
     onBuscar(payload);
+  };
+
+  const resetFilters = () => {
+    setFilters({ ...FILTERS_DEFAULT });
+    setFilteredSubcategorias(subcategorias);
   };
 
   return (
@@ -218,6 +223,9 @@ const FiltrosMovimientos = ({ subcategorias, categorias, onBuscar }: FiltrosMovi
           size="small"
         />
       </FormControl>
+      <Button size="small" color="primary" onClick={resetFilters} sx={{ alignSelf: 'center', mr: 1 }}>
+        Reset
+      </Button>
       <IconButton size="large" color="primary" onClick={buscarVencimientos}>
         <SearchOutlinedIcon />
       </IconButton>

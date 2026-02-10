@@ -82,7 +82,7 @@ const BuscarMovimientos = () => {
                   <tr>
                     <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Fecha</th>
                     <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Monto</th>
-                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Tipo de Gasto</th>
+                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Tipo de Pago</th>
                     <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Subcategoría</th>
                     <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Categoría</th>
                     <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Comentarios</th>
@@ -95,7 +95,7 @@ const BuscarMovimientos = () => {
                         {new Date(mov.fecha).toLocaleString()}
                       </td>
                       <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>${mov.monto}</td>
-                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>{mov.tipoDeGasto}</td>
+                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>{mov.tipoDePago}</td>
                       <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>
                         {mov.subcategoria?.nombre || mov.subcategoria?.id}
                       </td>

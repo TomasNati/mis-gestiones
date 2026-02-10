@@ -71,6 +71,10 @@ export type MovimientoGasto = {
   monto: number;
 };
 
+export type BuscarMovimientoGasto = Omit<MovimientoGasto, 'tipoDeGasto'> & {
+  tipoDePago: TipoDeMovimientoGasto;
+};
+
 export interface MovimientoDeVencimiento {
   id: string;
   comentarios?: string;
@@ -1299,7 +1303,7 @@ export interface BuscarVencimientosPayload {
 }
 
 export interface BuscarMovimientosResponse {
-  movimientos: MovimientoGasto[];
+  movimientos: BuscarMovimientoGasto[];
   page_number: number;
   page_size: number;
   total: number;
@@ -1311,7 +1315,7 @@ export interface BuscarMovimientosPayload {
   tiposDePago?: TipoDeMovimientoGasto[] | null;
   monto_min?: number | null;
   monto_max?: number | null;
-  comentario?: string | null;
+  comentarios?: string | null;
   desde_fecha?: string | null;
   hasta_fecha?: string | null;
   page_size?: number;
