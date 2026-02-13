@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Layout } from '@/components/Layout/Layout';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import ThemeRegistry from '@/components/ThemeRegistry/ThemeRegistry';
+import ClientProviders from '@/components/Providers/ClientProviders';
 
 export const metadata = {
   title: 'Mis gestiones',
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <ThemeRegistry>
-          <Layout>{children}</Layout>
+          <ClientProviders>
+            <Layout>{children}</Layout>
+          </ClientProviders>
         </ThemeRegistry>
         <SpeedInsights />
       </body>

@@ -8,10 +8,9 @@ import {
 } from '@/lib/definitions';
 import { obtenerCategorias, obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { FiltrosMovimientos } from "@/components/FiltrosMovimientos";
-import { useEffect, useState } from "react";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useEffect, useState } from 'react';
 import { buscarMovimientos } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 const sortByNombre = (a: { nombre: string }, b: { nombre: string }) => {
   if (a.nombre < b.nombre) {
@@ -26,7 +25,16 @@ const sortByNombre = (a: { nombre: string }, b: { nombre: string }) => {
 const BuscarMovimientos = () => {
   const [subcategorias, setSubcategorias] = useState<CategoriaUIMovimiento[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [movimientosResponse, setMovimientosResponse] = useState<BuscarMovimientosResponse | null>(null);
+  const [buscarPayload, setBuscarPayload] = useState<BuscarMovimientosPayload | null>(null);
+
+  const buscarMovimientosQuery = useQuery({
+    queryKey: ['buscarMovimientos', buscarPayload],
+    enabled: Boolean(buscarPayload),
+    queryFn: ({ queryKey }) => {
+      const [, payload] = queryKey as [string, BuscarMovimientosPayload];
+      return buscarMovimientos(payload);
+    },
+  });
 
   useEffect(() => {
       const fetchSubcategoriasAndCategorias = async () => {
@@ -52,18 +60,17 @@ const BuscarMovimientos = () => {
     }, []);
 
   const handleBuscar = async (payload: BuscarMovimientosPayload) => {
-    try {
-      const response = await buscarMovimientos(payload);
-      setMovimientosResponse(response);
-    } catch (err: any) {
-      console.error('Error searching:', err);
-    }
+    setBuscarPayload(payload);
   };
 
+  const movimientosResponse = buscarMovimientosQuery.data ?? null;
+
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <>
       <h2>Buscar Movimientos</h2>
       <FiltrosMovimientos subcategorias={subcategorias} categorias={categorias} onBuscar={handleBuscar} />
+      {buscarMovimientosQuery.isFetching && <p>Buscando movimientos...</p>}
+      {buscarMovimientosQuery.isError && <p>Hubo un error al buscar movimientos.</p>}
       {movimientosResponse && (
         <div>
           <h3>Resultados:</h3>
@@ -111,7 +118,7 @@ const BuscarMovimientos = () => {
           )}
         </div>
       )}
-    </LocalizationProvider>
+    </>
   );
 
 }
