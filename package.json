@@ -29,7 +29,7 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.42.0",
     "math-expression-evaluator": "^2.0.5",
-    "next": "16.0.10",
+    "next": "16.1.6",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "zod": "^3.22.4"
@@ -44,7 +44,7 @@
     "autoprefixer": "^10",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.39.1",
-    "eslint-config-next": "16.0.8",
+    "eslint-config-next": "16.1.6",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.0",
