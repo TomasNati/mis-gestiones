@@ -8,6 +8,7 @@ import {
 } from '@/lib/definitions';
 import { obtenerCategorias, obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { FiltrosMovimientos } from "@/components/FiltrosMovimientos";
+import { BuscarMovimientosResultadosMRT } from "@/components/Movimientos";
 import { useEffect, useState } from 'react';
 import { buscarMovimientos } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
@@ -78,42 +79,12 @@ const BuscarMovimientos = () => {
             <p>No se encontraron movimientos.</p>
           ) : (
             <div>
-              <div>
+              <div style={{ marginBottom: '16px' }}>
                 <strong>Total:</strong> {movimientosResponse.total} &nbsp;|&nbsp;
-                <strong>Page:</strong> {movimientosResponse.page_number} &nbsp;|&nbsp;
-                <strong>Page size:</strong> {movimientosResponse.page_size}
+                <strong>Página:</strong> {movimientosResponse.page_number} &nbsp;|&nbsp;
+                <strong>Por página:</strong> {movimientosResponse.page_size}
               </div>
-
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px' }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Fecha</th>
-                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Monto</th>
-                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Tipo de Pago</th>
-                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Subcategoría</th>
-                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Categoría</th>
-                    <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '4px' }}>Comentarios</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {movimientosResponse.movimientos.map((mov) => (
-                    <tr key={mov.id}>
-                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>
-                        {new Date(mov.fecha).toLocaleString()}
-                      </td>
-                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>${mov.monto}</td>
-                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>{mov.tipoDePago}</td>
-                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>
-                        {mov.subcategoria?.nombre || mov.subcategoria?.id}
-                      </td>
-                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>
-                        {mov.subcategoria?.categoria?.nombre || mov.subcategoria?.categoria?.id}
-                      </td>
-                      <td style={{ padding: '6px 4px', borderBottom: '1px solid #f3f3f3' }}>{mov.comentarios || ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <BuscarMovimientosResultadosMRT movimientos={movimientosResponse.movimientos} />
             </div>
           )}
         </div>
