@@ -9,7 +9,6 @@ import {
   type MRT_SortingState,
 } from 'material-react-table';
 import { useMemo, useState } from 'react';
-import { Box } from '@mui/material';
 
 const BuscarMovimientosResultadosMRT = ({
   movimientos,
@@ -106,6 +105,15 @@ const BuscarMovimientosResultadosMRT = ({
     muiTableProps: {
       size: 'small',
     },
+    muiTablePaperProps: {
+      sx: {
+        display: 'flex',
+        flexDirection: 'column',
+        inlineSize: '100%',
+        overflow: 'auto',
+        flex: 1,
+      },
+    },
     muiCircularProgressProps: {
       color: 'secondary',
       thickness: 5,
@@ -122,11 +130,7 @@ const BuscarMovimientosResultadosMRT = ({
     },
   });
 
-  return (
-    <Box sx={{ position: 'relative' }}>
-      <MaterialReactTable table={table} />
-    </Box>
-  );
+  return <MaterialReactTable table={table} />;
 };
 
 export { BuscarMovimientosResultadosMRT };

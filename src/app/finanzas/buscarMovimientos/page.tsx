@@ -7,6 +7,7 @@ import { BuscarMovimientosResultadosMRT } from '@/components/Movimientos';
 import { useEffect, useState } from 'react';
 import { buscarMovimientos } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
+import { Box } from '@mui/material';
 
 const sortByNombre = (a: { nombre: string }, b: { nombre: string }) => {
   if (a.nombre < b.nombre) {
@@ -17,6 +18,8 @@ const sortByNombre = (a: { nombre: string }, b: { nombre: string }) => {
     return 0;
   }
 };
+
+const DEFAULT_PAGE_SIZE = 20;
 
 const BuscarMovimientos = () => {
   const [subcategorias, setSubcategorias] = useState<CategoriaUIMovimiento[]>([]);
@@ -76,24 +79,38 @@ const BuscarMovimientos = () => {
     movimientos: [],
     total: 0,
     page_number: 1,
-    page_size: 10,
+    page_size: DEFAULT_PAGE_SIZE,
   };
 
   return (
-    <>
-      <h2>Buscar Movimientos</h2>
-      <FiltrosMovimientos subcategorias={subcategorias} categorias={categorias} onBuscar={handleBuscar} />
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        blockSize: '100%',
+        overflow: 'hidden',
+      }}
+    >
+      <Box sx={{}}>
+        <h2>Buscar Movimientos</h2>
+      </Box>
+      <Box sx={{}}>
+        <FiltrosMovimientos subcategorias={subcategorias} categorias={categorias} onBuscar={handleBuscar} />
+      </Box>
       {buscarMovimientosQuery.isError && <p>Hubo un error al buscar movimientos.</p>}
-      <BuscarMovimientosResultadosMRT
-        movimientos={movimientosResponse.movimientos}
-        total={movimientosResponse.total}
-        pageNumber={movimientosResponse.page_number}
-        pageSize={movimientosResponse.page_size}
-        isLoading={buscarMovimientosQuery.isFetching}
-        onPageChange={handlePageChange}
-        onSortingChange={handleSortingChange}
-      />
-    </>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <BuscarMovimientosResultadosMRT
+          movimientos={movimientosResponse.movimientos}
+          total={movimientosResponse.total}
+          pageNumber={movimientosResponse.page_number}
+          pageSize={movimientosResponse.page_size}
+          isLoading={buscarMovimientosQuery.isFetching}
+          onPageChange={handlePageChange}
+          onSortingChange={handleSortingChange}
+        />
+      </Box>
+    </Box>
   );
 };
 

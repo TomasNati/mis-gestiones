@@ -189,6 +189,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           bgcolor: 'background.default',
           ml: `${collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH}px`,
           p: 3,
+          height: '100vh',
         }}
       >
         {children}
