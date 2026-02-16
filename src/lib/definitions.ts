@@ -1320,6 +1320,8 @@ export interface BuscarMovimientosPayload {
   hasta_fecha?: string | null;
   page_size?: number;
   page_number?: number;
+  sort_field?: string | null;
+  sort_by?: string | null;
 }
 
 export type TipoEventoSuenio = 'Despierto' | 'Dormido';
