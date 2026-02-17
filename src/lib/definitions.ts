@@ -71,8 +71,9 @@ export type MovimientoGasto = {
   monto: number;
 };
 
-export type BuscarMovimientoGasto = Omit<MovimientoGasto, 'tipoDeGasto'> & {
+export type BuscarMovimientoGasto = Omit<MovimientoGasto, 'tipoDeGasto' | 'fecha'> & {
   tipoDePago: TipoDeMovimientoGasto;
+  fecha: string;
 };
 
 export interface MovimientoDeVencimiento {
@@ -1320,7 +1321,7 @@ export interface BuscarMovimientosPayload {
   hasta_fecha?: string | null;
   page_size?: number;
   page_number?: number;
-  sort_field?: string | null;
+  sort_direction?: string | null;
   sort_by?: string | null;
 }
 

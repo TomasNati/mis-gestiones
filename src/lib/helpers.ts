@@ -191,7 +191,8 @@ export const transformCurrencyToNumber = (currencyString: string): number | null
 };
 
 export const transformNumberToCurrenty = (value?: number): string | undefined => {
-  return value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+  const formatted = value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+  return formatted?.replace(/,00$/, '');
 };
 
 export const generateUUID = (): string => {
@@ -220,6 +221,19 @@ export const obtenerTipoDeMovimientoGasto = (tipoDePago: string): TipoDeMovimien
       return TipoDeMovimientoGasto.Debito;
     default:
       return TipoDeMovimientoGasto.Efectivo;
+  }
+};
+
+export const obtenerStringDeTipoDeMovimientoGasto = (tipo: TipoDeMovimientoGasto): string => {
+  switch (tipo) {
+    case TipoDeMovimientoGasto.Efectivo:
+      return 'Efectivo';
+    case TipoDeMovimientoGasto.Credito:
+      return 'Crédito';
+    case TipoDeMovimientoGasto.Debito:
+      return 'Débito';
+    default:
+      return 'Efectivo';
   }
 };
 

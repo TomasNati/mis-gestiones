@@ -1,6 +1,7 @@
 'use client';
 
 import { BuscarMovimientoGasto } from '@/lib/definitions';
+import { formatDate, transformNumberToCurrenty, obtenerStringDeTipoDeMovimientoGasto } from '@/lib/helpers';
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -35,32 +36,33 @@ const BuscarMovimientosResultadosMRT = ({
   const columns = useMemo<MRT_ColumnDef<BuscarMovimientoGasto>[]>(
     () => [
       {
-        accessorFn: (row) => new Date(row.fecha).toLocaleString(),
+        accessorFn: (row) => formatDate(new Date(row.fecha), false, { timeZone: 'UTC' }),
         id: 'fecha',
         header: 'Fecha',
         size: 130,
       },
       {
-        accessorFn: (row) => `$${row.monto}`,
+        accessorFn: (row) => transformNumberToCurrenty(row.monto),
         id: 'monto',
         header: 'Monto',
         size: 100,
       },
       {
+        accessorFn: (row) => obtenerStringDeTipoDeMovimientoGasto(row.tipoDePago),
         accessorKey: 'tipoDePago',
         header: 'Tipo de Pago',
         size: 120,
       },
       {
-        accessorFn: (row) => row.subcategoria?.nombre || row.subcategoria?.id || '-',
-        id: 'subcategoria',
-        header: 'Subcategoría',
-        size: 150,
-      },
-      {
         accessorFn: (row) => row.subcategoria?.categoria?.nombre || row.subcategoria?.categoria?.id || '-',
         id: 'categoria',
         header: 'Categoría',
+        size: 150,
+      },
+      {
+        accessorFn: (row) => row.subcategoria?.nombre || row.subcategoria?.id || '-',
+        id: 'subcategoria',
+        header: 'Subcategoría',
         size: 150,
       },
       {
@@ -99,7 +101,7 @@ const BuscarMovimientosResultadosMRT = ({
         onSortingChange(null, null);
       } else {
         const { id, desc } = newSorting[0];
-        onSortingChange(id, desc ? 'DESC' : 'ASC');
+        onSortingChange(id, desc ? 'desc' : 'asc');
       }
     },
     muiTableProps: {

@@ -59,7 +59,7 @@ const BuscarMovimientos = () => {
   }, []);
 
   const handleBuscar = async (payload: BuscarMovimientosPayload) => {
-    const pageSize = buscarPayload?.page_size ?? 10;
+    const pageSize = buscarPayload?.page_size ?? DEFAULT_PAGE_SIZE;
     setBuscarPayload({ ...payload, page_number: 1, page_size: pageSize });
   };
 
@@ -69,9 +69,15 @@ const BuscarMovimientos = () => {
     }
   };
 
-  const handleSortingChange = (sortField: string | null, sortBy: string | null) => {
+  const handleSortingChange = (sortBy: string | null, sortDirection: string | null) => {
     if (buscarPayload) {
-      setBuscarPayload({ ...buscarPayload, sort_field: sortField, sort_by: sortBy, page_number: 1 });
+      let mappedSortBy = sortBy;
+      if (sortBy === 'subcategoria') {
+        mappedSortBy = 'subcategoria.nombre';
+      } else if (sortBy === 'categoria') {
+        mappedSortBy = 'subcategoria.categoria.nombre';
+      }
+      setBuscarPayload({ ...buscarPayload, sort_by: mappedSortBy, sort_direction: sortDirection, page_number: 1 });
     }
   };
 
