@@ -11,6 +11,12 @@ import {
 } from 'material-react-table';
 import { useMemo, useState } from 'react';
 
+const FECHA_COLUMN_WIDTH = 150;
+const MONTO_COLUMN_WIDTH = 150;
+const TIPO_PAGO_COLUMN_WIDTH = 180;
+const CATEGORIA_COLUMN_WIDTH = 200;
+const SUBCATEGORIA_COLUMN_WIDTH = 220;
+
 const BuscarMovimientosResultadosMRT = ({
   movimientos,
   total,
@@ -39,36 +45,38 @@ const BuscarMovimientosResultadosMRT = ({
         accessorFn: (row) => formatDate(new Date(row.fecha), false, { timeZone: 'UTC' }),
         id: 'fecha',
         header: 'Fecha',
-        size: 130,
+        size: FECHA_COLUMN_WIDTH,
       },
       {
         accessorFn: (row) => transformNumberToCurrenty(row.monto),
         id: 'monto',
         header: 'Monto',
-        size: 100,
+        size: MONTO_COLUMN_WIDTH,
       },
       {
         accessorFn: (row) => obtenerStringDeTipoDeMovimientoGasto(row.tipoDePago),
         accessorKey: 'tipoDePago',
         header: 'Tipo de Pago',
-        size: 120,
+        size: TIPO_PAGO_COLUMN_WIDTH,
       },
       {
         accessorFn: (row) => row.subcategoria?.categoria?.nombre || row.subcategoria?.categoria?.id || '-',
         id: 'categoria',
         header: 'Categoría',
-        size: 150,
+        size: CATEGORIA_COLUMN_WIDTH,
       },
       {
         accessorFn: (row) => row.subcategoria?.nombre || row.subcategoria?.id || '-',
         id: 'subcategoria',
         header: 'Subcategoría',
-        size: 150,
+        size: SUBCATEGORIA_COLUMN_WIDTH,
       },
       {
         accessorKey: 'comentarios',
         header: 'Comentarios',
         size: 200,
+        muiTableBodyCellProps: { sx: { flexGrow: 1 } },
+        muiTableHeadCellProps: { sx: { flexGrow: 1 } },
       },
     ],
     [],
@@ -130,6 +138,7 @@ const BuscarMovimientosResultadosMRT = ({
         header: 'Acciones',
       },
     },
+    layoutMode: 'grid-no-grow',
   });
 
   return <MaterialReactTable table={table} />;
