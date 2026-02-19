@@ -10,6 +10,7 @@ import {
   type MRT_SortingState,
 } from 'material-react-table';
 import { useMemo, useState } from 'react';
+import { styles } from './BuscarMovimientosResultadosMRT.styles';
 
 const FECHA_COLUMN_WIDTH = 150;
 const MONTO_COLUMN_WIDTH = 150;
@@ -115,13 +116,28 @@ const BuscarMovimientosResultadosMRT = ({
       size: 'small',
     },
     muiTablePaperProps: {
-      sx: {
-        display: 'flex',
-        flexDirection: 'column',
-        inlineSize: '100%',
-        overflow: 'auto',
-        flex: 1,
-      },
+      sx: styles.tablePaper,
+    },
+    muiTableContainerProps: {
+      sx: styles.tableContainer,
+    },
+    muiTableHeadProps: {
+      sx: styles.tableHead,
+    },
+    muiTableBodyProps: {
+      sx: styles.tableBody,
+    },
+    muiTableBodyRowProps: {
+      sx: styles.tableRow,
+    },
+    muiTopToolbarProps: {
+      sx: styles.topToolbar,
+    },
+    muiBottomToolbarProps: {
+      sx: styles.bottomToolbar,
+    },
+    muiPaginationProps: {
+      sx: styles.pagination,
     },
     muiCircularProgressProps: {
       color: 'secondary',
@@ -131,6 +147,7 @@ const BuscarMovimientosResultadosMRT = ({
     muiSkeletonProps: {
       animation: 'pulse',
       height: 28,
+      sx: styles.skeleton,
     },
     displayColumnDefOptions: {
       'mrt-row-actions': {
