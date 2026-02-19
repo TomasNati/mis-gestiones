@@ -46,8 +46,12 @@ export const styles: BuscarMovimientosResultadosMRTStyles = {
     '& .MuiTableRow-root': {
       // Override background color for individual rows
       backgroundColor: colors.background,
+      // No transition for unhover (immediate change when mouse leaves)
+      transition: 'none',
       '&:hover': {
         backgroundColor: colors.hoverBackground,
+        // Transition for hover (when mouse enters)
+        transition: 'none',
       },
       '&:nth-of-type(odd)': {
         // backgroundColor: 'action.selected',
