@@ -28,6 +28,23 @@ export const styles: BuscarMovimientosResultadosMRTStyles = {
   },
   tableContainer: {
     //backgroundColor: 'background.default',
+    '&::-webkit-scrollbar': {
+      width: '8px',
+      height: '8px',
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: '#1a252b',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#3d5a6b',
+      borderRadius: '4px',
+      '&:hover': {
+        backgroundColor: '#4a6d7f',
+      },
+    },
+    '&::-webkit-scrollbar-corner': {
+      backgroundColor: '#1a252b',
+    },
   },
   tableHead: {
     // backgroundColor: 'primary.light',
