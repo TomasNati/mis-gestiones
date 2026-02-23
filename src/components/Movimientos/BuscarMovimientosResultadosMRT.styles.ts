@@ -15,6 +15,9 @@ interface BuscarMovimientosResultadosMRTStyles {
 const colors = {
   background: '#27343b',
   hoverBackground: '#234655',
+  scrollbarColor: '#3d5a6b',
+  scrollbarTrackColor: '#1a252b',
+  scrollbarThumbHoverColor: '#4a6d7f',
 };
 
 export const styles: BuscarMovimientosResultadosMRTStyles = {
@@ -28,23 +31,27 @@ export const styles: BuscarMovimientosResultadosMRTStyles = {
   },
   tableContainer: {
     //backgroundColor: 'background.default',
+    // WebKit (Chrome, Safari, Edge)
     '&::-webkit-scrollbar': {
       width: '8px',
       height: '8px',
     },
     '&::-webkit-scrollbar-track': {
-      backgroundColor: '#1a252b',
+      backgroundColor: colors.scrollbarTrackColor,
     },
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: '#3d5a6b',
+      backgroundColor: colors.scrollbarColor,
       borderRadius: '4px',
       '&:hover': {
-        backgroundColor: '#4a6d7f',
+        backgroundColor: colors.scrollbarThumbHoverColor,
       },
     },
     '&::-webkit-scrollbar-corner': {
-      backgroundColor: '#1a252b',
+      backgroundColor: colors.scrollbarTrackColor,
     },
+    // Firefox
+    scrollbarWidth: 'thin',
+    scrollbarColor: `${colors.scrollbarColor} ${colors.scrollbarTrackColor}`,
   },
   tableHead: {
     // backgroundColor: 'primary.light',
