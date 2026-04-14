@@ -7,17 +7,20 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
+  IconButton,
   TextField,
+  Tooltip,
 } from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { styles } from './AgregarEditarModal.styles';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { MovimientoDeVencimiento, Subcategoria, VencimientoUI } from '@/lib/definitions';
 import { formatDate, toUTC } from '@/lib/helpers';
 import { obtenerMovimientosParaVencimientosUI } from '@/components/vencimientos/vencimientosUtils';
-import { vencimiento } from '@/lib/orm/tables';
+import { CrearPagoModal } from './CrearPagoModal';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
 
@@ -93,6 +96,7 @@ export const AgregarEditarModal = ({
   const [errors, setErrors] = useState<string[]>(validateForm(mapVencimientoToForm(tiposDeVencimiento, vencimiento)));
   const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>(pagos);
   const [form, setForm] = useState<FormState>(mapVencimientoToForm(tiposDeVencimiento, vencimiento));
+  const [showCrearPago, setShowCrearPago] = useState(false);
 
   const handleTipoChanged = async (tipo: Subcategoria | null) => {
     if (!tipo) {
@@ -143,6 +147,14 @@ export const AgregarEditarModal = ({
     }
   };
 
+  const handlePagoCreado = (pago: MovimientoDeVencimiento) => {
+    setPosiblesPagos((prev) => [pago, ...prev]);
+    handleChangeSimple('pagoId', pago.id);
+    setShowCrearPago(false);
+  };
+
+  const canCrearPago = form.tipo && form.monto && isNumber(form.monto) && Number(form.monto) > 0;
+
   const handleClose = (reason: string) => {
     if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
       onClose();
@@ -171,17 +183,44 @@ export const AgregarEditarModal = ({
             getOptionKey={(option: Subcategoria) => option.id}
             size="small"
           />
-          <Autocomplete
-            options={posiblesPagos}
-            getOptionLabel={(option: MovimientoDeVencimiento) =>
-              `${formatDate(option.fecha, false, { timeZone: 'UTC' })} - $${option.monto}`
-            }
-            value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
-            renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
-            onChange={(_, value) => handleChangeSimple('pagoId', value ? value.id : null)}
-            getOptionKey={(option: MovimientoDeVencimiento) => option.id}
-            size="small"
-          />
+          <Box display="flex" gap={0.5} alignItems="center">
+            <Autocomplete
+              options={posiblesPagos}
+              getOptionLabel={(option: MovimientoDeVencimiento) =>
+                `${formatDate(option.fecha, false, { timeZone: 'UTC' })} - $${option.monto}`
+              }
+              value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
+              renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
+              onChange={(_, value) => handleChangeSimple('pagoId', value ? value.id : null)}
+              getOptionKey={(option: MovimientoDeVencimiento) => option.id}
+              size="small"
+              sx={{ flex: 1 }}
+            />
+            <Tooltip title={canCrearPago ? 'Crear movimiento de pago' : 'Completar tipo y monto primero'}>
+              <span>
+                <IconButton
+                  color="primary"
+                  onClick={() => setShowCrearPago(true)}
+                  disabled={!canCrearPago}
+                  size="small"
+                >
+                  <AddCircleOutlineIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+          {showCrearPago && (
+            <CrearPagoModal
+              open={showCrearPago}
+              tipoNombre={form.tipo?.nombre || ''}
+              subcategoriaId={form.tipo?.id || ''}
+              fechaInicial={form.fecha}
+              montoInicial={form.monto}
+              comentarios={form.comentarios}
+              onClose={() => setShowCrearPago(false)}
+              onPagoCreado={handlePagoCreado}
+            />
+          )}
           <TextField
             label="Monto"
             type="number"

@@ -81,17 +81,14 @@ export async function eliminarMovimientos(ids: string[], revalidate = true) {
     errores: [],
   };
 
-  let resultadoMensaje = '';
-
   try {
     await db.delete(movimientosGasto).where(inArray(movimientosGasto.id, ids));
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      resultadoMensaje = `Error al eliminar movimientos: ${error.message}.\n ${error.stack}`;
-    } else {
-      resultadoMensaje = ` Error al eliminar movimientos ${error}.\n`;
-    }
+    console.log('Error al eliminar movimientos:', error);
+    const resultadoMensaje =
+      'Error al eliminar movimientos. Verifique que no estén asociados a un vencimiento.';
     resultadoFinal.errores.push(resultadoMensaje);
+    resultadoFinal.exitoso = false;
   }
   if (revalidate) {
     // Revalidate the cache
