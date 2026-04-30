@@ -31,6 +31,7 @@ Agregar una nueva sección de **Inversiones** a la aplicación Mis Gestiones que
 
 ### 2.1 Estructura de Carpetas
 
+**Frontend (mis-gestiones - Next.js):**
 ```
 src/
 ├── app/
@@ -38,11 +39,9 @@ src/
 │       ├── page.tsx                    # Dashboard principal
 │       ├── administrar/                # Gestión de activos
 │       │   └── page.tsx
-│       ├── detalles/
-│       │   └── [id]/                   # Vista de detalle por activo
-│       │       └── page.tsx
-│       └── configuracion/              # Config de APIs y cotizaciones
-│           └── page.tsx
+│       └── detalles/
+│           └── [id]/                   # Vista de detalle por activo
+│               └── page.tsx
 ├── components/
 │   └── inversiones/                    # Componentes específicos
 │       ├── DashboardInversiones.tsx    # Dashboard principal
@@ -53,19 +52,28 @@ src/
 │       ├── ResumenTotales.tsx          # Totales ARS/USD
 │       ├── FiltrosInversiones.tsx      # Filtros y búsqueda
 │       └── HistorialPrecios.tsx        # Gráfico histórico
-├── lib/
-│   └── inversiones/                    # Lógica de negocio
-│       ├── types.ts                    # Tipos TypeScript
-│       ├── api.ts                      # Llamadas a API
-│       ├── calculadora.ts              # Cálculos de rendimiento
-│       ├── cotizaciones.ts             # Integración APIs externas
-│       └── validaciones.ts             # Validaciones Zod
-└── api/
-    └── inversiones/                    # API Routes
-        ├── index.ts                    # GET/POST inversiones
-        ├── [id].ts                     # GET/PUT/DELETE por id
-        ├── cotizaciones.ts             # Obtener precios actuales
-        └── historico.ts                # Histórico de precios
+└── lib/
+    └── inversiones/                    # Client-side logic
+        ├── types.ts                    # Tipos TypeScript compartidos
+        ├── api.ts                      # Llamadas HTTP al backend
+        ├── hooks.ts                    # React Query hooks
+        └── utils.ts                    # Utilidades del cliente
+```
+
+**Backend (mis-gestiones-backend - FastAPI):**
+```
+app/
+├── routers/
+│   └── inversiones.py                  # Endpoints de inversiones
+├── models/
+│   └── inversion.py                    # SQLAlchemy models
+├── schemas/
+│   └── inversion.py                    # Pydantic schemas
+├── services/
+│   ├── inversiones_service.py          # Business logic
+│   └── cotizaciones_service.py         # External APIs integration
+└── database/
+    └── connection.py                   # Database connection
 ```
 
 ### 2.2 Diagrama de Componentes
@@ -111,94 +119,131 @@ src/
 
 ## 3. Modelo de Datos
 
-### 3.1 Esquema de Base de Datos
+### 3.1 Esquema de Base de Datos (Backend)
+
+**Nota:** Las tablas serán creadas y gestionadas por `mis-gestiones-backend` usando SQLAlchemy.
 
 #### Tabla: `inversiones`
 
-```typescript
-// Tabla principal de inversiones
+```sql
+-- Tabla principal de inversiones (gestionada por backend)
 CREATE TABLE inversiones (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tipo_activo       VARCHAR(50) NOT NULL,          -- 'CEDEAR', 'FCI', 'ON', 'ACCION_LOCAL', 'ACCION_INTERNACIONAL'
+  tipo_activo       VARCHAR(50) NOT NULL,          -- 'CEDEAR', 'FCI', 'ON', 'ACCION_LOCAL', 'ACCION_INTERNACIONAL', 'BONO', 'FCI_EXTERIOR', 'ETF'
   ticker            VARCHAR(50) NOT NULL,          -- Símbolo del activo (ej: 'AAPL', 'AL30')
   nombre            VARCHAR(255) NOT NULL,         -- Nombre completo del activo
   mercado           VARCHAR(50) NOT NULL,          -- 'LOCAL', 'INTERNACIONAL'
   cantidad          DECIMAL(18,4) NOT NULL,        -- Cantidad de unidades
-  precio_compra     DECIMAL(18,4) NOT NULL,        -- Precio de compra por unidad
-  moneda_compra     VARCHAR(3) NOT NULL,           -- 'ARS', 'USD'
-  fecha_compra      DATE NOT NULL,
   broker            VARCHAR(100),                  -- Broker utilizado
-  comision          DECIMAL(18,4) DEFAULT 0,       -- Comisión pagada
   comentarios       TEXT,
   created_at        TIMESTAMP DEFAULT NOW(),
   updated_at        TIMESTAMP DEFAULT NOW(),
   
-  CONSTRAINT chk_tipo_activo CHECK (tipo_activo IN ('CEDEAR', 'FCI', 'ON', 'ACCION_LOCAL', 'ACCION_INTERNACIONAL')),
+  CONSTRAINT chk_tipo_activo CHECK (tipo_activo IN ('CEDEAR', 'FCI', 'ON', 'ACCION_LOCAL', 'ACCION_INTERNACIONAL', 'BONO', 'FCI_EXTERIOR', 'ETF')),
   CONSTRAINT chk_mercado CHECK (mercado IN ('LOCAL', 'INTERNACIONAL')),
-  CONSTRAINT chk_moneda CHECK (moneda_compra IN ('ARS', 'USD')),
   CONSTRAINT chk_cantidad_positiva CHECK (cantidad > 0)
 );
 
 CREATE INDEX idx_inversiones_tipo ON inversiones(tipo_activo);
 CREATE INDEX idx_inversiones_ticker ON inversiones(ticker);
-CREATE INDEX idx_inversiones_fecha ON inversiones(fecha_compra DESC);
 ```
 
-#### Tabla: `cotizaciones_cache`
+### 3.2 SQLAlchemy Model (Backend)
 
-```typescript
-// Cache de cotizaciones para reducir llamadas a APIs externas
-CREATE TABLE cotizaciones_cache (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  ticker            VARCHAR(50) NOT NULL,
-  mercado           VARCHAR(50) NOT NULL,
-  precio            DECIMAL(18,4) NOT NULL,
-  moneda            VARCHAR(3) NOT NULL,
-  fecha_hora        TIMESTAMP NOT NULL,
-  fuente            VARCHAR(100),                  -- 'IOL', 'YAHOO_FINANCE', 'MANUAL'
-  created_at        TIMESTAMP DEFAULT NOW(),
-  
-  CONSTRAINT unq_ticker_fecha UNIQUE(ticker, mercado, fecha_hora)
-);
+```python
+# app/models/inversion.py (mis-gestiones-backend)
 
-CREATE INDEX idx_cotizaciones_ticker ON cotizaciones_cache(ticker, mercado);
-CREATE INDEX idx_cotizaciones_fecha ON cotizaciones_cache(fecha_hora DESC);
+from sqlalchemy import Column, String, Numeric, DateTime, CheckConstraint
+from sqlalchemy.dialects.postgresql import UUID
+from datetime import datetime
+import uuid
+
+class Inversion(Base):
+    __tablename__ = "inversiones"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tipo_activo = Column(String(50), nullable=False)
+    ticker = Column(String(50), nullable=False, index=True)
+    nombre = Column(String(255), nullable=False)
+    mercado = Column(String(50), nullable=False)
+    cantidad = Column(Numeric(18, 4), nullable=False)
+    broker = Column(String(100), nullable=True)
+    comentarios = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        CheckConstraint(
+            "tipo_activo IN ('CEDEAR', 'FCI', 'ON', 'ACCION_LOCAL', 'ACCION_INTERNACIONAL', 'BONO', 'FCI_EXTERIOR', 'ETF')",
+            name='chk_tipo_activo'
+        ),
+        CheckConstraint("mercado IN ('LOCAL', 'INTERNACIONAL')", name='chk_mercado'),
+        CheckConstraint("cantidad > 0", name='chk_cantidad_positiva'),
+    )
 ```
 
-#### Tabla: `configuracion_cotizaciones`
+### 3.3 Pydantic Schemas (Backend)
 
-```typescript
-// Configuración de APIs y endpoints
-CREATE TABLE configuracion_cotizaciones (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clave             VARCHAR(100) UNIQUE NOT NULL,  -- 'api_key_iol', 'api_key_yahoo'
-  valor             TEXT NOT NULL,
-  activo            BOOLEAN DEFAULT true,
-  created_at        TIMESTAMP DEFAULT NOW(),
-  updated_at        TIMESTAMP DEFAULT NOW()
-);
+```python
+# app/schemas/inversion.py (mis-gestiones-backend)
+
+from pydantic import BaseModel, Field
+from typing import Optional
+from datetime import datetime
+from enum import Enum
+
+class TipoActivo(str, Enum):
+    CEDEAR = "CEDEAR"
+    FCI = "FCI"
+    ON = "ON"
+    ACCION_LOCAL = "ACCION_LOCAL"
+    ACCION_INTERNACIONAL = "ACCION_INTERNACIONAL"
+    BONO = "BONO"
+    FCI_EXTERIOR = "FCI_EXTERIOR"
+    ETF = "ETF"
+
+class Mercado(str, Enum):
+    LOCAL = "LOCAL"
+    INTERNACIONAL = "INTERNACIONAL"
+
+class InversionCreate(BaseModel):
+    tipo_activo: TipoActivo
+    ticker: str = Field(..., min_length=1, max_length=50)
+    nombre: str = Field(..., min_length=1, max_length=255)
+    mercado: Mercado
+    cantidad: float = Field(..., gt=0)
+    broker: Optional[str] = Field(None, max_length=100)
+    comentarios: Optional[str] = None
+
+class InversionUpdate(BaseModel):
+    tipo_activo: Optional[TipoActivo] = None
+    ticker: Optional[str] = None
+    nombre: Optional[str] = None
+    mercado: Optional[Mercado] = None
+    cantidad: Optional[float] = Field(None, gt=0)
+    broker: Optional[str] = None
+    comentarios: Optional[str] = None
+
+class InversionResponse(BaseModel):
+    id: str
+    tipo_activo: str
+    ticker: str
+    nombre: str
+    mercado: str
+    cantidad: float
+    broker: Optional[str]
+    comentarios: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
 ```
 
-#### Tabla: `tipo_cambio`
+### 3.4 Tipos TypeScript (Frontend)
 
 ```typescript
-// Histórico de tipo de cambio dólar MEP
-CREATE TABLE tipo_cambio (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fecha             DATE NOT NULL UNIQUE,
-  tipo              VARCHAR(20) NOT NULL,          -- 'MEP', 'BLUE', 'OFICIAL'
-  compra            DECIMAL(18,4) NOT NULL,
-  venta             DECIMAL(18,4) NOT NULL,
-  created_at        TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX idx_tipo_cambio_fecha ON tipo_cambio(fecha DESC);
-```
-
-### 3.2 Tipos TypeScript
-
-```typescript
-// src/lib/inversiones/types.ts
+// src/lib/inversiones/types.ts (mis-gestiones frontend)
 
 export enum TipoActivo {
   CEDEAR = 'CEDEAR',
@@ -206,6 +251,9 @@ export enum TipoActivo {
   ON = 'ON',
   ACCION_LOCAL = 'ACCION_LOCAL',
   ACCION_INTERNACIONAL = 'ACCION_INTERNACIONAL',
+  BONO = 'BONO',
+  FCI_EXTERIOR = 'FCI_EXTERIOR',
+  ETF = 'ETF',
 }
 
 export enum Mercado {
@@ -218,11 +266,7 @@ export enum Moneda {
   USD = 'USD',
 }
 
-export enum TipoCambio {
-  MEP = 'MEP',
-  BLUE = 'BLUE',
-  OFICIAL = 'OFICIAL',
-}
+
 
 export interface Inversion {
   id: string;
@@ -231,11 +275,7 @@ export interface Inversion {
   nombre: string;
   mercado: Mercado;
   cantidad: number;
-  precioCompra: number;
-  monedaCompra: Moneda;
-  fechaCompra: Date;
   broker?: string;
-  comision: number;
   comentarios?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -247,7 +287,6 @@ export interface Cotizacion {
   precio: number;
   moneda: Moneda;
   fechaHora: Date;
-  fuente: string;
 }
 
 export interface InversionConCotizacion extends Inversion {
@@ -277,22 +316,15 @@ export interface DistribucionActivo {
   valorTotal: number;
   porcentaje: number;
 }
-
-export interface TipoCambioData {
-  fecha: Date;
-  tipo: TipoCambio;
-  compra: number;
-  venta: number;
-}
 ```
 
-### 3.3 Validaciones (Zod)
+### 3.5 Validaciones Frontend (Zod)
 
 ```typescript
-// src/lib/inversiones/validaciones.ts
+// src/lib/inversiones/validaciones.ts (mis-gestiones frontend)
 
 import { z } from 'zod';
-import { TipoActivo, Mercado, Moneda } from './types';
+import { TipoActivo, Mercado } from './types';
 
 export const inversionSchema = z.object({
   id: z.string().uuid().optional(),
@@ -301,11 +333,7 @@ export const inversionSchema = z.object({
   nombre: z.string().min(1).max(255),
   mercado: z.nativeEnum(Mercado),
   cantidad: z.number().positive(),
-  precioCompra: z.number().positive(),
-  monedaCompra: z.nativeEnum(Moneda),
-  fechaCompra: z.date().max(new Date(), 'La fecha no puede ser futura'),
   broker: z.string().max(100).optional(),
-  comision: z.number().min(0).default(0),
   comentarios: z.string().optional(),
 });
 
@@ -325,273 +353,197 @@ export type FiltrosInversiones = z.infer<typeof filtrosInversionesSchema>;
 
 ---
 
-## 4. Integración con APIs Externas
+## 4. Arquitectura Backend
 
-### 4.1 Proveedores de Cotizaciones
+### 4.1 mis-gestiones-backend (FastAPI)
 
-#### **InvertirOnline (IOL) - Mercado Local**
+**Base URL:** `process.env.NEXT_PUBLIC_BACKEND_BASE_URL`
 
-```typescript
-// API para activos locales (CEDEARs, ON, Acciones Argentinas)
-const IOL_API_BASE = 'https://api.invertironline.com';
+El backend centraliza toda la lógica de negocio, acceso a base de datos y integración con APIs externas.
 
-interface IOLPrecio {
-  simbolo: string;
-  ultimoPrecio: number;
-  variacion: number;
-  apertura: number;
-  maximo: number;
-  minimo: number;
-  volumen: number;
-  fecha: string;
-}
+#### Responsabilidades del Backend:
 
-// Endpoint de ejemplo
-GET /api/v2/Cotizaciones/CEDEARs
-GET /api/v2/Cotizaciones/acciones
-GET /api/v2/Cotizaciones/bonos
+1. **Gestión de Base de Datos:**
+   - CRUD de inversiones via SQLAlchemy
+   - Migraciones con Alembic
+   - Validación de datos con Pydantic
+
+2. **Integración con APIs Externas:**
+   - PPI (Portfolio Personal Inversiones) - Mercado local
+   - Yahoo Finance - Acciones internacionales
+   - DolarAPI - Tipo de cambio
+   - Caché de cotizaciones
+
+3. **Business Logic:**
+   - Cálculos de rendimiento
+   - Conversión de monedas
+   - Agregación de datos
+   - Reportes
+
+#### Endpoints del Backend (Pendientes de Implementación):
+
 ```
-
-#### **Yahoo Finance - Mercado Internacional**
-
-```typescript
-// Para acciones internacionales
-const YAHOO_FINANCE_API = 'https://query1.finance.yahoo.com';
-
-interface YahooQuote {
-  symbol: string;
-  regularMarketPrice: number;
-  currency: string;
-  regularMarketTime: number;
-}
-
-// Endpoint
-GET /v7/finance/quote?symbols=AAPL,GOOGL,MSFT
-```
-
-#### **Dólar API - Tipo de Cambio**
-
-```typescript
-// Para obtener cotización del dólar MEP
-const DOLAR_API = 'https://dolarapi.com/v1/dolares';
-
-interface DolarCotizacion {
-  casa: string;      // "mep", "blue", "oficial"
-  nombre: string;
-  compra: number;
-  venta: number;
-  fechaActualizacion: string;
-}
-
-// Endpoint
-GET /dolares/mep
-GET /dolares/blue
-```
-
-### 4.2 Estrategia de Caché
-
-```typescript
-// src/lib/inversiones/cotizaciones.ts
-
-export class ServicioCotizaciones {
-  private static TTL_MINUTOS = 15; // Cache de 15 minutos
+Inversiones:
+  GET    /api/inversiones          - Listar inversiones
+  POST   /api/inversiones          - Crear inversión
+  GET    /api/inversiones/{id}     - Obtener detalle
+  PUT    /api/inversiones/{id}     - Actualizar inversión
+  DELETE /api/inversiones/{id}     - Eliminar inversión
   
-  /**
-   * Obtiene el precio actual de un activo
-   * 1. Verifica cache local (DB)
-   * 2. Si está fresco (< 15 min), retorna
-   * 3. Si está desactualizado, consulta API externa
-   * 4. Guarda en cache y retorna
-   */
-  async obtenerPrecio(ticker: string, mercado: Mercado): Promise<Cotizacion> {
-    // Verificar cache
-    const cached = await this.buscarEnCache(ticker, mercado);
-    
-    if (cached && !this.estaDesactualizado(cached.fechaHora)) {
-      return cached;
-    }
-    
-    // Obtener de API externa
-    const cotizacion = await this.consultarAPI(ticker, mercado);
-    
-    // Guardar en cache
-    await this.guardarEnCache(cotizacion);
-    
-    return cotizacion;
-  }
+Cotizaciones:
+  GET    /api/cotizaciones/{ticker}        - Obtener cotización
+  POST   /api/cotizaciones/batch           - Múltiples cotizaciones
+  GET    /api/cotizaciones/dolar-mep       - Tipo de cambio MEP
   
-  private estaDesactualizado(fecha: Date): boolean {
-    const ahora = new Date();
-    const diffMinutos = (ahora.getTime() - fecha.getTime()) / 1000 / 60;
-    return diffMinutos > ServicioCotizaciones.TTL_MINUTOS;
-  }
-}
-```
-
-### 4.3 Manejo de Errores en APIs
-
-```typescript
-export enum ErrorCotizacion {
-  TICKER_NO_ENCONTRADO = 'TICKER_NO_ENCONTRADO',
-  API_NO_DISPONIBLE = 'API_NO_DISPONIBLE',
-  LIMITE_EXCEDIDO = 'LIMITE_EXCEDIDO',
-  DATOS_INVALIDOS = 'DATOS_INVALIDOS',
-}
-
-export class ErrorServicioCotizaciones extends Error {
-  constructor(
-    public tipo: ErrorCotizacion,
-    public mensaje: string,
-    public ticker?: string
-  ) {
-    super(mensaje);
-  }
-}
-
-// Estrategia de fallback
-async obtenerPrecioConFallback(ticker: string): Promise<Cotizacion> {
-  try {
-    return await this.obtenerDeIOL(ticker);
-  } catch (error) {
-    console.warn('IOL falló, intentando Yahoo Finance');
-    try {
-      return await this.obtenerDeYahoo(ticker);
-    } catch (error2) {
-      console.error('Todas las APIs fallaron');
-      // Retornar último precio conocido del cache
-      return await this.obtenerUltimoPrecioCache(ticker);
-    }
-  }
-}
+Reportes:
+  GET    /api/inversiones/resumen          - Resumen del portafolio
+  GET    /api/inversiones/distribucion     - Distribución por tipo
 ```
 
 ---
 
-## 5. Lógica de Negocio
+## 5. Comunicación Frontend-Backend
 
-### 5.1 Cálculo de Rendimiento
+### 5.1 Cliente API (Frontend)
 
 ```typescript
-// src/lib/inversiones/calculadora.ts
+// src/lib/inversiones/api.ts (mis-gestiones frontend)
 
-export class CalculadoraInversiones {
+import apiClient from '@/lib/api';
+import type { Inversion, InversionConCotizacion, ResumenPortafolio } from './types';
+
+export const inversionesApi = {
   /**
-   * Calcula el rendimiento de una inversión individual
+   * Obtiene todas las inversiones
    */
-  static calcularRendimiento(inversion: Inversion, precioActual: number): RendimientoInversion {
-    const valorCompra = inversion.cantidad * inversion.precioCompra + inversion.comision;
-    const valorActual = inversion.cantidad * precioActual;
-    
-    const gananciaAbsoluta = valorActual - valorCompra;
-    const gananciaRelativa = (gananciaAbsoluta / valorCompra) * 100;
-    
-    return {
-      valorCompra,
-      valorActual,
-      gananciaAbsoluta,
-      gananciaRelativa,
-    };
-  }
+  async getAll(filtros?: {
+    tipoActivo?: string;
+    mercado?: string;
+    broker?: string;
+  }): Promise<Inversion[]> {
+    const response = await apiClient.get('/inversiones', { params: filtros });
+    return response.data;
+  },
+
+  /**
+   * Obtiene una inversión por ID
+   */
+  async getById(id: string): Promise<Inversion> {
+    const response = await apiClient.get(`/inversiones/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Crea una nueva inversión
+   */
+  async create(data: Omit<Inversion, 'id' | 'createdAt' | 'updatedAt'>): Promise<Inversion> {
+    const response = await apiClient.post('/inversiones', data);
+    return response.data;
+  },
+
+  /**
+   * Actualiza una inversión existente
+   */
+  async update(id: string, data: Partial<Inversion>): Promise<Inversion> {
+    const response = await apiClient.put(`/inversiones/${id}`, data);
+    return response.data;
+  },
+
+  /**
+   * Elimina una inversión
+   */
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(`/inversiones/${id}`);
+  },
+
+  /**
+   * Obtiene resumen del portafolio con cotizaciones actuales
+   */
+  async getResumen(): Promise<ResumenPortafolio> {
+    const response = await apiClient.get('/inversiones/resumen');
+    return response.data;
+  },
+
+  /**
+   * Obtiene inversiones con cotizaciones actualizadas
+   */
+  async getConCotizaciones(): Promise<InversionConCotizacion[]> {
+    const response = await apiClient.get('/inversiones/cotizaciones');
+    return response.data;
+  },
+};
+```
+
+### 5.2 React Query Hooks (Frontend)
+
+```typescript
+// src/lib/inversiones/hooks.ts (mis-gestiones frontend)
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { inversionesApi } from './api';
+import type { Inversion } from './types';
+
+export function useInversiones(filtros?: any) {
+  return useQuery({
+    queryKey: ['inversiones', filtros],
+    queryFn: () => inversionesApi.getAll(filtros),
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+}
+
+export function useInversion(id: string) {
+  return useQuery({
+    queryKey: ['inversion', id],
+    queryFn: () => inversionesApi.getById(id),
+    enabled: !!id,
+  });
+}
+
+export function useResumenPortafolio() {
+  return useQuery({
+    queryKey: ['resumen-portafolio'],
+    queryFn: () => inversionesApi.getResumen(),
+    refetchInterval: 15 * 60 * 1000, // Refetch cada 15 min
+  });
+}
+
+export function useCrearInversion() {
+  const queryClient = useQueryClient();
   
-  /**
-   * Convierte montos entre ARS y USD usando dólar MEP
-   */
-  static convertirMoneda(
-    monto: number,
-    monedaOrigen: Moneda,
-    monedaDestino: Moneda,
-    cotizacionMEP: number
-  ): number {
-    if (monedaOrigen === monedaDestino) return monto;
-    
-    if (monedaOrigen === Moneda.USD && monedaDestino === Moneda.ARS) {
-      return monto * cotizacionMEP;
-    }
-    
-    if (monedaOrigen === Moneda.ARS && monedaDestino === Moneda.USD) {
-      return monto / cotizacionMEP;
-    }
-    
-    return monto;
-  }
+  return useMutation({
+    mutationFn: (data: Omit<Inversion, 'id' | 'createdAt' | 'updatedAt'>) =>
+      inversionesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inversiones'] });
+      queryClient.invalidateQueries({ queryKey: ['resumen-portafolio'] });
+    },
+  });
+}
+
+export function useActualizarInversion() {
+  const queryClient = useQueryClient();
   
-  /**
-   * Calcula el resumen total del portafolio
-   */
-  static async calcularResumenPortafolio(
-    inversiones: Inversion[],
-    cotizaciones: Map<string, Cotizacion>,
-    cotizacionMEP: number
-  ): Promise<ResumenPortafolio> {
-    let totalInvertidoARS = 0;
-    let totalInvertidoUSD = 0;
-    let valorActualARS = 0;
-    let valorActualUSD = 0;
-    
-    const distribucion = new Map<TipoActivo, number>();
-    
-    for (const inv of inversiones) {
-      const cotizacion = cotizaciones.get(`${inv.ticker}-${inv.mercado}`);
-      if (!cotizacion) continue;
-      
-      // Calcular valor invertido
-      const valorCompra = inv.cantidad * inv.precioCompra + inv.comision;
-      if (inv.monedaCompra === Moneda.ARS) {
-        totalInvertidoARS += valorCompra;
-        totalInvertidoUSD += this.convertirMoneda(valorCompra, Moneda.ARS, Moneda.USD, cotizacionMEP);
-      } else {
-        totalInvertidoUSD += valorCompra;
-        totalInvertidoARS += this.convertirMoneda(valorCompra, Moneda.USD, Moneda.ARS, cotizacionMEP);
-      }
-      
-      // Calcular valor actual
-      const valorActual = inv.cantidad * cotizacion.precio;
-      if (cotizacion.moneda === Moneda.ARS) {
-        valorActualARS += valorActual;
-        valorActualUSD += this.convertirMoneda(valorActual, Moneda.ARS, Moneda.USD, cotizacionMEP);
-      } else {
-        valorActualUSD += valorActual;
-        valorActualARS += this.convertirMoneda(valorActual, Moneda.USD, Moneda.ARS, cotizacionMEP);
-      }
-      
-      // Distribución por tipo
-      const valorEnUSD = cotizacion.moneda === Moneda.USD
-        ? valorActual
-        : this.convertirMoneda(valorActual, Moneda.ARS, Moneda.USD, cotizacionMEP);
-      
-      distribucion.set(
-        inv.tipoActivo,
-        (distribucion.get(inv.tipoActivo) || 0) + valorEnUSD
-      );
-    }
-    
-    const gananciaTotalARS = valorActualARS - totalInvertidoARS;
-    const gananciaTotalUSD = valorActualUSD - totalInvertidoUSD;
-    const rendimientoTotal = (gananciaTotalUSD / totalInvertidoUSD) * 100;
-    
-    // Calcular distribución porcentual
-    const distribucionArray: DistribucionActivo[] = [];
-    for (const [tipo, valor] of distribucion.entries()) {
-      distribucionArray.push({
-        tipoActivo: tipo,
-        cantidad: inversiones.filter(i => i.tipoActivo === tipo).length,
-        valorTotal: valor,
-        porcentaje: (valor / valorActualUSD) * 100,
-      });
-    }
-    
-    return {
-      totalInvertidoARS,
-      totalInvertidoUSD,
-      valorActualARS,
-      valorActualUSD,
-      gananciaTotalARS,
-      gananciaTotalUSD,
-      rendimientoTotal,
-      distribucionPorTipo: distribucionArray,
-      ultimaActualizacion: new Date(),
-    };
-  }
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Inversion> }) =>
+      inversionesApi.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['inversiones'] });
+      queryClient.invalidateQueries({ queryKey: ['inversion', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['resumen-portafolio'] });
+    },
+  });
+}
+
+export function useEliminarInversion() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => inversionesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inversiones'] });
+      queryClient.invalidateQueries({ queryKey: ['resumen-portafolio'] });
+    },
+  });
 }
 ```
 
@@ -617,12 +569,14 @@ export async function actualizarTodasLasCotizaciones() {
   
   // Actualizar dólar MEP
   try {
-    const dolarMEP = await obtenerCotizacionMEP();
-    await db.insert(tipoCambio).values({
-      fecha: new Date(),
-      tipo: TipoCambio.MEP,
-      compra: dolarMEP.compra,
-      venta: dolarMEP.venta,
+    const dolarMEP = await servicioCotizaciones.obtenerDolarMEP();
+    // Guardar en caché local si es necesario
+    await db.insert(cotizacionesCache).values({
+      ticker: 'DOLAR_MEP',
+      mercado: 'LOCAL',
+      precio: dolarMEP.venta,
+      moneda: 'ARS',
+      fechaHora: new Date(),
     });
   } catch (error) {
     console.error('Error actualizando dólar MEP:', error);
@@ -637,9 +591,9 @@ export const config = {
 
 ---
 
-## 6. Interfaz de Usuario
+## 5. Interfaz de Usuario
 
-### 6.1 Dashboard Principal
+### 5.1 Dashboard Principal
 
 **Ruta:** `/inversiones`
 
@@ -714,7 +668,7 @@ export default function InversionesPage() {
 }
 ```
 
-### 6.2 Tabla de Inversiones (Material React Table)
+### 5.2 Tabla de Inversiones (Material React Table)
 
 ```tsx
 // components/inversiones/TablaInversiones.tsx
@@ -818,7 +772,7 @@ export function TablaInversiones({ inversiones }: Props) {
 }
 ```
 
-### 6.3 Formulario de Alta/Edición
+### 5.3 Formulario de Alta/Edición
 
 ```tsx
 // components/inversiones/FormularioInversion.tsx
@@ -1035,7 +989,7 @@ export function FormularioInversion({ inversion, onSubmit, onCancel }: Props) {
 }
 ```
 
-### 6.4 Gráficos con MUI X-Charts
+### 5.4 Gráficos con MUI X-Charts
 
 ```tsx
 // components/inversiones/GraficoPortafolio.tsx
@@ -1086,9 +1040,9 @@ export function GraficoLinea() {
 
 ---
 
-## 7. API Endpoints
+## 6. API Endpoints
 
-### 7.1 Endpoints RESTful
+### 6.1 Endpoints RESTful
 
 ```typescript
 // api/inversiones/index.ts
@@ -1114,21 +1068,47 @@ export async function GET(request: Request) {
     .from(inversionesTable)
     .where(buildFilters(filtros));
   
-  // Obtener cotizaciones actuales
-  const inversionesConCotizacion = await Promise.all(
-    inversiones.map(async (inv) => {
-      const cotizacion = await servicioCotizaciones.obtenerPrecio(inv.ticker, inv.mercado);
-      const rendimiento = CalculadoraInversiones.calcularRendimiento(inv, cotizacion.precio);
-      
+  // Obtener cotizaciones actuales desde el backend
+  const servicioCotizaciones = new ServicioCotizaciones();
+  
+  // Obtener todas las cotizaciones en batch
+  const tickersConInfo = inversiones.map(inv => ({
+    ticker: inv.ticker,
+    mercado: inv.mercado,
+    tipoActivo: inv.tipoActivo
+  }));
+  
+  const cotizacionesMap = await servicioCotizaciones.obtenerPreciosBatch(tickersConInfo);
+  
+  // Mapear inversiones con cotizaciones
+  const inversionesConCotizacion = inversiones.map(inv => {
+    const cotizacion = cotizacionesMap.get(`${inv.ticker}-${inv.mercado}`);
+    if (!cotizacion) {
       return {
         ...inv,
-        precioActual: cotizacion.precio,
-        monedaActual: cotizacion.moneda,
-        ...rendimiento,
-        ultimaActualizacion: cotizacion.fechaHora,
+        precioActual: 0,
+        monedaActual: inv.mercado === 'LOCAL' ? 'ARS' : 'USD',
+        ultimaActualizacion: new Date(),
       };
-    })
-  );
+    }
+    
+    // Nota: calcularRendimiento ahora requiere precio de compra promedio
+    // que debería venir de transacciones
+    const rendimiento = {
+      valorCompra: 0,
+      valorActual: inv.cantidad * cotizacion.precio,
+      gananciaAbsoluta: 0,
+      gananciaRelativa: 0,
+    };
+    
+    return {
+      ...inv,
+      precioActual: cotizacion.precio,
+      monedaActual: cotizacion.moneda,
+      ...rendimiento,
+      ultimaActualizacion: cotizacion.fechaHora,
+    };
+  });
   
   return Response.json(inversionesConCotizacion);
 }
@@ -1211,15 +1191,18 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 export async function GET() {
   const inversiones = await db.select().from(inversionesTable);
   
-  // Obtener todas las cotizaciones
-  const cotizacionesMap = new Map<string, Cotizacion>();
-  for (const inv of inversiones) {
-    const cot = await servicioCotizaciones.obtenerPrecio(inv.ticker, inv.mercado);
-    cotizacionesMap.set(`${inv.ticker}-${inv.mercado}`, cot);
-  }
+  const servicioCotizaciones = new ServicioCotizaciones();
   
   // Obtener dólar MEP
-  const dolarMEP = await obtenerCotizacionMEP();
+  const dolarMEP = await servicioCotizaciones.obtenerDolarMEP();
+  
+  // Obtener todas las cotizaciones en batch
+  const tickersInfo = inversiones.map(inv => ({
+    ticker: inv.ticker,
+    mercado: inv.mercado,
+    tipoActivo: inv.tipoActivo
+  }));
+  const cotizacionesMap = await servicioCotizaciones.obtenerPreciosBatch(tickersInfo);
   
   // Calcular resumen
   const resumen = await CalculadoraInversiones.calcularResumenPortafolio(
@@ -1232,7 +1215,7 @@ export async function GET() {
 }
 ```
 
-### 7.2 React Query Hooks
+### 6.2 React Query Hooks
 
 ```typescript
 // lib/inversiones/api.ts
@@ -1326,7 +1309,7 @@ export function useEliminarInversion() {
 
 ---
 
-## 8. Consideraciones de Seguridad
+## 7. Consideraciones de Seguridad
 
 ### 8.1 Protección de Datos Sensibles
 
@@ -1406,7 +1389,7 @@ if (!limiter.canMakeRequest('iol-api', 60, 60000)) {
 
 ---
 
-## 9. Testing
+## 8. Testing
 
 ### 9.1 Tests Unitarios
 
@@ -1552,42 +1535,43 @@ describe('API /api/inversiones', () => {
 
 ---
 
-## 10. Roadmap de Implementación
+## 9. Roadmap de Implementación
 
-### Fase 1: Fundamentos (Semana 1-2)
+### Fase 1: Fundamentos Backend (Semana 1-2)
 - ✅ Diseño de base de datos
-- ✅ Creación de esquemas Drizzle
-- ✅ Tipos TypeScript básicos
-- ✅ Validaciones con Zod
-- ✅ API Routes básicas (CRUD)
+- ⬜ Modelos SQLAlchemy (backend)
+- ⬜ Schemas Pydantic (backend)
+- ⬜ Migraciones con Alembic
+- ⬜ Endpoints FastAPI básicos (CRUD)
+- ⬜ Service layer con lógica de negocio
 
-### Fase 2: Integración de Cotizaciones (Semana 3)
-- ⬜ Integración con IOL API (mercado local)
-- ⬜ Integración con Yahoo Finance (internacional)
-- ⬜ Sistema de caché de cotizaciones
-- ⬜ Endpoint de dólar MEP
+### Fase 2: Integración de Cotizaciones Backend (Semana 3)
+- ⬜ Servicio de cotizaciones en backend (PPI, Yahoo, DolarAPI)
+- ⬜ Sistema de caché de cotizaciones (backend)
+- ⬜ Endpoints de cotizaciones en FastAPI
+- ⬜ Cálculo de rendimientos y resumen de portafolio
 - ⬜ Manejo de errores y fallbacks
 
-### Fase 3: UI Dashboard (Semana 4)
+### Fase 3: Frontend - Cliente API (Semana 4)
+- ⬜ Tipos TypeScript compartidos
+- ⬜ Cliente API (axios) para comunicación con backend
+- ⬜ React Query hooks (useInversiones, useResumen, etc.)
+- ⬜ Validaciones Zod en frontend
+- ⬜ Manejo de errores y estados de carga
+
+### Fase 4: Frontend - UI Dashboard (Semana 5)
 - ⬜ Componente Dashboard principal
 - ⬜ Tarjetas de resumen
 - ⬜ Tabla de inversiones (Material React Table)
 - ⬜ Gráficos con MUI X-Charts
 - ⬜ Filtros y búsqueda
 
-### Fase 4: Gestión de Inversiones (Semana 5)
+### Fase 5: Frontend - Gestión CRUD (Semana 6)
 - ⬜ Formulario de alta/edición
 - ⬜ Validaciones en tiempo real
 - ⬜ Búsqueda de tickers
 - ⬜ Vista de detalle por activo
 - ⬜ Eliminación con confirmación
-
-### Fase 5: Cálculos y Reportes (Semana 6)
-- ⬜ Cálculo de rendimientos
-- ⬜ Conversión de monedas
-- ⬜ Resumen del portafolio
-- ⬜ Distribución por tipo de activo
-- ⬜ Histórico de precios
 
 ### Fase 6: Automatización (Semana 7)
 - ⬜ Cron job para actualizar cotizaciones
@@ -1604,15 +1588,15 @@ describe('API /api/inversiones', () => {
 
 ---
 
-## 11. Métricas y Monitoreo
+## 10. Métricas y Monitoreo
 
-### 11.1 KPIs Técnicos
+### 10.1 KPIs Técnicos
 - Tiempo de respuesta API < 500ms
 - Cache hit ratio > 80%
 - Uptime APIs externas > 95%
 - Tiempo de carga dashboard < 2s
 
-### 11.2 Logging
+### 10.2 Logging
 
 ```typescript
 // lib/logger.ts
@@ -1641,9 +1625,9 @@ try {
 
 ---
 
-## 12. Anexos
+## 11. Anexos
 
-### 12.1 Glosario
+### 11.1 Glosario
 
 - **CEDEAR:** Certificado de Depósito Argentino (acciones internacionales en mercado local)
 - **FCI:** Fondo Común de Inversión
@@ -1651,9 +1635,10 @@ try {
 - **Dólar MEP:** Mercado Electrónico de Pagos (tipo de cambio bursátil)
 - **Ticker:** Símbolo único que identifica un activo financiero
 
-### 12.2 Referencias
+### 11.2 Referencias
 
-- **IOL API Documentation:** https://api.invertironline.com/docs
+- **mis-gestiones-backend:** Backend API con integración PPI
+- **PPI Client:** https://github.com/portfoliopersonal/pyppi
 - **Yahoo Finance API:** https://www.yahoofinanceapi.com/
 - **Dólar API:** https://dolarapi.com/docs
 - **Material-UI Charts:** https://mui.com/x/react-charts/

@@ -147,7 +147,85 @@ curl "https://dolarapi.com/v1/dolares/contadoconliqui"
 
 ## 2. INSTRUMENTOS FINANCIEROS LOCALES (Argentina) 📊
 
-### A) InvertirOnline (IOL) API
+### A) Portfolio Personal Inversiones (PPI) API ⭐ RECOMENDADA
+**Nota:** Requiere cuenta en PPI (gratuita). Activación: Plataforma PPI → Gestiones → API → Aceptar T&C. Devuelve credenciales (Public Key + Private Key — guardar la privada, solo se muestra una vez). Sandbox aparte enviado por email.
+
+**Cobertura:** CEDEARs, Acciones, Bonos, **FCI**, Letras, Futuros, Acciones USA, Opciones — todo en una sola API.
+
+**Documentación oficial:** https://itatppi.github.io/ppi-official-api-docs/
+
+#### Cliente Python oficial (recomendado)
+
+```bash
+# Instalación
+pip install ppi-client
+```
+
+```python
+from ppi_client.ppi import PPI
+
+# Inicialización
+ppi = PPI(sandbox=False)  # True para sandbox
+ppi.account.login_api('<public_key>', '<private_key>')
+
+# 1. Cotización actual de un CEDEAR (ej. AAPL)
+data = ppi.marketdata.current("AAPL", "CEDEARS", "A-48HS")
+# Respuesta: { "date", "price", "volume", "openingPrice", "max", "min" }
+
+# 2. Cotización actual de un FCI
+data = ppi.marketdata.current("AL.LATAM.A", "FCI", "A-48HS")
+
+# 3. Cotización actual de una Acción local
+data = ppi.marketdata.current("GGAL", "ACCIONES", "A-48HS")
+
+# 4. Cotización de un Bono / ON
+data = ppi.marketdata.current("TLCPD", "BONOS", "A-48HS")
+
+# 5. Buscar instrumentos
+instruments = ppi.marketdata.search_instrument("GGAL", "", "Byma", "Acciones")
+
+# 6. Histórico
+history = ppi.marketdata.search(ticker, type, settlement, start_date, end_date)
+
+# 7. Intraday
+intraday = ppi.marketdata.intraday("GGAL", "ACCIONES", "A-48HS")
+
+# 8. Order book (libro de órdenes)
+book = ppi.marketdata.book("GGAL", "ACCIONES", "A-48HS")
+
+# 9. Streaming en tiempo real (WebSocket)
+ppi.realtime.connect_to_market_data(onconnect, ondisconnect, onmarketdata)
+ppi.realtime.start_connections()
+```
+
+#### Tipos de instrumento soportados
+`BONOS`, `ACCIONES`, `CEDEARS`, `FCI`, `LETRAS`, `FUTUROS`, `ACCIONES-USA`, `OPCIONES`
+
+#### Plazos de liquidación (settlement)
+`INMEDIATA`, `A-24HS`, `A-48HS`, `A-72HS`
+
+#### Cuenta y posiciones
+```python
+ppi.account.get_available_balance(account_number)
+ppi.account.get_balance_and_positions(account_number)
+ppi.account.get_movements(AccountMovements(...))
+```
+
+#### Por qué PPI sobre IOL
+- Ya tenés cuenta → cero fricción para empezar
+- Cliente Python oficial mantenido por PPI (`itAtPPI` en GitHub)
+- Streaming en tiempo real vía WebSocket incluido (IOL no tiene oficial)
+- Misma cobertura que IOL (CEDEARs, FCI, ONs, Bonos)
+- Sandbox dedicado para testing sin riesgo
+
+#### Seguridad
+- **NUNCA** incluir la Private Key en código frontend / repo público
+- Guardar credenciales en variables de entorno: `PPI_PUBLIC_KEY`, `PPI_PRIVATE_KEY`
+- En `mis-gestiones`: llamar a PPI desde el backend Python (`mis-gestiones-backend`), nunca desde el cliente Next.js
+
+---
+
+### B) InvertirOnline (IOL) API
 **Nota:** Requiere autenticación con API Key (registro gratuito en https://www.invertironline.com/)
 
 ```bash
@@ -177,7 +255,7 @@ curl "https://api.invertironline.com/api/v2/Cotizaciones/AAPL/argentina" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
-### B) BymaData - Mercado de Valores Argentino
+### C) BymaData - Mercado de Valores Argentino
 **Nota:** API pública sin necesidad de autenticación
 
 ```bash
@@ -194,7 +272,7 @@ curl "https://open.bymadata.com.ar/vanoms-be-core/rest/api/bymadata/free/senebi/
   -H "accept: application/json"
 ```
 
-### C) Ámbito Financiero
+### D) Ámbito Financiero
 ```bash
 # Dólar informal con variación
 curl "https://mercados.ambito.com/dolar/informal/variacion"
@@ -481,16 +559,19 @@ async function obtenerPrecioCripto(id: string) {
 4. **Mercado Local:** BymaData ✅
 
 ### APIs con Registro Gratuito (mejor calidad):
-1. **Mercado Local Completo:** InvertirOnline (IOL) 🔑
-2. **Acciones USA Detalladas:** Alpha Vantage o Finnhub 🔑
-3. **Criptos Avanzadas:** CryptoCompare 🔑
+1. **Mercado Local Completo (RECOMENDADA para este proyecto):** **PPI - Portfolio Personal Inversiones** 🔑⭐ — ya tenés cuenta, cliente Python oficial, cobertura completa (CEDEARs, FCI, Bonos, Acciones, ONs)
+2. **Mercado Local Alternativo:** InvertirOnline (IOL) 🔑
+3. **Acciones USA Detalladas:** Alpha Vantage o Finnhub 🔑
+4. **Criptos Avanzadas:** CryptoCompare 🔑
 
-### Estrategia de Implementación:
-1. Comenzar con APIs sin autenticación para MVP
-2. Implementar caché agresivo (15 min)
-3. Agregar APIs con autenticación para features avanzadas
-4. Implementar fallback entre múltiples proveedores
-5. Monitorear rate limits y errores
+### Estrategia de Implementación para `mis-gestiones`:
+1. **Backend (`mis-gestiones-backend`, Python):** integrar `ppi-client` para cotizaciones de instrumentos locales (CEDEARs, FCI, ONs, Bonos)
+2. **Frontend (`mis-gestiones`, Next.js):** consumir el backend, nunca llamar a PPI directamente desde el browser (la Private Key debe quedar server-side)
+3. Guardar `PPI_PUBLIC_KEY` y `PPI_PRIVATE_KEY` en variables de entorno
+4. Usar APIs públicas (DolarAPI, Yahoo Finance, CoinGecko) para datos no cubiertos por PPI o como fallback
+5. Implementar caché: 15 min cotizaciones de mercado, 1 día para FCI (cierran 1 vez/día)
+6. Probar primero contra el sandbox de PPI antes de producción
+7. Monitorear rate limits y errores
 
 ---
 
@@ -498,11 +579,13 @@ async function obtenerPrecioCripto(id: string) {
 
 ### Tabla de Referencia Rápida
 
-| Instrumento | Tipo | API Recomendada | Comando |
+| Instrumento | Tipo | API Recomendada | Llamada |
 |-------------|------|----------------|---------|
-| **SPY** | CEDEAR | Yahoo Finance | `curl "https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1d&range=1d"` |
-| **AL.LATAM.A DIV** | FCI Local | IOL (requiere auth) | `curl "https://api.invertironline.com/api/v2/Cotizaciones/fondos" -H "Authorization: Bearer TOKEN"` |
-| **TLCPD** | ON Local | BymaData / IOL | `curl "https://open.bymadata.com.ar/.../search?query=TLCPD"` |
+| **SPY** | CEDEAR (en ARS) | **PPI** ⭐ | `ppi.marketdata.current("SPY", "CEDEARS", "A-48HS")` |
+| **SPY** | CEDEAR (en USD, USA) | Yahoo Finance | `curl "https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1d&range=1d"` |
+| **AL.LATAM.A DIV** | FCI Local | **PPI** ⭐ | `ppi.marketdata.current("AL.LATAM.A", "FCI", "A-48HS")` |
+| **TLCPD** | ON / Bono Local | **PPI** ⭐ | `ppi.marketdata.current("TLCPD", "BONOS", "A-48HS")` |
+| **GGAL** | Acción Local | **PPI** ⭐ | `ppi.marketdata.current("GGAL", "ACCIONES", "A-48HS")` |
 | **Bitcoin** | Cripto | CoinGecko | `curl "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,ars"` |
 | **MSFT** | Acción USA | Yahoo Finance | `curl "https://query1.finance.yahoo.com/v8/finance/chart/MSFT?interval=1d&range=1d"` |
 | **Dólar MEP** | Tipo Cambio | DolarAPI | `curl "https://dolarapi.com/v1/dolares/bolsa"` |
@@ -627,4 +710,4 @@ async function refreshToken() {
 ---
 
 **Última actualización:** 2026-04-27  
-**Versión:** 2.0 - Con ejemplos prácticos
+**Versión:** 3.0 - PPI agregada como API recomendada para mercado local
