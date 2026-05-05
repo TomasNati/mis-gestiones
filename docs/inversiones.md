@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS inversiones.inversion (
   active BOOLEAN NOT NULL DEFAULT TRUE,
   ultima BOOLEAN NOT NULL DEFAULT FALSE,
   cantidad NUMERIC NOT NULL,
-  instrumento_id UUID NOT NULL REFERENCES inversiones.instrumento(id),
+  precio_id UUID NOT NULL REFERENCES inversiones.precio(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
