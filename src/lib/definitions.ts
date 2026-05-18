@@ -1358,6 +1358,49 @@ export interface AnioYMes {
   mes: string;
 }
 
+export interface InstrumentoPrecio {
+  id: string;
+  fecha: string;
+  monto: number;
+}
+
+export interface Instrumento {
+  id: string;
+  nombre: string;
+  codigo: string | null;
+  tipo: string;
+  clase_renta: string;
+  moneda: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+  precios: InstrumentoPrecio[];
+}
+
+export interface Inversion {
+  id: string;
+  active: boolean;
+  cantidad: number;
+  instrumento: Instrumento;
+  broker: string;
+  fecha: string;
+  created_at: string;
+}
+
+export interface InversionCreatePayload {
+  cantidad: number;
+  instrumento_id: string;
+  broker: string;
+  fecha: string;
+}
+
+export interface InversionMeta {
+  tipo: string[];
+  clase_renta: string[];
+  moneda: string[];
+  brokers: string[];
+}
+
 export interface SuenioTomiPorPeriodo {
   fecha: Date;
   horasDeSuenio: number;
