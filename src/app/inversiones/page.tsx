@@ -3,24 +3,11 @@
 import { Inversion, InversionCreatePayload, Instrumento } from '@/lib/definitions';
 import { crearInversion, obtenerInstrumentos, obtenerInversiones, obtenerMetaInversiones } from '@/lib/api';
 import { transformNumberToCurrenty } from '@/lib/helpers';
-import {
-  MaterialReactTable,
-  useMaterialReactTable,
-  type MRT_ColumnDef,
-} from 'material-react-table';
+import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Autocomplete,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Box, Button } from '@mui/material';
+import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import dayjs, { Dayjs } from 'dayjs';
 
 const InversionesPage = () => {
@@ -60,17 +47,6 @@ const InversionesPage = () => {
     setCantidad('');
     setBroker('');
     setFecha(dayjs());
-  };
-
-  const handleCreate = () => {
-    if (!selectedInstrumento || !cantidad || !broker || !fecha) return;
-
-    createMutation.mutate({
-      cantidad: parseFloat(cantidad),
-      instrumento_id: selectedInstrumento.id,
-      broker,
-      fecha: fecha.toISOString(),
-    });
   };
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
@@ -144,50 +120,14 @@ const InversionesPage = () => {
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <MaterialReactTable table={table} />
       </Box>
-
-      <Dialog open={createDialogOpen} onClose={handleCloseCreateDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Nueva Inversión</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-          <Autocomplete
-            options={instrumentos}
-            getOptionLabel={(option) => `${option.nombre} - ${option.tipo}`}
-            value={selectedInstrumento}
-            onChange={(_, value) => setSelectedInstrumento(value)}
-            renderInput={(params) => <TextField {...params} label="Instrumento" required />}
-          />
-          <TextField
-            label="Cantidad"
-            type="number"
-            value={cantidad}
-            onChange={(e) => setCantidad(e.target.value)}
-            inputProps={{ min: 0, step: 'any' }}
-            required
-          />
-          <Autocomplete
-            options={brokers}
-            value={broker}
-            onChange={(_, value) => setBroker(value ?? '')}
-            freeSolo
-            renderInput={(params) => <TextField {...params} label="Broker" required />}
-          />
-          <DatePicker
-            label="Fecha"
-            value={fecha}
-            onChange={(value) => setFecha(value)}
-            slotProps={{ textField: { required: true, fullWidth: true } }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseCreateDialog}>Cancelar</Button>
-          <Button
-            variant="contained"
-            onClick={handleCreate}
-            disabled={!selectedInstrumento || !cantidad || !broker || !fecha || createMutation.isPending}
-          >
-            {createMutation.isPending ? 'Creando...' : 'Crear'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CrearEditarInversion
+        createDialogOpen={createDialogOpen}
+        handleCloseCreateDialog={handleCloseCreateDialog}
+        instrumentos={instrumentos}
+        brokers={brokers}
+        isPending={createMutation.isPending}
+        handleCreate={(nuevoInstrumento) => createMutation.mutate(nuevoInstrumento)}
+      />
     </Box>
   );
 };
