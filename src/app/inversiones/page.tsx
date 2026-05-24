@@ -52,20 +52,26 @@ const InversionesPage = () => {
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
       {
-        accessorFn: (row) => `${row.instrumento.nombre} - ${row.instrumento.tipo}`,
+        accessorFn: (row) => row.instrumento.nombre,
         id: 'instrumento',
         header: 'Instrumento',
-        size: 300,
+        size: 200,
+      },
+      {
+        accessorFn: (row) => row.instrumento.tipo,
+        id: 'tipo',
+        header: 'Tipo',
+        size: 100,
       },
       {
         accessorKey: 'cantidad',
         header: 'Cantidad',
-        size: 120,
+        size: 150,
       },
       {
         accessorKey: 'broker',
         header: 'Broker',
-        size: 120,
+        size: 130,
       },
       {
         accessorFn: (row) => {
