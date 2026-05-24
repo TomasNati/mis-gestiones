@@ -1,6 +1,6 @@
 'use client';
 
-import { Inversion, InversionCreatePayload, Instrumento } from '@/lib/definitions';
+import { Inversion, InversionCreatePayload } from '@/lib/definitions';
 import { crearInversion, obtenerInstrumentos, obtenerInversiones, obtenerMetaInversiones } from '@/lib/api';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
@@ -8,15 +8,10 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Button } from '@mui/material';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
-import dayjs, { Dayjs } from 'dayjs';
 
 const InversionesPage = () => {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [selectedInstrumento, setSelectedInstrumento] = useState<Instrumento | null>(null);
-  const [cantidad, setCantidad] = useState<string>('');
-  const [broker, setBroker] = useState<string>('');
-  const [fecha, setFecha] = useState<Dayjs | null>(dayjs());
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -43,11 +38,16 @@ const InversionesPage = () => {
 
   const handleCloseCreateDialog = () => {
     setCreateDialogOpen(false);
-    setSelectedInstrumento(null);
-    setCantidad('');
-    setBroker('');
-    setFecha(dayjs());
   };
+
+  const precioPorInstrumento = useMemo(() => {
+    const map = new Map<string, string>();
+    instrumentosQuery.data?.forEach((inst) => {
+      const precio = inst.precios?.[0];
+      map.set(inst.id, precio ? transformNumberToCurrenty(precio.monto) || '-' : '-');
+    });
+    return map;
+  }, [instrumentosQuery.data]);
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
@@ -74,16 +74,13 @@ const InversionesPage = () => {
         size: 130,
       },
       {
-        accessorFn: (row) => {
-          const precio = row.instrumento.precios?.[0];
-          return precio ? transformNumberToCurrenty(precio.monto) : '-';
-        },
+        accessorFn: (row) => precioPorInstrumento.get(row.instrumento.id) ?? '-',
         id: 'precio',
         header: 'Precio',
         size: 130,
       },
     ],
-    [],
+    [precioPorInstrumento],
   );
 
   const instrumentos = instrumentosQuery.data ?? [];
@@ -127,6 +124,7 @@ const InversionesPage = () => {
         <MaterialReactTable table={table} />
       </Box>
       <CrearEditarInversion
+        key={String(createDialogOpen)}
         createDialogOpen={createDialogOpen}
         handleCloseCreateDialog={handleCloseCreateDialog}
         instrumentos={instrumentos}
