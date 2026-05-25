@@ -1,17 +1,27 @@
 'use client';
 
 import { Inversion, InversionCreatePayload } from '@/lib/definitions';
-import { crearInversion, obtenerInstrumentos, obtenerInversiones, obtenerMetaInversiones } from '@/lib/api';
+import {
+  crearInversion,
+  eliminarInversion,
+  obtenerInstrumentos,
+  obtenerInversiones,
+  obtenerMetaInversiones,
+} from '@/lib/api';
 import { transformNumberToCurrenty } from '@/lib/helpers';
-import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
+import { MaterialReactTable, MRT_Row, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Box, Button } from '@mui/material';
+import { Box, Button, IconButton, Tooltip } from '@mui/material';
+import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const InversionesPage = () => {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deleteRow, setDeleteRow] = useState<MRT_Row<Inversion> | null>(null);
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -33,6 +43,13 @@ const InversionesPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inversiones'] });
       handleCloseCreateDialog();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => eliminarInversion(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inversiones'] });
     },
   });
 
@@ -83,22 +100,60 @@ const InversionesPage = () => {
     [precioPorInstrumento],
   );
 
+  const openDeleteConfirmModal = (row: MRT_Row<Inversion>) => {
+    setDeleteRow(row);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteRow) {
+      deleteMutation.mutate(deleteRow.original.id);
+    }
+    setDeleteRow(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteRow(null);
+  };
+
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
+  const isLoading = inversionesQuery.isLoading || instrumentosQuery.isLoading || metaQuery.isLoading;
+  const isSaving = createMutation.isPending || deleteMutation.isPending;
 
   const table = useMaterialReactTable({
     columns,
     data: inversionesQuery.data ?? [],
+    enableRowActions: true,
+    displayColumnDefOptions: {
+      'mrt-row-actions': {
+        size: 100,
+      },
+    },
     enableSorting: true,
     enableColumnFilters: true,
     enablePagination: true,
     state: {
-      isLoading: inversionesQuery.isLoading,
+      isLoading,
+      isSaving,
     },
     muiTableProps: {
       size: 'small',
     },
     layoutMode: 'grid-no-grow',
+    renderRowActions: ({ row, table }) => (
+      <Box sx={{ display: 'flex', gap: 0, whiteSpace: 'nowrap' }}>
+        <Tooltip title="Edit">
+          <IconButton onClick={() => table.setEditingRow(row)}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+    ),
     renderTopToolbarCustomActions: () => (
       <Button variant="contained" onClick={() => setCreateDialogOpen(true)}>
         Nueva Inversión
@@ -131,6 +186,12 @@ const InversionesPage = () => {
         brokers={brokers}
         isPending={createMutation.isPending}
         handleCreate={(nuevoInstrumento) => createMutation.mutate(nuevoInstrumento)}
+      />
+      <ConfirmDeleteModal
+        open={deleteRow !== null}
+        description={` la inversión en ${deleteRow?.original.instrumento.nombre ?? ''}`}
+        handleDelete={handleDeleteConfirm}
+        handleCancel={handleDeleteCancel}
       />
     </Box>
   );

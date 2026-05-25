@@ -39,6 +39,11 @@ export const obtenerInstrumentos = async () => {
   return response.data;
 };
 
+export const eliminarInversion = async (id: string) => {
+  const response = await apiClient.delete(`/inversiones/inversion/${id}`);
+  return response.data;
+};
+
 export const obtenerMetaInversiones = async () => {
   const response = await apiClient.get<InversionMeta>('/inversiones/inversiones/meta');
   return response.data;
