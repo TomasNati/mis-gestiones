@@ -23,7 +23,7 @@ export const buscarMovimientos = async (payload: BuscarMovimientosPayload) => {
 };
 
 export const obtenerInversiones = async () => {
-  const response = await apiClient.get<Inversion[]>('/inversiones/inversiones');
+  const response = await apiClient.post<Inversion[]>('/inversiones/inversiones', {});
   return response.data;
 };
 
@@ -33,9 +33,7 @@ export const crearInversion = async (payload: InversionCreatePayload) => {
 };
 
 export const obtenerInstrumentos = async () => {
-  const response = await apiClient.get<Instrumento[]>('/inversiones/instrumentos', {
-    params: { limit_precios: 50 },
-  });
+  const response = await apiClient.post<Instrumento[]>('/inversiones/instrumentos', { limit_precios: 50 });
   return response.data;
 };
 
