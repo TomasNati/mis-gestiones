@@ -1,6 +1,6 @@
 'use client';
 
-import { Inversion, InversionCreatePayload } from '@/lib/definitions';
+import { Inversion, InversionCreatePayload, INSTRUMENTO_INVERSION_TIPO, INSTRUMENTO_MONEDA } from '@/lib/definitions';
 import {
   crearInversion,
   eliminarInversion,
@@ -58,10 +58,16 @@ const InversionesPage = () => {
   };
 
   const precioPorInstrumento = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, { simbolo: string; precio: string; monto: number }>();
+    const dolares = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
     instrumentosQuery.data?.forEach((inst) => {
       const precio = inst.precios?.[0];
-      map.set(inst.id, precio ? transformNumberToCurrenty(precio.monto) || '-' : '-');
+      const simboloMoneda = dolares.includes(inst.moneda) ? 'US$' : '$';
+      map.set(inst.id, {
+        simbolo: simboloMoneda,
+        precio: precio ? transformNumberToCurrenty(precio.monto) || '-' : '-',
+        monto: precio.monto,
+      });
     });
     return map;
   }, [instrumentosQuery.data]);
@@ -69,7 +75,12 @@ const InversionesPage = () => {
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
       {
-        accessorFn: (row) => row.instrumento.nombre,
+        accessorFn: (row) => {
+          if (row.instrumento.tipo === INSTRUMENTO_INVERSION_TIPO.CEDEAR) {
+            return <span title={row.instrumento.nombre}>{row.instrumento.codigo}</span>;
+          }
+          return row.instrumento.nombre;
+        },
         id: 'instrumento',
         header: 'Instrumento',
         size: 200,
@@ -91,10 +102,26 @@ const InversionesPage = () => {
         size: 130,
       },
       {
-        accessorFn: (row) => precioPorInstrumento.get(row.instrumento.id) ?? '-',
+        accessorFn: (row) => {
+          const p = precioPorInstrumento.get(row.instrumento.id);
+          return p ? `${p.simbolo} ${p.precio}` : '-';
+        },
         id: 'precio',
         header: 'Precio',
         size: 130,
+      },
+      {
+        accessorFn: (row) => {
+          const { simbolo, monto } = precioPorInstrumento.get(row.instrumento.id) || {};
+          const total = transformNumberToCurrenty(row.cantidad * (monto || 0));
+          return `${simbolo} ${total?.replace(',00', '')}`;
+        },
+        id: 'total',
+        header: 'Total',
+        size: 130,
+        muiTableBodyCellProps: {
+          align: 'right',
+        },
       },
     ],
     [precioPorInstrumento],

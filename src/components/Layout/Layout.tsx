@@ -42,8 +42,8 @@ const LINKS: LinkItem[] = [
       { text: 'Buscar Movimientos', href: '/finanzas/buscarMovimientos', icon: ManageSearchOutlinedIcon },
     ],
   },
-  { text: 'Importar', href: '/importar', icon: FileUploadIcon, submenu: null },
   { text: 'Inversiones', href: '/inversiones', icon: ShowChartIcon, submenu: null },
+  { text: 'Importar', href: '/importar', icon: FileUploadIcon, submenu: null },
 ];
 
 const PLACEHOLDER_LINKS: LinkItem[] = [

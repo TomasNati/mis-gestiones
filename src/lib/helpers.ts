@@ -191,8 +191,7 @@ export const transformCurrencyToNumber = (currencyString: string): number | null
 };
 
 export const transformNumberToCurrenty = (value?: number): string | undefined => {
-  const formatted = value?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
-  return formatted?.replace(/,00$/, '');
+  return value?.toLocaleString('es-AR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 export const generateUUID = (): string => {

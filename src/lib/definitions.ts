@@ -1405,3 +1405,13 @@ export interface SuenioTomiPorPeriodo {
   fecha: Date;
   horasDeSuenio: number;
 }
+
+export const INSTRUMENTO_INVERSION_TIPO = {
+  CEDEAR: 'CEDEAR',
+};
+
+export const INSTRUMENTO_MONEDA = {
+  PESO: 'PESO',
+  DOLAR: 'DOLAR',
+  DOLAR_CCL: 'DOLAR_CCL',
+};
