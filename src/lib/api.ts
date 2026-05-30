@@ -23,7 +23,7 @@ export const buscarMovimientos = async (payload: BuscarMovimientosPayload) => {
 };
 
 export const obtenerInversiones = async () => {
-  const response = await apiClient.post<Inversion[]>('/inversiones/inversiones', {});
+  const response = await apiClient.post<Inversion[]>('/inversiones/inversiones', { active: true });
   return response.data;
 };
 
