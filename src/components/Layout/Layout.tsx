@@ -13,6 +13,7 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import ApiOutlinedIcon from '@mui/icons-material/ApiOutlined';
 import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 import Link from 'next/link';
 import { useState, ReactNode, ElementType, HTMLAttributeAnchorTarget } from 'react';
 
@@ -42,6 +43,7 @@ const LINKS: LinkItem[] = [
     ],
   },
   { text: 'Importar', href: '/importar', icon: FileUploadIcon, submenu: null },
+  { text: 'Inversiones', href: '/inversiones', icon: ShowChartIcon, submenu: null },
 ];
 
 const PLACEHOLDER_LINKS: LinkItem[] = [
