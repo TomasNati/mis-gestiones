@@ -1415,3 +1415,39 @@ export const INSTRUMENTO_MONEDA = {
   DOLAR: 'DOLAR',
   DOLAR_CCL: 'DOLAR_CCL',
 };
+
+export const INSTRUMENTO_TIPO = {
+  ACCION_LOCAL: 'ACCION_LOCAL',
+  ACCION_INTERNACIONAL: 'ACCION_INTERNACIONAL',
+  BONO: 'BONO',
+  CEDEAR: 'CEDEAR',
+  CRIPTO: 'CRIPTO',
+  ETF: 'ETF',
+  FCI: 'FCI',
+  FCI_EXTERIOR: 'FCI_EXTERIOR',
+  ON: 'ON',
+} as const;
+
+export type FciLocal = {
+  nombre: string;
+  moneda: string; // Ej: "USD"
+  precio_actual: number;
+  codigo_cnv: number;
+  codigo_cafci: number;
+};
+
+export type InstrumentoExterior = {
+  symbol: string;
+  price: number;
+};
+
+export type InstrumentoLocal = {
+  ticker: string;
+  precio: number;
+  precio_raw: string;
+  simbolo_moneda: string;
+  moneda: string;
+  fuente: string;
+  url: string;
+  fecha_consulta: string;
+};

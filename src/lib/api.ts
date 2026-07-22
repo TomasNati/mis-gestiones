@@ -6,6 +6,10 @@ import {
   InversionCreatePayload,
   InversionMeta,
   Instrumento,
+  InstrumentoPrecio,
+  FciLocal,
+  InstrumentoExterior,
+  InstrumentoLocal,
 } from './definitions';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
@@ -33,7 +37,7 @@ export const crearInversion = async (payload: InversionCreatePayload) => {
 };
 
 export const obtenerInstrumentos = async () => {
-  const response = await apiClient.post<Instrumento[]>('/inversiones/instrumentos', { limit_precios: 50 });
+  const response = await apiClient.post<Instrumento[]>('/inversiones/instrumentos', { limit_precios: 1 });
   return response.data;
 };
 
@@ -45,6 +49,30 @@ export const eliminarInversion = async (id: string) => {
 export const obtenerMetaInversiones = async () => {
   const response = await apiClient.get<InversionMeta>('/inversiones/inversiones/meta');
   return response.data;
+};
+
+export const createPrecio = async (payload: {
+  monto: number;
+  fecha: string;
+  instrumento_id: string;
+}): Promise<InstrumentoPrecio> => {
+  const { data } = await apiClient.post<InstrumentoPrecio>('/inversiones/precio', payload);
+  return data;
+};
+
+export const getCotizacionFciLocal = async (codigo_cafci: number): Promise<FciLocal | null> => {
+  const { data } = await apiClient.get<FciLocal[]>(`/cotizaciones/fondos?codigo_cafci=${codigo_cafci}`);
+  return data.length > 0 ? data[0] : null;
+};
+
+export const getCotizacionInstrumentoExterior = async (symbol: string): Promise<InstrumentoExterior | null> => {
+  const { data } = await apiClient.get<InstrumentoExterior>(`/cotizaciones/cotizaciones/us/${symbol}`);
+  return data ?? null;
+};
+
+export const getCotizacionInstrumentoLocal = async (instrumento: string): Promise<InstrumentoLocal | null> => {
+  const { data } = await apiClient.get<InstrumentoLocal>(`/cotizaciones/instrumento/${instrumento}`);
+  return data ?? null;
 };
 
 export default apiClient;

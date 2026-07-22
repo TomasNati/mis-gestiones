@@ -1,18 +1,26 @@
 'use client';
 
-import { Inversion, InversionCreatePayload, INSTRUMENTO_INVERSION_TIPO, INSTRUMENTO_MONEDA } from '@/lib/definitions';
+import {
+  Inversion,
+  InversionCreatePayload,
+  INSTRUMENTO_INVERSION_TIPO,
+  INSTRUMENTO_MONEDA,
+  InstrumentoPrecio,
+} from '@/lib/definitions';
 import {
   crearInversion,
+  createPrecio,
   eliminarInversion,
   obtenerInstrumentos,
   obtenerInversiones,
   obtenerMetaInversiones,
 } from '@/lib/api';
+import { PRECIO_FETCHERS, findTodayPrecio, todayISO } from '@/lib/inversiones/precios';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import { MaterialReactTable, MRT_Row, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Box, Button, IconButton, Tooltip } from '@mui/material';
+import { Box, Button, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import EditIcon from '@mui/icons-material/Edit';
@@ -22,6 +30,12 @@ const InversionesPage = () => {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteRow, setDeleteRow] = useState<MRT_Row<Inversion> | null>(null);
+  const [preciosPorInstrumento, setPreciosPorInstrumento] = useState<Map<string, InstrumentoPrecio>>(
+    new Map(),
+  );
+  // Instrumentos whose live-precio fetch finished without a usable value (error or
+  // no price returned). Used to stop showing the spinner for them.
+  const [precioFetchFailed, setPrecioFetchFailed] = useState<Set<string>>(new Set());
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -57,20 +71,68 @@ const InversionesPage = () => {
     setCreateDialogOpen(false);
   };
 
+  // For each instrumento missing today's precio, fetch the live cotización, persist
+  // it as a new Precio record, and merge it into local state. The fetch itself is
+  // cached in localStorage (see @/lib/inversiones/precios). Instrumentos that already
+  // have today's precio in the DB are resolved directly in the memo below.
+  useEffect(() => {
+    let cancelled = false;
+
+    const instrumentos = instrumentosQuery.data ?? [];
+
+    for (const ins of instrumentos) {
+      if (findTodayPrecio(ins.precios)) continue;
+      const fetcher = PRECIO_FETCHERS.find((f) => f.tipos.includes(ins.tipo || ''));
+      if (!fetcher) continue;
+      fetcher
+        .fetchPrecio(ins)
+        .then(async (precio) => {
+          if (cancelled) return;
+          if (precio == null) {
+            setPrecioFetchFailed((prev) => new Set(prev).add(ins.id));
+            return;
+          }
+          const created = await createPrecio({
+            monto: precio,
+            fecha: todayISO(),
+            instrumento_id: ins.id,
+          });
+          if (cancelled) return;
+          setPreciosPorInstrumento((prev) => {
+            const next = new Map(prev);
+            next.set(ins.id, created);
+            return next;
+          });
+        })
+        .catch((error) => {
+          console.error(`Failed to fetch/create precio for instrumento ${ins.id}:`, error);
+          if (!cancelled) setPrecioFetchFailed((prev) => new Set(prev).add(ins.id));
+        });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [instrumentosQuery.data]);
+
   const precioPorInstrumento = useMemo(() => {
-    const map = new Map<string, { simbolo: string; precio: string; monto: number }>();
+    const map = new Map<string, { simbolo: string; precio: string; monto: number; loading: boolean }>();
     const dolares = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
     instrumentosQuery.data?.forEach((inst) => {
-      const precio = inst.precios?.[0];
+      const precio = preciosPorInstrumento.get(inst.id) ?? findTodayPrecio(inst.precios);
       const simboloMoneda = dolares.includes(inst.moneda) ? 'US$' : '$';
+      const monto = precio?.monto ?? 0;
+      const hasFetcher = PRECIO_FETCHERS.some((f) => f.tipos.includes(inst.tipo || ''));
+      const loading = !precio && hasFetcher && !precioFetchFailed.has(inst.id);
       map.set(inst.id, {
         simbolo: simboloMoneda,
-        precio: precio ? transformNumberToCurrenty(precio.monto) || '-' : '-',
-        monto: precio.monto,
+        precio: precio ? transformNumberToCurrenty(monto) || '-' : '-',
+        monto,
+        loading,
       });
     });
     return map;
-  }, [instrumentosQuery.data]);
+  }, [instrumentosQuery.data, preciosPorInstrumento, precioFetchFailed]);
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
@@ -102,25 +164,27 @@ const InversionesPage = () => {
         size: 130,
       },
       {
-        accessorFn: (row) => {
-          const p = precioPorInstrumento.get(row.instrumento.id);
-          return p ? `${p.simbolo} ${p.precio}` : '-';
-        },
         id: 'precio',
         header: 'Precio',
         size: 130,
+        Cell: ({ row }) => {
+          const p = precioPorInstrumento.get(row.original.instrumento.id);
+          if (p?.loading) return <CircularProgress size={16} />;
+          return p ? `${p.simbolo} ${p.precio}` : '-';
+        },
       },
       {
-        accessorFn: (row) => {
-          const { simbolo, monto } = precioPorInstrumento.get(row.instrumento.id) || {};
-          const total = transformNumberToCurrenty(row.cantidad * (monto || 0));
-          return `${simbolo} ${total?.replace(',00', '')}`;
-        },
         id: 'total',
         header: 'Total',
         size: 130,
         muiTableBodyCellProps: {
           align: 'right',
+        },
+        Cell: ({ row }) => {
+          const p = precioPorInstrumento.get(row.original.instrumento.id);
+          if (p?.loading) return <CircularProgress size={16} />;
+          const total = transformNumberToCurrenty(row.original.cantidad * (p?.monto || 0));
+          return `${p?.simbolo ?? ''} ${total?.replace(',00', '')}`;
         },
       },
     ],
