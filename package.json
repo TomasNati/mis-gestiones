@@ -32,13 +32,13 @@
     "drizzle-orm": "^0.45.2",
     "material-react-table": "^3.2.1",
     "math-expression-evaluator": "^2.0.5",
-    "next": "^16.2.6",
+    "next": "^16.2.11",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/eslintrc": "^3.3.6",
     "@eslint/js": "^9.37.0",
     "@tanstack/eslint-plugin-query": "^5.91.4",
     "@types/node": "^20",
@@ -65,7 +65,7 @@
     "ws": "^8.21.0",
     "@babel/runtime": "^7.26.10",
     "form-data": "^4.0.6",
-    "brace-expansion": "^5.0.7"
+    "sharp": "^0.35.0"
   },
   "engines": {
     "node": "20.x"
