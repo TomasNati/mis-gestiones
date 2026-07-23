@@ -10,6 +10,7 @@ import {
   FciLocal,
   InstrumentoExterior,
   InstrumentoLocal,
+  CotizacionDolar,
 } from './definitions';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
@@ -72,6 +73,11 @@ export const getCotizacionInstrumentoExterior = async (symbol: string): Promise<
 
 export const getCotizacionInstrumentoLocal = async (instrumento: string): Promise<InstrumentoLocal | null> => {
   const { data } = await apiClient.get<InstrumentoLocal>(`/cotizaciones/instrumento/${instrumento}`);
+  return data ?? null;
+};
+
+export const getCotizacionDolarOficial = async (): Promise<CotizacionDolar | null> => {
+  const { data } = await apiClient.get<CotizacionDolar>('/cotizaciones/dolar/oficial');
   return data ?? null;
 };
 

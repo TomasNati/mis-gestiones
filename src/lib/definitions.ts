@@ -1401,6 +1401,16 @@ export interface InversionMeta {
   brokers: string[];
 }
 
+export interface CotizacionDolar {
+  tipo: string;
+  moneda: string;
+  casa: string;
+  nombre: string;
+  compra: number;
+  venta: number;
+  fecha_actualizacion: string;
+}
+
 export interface SuenioTomiPorPeriodo {
   fecha: Date;
   horasDeSuenio: number;
@@ -1414,7 +1424,9 @@ export const INSTRUMENTO_MONEDA = {
   PESO: 'PESO',
   DOLAR: 'DOLAR',
   DOLAR_CCL: 'DOLAR_CCL',
-};
+} as const;
+
+export type InstrumentoMoneda = (typeof INSTRUMENTO_MONEDA)[keyof typeof INSTRUMENTO_MONEDA];
 
 export const INSTRUMENTO_TIPO = {
   ACCION_LOCAL: 'ACCION_LOCAL',

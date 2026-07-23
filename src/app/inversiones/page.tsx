@@ -6,11 +6,13 @@ import {
   INSTRUMENTO_INVERSION_TIPO,
   INSTRUMENTO_MONEDA,
   InstrumentoPrecio,
+  InstrumentoMoneda,
 } from '@/lib/definitions';
 import {
   crearInversion,
   createPrecio,
   eliminarInversion,
+  getCotizacionDolarOficial,
   obtenerInstrumentos,
   obtenerInversiones,
   obtenerMetaInversiones,
@@ -20,11 +22,11 @@ import { transformNumberToCurrenty } from '@/lib/helpers';
 import { MaterialReactTable, MRT_Row, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Box, Button, CircularProgress, IconButton, Tooltip } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
+import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar';
 
 const InversionesPage = () => {
   const queryClient = useQueryClient();
@@ -36,6 +38,7 @@ const InversionesPage = () => {
   // Instrumentos whose live-precio fetch finished without a usable value (error or
   // no price returned). Used to stop showing the spinner for them.
   const [precioFetchFailed, setPrecioFetchFailed] = useState<Set<string>>(new Set());
+  const [moneda, setMoneda] = useState<InstrumentoMoneda>(INSTRUMENTO_MONEDA.PESO);
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -50,6 +53,11 @@ const InversionesPage = () => {
   const metaQuery = useQuery({
     queryKey: ['metaInversiones'],
     queryFn: obtenerMetaInversiones,
+  });
+
+  const cotizacionDolarQuery = useQuery({
+    queryKey: ['cotizacionDolarOficial'],
+    queryFn: getCotizacionDolarOficial,
   });
 
   const createMutation = useMutation({
@@ -117,7 +125,7 @@ const InversionesPage = () => {
 
   const precioPorInstrumento = useMemo(() => {
     const map = new Map<string, { simbolo: string; precio: string; monto: number; loading: boolean }>();
-    const dolares = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
+    const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
     instrumentosQuery.data?.forEach((inst) => {
       const precio = preciosPorInstrumento.get(inst.id) ?? findTodayPrecio(inst.precios);
       const simboloMoneda = dolares.includes(inst.moneda) ? 'US$' : '$';
@@ -133,6 +141,25 @@ const InversionesPage = () => {
     });
     return map;
   }, [instrumentosQuery.data, preciosPorInstrumento, precioFetchFailed]);
+
+  const totalDisplay = useMemo(() => {
+    const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
+    const ventaDolar = cotizacionDolarQuery.data?.venta ?? null;
+    const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
+    const simbolo = enPesos ? '$' : 'US$';
+
+    if (!ventaDolar) return `${simbolo} -`;
+
+    const totalPesos = (inversionesQuery.data ?? []).reduce((acc, inv) => {
+      const monto = precioPorInstrumento.get(inv.instrumento.id)?.monto ?? 0;
+      const valorNativo = inv.cantidad * monto;
+      const esDolar = dolares.includes(inv.instrumento.moneda);
+      return acc + (esDolar ? valorNativo * ventaDolar : valorNativo);
+    }, 0);
+
+    const valor = enPesos ? totalPesos : totalPesos / ventaDolar;
+    return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
+  }, [inversionesQuery.data, precioPorInstrumento, moneda, cotizacionDolarQuery.data]);
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
@@ -206,6 +233,10 @@ const InversionesPage = () => {
     setDeleteRow(null);
   };
 
+   const handleMonedaChanged = (event: React.MouseEvent<HTMLElement>, nuevaMoneda: InstrumentoMoneda | null) => {
+     setMoneda(nuevaMoneda || INSTRUMENTO_MONEDA.PESO);
+   };
+
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
   const isLoading = inversionesQuery.isLoading || instrumentosQuery.isLoading || metaQuery.isLoading;
@@ -232,23 +263,16 @@ const InversionesPage = () => {
     },
     layoutMode: 'grid-no-grow',
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: 'flex', gap: 0, whiteSpace: 'nowrap' }}>
-        <Tooltip title="Edit">
-          <IconButton onClick={() => table.setEditingRow(row)}>
-            <EditIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete">
-          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
+      <InversionesRowActions row={row} table={table} onDelete={openDeleteConfirmModal} />
     ),
     renderTopToolbarCustomActions: () => (
-      <Button variant="contained" onClick={() => setCreateDialogOpen(true)}>
-        Nueva Inversión
-      </Button>
+      <InversionesToolbar
+        moneda={moneda}
+        total={totalDisplay}
+        dolarVenta={cotizacionDolarQuery.data?.venta ?? null}
+        onNuevaInversion={() => setCreateDialogOpen(true)}
+        onMonedaChange={handleMonedaChanged}
+      />
     ),
     muiTablePaperProps: {
       sx: { display: 'flex', flexDirection: 'column', inlineSize: '100%', overflow: 'auto', flex: 1 },
