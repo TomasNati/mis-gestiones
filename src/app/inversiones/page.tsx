@@ -7,12 +7,14 @@ import {
   INSTRUMENTO_MONEDA,
   InstrumentoPrecio,
   InstrumentoMoneda,
+  TIPO_DOLAR,
+  TipoDolar,
 } from '@/lib/definitions';
 import {
   crearInversion,
   createPrecio,
   eliminarInversion,
-  getCotizacionDolarOficial,
+  getCotizacionesDolar,
   obtenerInstrumentos,
   obtenerInversiones,
   obtenerMetaInversiones,
@@ -39,6 +41,7 @@ const InversionesPage = () => {
   // no price returned). Used to stop showing the spinner for them.
   const [precioFetchFailed, setPrecioFetchFailed] = useState<Set<string>>(new Set());
   const [moneda, setMoneda] = useState<InstrumentoMoneda>(INSTRUMENTO_MONEDA.PESO);
+  const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -55,10 +58,15 @@ const InversionesPage = () => {
     queryFn: obtenerMetaInversiones,
   });
 
-  const cotizacionDolarQuery = useQuery({
-    queryKey: ['cotizacionDolarOficial'],
-    queryFn: getCotizacionDolarOficial,
+  const cotizacionesDolarQuery = useQuery({
+    queryKey: ['cotizacionesDolar'],
+    queryFn: getCotizacionesDolar,
   });
+
+  const cotizacionDolarSeleccionada = useMemo(
+    () => cotizacionesDolarQuery.data?.find((c) => c.tipo === tipoDolar) ?? null,
+    [cotizacionesDolarQuery.data, tipoDolar],
+  );
 
   const createMutation = useMutation({
     mutationFn: (payload: InversionCreatePayload) => crearInversion(payload),
@@ -144,7 +152,7 @@ const InversionesPage = () => {
 
   const totalDisplay = useMemo(() => {
     const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
-    const ventaDolar = cotizacionDolarQuery.data?.venta ?? null;
+    const ventaDolar = cotizacionDolarSeleccionada?.venta ?? null;
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
     const simbolo = enPesos ? '$' : 'US$';
 
@@ -159,7 +167,7 @@ const InversionesPage = () => {
 
     const valor = enPesos ? totalPesos : totalPesos / ventaDolar;
     return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
-  }, [inversionesQuery.data, precioPorInstrumento, moneda, cotizacionDolarQuery.data]);
+  }, [inversionesQuery.data, precioPorInstrumento, moneda, cotizacionDolarSeleccionada]);
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
@@ -237,6 +245,10 @@ const InversionesPage = () => {
      setMoneda(nuevaMoneda || INSTRUMENTO_MONEDA.PESO);
    };
 
+   const handleTipoDolarChanged = (event: React.MouseEvent<HTMLElement>, nuevoTipoDolar: TipoDolar | null) => {
+     if (nuevoTipoDolar) setTipoDolar(nuevoTipoDolar);
+   };
+
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
   const isLoading = inversionesQuery.isLoading || instrumentosQuery.isLoading || metaQuery.isLoading;
@@ -254,6 +266,12 @@ const InversionesPage = () => {
     enableSorting: true,
     enableColumnFilters: true,
     enablePagination: true,
+    initialState: {
+      pagination: { pageSize: 50, pageIndex: 0 },
+    },
+    muiPaginationProps: {
+      rowsPerPageOptions: [10, 25, 50, 100],
+    },
     state: {
       isLoading,
       isSaving,
@@ -268,10 +286,12 @@ const InversionesPage = () => {
     renderTopToolbarCustomActions: () => (
       <InversionesToolbar
         moneda={moneda}
+        tipoDolar={tipoDolar}
         total={totalDisplay}
-        dolarVenta={cotizacionDolarQuery.data?.venta ?? null}
+        dolarVenta={cotizacionDolarSeleccionada?.venta ?? null}
         onNuevaInversion={() => setCreateDialogOpen(true)}
         onMonedaChange={handleMonedaChanged}
+        onTipoDolarChange={handleTipoDolarChanged}
       />
     ),
     muiTablePaperProps: {

@@ -81,4 +81,9 @@ export const getCotizacionDolarOficial = async (): Promise<CotizacionDolar | nul
   return data ?? null;
 };
 
+export const getCotizacionesDolar = async (): Promise<CotizacionDolar[]> => {
+  const { data } = await apiClient.get<CotizacionDolar[]>('/cotizaciones/dolar');
+  return data ?? [];
+};
+
 export default apiClient;
