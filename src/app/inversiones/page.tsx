@@ -5,24 +5,28 @@ import {
   InversionCreatePayload,
   INSTRUMENTO_INVERSION_TIPO,
   INSTRUMENTO_MONEDA,
-  InstrumentoPrecio,
   InstrumentoMoneda,
   TIPO_DOLAR,
   TipoDolar,
 } from '@/lib/definitions';
 import {
   crearInversion,
-  createPrecio,
   eliminarInversion,
   getCotizacionesDolar,
   obtenerInstrumentos,
   obtenerInversiones,
   obtenerMetaInversiones,
 } from '@/lib/api';
-import { PRECIO_FETCHERS, findTodayPrecio, todayISO } from '@/lib/inversiones/precios';
 import { transformNumberToCurrenty } from '@/lib/helpers';
-import { MaterialReactTable, MRT_Row, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
-import { useEffect, useMemo, useState } from 'react';
+import { useInversiones } from '@/hooks/inversiones/useInversiones';
+import {
+  MaterialReactTable,
+  MRT_Row,
+  type MRT_ColumnDef,
+  type MRT_RowSelectionState,
+  useMaterialReactTable,
+} from 'material-react-table';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, CircularProgress } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
@@ -34,14 +38,9 @@ const InversionesPage = () => {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteRow, setDeleteRow] = useState<MRT_Row<Inversion> | null>(null);
-  const [preciosPorInstrumento, setPreciosPorInstrumento] = useState<Map<string, InstrumentoPrecio>>(
-    new Map(),
-  );
-  // Instrumentos whose live-precio fetch finished without a usable value (error or
-  // no price returned). Used to stop showing the spinner for them.
-  const [precioFetchFailed, setPrecioFetchFailed] = useState<Set<string>>(new Set());
   const [moneda, setMoneda] = useState<InstrumentoMoneda>(INSTRUMENTO_MONEDA.PESO);
   const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
+  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -87,87 +86,13 @@ const InversionesPage = () => {
     setCreateDialogOpen(false);
   };
 
-  // For each instrumento missing today's precio, fetch the live cotización, persist
-  // it as a new Precio record, and merge it into local state. The fetch itself is
-  // cached in localStorage (see @/lib/inversiones/precios). Instrumentos that already
-  // have today's precio in the DB are resolved directly in the memo below.
-  useEffect(() => {
-    let cancelled = false;
-
-    const instrumentos = instrumentosQuery.data ?? [];
-
-    for (const ins of instrumentos) {
-      if (findTodayPrecio(ins.precios)) continue;
-      const fetcher = PRECIO_FETCHERS.find((f) => f.tipos.includes(ins.tipo || ''));
-      if (!fetcher) continue;
-      fetcher
-        .fetchPrecio(ins)
-        .then(async (precio) => {
-          if (cancelled) return;
-          if (precio == null) {
-            setPrecioFetchFailed((prev) => new Set(prev).add(ins.id));
-            return;
-          }
-          const created = await createPrecio({
-            monto: precio,
-            fecha: todayISO(),
-            instrumento_id: ins.id,
-          });
-          if (cancelled) return;
-          setPreciosPorInstrumento((prev) => {
-            const next = new Map(prev);
-            next.set(ins.id, created);
-            return next;
-          });
-        })
-        .catch((error) => {
-          console.error(`Failed to fetch/create precio for instrumento ${ins.id}:`, error);
-          if (!cancelled) setPrecioFetchFailed((prev) => new Set(prev).add(ins.id));
-        });
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [instrumentosQuery.data]);
-
-  const precioPorInstrumento = useMemo(() => {
-    const map = new Map<string, { simbolo: string; precio: string; monto: number; loading: boolean }>();
-    const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
-    instrumentosQuery.data?.forEach((inst) => {
-      const precio = preciosPorInstrumento.get(inst.id) ?? findTodayPrecio(inst.precios);
-      const simboloMoneda = dolares.includes(inst.moneda) ? 'US$' : '$';
-      const monto = precio?.monto ?? 0;
-      const hasFetcher = PRECIO_FETCHERS.some((f) => f.tipos.includes(inst.tipo || ''));
-      const loading = !precio && hasFetcher && !precioFetchFailed.has(inst.id);
-      map.set(inst.id, {
-        simbolo: simboloMoneda,
-        precio: precio ? transformNumberToCurrenty(monto) || '-' : '-',
-        monto,
-        loading,
-      });
-    });
-    return map;
-  }, [instrumentosQuery.data, preciosPorInstrumento, precioFetchFailed]);
-
-  const totalDisplay = useMemo(() => {
-    const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
-    const ventaDolar = cotizacionDolarSeleccionada?.venta ?? null;
-    const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
-    const simbolo = enPesos ? '$' : 'US$';
-
-    if (!ventaDolar) return `${simbolo} -`;
-
-    const totalPesos = (inversionesQuery.data ?? []).reduce((acc, inv) => {
-      const monto = precioPorInstrumento.get(inv.instrumento.id)?.monto ?? 0;
-      const valorNativo = inv.cantidad * monto;
-      const esDolar = dolares.includes(inv.instrumento.moneda);
-      return acc + (esDolar ? valorNativo * ventaDolar : valorNativo);
-    }, 0);
-
-    const valor = enPesos ? totalPesos : totalPesos / ventaDolar;
-    return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
-  }, [inversionesQuery.data, precioPorInstrumento, moneda, cotizacionDolarSeleccionada]);
+  const { precioPorInstrumento, totalDisplay } = useInversiones({
+    instrumentos: instrumentosQuery.data,
+    inversiones: inversionesQuery.data,
+    moneda,
+    cotizacionDolarSeleccionada,
+    rowSelection,
+  });
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
@@ -192,6 +117,12 @@ const InversionesPage = () => {
         accessorKey: 'cantidad',
         header: 'Cantidad',
         size: 150,
+      },
+      {
+        accessorFn: (row) => row.instrumento.clase_renta,
+        id: 'renta',
+        header: 'Tipo de Renta',
+        size: 130,
       },
       {
         accessorKey: 'broker',
@@ -257,6 +188,8 @@ const InversionesPage = () => {
   const table = useMaterialReactTable({
     columns,
     data: inversionesQuery.data ?? [],
+    getRowId: (row) => row.id,
+    onRowSelectionChange: setRowSelection,
     enableRowActions: true,
     displayColumnDefOptions: {
       'mrt-row-actions': {
@@ -266,6 +199,9 @@ const InversionesPage = () => {
     enableSorting: true,
     enableColumnFilters: true,
     enablePagination: true,
+    enableRowSelection: true,
+    paginationDisplayMode: 'pages',
+    positionToolbarAlertBanner: 'bottom',
     initialState: {
       pagination: { pageSize: 50, pageIndex: 0 },
     },
@@ -275,6 +211,7 @@ const InversionesPage = () => {
     state: {
       isLoading,
       isSaving,
+      rowSelection,
     },
     muiTableProps: {
       size: 'small',
