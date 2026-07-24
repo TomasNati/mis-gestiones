@@ -28,11 +28,14 @@ import {
 } from 'material-react-table';
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Divider, IconButton } from '@mui/material';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import ExpandLess from '@mui/icons-material/ExpandLess';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
 import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar';
+import { InversionesPorCategoria } from '@/components/graficos/';
 
 const InversionesPage = () => {
   const queryClient = useQueryClient();
@@ -41,6 +44,7 @@ const InversionesPage = () => {
   const [moneda, setMoneda] = useState<InstrumentoMoneda>(INSTRUMENTO_MONEDA.PESO);
   const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
+  const [mostrandoGraficos, setMostrandoGraficos] = useState(false);
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -86,13 +90,15 @@ const InversionesPage = () => {
     setCreateDialogOpen(false);
   };
 
-  const { precioPorInstrumento, totalDisplay } = useInversiones({
+  const { precioPorInstrumento, totalDisplay, datosPorBroker, datosPorRenta } = useInversiones({
     instrumentos: instrumentosQuery.data,
     inversiones: inversionesQuery.data,
     moneda,
     cotizacionDolarSeleccionada,
     rowSelection,
   });
+
+  const simboloMoneda = moneda === INSTRUMENTO_MONEDA.PESO ? '$' : 'US$';
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
@@ -247,6 +253,28 @@ const InversionesPage = () => {
         <h2>Inversiones</h2>
       </Box>
       {inversionesQuery.isError && <p>Hubo un error al cargar las inversiones.</p>}
+      <Box
+        sx={{
+          display: mostrandoGraficos ? 'flex' : 'none',
+          flexShrink: 0,
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 3,
+          overflow: 'auto',
+        }}
+      >
+        <InversionesPorCategoria titulo="Total por broker" data={datosPorBroker} simbolo={simboloMoneda} />
+        <InversionesPorCategoria titulo="Total por tipo de renta" data={datosPorRenta} simbolo={simboloMoneda} />
+      </Box>
+      <Divider sx={{ flexShrink: 0 }}>
+        <IconButton
+          onClick={() => setMostrandoGraficos((v) => !v)}
+          aria-label={mostrandoGraficos ? 'Ocultar gráficos' : 'Mostrar gráficos'}
+        >
+          {mostrandoGraficos ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
+      </Divider>
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <MaterialReactTable table={table} />
       </Box>

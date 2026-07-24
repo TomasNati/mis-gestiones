@@ -19,6 +19,31 @@ interface PrecioInstrumento {
   loading: boolean;
 }
 
+export interface DatoGrafico {
+  label: string;
+  value: number;
+}
+
+const MAX_CATEGORIAS = 8;
+
+const agruparPorCategoria = (valores: { categoria: string; valor: number }[]): DatoGrafico[] => {
+  const totales = new Map<string, number>();
+  for (const { categoria, valor } of valores) {
+    totales.set(categoria, (totales.get(categoria) ?? 0) + valor);
+  }
+
+  const ordenados = Array.from(totales.entries())
+    .map(([label, value]) => ({ label, value }))
+    .filter((d) => d.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  if (ordenados.length <= MAX_CATEGORIAS) return ordenados;
+
+  const principales = ordenados.slice(0, MAX_CATEGORIAS - 1);
+  const otros = ordenados.slice(MAX_CATEGORIAS - 1).reduce((acc, d) => acc + d.value, 0);
+  return [...principales, { label: 'Otros', value: otros }];
+};
+
 interface UseInversionesParams {
   instrumentos: Instrumento[] | undefined;
   inversiones: Inversion[] | undefined;
@@ -30,6 +55,8 @@ interface UseInversionesParams {
 interface UseInversionesResult {
   precioPorInstrumento: Map<string, PrecioInstrumento>;
   totalDisplay: string;
+  datosPorBroker: DatoGrafico[];
+  datosPorRenta: DatoGrafico[];
 }
 
 export const useInversiones = ({
@@ -39,9 +66,7 @@ export const useInversiones = ({
   cotizacionDolarSeleccionada,
   rowSelection,
 }: UseInversionesParams): UseInversionesResult => {
-  const [preciosPorInstrumento, setPreciosPorInstrumento] = useState<Map<string, InstrumentoPrecio>>(
-    new Map(),
-  );
+  const [preciosPorInstrumento, setPreciosPorInstrumento] = useState<Map<string, InstrumentoPrecio>>(new Map());
   // Instrumentos whose live-precio fetch finished without a usable value (error or
   // no price returned). Used to stop showing the spinner for them.
   const [precioFetchFailed, setPrecioFetchFailed] = useState<Set<string>>(new Set());
@@ -109,30 +134,61 @@ export const useInversiones = ({
     return map;
   }, [instrumentos, preciosPorInstrumento, precioFetchFailed]);
 
-  const totalDisplay = useMemo(() => {
+  // Valor de cada inversión en la moneda de visualización, considerando sólo las
+  // filas seleccionadas (o todas si no hay selección). Es la base compartida del
+  // total y de los datos de los gráficos, para que la conversión de moneda viva
+  // en un único lugar.
+  const inversionesConValor = useMemo(() => {
     const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL, INSTRUMENTO_MONEDA.DOLAR_MEP];
     const ventaDolar = cotizacionDolarSeleccionada?.venta ?? null;
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
-    const simbolo = enPesos ? '$' : 'US$';
 
-    if (!ventaDolar) return `${simbolo} -`;
+    if (!ventaDolar) return [] as { inversion: Inversion; valor: number }[];
 
-    // Total the selected rows only; if nothing is selected, total all rows.
     const items = inversiones ?? [];
     const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
-    const inversionesATotalizar =
-      selectedIds.length > 0 ? items.filter((inv) => rowSelection[inv.id]) : items;
+    const inversionesATotalizar = selectedIds.length > 0 ? items.filter((inv) => rowSelection[inv.id]) : items;
 
-    const totalPesos = inversionesATotalizar.reduce((acc, inv) => {
+    return inversionesATotalizar.map((inv) => {
       const monto = precioPorInstrumento.get(inv.instrumento.id)?.monto ?? 0;
       const valorNativo = inv.cantidad * monto;
       const esDolar = dolares.includes(inv.instrumento.moneda);
-      return acc + (esDolar ? valorNativo * ventaDolar : valorNativo);
-    }, 0);
-
-    const valor = enPesos ? totalPesos : totalPesos / ventaDolar;
-    return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
+      const valorPesos = esDolar ? valorNativo * ventaDolar : valorNativo;
+      const valor = enPesos ? valorPesos : valorPesos / ventaDolar;
+      return { inversion: inv, valor };
+    });
   }, [inversiones, precioPorInstrumento, moneda, cotizacionDolarSeleccionada, rowSelection]);
 
-  return { precioPorInstrumento, totalDisplay };
-};
+  const totalDisplay = useMemo(() => {
+    const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
+    const simbolo = enPesos ? '$' : 'US$';
+    if (!cotizacionDolarSeleccionada?.venta) return `${simbolo} -`;
+
+    const valor = inversionesConValor.reduce((acc, { valor }) => acc + valor, 0);
+    return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
+  }, [inversionesConValor, moneda, cotizacionDolarSeleccionada]);
+
+  const datosPorBroker = useMemo(
+    () =>
+      agruparPorCategoria(
+        inversionesConValor.map(({ inversion, valor }) => ({
+          categoria: inversion.broker || 'Sin broker',
+          valor,
+        })),
+      ),
+    [inversionesConValor],
+  );
+
+  const datosPorRenta = useMemo(
+    () =>
+      agruparPorCategoria(
+        inversionesConValor.map(({ inversion, valor }) => ({
+          categoria: inversion.instrumento.clase_renta || 'Sin renta',
+          valor,
+        })),
+      ),
+    [inversionesConValor],
+  );
+
+  return { precioPorInstrumento, totalDisplay, datosPorBroker, datosPorRenta };
+};;
