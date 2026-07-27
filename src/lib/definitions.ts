@@ -1393,6 +1393,10 @@ export interface InversionCreatePayload {
   broker: string;
 }
 
+export interface InversionUpdatePayload {
+  cantidad: number;
+}
+
 export interface InversionMeta {
   tipo: string[];
   clase_renta: string[];

@@ -10,6 +10,7 @@ import {
   TipoDolar,
 } from '@/lib/definitions';
 import {
+  actualizarInversion,
   crearInversion,
   eliminarInversion,
   getCotizacionesDolar,
@@ -25,6 +26,7 @@ import {
   MRT_Row,
   type MRT_ColumnDef,
   type MRT_RowSelectionState,
+  type MRT_TableOptions,
   useMaterialReactTable,
 } from 'material-react-table';
 import { useMemo, useState } from 'react';
@@ -34,6 +36,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
+import { EditarInversion } from '@/components/inversiones/EditarInversion';
 import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
 import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar';
 import { InversionesPorCategoria } from '@/components/graficos/';
@@ -83,6 +86,25 @@ const InversionesPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inversiones'] });
       handleCloseCreateDialog();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, cantidad }: { id: string; cantidad: number }) => actualizarInversion(id, { cantidad }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inversiones'] });
+      setConfigNotificacion({
+        open: true,
+        severity: 'success',
+        mensaje: 'Inversión actualizada correctamente.',
+      });
+    },
+    onError: () => {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: 'Hubo un error al actualizar la inversión.',
+      });
     },
   });
 
@@ -196,6 +218,27 @@ const InversionesPage = () => {
     setDeleteRow(null);
   };
 
+  const handleEditingRowSave: MRT_TableOptions<Inversion>['onEditingRowSave'] = ({ row, values, exitEditingMode }) => {
+    const cantidadIngresada = String(values.cantidad ?? '').trim();
+    const cantidad = Number(cantidadIngresada);
+
+    if (cantidadIngresada === '' || !Number.isFinite(cantidad) || cantidad < 0) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: 'La cantidad debe ser un número mayor o igual a 0.',
+      });
+      return;
+    }
+
+    if (cantidad === row.original.cantidad) {
+      exitEditingMode();
+      return;
+    }
+
+    updateMutation.mutate({ id: row.original.id, cantidad }, { onSuccess: () => exitEditingMode() });
+  };
+
    const handleMonedaChanged = (event: React.MouseEvent<HTMLElement>, nuevaMoneda: InstrumentoMoneda | null) => {
      setMoneda(nuevaMoneda || INSTRUMENTO_MONEDA.PESO);
    };
@@ -248,7 +291,7 @@ const InversionesPage = () => {
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
   const isLoading = inversionesQuery.isLoading || instrumentosQuery.isLoading || metaQuery.isLoading;
-  const isSaving = createMutation.isPending || deleteMutation.isPending;
+  const isSaving = createMutation.isPending || deleteMutation.isPending || updateMutation.isPending;
 
   const table = useMaterialReactTable({
     columns,
@@ -285,6 +328,12 @@ const InversionesPage = () => {
     renderRowActions: ({ row, table }) => (
       <InversionesRowActions row={row} table={table} onDelete={openDeleteConfirmModal} />
     ),
+    renderEditRowDialogContent: ({ row, table }) => <EditarInversion row={row} table={table} />,
+    onEditingRowSave: handleEditingRowSave,
+    localization: {
+      cancel: 'Cancelar',
+      save: 'Guardar',
+    },
     renderTopToolbarCustomActions: () => (
       <InversionesToolbar
         moneda={moneda}

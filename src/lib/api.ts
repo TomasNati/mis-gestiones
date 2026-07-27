@@ -4,6 +4,7 @@ import {
   BuscarMovimientosResponse,
   Inversion,
   InversionCreatePayload,
+  InversionUpdatePayload,
   InversionMeta,
   Instrumento,
   InstrumentoPrecio,
@@ -34,6 +35,11 @@ export const obtenerInversiones = async () => {
 
 export const crearInversion = async (payload: InversionCreatePayload) => {
   const response = await apiClient.post<Inversion>('/inversiones/inversion', payload);
+  return response.data;
+};
+
+export const actualizarInversion = async (id: string, payload: InversionUpdatePayload) => {
+  const response = await apiClient.put<Inversion>(`/inversiones/inversion/${id}`, payload);
   return response.data;
 };
 
