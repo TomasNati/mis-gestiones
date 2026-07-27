@@ -4,7 +4,10 @@ Backend: accessed through src\lib\api.ts
 Locally, you can find the backend's repository in ../mis-gestiones-backend/
 Definition of Inversion in the backend: structure.py
 Endpoints to use:
-/api/inversiones/inversiones (GET for search, POST to create). For now do not allow edition
+/api/inversiones/inversiones (GET for search, POST to create).
+/api/inversiones/inversion/{id} (PUT to edit). Only `cantidad` can be edited; request body is
+{ "cantidad": 0 }. The edit popup shows the rest of the fields as read-only labels and suggests
+using "Guardar estado" first, since the previous cantidad only survives in the snapshots.
 
 - Actions:
   . on nthe main page, implement a grid gettign all inversiones .

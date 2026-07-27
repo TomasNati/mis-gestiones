@@ -5,6 +5,7 @@ import {
   Inversion,
   InversionCreatePayload,
   InversionUpdatePayload,
+  GuardarEstadoInversionesPayload,
   InversionMeta,
   Instrumento,
   InstrumentoPrecio,
@@ -43,7 +44,7 @@ export const actualizarInversion = async (id: string, payload: InversionUpdatePa
   return response.data;
 };
 
-export const guardarEstadoInversiones = async (payload: { inversion_ids: string[]; fecha: string }) => {
+export const guardarEstadoInversiones = async (payload: GuardarEstadoInversionesPayload) => {
   const response = await apiClient.post<Inversion[]>('/inversiones/inversiones/estado', payload);
   return response.data;
 };

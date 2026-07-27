@@ -1,4 +1,4 @@
-import { Box, Button, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Button, Divider, FormControlLabel, Switch, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import {
   INSTRUMENTO_MONEDA,
   InstrumentoMoneda,
@@ -14,8 +14,10 @@ interface InversionesToolbarProps {
   total: string;
   dolarVenta: number | null;
   guardandoEstado: boolean;
+  sobreescribir: boolean;
   onNuevaInversion: () => void;
   onGuardarEstado: () => void;
+  onSobreescribirChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
   onMonedaChange: (
     event: React.MouseEvent<HTMLElement>,
     nuevaMoneda: InstrumentoMoneda | null,
@@ -32,8 +34,10 @@ export const InversionesToolbar = ({
   total,
   dolarVenta,
   guardandoEstado,
+  sobreescribir,
   onNuevaInversion,
   onGuardarEstado,
+  onSobreescribirChange,
   onMonedaChange,
   onTipoDolarChange,
 }: InversionesToolbarProps) => (
@@ -41,6 +45,7 @@ export const InversionesToolbar = ({
     <Button variant="contained" size="small" onClick={onNuevaInversion} sx={{ py: 0.5 }}>
       Nueva Inversión
     </Button>
+    <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
     <Button
       variant="outlined"
       size="small"
@@ -50,7 +55,13 @@ export const InversionesToolbar = ({
     >
       Guardar estado
     </Button>
-    <ToggleButtonGroup exclusive size="small" value={moneda} onChange={onMonedaChange} sx={{ mx: 2 }}>
+    <FormControlLabel
+      control={<Switch size="small" checked={sobreescribir} onChange={onSobreescribirChange} />}
+      label="Sobreescribir"
+      sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.8125rem' } }}
+    />
+    <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+    <ToggleButtonGroup exclusive size="small" value={moneda} onChange={onMonedaChange}>
       <ToggleButton value={INSTRUMENTO_MONEDA.PESO} sx={{ py: 0.5 }}>
         Peso
       </ToggleButton>

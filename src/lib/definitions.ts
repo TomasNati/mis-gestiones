@@ -1397,6 +1397,13 @@ export interface InversionUpdatePayload {
   cantidad: number;
 }
 
+export interface GuardarEstadoInversionesPayload {
+  inversion_ids: string[];
+  fecha: string;
+  /** When a snapshot already exists for `fecha`: overwrite it, or leave it untouched. */
+  sobreescribir: boolean;
+}
+
 export interface InversionMeta {
   tipo: string[];
   clase_renta: string[];

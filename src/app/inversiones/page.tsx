@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  GuardarEstadoInversionesPayload,
   Inversion,
   InversionCreatePayload,
   INSTRUMENTO_INVERSION_TIPO,
@@ -50,6 +51,7 @@ const InversionesPage = () => {
   const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const [mostrandoGraficos, setMostrandoGraficos] = useState(false);
+  const [sobreescribir, setSobreescribir] = useState(false);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
@@ -116,7 +118,7 @@ const InversionesPage = () => {
   });
 
   const guardarEstadoMutation = useMutation({
-    mutationFn: (payload: { inversion_ids: string[]; fecha: string }) => guardarEstadoInversiones(payload),
+    mutationFn: (payload: GuardarEstadoInversionesPayload) => guardarEstadoInversiones(payload),
     onError: () => {
       setConfigNotificacion({
         open: true,
@@ -239,13 +241,17 @@ const InversionesPage = () => {
     updateMutation.mutate({ id: row.original.id, cantidad }, { onSuccess: () => exitEditingMode() });
   };
 
-   const handleMonedaChanged = (event: React.MouseEvent<HTMLElement>, nuevaMoneda: InstrumentoMoneda | null) => {
-     setMoneda(nuevaMoneda || INSTRUMENTO_MONEDA.PESO);
-   };
+  const handleMonedaChanged = (event: React.MouseEvent<HTMLElement>, nuevaMoneda: InstrumentoMoneda | null) => {
+    setMoneda(nuevaMoneda || INSTRUMENTO_MONEDA.PESO);
+  };
 
-   const handleTipoDolarChanged = (event: React.MouseEvent<HTMLElement>, nuevoTipoDolar: TipoDolar | null) => {
-     if (nuevoTipoDolar) setTipoDolar(nuevoTipoDolar);
-   };
+  const handleTipoDolarChanged = (event: React.MouseEvent<HTMLElement>, nuevoTipoDolar: TipoDolar | null) => {
+    if (nuevoTipoDolar) setTipoDolar(nuevoTipoDolar);
+  };
+
+  const handleSobreescribirChanged = (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    setSobreescribir(checked);
+  };
 
   const handleGuardarEstado = () => {
     const inversiones = inversionesQuery.data ?? [];
@@ -260,13 +266,19 @@ const InversionesPage = () => {
       else invalidas.push(inv);
     }
 
-    const notificarResultado = () => {
+    const notificarResultado = (guardadas: number) => {
       if (invalidas.length > 0) {
         const nombres = Array.from(new Set(invalidas.map((inv) => inv.instrumento.nombre))).join(', ');
         setConfigNotificacion({
           open: true,
           severity: 'error',
           mensaje: `No se pudo guardar el estado de: ${nombres}`,
+        });
+      } else if (guardadas < idsValidos.length) {
+        setConfigNotificacion({
+          open: true,
+          severity: 'info',
+          mensaje: `Se guardó el estado de ${guardadas} de ${idsValidos.length} inversiones. Las demás ya tenían estado guardado para esta fecha.`,
         });
       } else {
         setConfigNotificacion({
@@ -278,13 +290,13 @@ const InversionesPage = () => {
     };
 
     if (idsValidos.length === 0) {
-      notificarResultado();
+      notificarResultado(0);
       return;
     }
 
     guardarEstadoMutation.mutate(
-      { inversion_ids: idsValidos, fecha: new Date().toISOString() },
-      { onSuccess: notificarResultado },
+      { inversion_ids: idsValidos, fecha: new Date().toISOString(), sobreescribir },
+      { onSuccess: (copias) => notificarResultado(copias.length) },
     );
   };
 
@@ -341,8 +353,10 @@ const InversionesPage = () => {
         total={totalDisplay}
         dolarVenta={cotizacionDolarSeleccionada?.venta ?? null}
         guardandoEstado={guardarEstadoMutation.isPending}
+        sobreescribir={sobreescribir}
         onNuevaInversion={() => setCreateDialogOpen(true)}
         onGuardarEstado={handleGuardarEstado}
+        onSobreescribirChange={handleSobreescribirChanged}
         onMonedaChange={handleMonedaChanged}
         onTipoDolarChange={handleTipoDolarChanged}
       />
