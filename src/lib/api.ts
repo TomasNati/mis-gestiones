@@ -37,6 +37,11 @@ export const crearInversion = async (payload: InversionCreatePayload) => {
   return response.data;
 };
 
+export const guardarEstadoInversiones = async (payload: { inversion_ids: string[]; fecha: string }) => {
+  const response = await apiClient.post<Inversion[]>('/inversiones/inversiones/estado', payload);
+  return response.data;
+};
+
 export const obtenerInstrumentos = async () => {
   const response = await apiClient.post<Instrumento[]>('/inversiones/instrumentos', { limit_precios: 1 });
   return response.data;

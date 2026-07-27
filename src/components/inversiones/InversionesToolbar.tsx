@@ -13,7 +13,9 @@ interface InversionesToolbarProps {
   tipoDolar: TipoDolar;
   total: string;
   dolarVenta: number | null;
+  guardandoEstado: boolean;
   onNuevaInversion: () => void;
+  onGuardarEstado: () => void;
   onMonedaChange: (
     event: React.MouseEvent<HTMLElement>,
     nuevaMoneda: InstrumentoMoneda | null,
@@ -29,13 +31,24 @@ export const InversionesToolbar = ({
   tipoDolar,
   total,
   dolarVenta,
+  guardandoEstado,
   onNuevaInversion,
+  onGuardarEstado,
   onMonedaChange,
   onTipoDolarChange,
 }: InversionesToolbarProps) => (
   <Box sx={{ display: 'flex', alignItems: 'center', py: 0.5, flexWrap: 'wrap', gap: 1 }}>
     <Button variant="contained" size="small" onClick={onNuevaInversion} sx={{ py: 0.5 }}>
       Nueva Inversión
+    </Button>
+    <Button
+      variant="outlined"
+      size="small"
+      onClick={onGuardarEstado}
+      disabled={guardandoEstado}
+      sx={{ py: 0.5 }}
+    >
+      Guardar estado
     </Button>
     <ToggleButtonGroup exclusive size="small" value={moneda} onChange={onMonedaChange} sx={{ mx: 2 }}>
       <ToggleButton value={INSTRUMENTO_MONEDA.PESO} sx={{ py: 0.5 }}>

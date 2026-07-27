@@ -13,6 +13,7 @@ import {
   crearInversion,
   eliminarInversion,
   getCotizacionesDolar,
+  guardarEstadoInversiones,
   obtenerInstrumentos,
   obtenerInversiones,
   obtenerMetaInversiones,
@@ -36,6 +37,7 @@ import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInvers
 import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
 import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar';
 import { InversionesPorCategoria } from '@/components/graficos/';
+import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
 
 const InversionesPage = () => {
   const queryClient = useQueryClient();
@@ -45,6 +47,11 @@ const InversionesPage = () => {
   const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const [mostrandoGraficos, setMostrandoGraficos] = useState(false);
+  const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
+    open: false,
+    severity: 'success',
+    mensaje: '',
+  });
 
   const inversionesQuery = useQuery({
     queryKey: ['inversiones'],
@@ -83,6 +90,17 @@ const InversionesPage = () => {
     mutationFn: (id: string) => eliminarInversion(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inversiones'] });
+    },
+  });
+
+  const guardarEstadoMutation = useMutation({
+    mutationFn: (payload: { inversion_ids: string[]; fecha: string }) => guardarEstadoInversiones(payload),
+    onError: () => {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: 'Hubo un error al guardar el estado de las inversiones.',
+      });
     },
   });
 
@@ -186,6 +204,47 @@ const InversionesPage = () => {
      if (nuevoTipoDolar) setTipoDolar(nuevoTipoDolar);
    };
 
+  const handleGuardarEstado = () => {
+    const inversiones = inversionesQuery.data ?? [];
+    const idsValidos: string[] = [];
+    const invalidas: Inversion[] = [];
+
+    // An inversión is snapshot-able only when its instrumento has a current precio.
+    // There should be none without one, but we guard for it and report the rest.
+    for (const inv of inversiones) {
+      const precio = precioPorInstrumento.get(inv.instrumento.id);
+      if (precio && precio.precio !== '-') idsValidos.push(inv.id);
+      else invalidas.push(inv);
+    }
+
+    const notificarResultado = () => {
+      if (invalidas.length > 0) {
+        const nombres = Array.from(new Set(invalidas.map((inv) => inv.instrumento.nombre))).join(', ');
+        setConfigNotificacion({
+          open: true,
+          severity: 'error',
+          mensaje: `No se pudo guardar el estado de: ${nombres}`,
+        });
+      } else {
+        setConfigNotificacion({
+          open: true,
+          severity: 'success',
+          mensaje: 'Estado de las inversiones guardado correctamente.',
+        });
+      }
+    };
+
+    if (idsValidos.length === 0) {
+      notificarResultado();
+      return;
+    }
+
+    guardarEstadoMutation.mutate(
+      { inversion_ids: idsValidos, fecha: new Date().toISOString() },
+      { onSuccess: notificarResultado },
+    );
+  };
+
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
   const isLoading = inversionesQuery.isLoading || instrumentosQuery.isLoading || metaQuery.isLoading;
@@ -232,7 +291,9 @@ const InversionesPage = () => {
         tipoDolar={tipoDolar}
         total={totalDisplay}
         dolarVenta={cotizacionDolarSeleccionada?.venta ?? null}
+        guardandoEstado={guardarEstadoMutation.isPending}
         onNuevaInversion={() => setCreateDialogOpen(true)}
+        onGuardarEstado={handleGuardarEstado}
         onMonedaChange={handleMonedaChanged}
         onTipoDolarChange={handleTipoDolarChanged}
       />
@@ -293,6 +354,7 @@ const InversionesPage = () => {
         handleDelete={handleDeleteConfirm}
         handleCancel={handleDeleteCancel}
       />
+      <Notificacion configuracionProp={configNotificacion} />
     </Box>
   );
 };

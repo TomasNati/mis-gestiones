@@ -1391,7 +1391,6 @@ export interface InversionCreatePayload {
   cantidad: number;
   instrumento_id: string;
   broker: string;
-  fecha: string;
 }
 
 export interface InversionMeta {

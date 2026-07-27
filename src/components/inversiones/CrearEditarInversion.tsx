@@ -1,8 +1,6 @@
 import { Instrumento, InversionCreatePayload } from '@/lib/definitions';
 import { Dialog, DialogTitle, DialogContent, Autocomplete, TextField, DialogActions, Button } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { useState } from 'react';
-import dayjs, { Dayjs } from 'dayjs';
 
 interface CrearEditarInversionProps {
   createDialogOpen: boolean;
@@ -24,15 +22,13 @@ export const CrearEditarInversion = ({
   const [selectedInstrumento, setSelectedInstrumento] = useState<Instrumento | null>(null);
   const [cantidad, setCantidad] = useState<string>('');
   const [broker, setBroker] = useState<string>('');
-  const [fecha, setFecha] = useState<Dayjs | null>(dayjs());
 
   const onCreate = () => {
-    if (!selectedInstrumento || !cantidad || !broker || !fecha) return;
+    if (!selectedInstrumento || !cantidad || !broker) return;
     handleCreate({
       cantidad: parseFloat(cantidad),
       instrumento_id: selectedInstrumento.id,
       broker,
-      fecha: fecha.toISOString(),
     });
   };
 
@@ -62,19 +58,13 @@ export const CrearEditarInversion = ({
           freeSolo
           renderInput={(params) => <TextField {...params} label="Broker" required />}
         />
-        <DatePicker
-          label="Fecha"
-          value={fecha}
-          onChange={(value) => setFecha(value)}
-          slotProps={{ textField: { required: true, fullWidth: true } }}
-        />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseCreateDialog}>Cancelar</Button>
         <Button
           variant="contained"
           onClick={onCreate}
-          disabled={!selectedInstrumento || !cantidad || !broker || !fecha || isPending}
+          disabled={!selectedInstrumento || !cantidad || !broker || isPending}
         >
           {isPending ? 'Creando...' : 'Crear'}
         </Button>
