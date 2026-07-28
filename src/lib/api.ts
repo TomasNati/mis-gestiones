@@ -6,6 +6,7 @@ import {
   InversionCreatePayload,
   InversionUpdatePayload,
   GuardarEstadoInversionesPayload,
+  FechasHistorialInversionesResponse,
   InversionMeta,
   Instrumento,
   InstrumentoPrecio,
@@ -29,9 +30,17 @@ export const buscarMovimientos = async (payload: BuscarMovimientosPayload) => {
   return response.data;
 };
 
-export const obtenerInversiones = async () => {
-  const response = await apiClient.post<Inversion[]>('/inversiones/inversiones', { active: true });
+export const obtenerInversiones = async (fecha?: string) => {
+  const response = await apiClient.post<Inversion[]>('/inversiones/inversiones', {
+    active: true,
+    fecha: fecha ?? null,
+  });
   return response.data;
+};
+
+export const obtenerFechasHistorialInversiones = async () => {
+  const response = await apiClient.get<FechasHistorialInversionesResponse>('/inversiones/inversiones/historial/fechas');
+  return response.data.fechas;
 };
 
 export const crearInversion = async (payload: InversionCreatePayload) => {

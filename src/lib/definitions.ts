@@ -1400,8 +1400,11 @@ export interface InversionUpdatePayload {
 export interface GuardarEstadoInversionesPayload {
   inversion_ids: string[];
   fecha: string;
-  /** When a snapshot already exists for `fecha`: overwrite it, or leave it untouched. */
   sobreescribir: boolean;
+}
+
+export interface FechasHistorialInversionesResponse {
+  fechas: string[];
 }
 
 export interface InversionMeta {

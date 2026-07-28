@@ -16,6 +16,7 @@ import {
   eliminarInversion,
   getCotizacionesDolar,
   guardarEstadoInversiones,
+  obtenerFechasHistorialInversiones,
   obtenerInstrumentos,
   obtenerInversiones,
   obtenerMetaInversiones,
@@ -30,8 +31,9 @@ import {
   type MRT_TableOptions,
   useMaterialReactTable,
 } from 'material-react-table';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs, { type Dayjs } from 'dayjs';
 import { Box, CircularProgress, Divider, IconButton } from '@mui/material';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -43,9 +45,12 @@ import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar'
 import { InversionesPorCategoria } from '@/components/graficos/';
 import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
 
+const FORMATO_DIA = 'YYYY-MM-DD';
+
 const InversionesPage = () => {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [fecha, setFecha] = useState<Dayjs>(() => dayjs());
   const [deleteRow, setDeleteRow] = useState<MRT_Row<Inversion> | null>(null);
   const [moneda, setMoneda] = useState<InstrumentoMoneda>(INSTRUMENTO_MONEDA.PESO);
   const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
@@ -58,9 +63,29 @@ const InversionesPage = () => {
     mensaje: '',
   });
 
+  const hoy = useMemo(() => dayjs(), []);
+  const diaSeleccionado = fecha.format(FORMATO_DIA);
+  const viendoHistorial = diaSeleccionado !== hoy.format(FORMATO_DIA);
+
+  const fechasHistorialQuery = useQuery({
+    queryKey: ['fechasHistorialInversiones'],
+    queryFn: obtenerFechasHistorialInversiones,
+  });
+
+  const diasHabilitados = useMemo(() => {
+    const dias = new Set((fechasHistorialQuery.data ?? []).map((f) => f.slice(0, 10)));
+    dias.add(hoy.format(FORMATO_DIA));
+    return dias;
+  }, [fechasHistorialQuery.data, hoy]);
+
+  const esFechaHabilitada = useCallback(
+    (dia: Dayjs) => diasHabilitados.has(dia.format(FORMATO_DIA)),
+    [diasHabilitados],
+  );
+
   const inversionesQuery = useQuery({
-    queryKey: ['inversiones'],
-    queryFn: obtenerInversiones,
+    queryKey: ['inversiones', viendoHistorial ? diaSeleccionado : null],
+    queryFn: () => obtenerInversiones(viendoHistorial ? diaSeleccionado : undefined),
   });
 
   const instrumentosQuery = useQuery({
@@ -253,6 +278,14 @@ const InversionesPage = () => {
     setSobreescribir(checked);
   };
 
+  const handleFechaChanged = (nuevaFecha: Dayjs | null) => {
+    if (!nuevaFecha?.isValid()) return;
+    setFecha(nuevaFecha);
+    // Las copias del historial tienen ids distintos a los de las inversiones vigentes,
+    // así que una selección previa no aplica al nuevo conjunto de filas.
+    setRowSelection({});
+  };
+
   const handleGuardarEstado = () => {
     const inversiones = inversionesQuery.data ?? [];
     const idsValidos: string[] = [];
@@ -310,7 +343,7 @@ const InversionesPage = () => {
     data: inversionesQuery.data ?? [],
     getRowId: (row) => row.id,
     onRowSelectionChange: setRowSelection,
-    enableRowActions: true,
+    enableRowActions: !viendoHistorial,
     displayColumnDefOptions: {
       'mrt-row-actions': {
         size: 100,
@@ -354,6 +387,11 @@ const InversionesPage = () => {
         dolarVenta={cotizacionDolarSeleccionada?.venta ?? null}
         guardandoEstado={guardarEstadoMutation.isPending}
         sobreescribir={sobreescribir}
+        fecha={fecha}
+        maxFecha={hoy}
+        viendoHistorial={viendoHistorial}
+        esFechaHabilitada={esFechaHabilitada}
+        onFechaChange={handleFechaChanged}
         onNuevaInversion={() => setCreateDialogOpen(true)}
         onGuardarEstado={handleGuardarEstado}
         onSobreescribirChange={handleSobreescribirChanged}

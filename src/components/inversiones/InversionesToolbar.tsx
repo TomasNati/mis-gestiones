@@ -1,4 +1,6 @@
 import { Box, Button, Divider, FormControlLabel, Switch, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import type { Dayjs } from 'dayjs';
 import {
   INSTRUMENTO_MONEDA,
   InstrumentoMoneda,
@@ -15,17 +17,16 @@ interface InversionesToolbarProps {
   dolarVenta: number | null;
   guardandoEstado: boolean;
   sobreescribir: boolean;
+  fecha: Dayjs;
+  maxFecha: Dayjs;
+  viendoHistorial: boolean;
+  esFechaHabilitada: (dia: Dayjs) => boolean;
+  onFechaChange: (nuevaFecha: Dayjs | null) => void;
   onNuevaInversion: () => void;
   onGuardarEstado: () => void;
   onSobreescribirChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-  onMonedaChange: (
-    event: React.MouseEvent<HTMLElement>,
-    nuevaMoneda: InstrumentoMoneda | null,
-  ) => void;
-  onTipoDolarChange: (
-    event: React.MouseEvent<HTMLElement>,
-    nuevoTipoDolar: TipoDolar | null,
-  ) => void;
+  onMonedaChange: (event: React.MouseEvent<HTMLElement>, nuevaMoneda: InstrumentoMoneda | null) => void;
+  onTipoDolarChange: (event: React.MouseEvent<HTMLElement>, nuevoTipoDolar: TipoDolar | null) => void;
 }
 
 export const InversionesToolbar = ({
@@ -35,6 +36,11 @@ export const InversionesToolbar = ({
   dolarVenta,
   guardandoEstado,
   sobreescribir,
+  fecha,
+  maxFecha,
+  viendoHistorial,
+  esFechaHabilitada,
+  onFechaChange,
   onNuevaInversion,
   onGuardarEstado,
   onSobreescribirChange,
@@ -42,7 +48,7 @@ export const InversionesToolbar = ({
   onTipoDolarChange,
 }: InversionesToolbarProps) => (
   <Box sx={{ display: 'flex', alignItems: 'center', py: 0.5, flexWrap: 'wrap', gap: 1 }}>
-    <Button variant="contained" size="small" onClick={onNuevaInversion} sx={{ py: 0.5 }}>
+    <Button variant="contained" size="small" onClick={onNuevaInversion} disabled={viendoHistorial} sx={{ py: 0.5 }}>
       Nueva Inversión
     </Button>
     <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
@@ -50,13 +56,15 @@ export const InversionesToolbar = ({
       variant="outlined"
       size="small"
       onClick={onGuardarEstado}
-      disabled={guardandoEstado}
+      disabled={guardandoEstado || viendoHistorial}
       sx={{ py: 0.5 }}
     >
       Guardar estado
     </Button>
     <FormControlLabel
-      control={<Switch size="small" checked={sobreescribir} onChange={onSobreescribirChange} />}
+      control={
+        <Switch size="small" checked={sobreescribir} onChange={onSobreescribirChange} disabled={viendoHistorial} />
+      }
       label="Sobreescribir"
       sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.8125rem' } }}
     />
@@ -86,5 +94,14 @@ export const InversionesToolbar = ({
         Dólar {TIPO_DOLAR_LABEL[tipoDolar]}: $ {transformNumberToCurrenty(dolarVenta)}
       </Box>
     )}
+    <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+    <DatePicker
+      label="Fecha"
+      value={fecha}
+      onChange={onFechaChange}
+      maxDate={maxFecha}
+      shouldDisableDate={(dia) => !esFechaHabilitada(dia)}
+      slotProps={{ textField: { size: 'small', sx: { inlineSize: 150 } } }}
+    />
   </Box>
 );
