@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  CotizacionDolar,
+  DolarCotizaciones,
   GuardarEstadoInversionesPayload,
   Inversion,
   InversionCreatePayload,
@@ -16,7 +18,9 @@ import {
   eliminarInversion,
   getCotizacionesDolar,
   guardarEstadoInversiones,
+  obtenerDolarHistorico,
   obtenerFechasHistorialInversiones,
+  obtenerPreciosPorFecha,
   obtenerInstrumentos,
   obtenerInversiones,
   obtenerMetaInversiones,
@@ -34,7 +38,7 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { type Dayjs } from 'dayjs';
-import { Box, CircularProgress, Divider, IconButton } from '@mui/material';
+import { Alert, Box, CircularProgress, Divider, IconButton } from '@mui/material';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
@@ -46,6 +50,17 @@ import { InversionesPorCategoria } from '@/components/graficos/';
 import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
 
 const FORMATO_DIA = 'YYYY-MM-DD';
+
+const TIPOS_DOLAR_HISTORICO = ['oficial', 'blue', 'bolsa', 'contadoconliqui'] as const;
+
+const construirCotizacionesDolar = (cotizaciones: CotizacionDolar[] | undefined): DolarCotizaciones | undefined => {
+  const ventas = new Map((cotizaciones ?? []).filter((c) => c.venta > 0).map((c) => [c.tipo, c.venta]));
+  const valores = TIPOS_DOLAR_HISTORICO.map((tipo) => ventas.get(tipo));
+  if (valores.some((venta) => venta == null)) return undefined;
+
+  const [oficial, blue, bolsa, contadoconliqui] = valores as number[];
+  return { oficial, blue, bolsa, contadoconliqui };
+};
 
 const InversionesPage = () => {
   const queryClient = useQueryClient();
@@ -103,10 +118,37 @@ const InversionesPage = () => {
     queryFn: getCotizacionesDolar,
   });
 
-  const cotizacionDolarSeleccionada = useMemo(
-    () => cotizacionesDolarQuery.data?.find((c) => c.tipo === tipoDolar) ?? null,
-    [cotizacionesDolarQuery.data, tipoDolar],
-  );
+  const dolarHistoricoQuery = useQuery({
+    queryKey: ['dolarHistorico', diaSeleccionado],
+    queryFn: () => obtenerDolarHistorico(diaSeleccionado),
+    enabled: viendoHistorial,
+  });
+
+  const preciosDelDiaQuery = useQuery({
+    queryKey: ['preciosPorFecha', diaSeleccionado],
+    queryFn: () => obtenerPreciosPorFecha(diaSeleccionado),
+    enabled: viendoHistorial,
+  });
+
+  const preciosHistoricos = useMemo(() => {
+    if (!viendoHistorial || !preciosDelDiaQuery.data) return null;
+    return new Map(preciosDelDiaQuery.data.map((p) => [p.instrumentoId, p.monto]));
+  }, [viendoHistorial, preciosDelDiaQuery.data]);
+
+  const ventaDolar = useMemo(() => {
+    if (viendoHistorial) return dolarHistoricoQuery.data?.[tipoDolar] ?? null;
+    return cotizacionesDolarQuery.data?.find((c) => c.tipo === tipoDolar)?.venta ?? null;
+  }, [viendoHistorial, dolarHistoricoQuery.data, cotizacionesDolarQuery.data, tipoDolar]);
+
+  const sinCotizacionDelDia = viendoHistorial && !dolarHistoricoQuery.isLoading && ventaDolar == null;
+
+  const instrumentosSinPrecio = useMemo(() => {
+    if (!viendoHistorial || preciosDelDiaQuery.isLoading || !preciosHistoricos) return [];
+    const nombres = (inversionesQuery.data ?? [])
+      .filter((inv) => !preciosHistoricos.has(inv.instrumento.id))
+      .map((inv) => inv.instrumento.nombre);
+    return Array.from(new Set(nombres));
+  }, [viendoHistorial, preciosDelDiaQuery.isLoading, preciosHistoricos, inversionesQuery.data]);
 
   const createMutation = useMutation({
     mutationFn: (payload: InversionCreatePayload) => crearInversion(payload),
@@ -161,7 +203,8 @@ const InversionesPage = () => {
     instrumentos: instrumentosQuery.data,
     inversiones: inversionesQuery.data,
     moneda,
-    cotizacionDolarSeleccionada,
+    ventaDolar,
+    preciosHistoricos,
     rowSelection,
   });
 
@@ -207,6 +250,7 @@ const InversionesPage = () => {
         header: 'Precio',
         size: 130,
         Cell: ({ row }) => {
+          if (sinCotizacionDelDia) return '-';
           const p = precioPorInstrumento.get(row.original.instrumento.id);
           if (p?.loading) return <CircularProgress size={16} />;
           return p ? `${p.simbolo} ${p.precio}` : '-';
@@ -220,6 +264,7 @@ const InversionesPage = () => {
           align: 'right',
         },
         Cell: ({ row }) => {
+          if (sinCotizacionDelDia) return '-';
           const p = precioPorInstrumento.get(row.original.instrumento.id);
           if (p?.loading) return <CircularProgress size={16} />;
           const total = transformNumberToCurrenty(row.original.cantidad * (p?.monto || 0));
@@ -227,7 +272,7 @@ const InversionesPage = () => {
         },
       },
     ],
-    [precioPorInstrumento],
+    [precioPorInstrumento, sinCotizacionDelDia],
   );
 
   const openDeleteConfirmModal = (row: MRT_Row<Inversion>) => {
@@ -287,6 +332,16 @@ const InversionesPage = () => {
   };
 
   const handleGuardarEstado = () => {
+    const dolar = construirCotizacionesDolar(cotizacionesDolarQuery.data);
+    if (!dolar) {
+      setConfigNotificacion({
+        open: true,
+        severity: 'error',
+        mensaje: 'No se pudo guardar el estado: faltan las cotizaciones del dólar de hoy.',
+      });
+      return;
+    }
+
     const inversiones = inversionesQuery.data ?? [];
     const idsValidos: string[] = [];
     const invalidas: Inversion[] = [];
@@ -328,14 +383,24 @@ const InversionesPage = () => {
     }
 
     guardarEstadoMutation.mutate(
-      { inversion_ids: idsValidos, fecha: new Date().toISOString(), sobreescribir },
+      {
+        inversion_ids: idsValidos,
+        fecha: new Date().toISOString(),
+        sobreescribir,
+        dolar,
+      },
       { onSuccess: (copias) => notificarResultado(copias.length) },
     );
   };
 
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
-  const isLoading = inversionesQuery.isLoading || instrumentosQuery.isLoading || metaQuery.isLoading;
+  const isLoading =
+    inversionesQuery.isLoading ||
+    instrumentosQuery.isLoading ||
+    metaQuery.isLoading ||
+    dolarHistoricoQuery.isLoading ||
+    preciosDelDiaQuery.isLoading;
   const isSaving = createMutation.isPending || deleteMutation.isPending || updateMutation.isPending;
 
   const table = useMaterialReactTable({
@@ -384,7 +449,7 @@ const InversionesPage = () => {
         moneda={moneda}
         tipoDolar={tipoDolar}
         total={totalDisplay}
-        dolarVenta={cotizacionDolarSeleccionada?.venta ?? null}
+        dolarVenta={ventaDolar}
         guardandoEstado={guardarEstadoMutation.isPending}
         sobreescribir={sobreescribir}
         fecha={fecha}
@@ -415,6 +480,16 @@ const InversionesPage = () => {
         <h2>Inversiones</h2>
       </Box>
       {inversionesQuery.isError && <p>Hubo un error al cargar las inversiones.</p>}
+      {sinCotizacionDelDia && (
+        <Alert severity="error" sx={{ flexShrink: 0 }}>
+          No hay cotización del dólar guardada para el {diaSeleccionado}: no se pueden calcular precios ni totales.
+        </Alert>
+      )}
+      {instrumentosSinPrecio.length > 0 && (
+        <Alert severity="warning" sx={{ flexShrink: 0 }}>
+          Sin precio guardado para el {diaSeleccionado}: {instrumentosSinPrecio.join(', ')}
+        </Alert>
+      )}
       <Box
         sx={{
           display: mostrandoGraficos ? 'flex' : 'none',

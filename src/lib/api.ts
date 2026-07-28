@@ -6,10 +6,13 @@ import {
   InversionCreatePayload,
   InversionUpdatePayload,
   GuardarEstadoInversionesPayload,
+  DolarHistorico,
+  DolaresHistoricosResponse,
   FechasHistorialInversionesResponse,
   InversionMeta,
   Instrumento,
   InstrumentoPrecio,
+  PrecioConInstrumento,
   FciLocal,
   InstrumentoExterior,
   InstrumentoLocal,
@@ -41,6 +44,22 @@ export const obtenerInversiones = async (fecha?: string) => {
 export const obtenerFechasHistorialInversiones = async () => {
   const response = await apiClient.get<FechasHistorialInversionesResponse>('/inversiones/inversiones/historial/fechas');
   return response.data.fechas;
+};
+
+export const obtenerPreciosPorFecha = async (fecha: string) => {
+  const response = await apiClient.post<PrecioConInstrumento[]>('/inversiones/precios', {
+    fecha,
+    active: true,
+  });
+  return response.data;
+};
+
+export const obtenerDolarHistorico = async (fecha: string): Promise<DolarHistorico | null> => {
+  const response = await apiClient.post<DolaresHistoricosResponse>('/inversiones/dolares-historicos', {
+    fecha,
+    active: true,
+  });
+  return response.data.dolares_historicos[0] ?? null;
 };
 
 export const crearInversion = async (payload: InversionCreatePayload) => {

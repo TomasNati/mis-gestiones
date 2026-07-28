@@ -1364,6 +1364,12 @@ export interface InstrumentoPrecio {
   monto: number;
 }
 
+export interface PrecioConInstrumento extends InstrumentoPrecio {
+  active: boolean;
+  instrumentoId: string;
+  created_at?: string;
+}
+
 export interface Instrumento {
   id: string;
   nombre: string;
@@ -1397,10 +1403,29 @@ export interface InversionUpdatePayload {
   cantidad: number;
 }
 
+export interface DolarCotizaciones {
+  oficial: number;
+  blue: number;
+  bolsa: number;
+  contadoconliqui: number;
+}
+
+export interface DolarHistorico extends DolarCotizaciones {
+  id: string;
+  active: boolean;
+  fecha: string;
+  created_at?: string;
+}
+
+export interface DolaresHistoricosResponse {
+  dolares_historicos: DolarHistorico[];
+}
+
 export interface GuardarEstadoInversionesPayload {
   inversion_ids: string[];
   fecha: string;
   sobreescribir: boolean;
+  dolar: DolarCotizaciones;
 }
 
 export interface FechasHistorialInversionesResponse {

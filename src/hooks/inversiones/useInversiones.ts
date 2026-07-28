@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MRT_RowSelectionState } from 'material-react-table';
 import {
-  CotizacionDolar,
   INSTRUMENTO_MONEDA,
   Instrumento,
   InstrumentoMoneda,
@@ -48,7 +47,8 @@ interface UseInversionesParams {
   instrumentos: Instrumento[] | undefined;
   inversiones: Inversion[] | undefined;
   moneda: InstrumentoMoneda;
-  cotizacionDolarSeleccionada: CotizacionDolar | null;
+  ventaDolar: number | null;
+  preciosHistoricos: Map<string, number> | null;
   rowSelection: MRT_RowSelectionState;
 }
 
@@ -63,7 +63,8 @@ export const useInversiones = ({
   instrumentos,
   inversiones,
   moneda,
-  cotizacionDolarSeleccionada,
+  ventaDolar,
+  preciosHistoricos,
   rowSelection,
 }: UseInversionesParams): UseInversionesResult => {
   const [preciosPorInstrumento, setPreciosPorInstrumento] = useState<Map<string, InstrumentoPrecio>>(new Map());
@@ -119,8 +120,20 @@ export const useInversiones = ({
     const map = new Map<string, PrecioInstrumento>();
     const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
     instrumentos?.forEach((inst) => {
-      const precio = preciosPorInstrumento.get(inst.id) ?? findTodayPrecio(inst.precios);
       const simboloMoneda = dolares.includes(inst.moneda) ? 'US$' : '$';
+
+      if (preciosHistoricos) {
+        const monto = preciosHistoricos.get(inst.id);
+        map.set(inst.id, {
+          simbolo: simboloMoneda,
+          precio: monto != null ? transformNumberToCurrenty(monto) || '-' : '-',
+          monto: monto ?? 0,
+          loading: false,
+        });
+        return;
+      }
+
+      const precio = preciosPorInstrumento.get(inst.id) ?? findTodayPrecio(inst.precios);
       const monto = precio?.monto ?? 0;
       const hasFetcher = PRECIO_FETCHERS.some((f) => f.tipos.includes(inst.tipo || ''));
       const loading = !precio && hasFetcher && !precioFetchFailed.has(inst.id);
@@ -132,7 +145,7 @@ export const useInversiones = ({
       });
     });
     return map;
-  }, [instrumentos, preciosPorInstrumento, precioFetchFailed]);
+  }, [instrumentos, preciosPorInstrumento, precioFetchFailed, preciosHistoricos]);
 
   // Valor de cada inversión en la moneda de visualización, considerando sólo las
   // filas seleccionadas (o todas si no hay selección). Es la base compartida del
@@ -140,7 +153,6 @@ export const useInversiones = ({
   // en un único lugar.
   const inversionesConValor = useMemo(() => {
     const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL, INSTRUMENTO_MONEDA.DOLAR_MEP];
-    const ventaDolar = cotizacionDolarSeleccionada?.venta ?? null;
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
 
     if (!ventaDolar) return [] as { inversion: Inversion; valor: number }[];
@@ -157,16 +169,16 @@ export const useInversiones = ({
       const valor = enPesos ? valorPesos : valorPesos / ventaDolar;
       return { inversion: inv, valor };
     });
-  }, [inversiones, precioPorInstrumento, moneda, cotizacionDolarSeleccionada, rowSelection]);
+  }, [inversiones, precioPorInstrumento, moneda, ventaDolar, rowSelection]);
 
   const totalDisplay = useMemo(() => {
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
     const simbolo = enPesos ? '$' : 'US$';
-    if (!cotizacionDolarSeleccionada?.venta) return `${simbolo} -`;
+    if (!ventaDolar) return `${simbolo} -`;
 
     const valor = inversionesConValor.reduce((acc, { valor }) => acc + valor, 0);
     return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
-  }, [inversionesConValor, moneda, cotizacionDolarSeleccionada]);
+  }, [inversionesConValor, moneda, ventaDolar]);
 
   const datosPorBroker = useMemo(
     () =>
