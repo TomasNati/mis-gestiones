@@ -254,4 +254,14 @@ erDiagram
         active boolean
         created_at timestamp
     }
+    dolar_historico {
+        id uuid PK
+        oficial numeric
+        blue numeric
+        bolsa numeric
+        contadoconliqui numeric
+        fecha timestamp "unique"
+        active boolean
+        created_at timestamp
+    }
 ```

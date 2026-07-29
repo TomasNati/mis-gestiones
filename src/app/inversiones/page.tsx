@@ -44,6 +44,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import { EditarInversion } from '@/components/inversiones/EditarInversion';
+import { HistorialInversiones } from '@/components/inversiones/HistorialInversiones';
 import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
 import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar';
 import { InversionesPorCategoria } from '@/components/graficos/';
@@ -52,6 +53,11 @@ import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificaci
 const FORMATO_DIA = 'YYYY-MM-DD';
 
 const TIPOS_DOLAR_HISTORICO = ['oficial', 'blue', 'bolsa', 'contadoconliqui'] as const;
+
+// The top section splits into three equal columns, collapsing to fewer when the
+// viewport can't fit 300px per column.
+const COLUMNA_SUPERIOR = { flex: '1 1 300px', display: 'flex', justifyContent: 'center' } as const;
+const COLUMNA_HISTORIAL = { ...COLUMNA_SUPERIOR, justifyContent: 'flex-start' } as const;
 
 const construirCotizacionesDolar = (cotizaciones: CotizacionDolar[] | undefined): DolarCotizaciones | undefined => {
   const ventas = new Map((cotizaciones ?? []).filter((c) => c.venta > 0).map((c) => [c.tipo, c.venta]));
@@ -494,15 +500,22 @@ const InversionesPage = () => {
         sx={{
           display: mostrandoGraficos ? 'flex' : 'none',
           flexShrink: 0,
-          justifyContent: 'space-evenly',
-          alignItems: 'center',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
           flexWrap: 'wrap',
           gap: 3,
           overflow: 'auto',
         }}
       >
-        <InversionesPorCategoria titulo="Total por broker" data={datosPorBroker} simbolo={simboloMoneda} />
-        <InversionesPorCategoria titulo="Total por tipo de renta" data={datosPorRenta} simbolo={simboloMoneda} />
+        <Box sx={COLUMNA_HISTORIAL}>
+          <HistorialInversiones maxFecha={hoy} />
+        </Box>
+        <Box sx={COLUMNA_SUPERIOR}>
+          <InversionesPorCategoria titulo="Total por broker" data={datosPorBroker} simbolo={simboloMoneda} />
+        </Box>
+        <Box sx={COLUMNA_SUPERIOR}>
+          <InversionesPorCategoria titulo="Total por tipo de renta" data={datosPorRenta} simbolo={simboloMoneda} />
+        </Box>
       </Box>
       <Divider sx={{ flexShrink: 0 }}>
         <IconButton
