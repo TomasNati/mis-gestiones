@@ -1453,7 +1453,7 @@ export interface CotizacionDolar {
 // `tipo` field returned by the /cotizaciones/dolar endpoint.
 export const TIPO_DOLAR = {
   OFICIAL: 'oficial',
-  MEP: 'bolsa',
+  BOLSA: 'bolsa',
   CCL: 'contadoconliqui',
 } as const;
 
@@ -1461,7 +1461,7 @@ export type TipoDolar = (typeof TIPO_DOLAR)[keyof typeof TIPO_DOLAR];
 
 export const TIPO_DOLAR_LABEL: Record<TipoDolar, string> = {
   [TIPO_DOLAR.OFICIAL]: 'Oficial',
-  [TIPO_DOLAR.MEP]: 'MEP',
+  [TIPO_DOLAR.BOLSA]: 'Bolsa',
   [TIPO_DOLAR.CCL]: 'CCL',
 };
 
@@ -1476,9 +1476,8 @@ export const INSTRUMENTO_INVERSION_TIPO = {
 
 export const INSTRUMENTO_MONEDA = {
   PESO: 'PESO',
-  DOLAR: 'DOLAR',
+  DOLAR_BOLSA: 'DOLAR_BOLSA',
   DOLAR_CCL: 'DOLAR_CCL',
-  DOLAR_MEP: 'DOLAR_MEP',
 } as const;
 
 export type InstrumentoMoneda = (typeof INSTRUMENTO_MONEDA)[keyof typeof INSTRUMENTO_MONEDA];

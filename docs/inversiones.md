@@ -19,7 +19,6 @@ Table Precio
 - monto: numeric 12,2
 - fecha: timestamp
 - Instrumento: FK table Instrumento
-- moneda: 'PESO', 'DOLAR'
 
 
 Table Inversion
@@ -74,7 +73,6 @@ CREATE TABLE IF NOT EXISTS inversiones.precio (
   monto NUMERIC(12,2) NOT NULL,
   fecha TIMESTAMP WITH TIME ZONE NOT NULL,
   instrumento_id UUID NOT NULL REFERENCES inversiones.instrumento(id) ON DELETE CASCADE,
-  moneda VARCHAR(10) NOT NULL CHECK (moneda IN ('PESO','DOLAR')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

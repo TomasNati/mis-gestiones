@@ -25,6 +25,8 @@ export interface DatoGrafico {
 
 const MAX_CATEGORIAS = 8;
 
+const MONEDAS_DOLAR: string[] = [INSTRUMENTO_MONEDA.DOLAR_BOLSA, INSTRUMENTO_MONEDA.DOLAR_CCL];
+
 const agruparPorCategoria = (valores: { categoria: string; valor: number }[]): DatoGrafico[] => {
   const totales = new Map<string, number>();
   for (const { categoria, valor } of valores) {
@@ -118,9 +120,8 @@ export const useInversiones = ({
 
   const precioPorInstrumento = useMemo(() => {
     const map = new Map<string, PrecioInstrumento>();
-    const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL];
     instrumentos?.forEach((inst) => {
-      const simboloMoneda = dolares.includes(inst.moneda) ? 'US$' : '$';
+      const simboloMoneda = MONEDAS_DOLAR.includes(inst.moneda) ? 'US$' : '$';
 
       if (preciosHistoricos) {
         const monto = preciosHistoricos.get(inst.id);
@@ -152,7 +153,6 @@ export const useInversiones = ({
   // total y de los datos de los gráficos, para que la conversión de moneda viva
   // en un único lugar.
   const inversionesConValor = useMemo(() => {
-    const dolares: string[] = [INSTRUMENTO_MONEDA.DOLAR, INSTRUMENTO_MONEDA.DOLAR_CCL, INSTRUMENTO_MONEDA.DOLAR_MEP];
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
 
     if (!ventaDolar) return [] as { inversion: Inversion; valor: number }[];
@@ -164,7 +164,7 @@ export const useInversiones = ({
     return inversionesATotalizar.map((inv) => {
       const monto = precioPorInstrumento.get(inv.instrumento.id)?.monto ?? 0;
       const valorNativo = inv.cantidad * monto;
-      const esDolar = dolares.includes(inv.instrumento.moneda);
+      const esDolar = MONEDAS_DOLAR.includes(inv.instrumento.moneda);
       const valorPesos = esDolar ? valorNativo * ventaDolar : valorNativo;
       const valor = enPesos ? valorPesos : valorPesos / ventaDolar;
       return { inversion: inv, valor };

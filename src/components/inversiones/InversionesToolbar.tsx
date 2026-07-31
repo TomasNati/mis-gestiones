@@ -73,13 +73,13 @@ export const InversionesToolbar = ({
       <ToggleButton value={INSTRUMENTO_MONEDA.PESO} sx={{ py: 0.5 }}>
         Peso
       </ToggleButton>
-      <ToggleButton value={INSTRUMENTO_MONEDA.DOLAR} sx={{ py: 0.5 }}>
+      <ToggleButton value={INSTRUMENTO_MONEDA.DOLAR_BOLSA} sx={{ py: 0.5 }}>
         Dólar
       </ToggleButton>
     </ToggleButtonGroup>
     <ToggleButtonGroup exclusive size="small" value={tipoDolar} onChange={onTipoDolarChange}>
-      <ToggleButton value={TIPO_DOLAR.MEP} sx={{ py: 0.5 }}>
-        {TIPO_DOLAR_LABEL[TIPO_DOLAR.MEP]}
+      <ToggleButton value={TIPO_DOLAR.BOLSA} sx={{ py: 0.5 }}>
+        {TIPO_DOLAR_LABEL[TIPO_DOLAR.BOLSA]}
       </ToggleButton>
       <ToggleButton value={TIPO_DOLAR.OFICIAL} sx={{ py: 0.5 }}>
         {TIPO_DOLAR_LABEL[TIPO_DOLAR.OFICIAL]}

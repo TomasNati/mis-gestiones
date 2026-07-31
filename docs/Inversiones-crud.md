@@ -88,7 +88,7 @@ For Create popup, allow entering:
   ],
   "moneda": [
   "PESO",
-  "DOLAR",
+  "DOLAR_BOLSA",
   "DOLAR_CCL"
   ],
   "brokers": [
