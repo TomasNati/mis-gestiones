@@ -26,7 +26,7 @@ import {
   obtenerMetaInversiones,
 } from '@/lib/api';
 import { transformNumberToCurrenty } from '@/lib/helpers';
-import { useInversiones } from '@/hooks/inversiones/useInversiones';
+import { calcularValorInversion, useInversiones } from '@/hooks/inversiones/useInversiones';
 import {
   MaterialReactTable,
   MRT_Row,
@@ -148,6 +148,11 @@ const InversionesPage = () => {
 
   const sinCotizacionDelDia = viendoHistorial && !dolarHistoricoQuery.isLoading && ventaDolar == null;
 
+  const cotizacionesDolar = useMemo(() => {
+    if (viendoHistorial) return dolarHistoricoQuery.data ?? null;
+    return construirCotizacionesDolar(cotizacionesDolarQuery.data) ?? null;
+  }, [viendoHistorial, dolarHistoricoQuery.data, cotizacionesDolarQuery.data]);
+
   const instrumentosSinPrecio = useMemo(() => {
     if (!viendoHistorial || preciosDelDiaQuery.isLoading || !preciosHistoricos) return [];
     const nombres = (inversionesQuery.data ?? [])
@@ -210,6 +215,7 @@ const InversionesPage = () => {
     inversiones: inversionesQuery.data,
     moneda,
     ventaDolar,
+    cotizacionesDolar,
     preciosHistoricos,
     rowSelection,
   });
@@ -270,15 +276,25 @@ const InversionesPage = () => {
           align: 'right',
         },
         Cell: ({ row }) => {
-          if (sinCotizacionDelDia) return '-';
+          if (sinCotizacionDelDia || !ventaDolar) return '-';
           const p = precioPorInstrumento.get(row.original.instrumento.id);
           if (p?.loading) return <CircularProgress size={16} />;
-          const total = transformNumberToCurrenty(row.original.cantidad * (p?.monto || 0));
-          return `${p?.simbolo ?? ''} ${total?.replace(',00', '')}`;
+          const total = transformNumberToCurrenty(
+            Math.round(
+              calcularValorInversion({
+                inversion: row.original,
+                precioPorInstrumento,
+                moneda,
+                ventaDolar,
+                cotizacionesDolar,
+              }),
+            ),
+          );
+          return `${simboloMoneda} ${total?.replace(',00', '')}`;
         },
       },
     ],
-    [precioPorInstrumento, sinCotizacionDelDia],
+    [precioPorInstrumento, sinCotizacionDelDia, moneda, ventaDolar, simboloMoneda, cotizacionesDolar],
   );
 
   const openDeleteConfirmModal = (row: MRT_Row<Inversion>) => {

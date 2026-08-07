@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MRT_RowSelectionState } from 'material-react-table';
 import {
+  DolarCotizaciones,
   INSTRUMENTO_MONEDA,
   Instrumento,
   InstrumentoMoneda,
@@ -24,6 +25,32 @@ export interface DatoGrafico {
 }
 
 const MAX_CATEGORIAS = 8;
+
+export const calcularValorInversion = ({
+  inversion,
+  precioPorInstrumento,
+  moneda,
+  ventaDolar,
+  cotizacionesDolar,
+}: {
+  inversion: Inversion;
+  precioPorInstrumento: Map<string, PrecioInstrumento>;
+  moneda: InstrumentoMoneda;
+  ventaDolar: number;
+  cotizacionesDolar: DolarCotizaciones | null;
+}): number => {
+  const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
+  const monto = precioPorInstrumento.get(inversion.instrumento.id)?.monto ?? 0;
+  const valorNativo = inversion.cantidad * monto;
+  const esDolar = MONEDAS_DOLAR.includes(inversion.instrumento.moneda);
+  const precioDolarInstrumento =
+    inversion.instrumento.moneda === INSTRUMENTO_MONEDA.DOLAR_BOLSA
+      ? cotizacionesDolar?.bolsa
+      : cotizacionesDolar?.contadoconliqui;
+  const valorPesos = esDolar ? valorNativo * (precioDolarInstrumento ?? ventaDolar) : valorNativo;
+
+  return enPesos ? valorPesos : valorPesos / ventaDolar;
+};
 
 const MONEDAS_DOLAR: string[] = [INSTRUMENTO_MONEDA.DOLAR_BOLSA, INSTRUMENTO_MONEDA.DOLAR_CCL];
 
@@ -50,6 +77,7 @@ interface UseInversionesParams {
   inversiones: Inversion[] | undefined;
   moneda: InstrumentoMoneda;
   ventaDolar: number | null;
+  cotizacionesDolar: DolarCotizaciones | null;
   preciosHistoricos: Map<string, number> | null;
   rowSelection: MRT_RowSelectionState;
 }
@@ -66,6 +94,7 @@ export const useInversiones = ({
   inversiones,
   moneda,
   ventaDolar,
+  cotizacionesDolar,
   preciosHistoricos,
   rowSelection,
 }: UseInversionesParams): UseInversionesResult => {
@@ -153,30 +182,30 @@ export const useInversiones = ({
   // total y de los datos de los gráficos, para que la conversión de moneda viva
   // en un único lugar.
   const inversionesConValor = useMemo(() => {
-    const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
-
     if (!ventaDolar) return [] as { inversion: Inversion; valor: number }[];
 
     const items = inversiones ?? [];
     const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
     const inversionesATotalizar = selectedIds.length > 0 ? items.filter((inv) => rowSelection[inv.id]) : items;
 
-    return inversionesATotalizar.map((inv) => {
-      const monto = precioPorInstrumento.get(inv.instrumento.id)?.monto ?? 0;
-      const valorNativo = inv.cantidad * monto;
-      const esDolar = MONEDAS_DOLAR.includes(inv.instrumento.moneda);
-      const valorPesos = esDolar ? valorNativo * ventaDolar : valorNativo;
-      const valor = enPesos ? valorPesos : valorPesos / ventaDolar;
-      return { inversion: inv, valor };
-    });
-  }, [inversiones, precioPorInstrumento, moneda, ventaDolar, rowSelection]);
+    return inversionesATotalizar.map((inv) => ({
+      inversion: inv,
+      valor: calcularValorInversion({
+        inversion: inv,
+        precioPorInstrumento,
+        moneda,
+        ventaDolar,
+        cotizacionesDolar,
+      }),
+    }));
+  }, [inversiones, precioPorInstrumento, moneda, ventaDolar, cotizacionesDolar, rowSelection]);
 
   const totalDisplay = useMemo(() => {
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
     const simbolo = enPesos ? '$' : 'US$';
     if (!ventaDolar) return `${simbolo} -`;
 
-    const valor = inversionesConValor.reduce((acc, { valor }) => acc + valor, 0);
+    const valor = Math.round(inversionesConValor.reduce((acc, { valor }) => acc + valor, 0));
     return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
   }, [inversionesConValor, moneda, ventaDolar]);
 
