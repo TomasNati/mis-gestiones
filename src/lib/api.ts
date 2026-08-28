@@ -9,6 +9,8 @@ import {
   DolarHistorico,
   DolaresHistoricosResponse,
   FechasHistorialInversionesResponse,
+  HistorialInversionesPayload,
+  HistorialInversionesResponse,
   InversionMeta,
   Instrumento,
   InstrumentoPrecio,
@@ -60,6 +62,13 @@ export const obtenerDolarHistorico = async (fecha: string): Promise<DolarHistori
     active: true,
   });
   return response.data.dolares_historicos[0] ?? null;
+};
+
+export const obtenerHistorialInversiones = async (
+  payload: HistorialInversionesPayload,
+): Promise<HistorialInversionesResponse> => {
+  const response = await apiClient.post<HistorialInversionesResponse>('/inversiones/inversiones-historico', payload);
+  return response.data;
 };
 
 export const crearInversion = async (payload: InversionCreatePayload) => {

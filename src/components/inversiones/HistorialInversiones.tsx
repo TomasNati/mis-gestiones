@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { Dayjs } from 'dayjs';
+import { obtenerHistorialInversiones } from '@/lib/api';
+import type { HistorialInversionesPayload, InstrumentoMoneda, TipoDolar } from '@/lib/definitions';
+import { INSTRUMENTO_MONEDA, TIPO_DOLAR, TIPO_DOLAR_LABEL } from '@/lib/definitions';
+import { HistorialInversionesGrafico } from '@/components/inversiones/HistorialInversionesGrafico';
+import type { ValorInversion } from '@/lib/definitions';
 
 export const RANGO_HISTORIAL = {
   TRES_MESES: '3_MESES',
@@ -40,14 +46,36 @@ const desdePreset = (rango: RangoHistorial, hasta: Dayjs): Dayjs | null => {
 const RANGO_SX = { inlineSize: 130 };
 const FECHA_SX = { inlineSize: 150 };
 
+const monedaDelValor = (moneda: InstrumentoMoneda, tipoDolar: TipoDolar): keyof ValorInversion => {
+  if (moneda === INSTRUMENTO_MONEDA.PESO) return 'peso';
+  if (tipoDolar === TIPO_DOLAR.OFICIAL) return 'dolar_oficial';
+  if (tipoDolar === TIPO_DOLAR.CCL) return 'dolar_ccl';
+  return 'dolar_bolsa';
+};
+
 interface HistorialInversionesProps {
   maxFecha: Dayjs;
+  moneda: InstrumentoMoneda;
+  tipoDolar: TipoDolar;
 }
 
-export const HistorialInversiones = ({ maxFecha }: HistorialInversionesProps) => {
+export const HistorialInversiones = ({ maxFecha, moneda, tipoDolar }: HistorialInversionesProps) => {
   const [rango, setRango] = useState<RangoHistorial>(RANGO_INICIAL);
   const [desde, setDesde] = useState<Dayjs | null>(() => desdePreset(RANGO_INICIAL, maxFecha));
   const [hasta, setHasta] = useState<Dayjs | null>(maxFecha);
+  const [solicitado, setSolicitado] = useState<HistorialInversionesPayload | null>(null);
+
+  const historicoQuery = useQuery({
+    queryKey: ['inversionesHistorico', solicitado],
+    queryFn: () => obtenerHistorialInversiones(solicitado as HistorialInversionesPayload),
+    enabled: solicitado != null,
+  });
+
+  useEffect(() => {
+    if (historicoQuery.data) {
+      console.log(historicoQuery.data);
+    }
+  }, [historicoQuery.data]);
 
   const rangoEsPersonalizado = rango === RANGO_HISTORIAL.OTRO;
 
@@ -55,14 +83,22 @@ export const HistorialInversiones = ({ maxFecha }: HistorialInversionesProps) =>
     const nuevoRango = event.target.value as RangoHistorial;
     setRango(nuevoRango);
 
-    // A preset owns both dates; Otro keeps the ones already shown so they become the
-    // starting point the user edits.
     const nuevoDesde = desdePreset(nuevoRango, maxFecha);
     if (nuevoDesde) {
       setDesde(nuevoDesde);
       setHasta(maxFecha);
     }
   };
+
+  const handleMostrarClick = () => {
+    if (desde && hasta) {
+      setSolicitado({ desde: desde.toISOString(), hasta: hasta.toISOString() });
+    }
+  };
+
+  const monedaValor = monedaDelValor(moneda, tipoDolar);
+  const simbolo = moneda === INSTRUMENTO_MONEDA.PESO ? '$' : 'US$';
+  const unidad = moneda === INSTRUMENTO_MONEDA.PESO ? 'Peso' : `Dólar ${TIPO_DOLAR_LABEL[tipoDolar]}`;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
@@ -97,10 +133,18 @@ export const HistorialInversiones = ({ maxFecha }: HistorialInversionesProps) =>
           disabled={!rangoEsPersonalizado}
           slotProps={{ textField: { size: 'small', sx: FECHA_SX } }}
         />
+        <Button variant="contained" size="small" onClick={handleMostrarClick}>
+          Mostrar
+        </Button>
       </Box>
-      <Button variant="contained" size="small">
-        Mostrar
-      </Button>
+      {historicoQuery.data && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, inlineSize: '100%' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            Evolución por broker - {unidad}
+          </Typography>
+          <HistorialInversionesGrafico data={historicoQuery.data} moneda={monedaValor} simbolo={simbolo} />
+        </Box>
+      )}
     </Box>
   );
 };

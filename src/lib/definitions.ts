@@ -1432,6 +1432,41 @@ export interface FechasHistorialInversionesResponse {
   fechas: string[];
 }
 
+export interface ValorInversion {
+  peso: number;
+  dolar_oficial: number;
+  dolar_ccl: number;
+  dolar_bolsa: number;
+}
+
+export interface InversionHistorico {
+  inversion: Inversion;
+  precio: number;
+  valor: ValorInversion;
+}
+
+export interface InversionHistoricoPorFecha {
+  fecha: string;
+  dolar: DolarHistorico;
+  inversiones: InversionHistorico[];
+}
+
+export interface InversionCompletaIncompleta {
+  fecha: string;
+  inversion: Inversion;
+  motivo: 'sin_precio' | 'sin_dolar';
+}
+
+export interface HistorialInversionesResponse {
+  por_fecha: InversionHistoricoPorFecha[];
+  inversiones_incompletas: InversionCompletaIncompleta[];
+}
+
+export interface HistorialInversionesPayload {
+  desde: string;
+  hasta: string;
+}
+
 export interface InversionMeta {
   tipo: string[];
   clase_renta: string[];

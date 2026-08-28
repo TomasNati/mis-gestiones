@@ -524,7 +524,7 @@ const InversionesPage = () => {
         }}
       >
         <Box sx={COLUMNA_HISTORIAL}>
-          <HistorialInversiones maxFecha={hoy} />
+          <HistorialInversiones maxFecha={hoy} moneda={moneda} tipoDolar={tipoDolar} />
         </Box>
         <Box sx={COLUMNA_SUPERIOR}>
           <InversionesPorCategoria titulo="Total por broker" data={datosPorBroker} simbolo={simboloMoneda} />
