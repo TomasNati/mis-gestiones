@@ -34,8 +34,12 @@
 ## Cambios de UI
 
 4. **El tooltip actual que muestra `eventosuenio.comentario` debería mejorarse:**
-   - a. Mostrar una línea por cada `_nota` asociado: primeras dos letras del tipo de nota + comentario. Por ejemplo: `"[Ge] Se levantó solo"`. El prefijo para el tipo de nota debería estar recuadrado y con un color diferente para cada tipo. Hardcodear colores para los valores iniciales de tipos de nota. Si luego un tipo de nota no tiene un color asignado por defecto, se le asigna uno al azar. Después mejoraré eso.
-   - b. El modal de Evento Sueño tiene que permitir agregar múltiples Notas. Cada una, por defecto con tipo `General` y un textbox para comentarios. Se pueden agregar notas de diferentes tipos, incluso múltiples notas para el mismo tipo.
+   - a. ✅ Mostrar una línea por cada `_nota` asociado: primeras dos letras del tipo de nota + comentario. Por ejemplo: `"[Ge] Se levantó solo"`. El prefijo para el tipo de nota debería estar recuadrado y con un color diferente para cada tipo. Hardcodear colores para los valores iniciales de tipos de nota. Si luego un tipo de nota no tiene un color asignado por defecto, se le asigna uno al azar. Después mejoraré eso.
+   - b. El modal de Dia edit tiene que permitir agregar múltiples Notas. Cada una, por defecto con tipo `General` y un textbox para comentarios. Se pueden agregar notas de diferentes tipos, incluso múltiples notas para el mismo tipo.
+   - c. El modal de Dia edit tiene que permitir editar y eliminar notas existentes. Eliminar es lógico, no físico.
+   - d. El modal de Dia edit tiene que permitir agregar nuevos tipos de nota, que se guarden en la tabla `tomiagenda_tiposnota`. Los tipos de nota eliminados lógicamente no deberían poder usarse para crear nuevas notas.
+   - e. Cada tipo de Nota dropdown debería permitir elegir tipos existentes, o escribir un nuevo tipo de nota. Si se escribe un nuevo tipo de nota, se guarda en la tabla `tomiagenda_tiposnota` y se asocia a la nueva nota.
+   
 
 ## Paso Final
 5. Actualizar `mis-gestiones\docs\ECOSYSTEM_OVERVIEW.md` con los cambios a nivel de base de datos y UI. Esto es para que quede documentado y no se pierda el conocimiento.

@@ -1335,11 +1335,26 @@ export interface EventoSuenio {
   tipoDeActualizacion?: 'nuevo' | 'modificado' | 'eliminado';
 }
 
+export interface AgendaTomiNota {
+  id: string;
+  tipo: string;
+  tipoId?: string;
+  comentarios?: string;
+  tipoDeActualizacion?: 'nuevo' | 'modificado' | 'eliminado';
+}
+
+export interface TipoNota {
+  id: string;
+  tipo: string;
+  active: boolean;
+}
+
 export interface AgendaTomiDia {
   id: string;
   fecha: Date;
   comentarios?: string;
   eventos: EventoSuenio[];
+  notas?: AgendaTomiNota[];
   esNuevo?: boolean;
 }
 

@@ -11,6 +11,7 @@ import {
   TipoDeMovimientoGasto,
   months,
   AgendaTomiDia,
+  AgendaTomiNota,
   TipoEventoSuenio,
   SuenioTomiPorPeriodo,
   VencimientoUI,
@@ -27,6 +28,8 @@ import {
   subcategorias,
   tomiAgendaDia,
   tomiAgendaEventoSuenio,
+  tomiAgendaNota,
+  tomiAgendaTipoNota,
   vencimiento,
 } from './tables';
 import { eq, and, desc, between, asc, isNotNull, inArray } from 'drizzle-orm';
@@ -688,6 +691,34 @@ export const obtenerAgendaTomiDias = async (fechaDesde: Date, fechaHasta: Date):
       }
     });
 
+    const diaIds = agendaTomiDias.map((d) => d.id);
+    if (diaIds.length > 0) {
+      const notasResults = await db
+        .select({
+          notaId: tomiAgendaNota.id,
+          diaId: tomiAgendaNota.dia,
+          comentarios: tomiAgendaNota.comentarios,
+          tipoId: tomiAgendaNota.tiponota,
+          tipo: tomiAgendaTipoNota.tipo,
+        })
+        .from(tomiAgendaNota)
+        .innerJoin(tomiAgendaTipoNota, eq(tomiAgendaNota.tiponota, tomiAgendaTipoNota.id))
+        .where(and(inArray(tomiAgendaNota.dia, diaIds), eq(tomiAgendaNota.active, true)));
+
+      notasResults.forEach((notaResult) => {
+        const dia = agendaTomiDias.find((d) => d.id === notaResult.diaId);
+        if (dia) {
+          if (!dia.notas) dia.notas = [];
+          dia.notas.push({
+            id: notaResult.notaId,
+            tipo: notaResult.tipo,
+            tipoId: notaResult.tipoId,
+            comentarios: notaResult.comentarios || '',
+          });
+        }
+      });
+    }
+
     return agendaTomiDias;
   } catch (error) {
     console.error('Database Error:', error);
@@ -722,4 +753,20 @@ export const obtenerSuenioTomiPorPeriodo = async (
   }
 
   return suenioPorPeriodo;
+};
+
+export const obtenerTiposNota = async (): Promise<{ id: string; tipo: string; active: boolean }[]> => {
+  try {
+    return await db
+      .select({
+        id: tomiAgendaTipoNota.id,
+        tipo: tomiAgendaTipoNota.tipo,
+        active: tomiAgendaTipoNota.active,
+      })
+      .from(tomiAgendaTipoNota)
+      .orderBy(tomiAgendaTipoNota.tipo);
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Error al obtener tipos de nota');
+  }
 };

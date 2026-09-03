@@ -3,7 +3,7 @@
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { obtenerAgendaTomiDias } from '@/lib/orm/data';
+import { obtenerAgendaTomiDias, obtenerTiposNota } from '@/lib/orm/data';
 import {
   Button,
   Divider,
@@ -20,7 +20,7 @@ import {
 import { obtenerDiaYDiaDeLaSemana, generateUUID } from '@/lib/helpers';
 import BarraSuenio from '@/components/tomi/BarraSuenio';
 import { useEffect, useState } from 'react';
-import { AgendaTomiDia, months } from '@/lib/definitions';
+import { AgendaTomiDia, TipoNota, months } from '@/lib/definitions';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import EditIcon from '@mui/icons-material/Edit';
 import { EditarDiaModal } from '@/components/tomi/EditarDiaModal';
@@ -31,6 +31,14 @@ import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificaci
 import { ExpandMore, ExpandLess, CommentOutlined } from '@mui/icons-material';
 import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
 import theme from '@/components/ThemeRegistry/theme';
+
+const colorMapNotas: Record<string, string> = {
+  General: '#1976d2',
+  Orina: '#f9a825',
+  'Cambio de medicación': '#e53935',
+  Crisis: '#6a1b9a',
+  Malhumor: '#ef6c00',
+};
 
 const anio = new Date().getFullYear();
 const mes = months[new Date().getMonth()];
@@ -47,6 +55,7 @@ const Suenio = () => {
     hasta: fechaDiaActual,
   });
   const [diaAEditar, setDiaAEditar] = useState<AgendaTomiDia | null>(null);
+  const [tiposNota, setTiposNota] = useState<TipoNota[]>([]);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
@@ -75,6 +84,7 @@ const Suenio = () => {
           id: generateUUID(),
           fecha: new Date(currentDate),
           eventos: [],
+          notas: [],
           esNuevo: true,
         });
       }
@@ -99,6 +109,10 @@ const Suenio = () => {
     obtenerDatosIniciales();
   }, []);
 
+  useEffect(() => {
+    obtenerTiposNota().then(setTiposNota);
+  }, []);
+
   const obtenerEstadoSuenioDiaAnterior = (index: number) => {
     if (index === 0) {
       return 'Despierto';
@@ -118,6 +132,7 @@ const Suenio = () => {
     if (diaAActualizar) {
       diaAActualizar.eventos = dia.eventos;
       diaAActualizar.comentarios = dia.comentarios;
+      diaAActualizar.notas = dia.notas;
       const resultado = await actualizarAgendaTomiDia(diaAActualizar);
       if (resultado.errores?.length > 0) {
         setConfigNotificacion({
@@ -128,6 +143,8 @@ const Suenio = () => {
       } else {
         diaAActualizar.esNuevo = false;
         diaAActualizar.eventos.forEach((evento) => (evento.tipoDeActualizacion = undefined));
+        diaAActualizar.notas = (diaAActualizar.notas || []).filter((nota) => nota.tipoDeActualizacion !== 'eliminado');
+        diaAActualizar.notas.forEach((nota) => (nota.tipoDeActualizacion = undefined));
         setConfigNotificacion({
           open: true,
           severity: 'success',
@@ -156,6 +173,7 @@ const Suenio = () => {
             onClose={handleEditarDiaClose}
             diaAEditar={diaAEditar}
             onActualizarDia={onActualizarDia}
+            tiposNota={tiposNota}
           />
         ) : null}
         <Box
@@ -218,8 +236,35 @@ const Suenio = () => {
                         startIcon={<EditIcon />}
                         onClick={() => onOpenEditarDia(dia)}
                       />
-                      {dia.comentarios && dia.comentarios.trim() !== '' && (
-                        <Tooltip title={dia.comentarios}>
+                      {dia.notas && dia.notas.length > 0 && (
+                        <Tooltip
+                          title={
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                              {dia.notas.map((nota) => {
+                                const prefijo = nota.tipo.slice(0, 2).toUpperCase();
+                                const color = colorMapNotas[nota.tipo] || '#888';
+                                return (
+                                  <Box key={nota.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+                                    <Box
+                                      sx={{
+                                        bgcolor: color,
+                                        color: '#fff',
+                                        borderRadius: '3px',
+                                        px: 0.5,
+                                        fontSize: '0.75rem',
+                                        fontWeight: 700,
+                                        lineHeight: '1.2',
+                                      }}
+                                    >
+                                      {prefijo}
+                                    </Box>
+                                    <span>{nota.comentarios}</span>
+                                  </Box>
+                                );
+                              })}
+                            </Box>
+                          }
+                        >
                           <Box
                             sx={{
                               display: 'flex',

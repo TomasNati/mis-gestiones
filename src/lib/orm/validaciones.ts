@@ -1,5 +1,5 @@
 import { SafeParseReturnType, z } from 'zod';
-import { MovimientoUI, AgendaTomiDia, EventoSuenio, VencimientoUI } from '../definitions';
+import { MovimientoUI, AgendaTomiDia, AgendaTomiNota, EventoSuenio, VencimientoUI } from '../definitions';
 
 const FormMovimientoSchema = z.object({
   id: z.string(),
@@ -84,16 +84,28 @@ const EventoSuenioSchema = z.object({
 
 const CrearEventoSuenioSchema = EventoSuenioSchema.omit({ id: true });
 
+const NotaSchema = z.object({
+  id: z.string(),
+  tipo: z.string(),
+  tipoId: z.string().optional(),
+  comentarios: z.string().optional(),
+  tipoDeActualizacion: z.enum(['nuevo', 'modificado', 'eliminado']).optional(),
+});
+
+const CrearNotaSchema = NotaSchema.omit({ id: true });
+
 const AgendaTomiDiaSchema = z.object({
   id: z.string(),
   fecha: z.date(),
   comentarios: z.string().optional(),
   eventos: z.array(EventoSuenioSchema),
+  notas: z.array(NotaSchema).optional(),
   esNuevo: z.boolean().optional(),
 });
 
 const CrearAgendaTomiDiaSchema = AgendaTomiDiaSchema.omit({ id: true }).extend({
   eventos: z.array(CrearEventoSuenioSchema),
+  notas: z.array(CrearNotaSchema).optional(),
 });
 
 type CrearAgendaTomiDia = z.infer<typeof CrearAgendaTomiDiaSchema>;

@@ -34,6 +34,7 @@ import {
   movimientosGasto,
   tomiAgendaDia,
   tomiAgendaEventoSuenio,
+  tomiAgendaNota,
   vencimiento as vencimientoDB,
 } from './tables';
 
@@ -673,6 +674,38 @@ export const actualizarAgendaTomiDia = async (dia: AgendaTomiDia): Promise<Resul
           })
           .where(eq(tomiAgendaEventoSuenio.id, evento.id));
       });
+    }
+
+    const notas = dia.notas || [];
+    const notasAEliminar = notas.filter((n) => n.tipoDeActualizacion === 'eliminado');
+    const notasAInsertar = notas.filter((n) => n.tipoDeActualizacion === 'nuevo');
+    const notasAModificar = notas.filter((n) => n.tipoDeActualizacion === 'modificado');
+
+    if (notasAEliminar.length > 0) {
+      const ids = notasAEliminar.map((n) => n.id);
+      await db.delete(tomiAgendaNota).where(inArray(tomiAgendaNota.id, ids));
+    }
+
+    if (notasAInsertar.length > 0) {
+      const notasAInsertarDB = notasAInsertar.map((n) => ({
+        id: n.id,
+        tiponota: n.tipoId!,
+        dia: dia.id,
+        comentarios: n.comentarios || null,
+      }));
+      await db.insert(tomiAgendaNota).values(notasAInsertarDB);
+    }
+
+    if (notasAModificar.length > 0) {
+      for (const nota of notasAModificar) {
+        await db
+          .update(tomiAgendaNota)
+          .set({
+            tiponota: nota.tipoId!,
+            comentarios: nota.comentarios || null,
+          })
+          .where(eq(tomiAgendaNota.id, nota.id));
+      }
     }
   } catch (error: unknown) {
     console.log('Error al actualizar el día:', error);
