@@ -113,3 +113,27 @@ export const tomiAgendaEventoSuenio = misgestiones.table('tomiagenda_eventosueni
   active: boolean('active').notNull().default(true),
 });
 export type TomiAgendaEventoSuenioDB = InferSelectModel<typeof tomiAgendaEventoSuenio>;
+
+export const tomiAgendaTipoNota = misgestiones.table('tomiagenda_tiponota', {
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => generateUUID()),
+  tipo: varchar('tipo', { length: 255 }).notNull(),
+  active: boolean('active').notNull().default(true),
+});
+export type TomiAgendaTipoNotaDB = InferSelectModel<typeof tomiAgendaTipoNota>;
+
+export const tomiAgendaNota = misgestiones.table('tomiagenda_nota', {
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => generateUUID()),
+  tiponota: uuid('tiponota_id')
+    .references(() => tomiAgendaTipoNota.id)
+    .notNull(),
+  dia: uuid('dia_id')
+    .references(() => tomiAgendaDia.id)
+    .notNull(),
+  comentarios: text('comentarios'),
+  active: boolean('active').notNull().default(true),
+});
+export type TomiAgendaNotaDB = InferSelectModel<typeof tomiAgendaNota>;
