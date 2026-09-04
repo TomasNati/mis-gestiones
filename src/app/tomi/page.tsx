@@ -15,7 +15,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip,
 } from '@mui/material';
 import { obtenerDiaYDiaDeLaSemana, generateUUID } from '@/lib/helpers';
 import BarraSuenio from '@/components/tomi/BarraSuenio';
@@ -28,17 +27,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { actualizarAgendaTomiDia } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
-import { ExpandMore, ExpandLess, CommentOutlined } from '@mui/icons-material';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
-import theme from '@/components/ThemeRegistry/theme';
-
-const colorMapNotas: Record<string, string> = {
-  General: '#1976d2',
-  Orina: '#f9a825',
-  'Cambio de medicación': '#e53935',
-  Crisis: '#6a1b9a',
-  Malhumor: '#ef6c00',
-};
+import { NotasTooltip } from '@/components/tomi/NotasTooltip';
 
 const anio = new Date().getFullYear();
 const mes = months[new Date().getMonth()];
@@ -210,7 +201,7 @@ const Suenio = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell width={120}>Fecha</TableCell>
+                  <TableCell width={140}>Fecha</TableCell>
                   <TableCell width={50}></TableCell>
                   <TableCell>Eventos</TableCell>
                 </TableRow>
@@ -218,65 +209,23 @@ const Suenio = () => {
               <TableBody>
                 {dias.map((dia, index) => (
                   <TableRow key={dia.id} sx={{ borderBottom: '1px solid rgba(81, 81, 81, 1)' }}>
-                    <TableCell sx={{ borderBottom: 'none' }}>
-                      <Box>{obtenerDiaYDiaDeLaSemana(dia.fecha)}</Box>
-                    </TableCell>
                     <TableCell
-                      width={50}
                       sx={{
-                        padding: '11px 0px',
+                        padding: '12px 5px',
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderBottom: 'none',
+                        flexDirection: 'column',
+                        gap: '3px',
                       }}
                     >
+                      <Box>{obtenerDiaYDiaDeLaSemana(dia.fecha)}</Box>
+                      {dia.notas && dia.notas.length > 0 && <NotasTooltip notas={dia.notas} />}
+                    </TableCell>
+                    <TableCell width={50} sx={{ padding: '11px 0px' }}>
                       <Button
                         sx={{ minWidth: '0px', padding: '5px', '& span': { marginLeft: '3px', marginRight: '0px' } }}
                         startIcon={<EditIcon />}
                         onClick={() => onOpenEditarDia(dia)}
                       />
-                      {dia.notas && dia.notas.length > 0 && (
-                        <Tooltip
-                          title={
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                              {dia.notas.map((nota) => {
-                                const prefijo = nota.tipo.slice(0, 2).toUpperCase();
-                                const color = colorMapNotas[nota.tipo] || '#888';
-                                return (
-                                  <Box key={nota.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
-                                    <Box
-                                      sx={{
-                                        bgcolor: color,
-                                        color: '#fff',
-                                        borderRadius: '3px',
-                                        px: 0.5,
-                                        fontSize: '0.75rem',
-                                        fontWeight: 700,
-                                        lineHeight: '1.2',
-                                      }}
-                                    >
-                                      {prefijo}
-                                    </Box>
-                                    <span>{nota.comentarios}</span>
-                                  </Box>
-                                );
-                              })}
-                            </Box>
-                          }
-                        >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              '&:hover': {
-                                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
-                              },
-                            }}
-                          >
-                            <CommentOutlined sx={{ color: theme.palette.primary.main }} />
-                          </Box>
-                        </Tooltip>
-                      )}
                     </TableCell>
                     <TableCell sx={{ paddingBottom: '0px', borderBottom: 'none' }}>
                       <BarraSuenio data={dia.eventos} estadoSuenioPrevio={obtenerEstadoSuenioDiaAnterior(index)} />
