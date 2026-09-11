@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finanzas — Propuesta de rediseño</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root,
+  [data-theme="dorado"]{
+    --bg-page:#0E0C09;
+    --bg-panel:#15130F;
+    --bg-elevated:#1B1813;
+    --bg-row-alt:#18150F;
+    --bg-row-hover:#221E16;
+    --accent:#C99A44;
+    --accent-soft:rgba(201,154,68,.14);
+    --text-primary:#F3EFE6;
+    --text-secondary:#9C9284;
+    --text-tertiary:#6B6357;
+    --border-soft:#2A251E;
+    --border-strong:#3A342A;
+  }
+  [data-theme="verde"]{
+    --bg-page:#0A1310;
+    --bg-panel:#0F1815;
+    --bg-elevated:#15221C;
+    --bg-row-alt:#121C17;
+    --bg-row-hover:#1C2B24;
+    --accent:#7ED9BB;
+    --accent-soft:rgba(126,217,187,.14);
+    --text-primary:#EAF6F0;
+    --text-secondary:#8FAB9E;
+    --text-tertiary:#5E7669;
+    --border-soft:#22332B;
+    --border-strong:#33483C;
+  }
+  [data-theme="cian"]{
+    --bg-page:#08100F;
+    --bg-panel:#0D1716;
+    --bg-elevated:#12201F;
+    --bg-row-alt:#101B1A;
+    --bg-row-hover:#182726;
+    --accent:#4FB8C4;
+    --accent-soft:rgba(79,184,196,.14);
+    --text-primary:#E9F4F5;
+    --text-secondary:#87A3A6;
+    --text-tertiary:#5A7376;
+    --border-soft:#1F2E2E;
+    --border-strong:#2E4344;
+  }
+  [data-theme="gris"]{
+    --bg-page:#161615;
+    --bg-panel:#1C1C1A;
+    --bg-elevated:#252523;
+    --bg-row-alt:#1F1F1D;
+    --bg-row-hover:#2C2C29;
+    --accent:#C9C4B9;
+    --accent-soft:rgba(201,196,185,.16);
+    --text-primary:#F7F6F3;
+    --text-secondary:#ACA79D;
+    --text-tertiary:#78746A;
+    --border-soft:#343430;
+    --border-strong:#494943;
+  }
+  body{transition:background .2s ease;}
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-page);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.font-display{font-family:'Space Grotesk',sans-serif;}
+  .num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+
+  /* ---------- Rationale intro ---------- */
+  .intro{
+    max-width:920px;
+    margin:0 auto;
+    padding:64px 28px 48px;
+  }
+  .intro-eyebrow{
+    color:var(--accent);
+    font-size:13px;
+    margin:0 0 10px;
+  }
+  .intro h1{
+    font-size:34px;
+    font-weight:600;
+    line-height:1.2;
+    margin:0 0 16px;
+    max-width:14ch;
+  }
+  .intro p.lede{
+    color:var(--text-secondary);
+    font-size:16px;
+    line-height:1.6;
+    max-width:62ch;
+    margin:0 0 40px;
+  }
+  .rationale-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:1px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+  }
+  .rationale-card{
+    background:var(--bg-page);
+    padding:26px 28px;
+  }
+  .rationale-card h3{
+    font-size:15px;
+    font-weight:600;
+    margin:0 0 10px;
+    display:flex;
+    align-items:baseline;
+    gap:9px;
+  }
+  .rationale-card h3 .idx{
+    color:var(--accent);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+  }
+  .rationale-card p{
+    color:var(--text-secondary);
+    font-size:13.5px;
+    line-height:1.65;
+    margin:0;
+  }
+  .rationale-card code{
+    color:var(--text-primary);
+    background:var(--bg-elevated);
+    padding:1px 5px;
+    border-radius:3px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+  }
+
+  .divider-label{
+    max-width:920px;
+    margin:56px auto 0;
+    padding:0 28px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:var(--text-tertiary);
+    font-size:12.5px;
+  }
+  .divider-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--border-soft);
+  }
+
+  /* ---------- App mockup ---------- */
+  .app{
+    display:flex;
+    max-width:1240px;
+    margin:28px auto 80px;
+    border:1px solid var(--border-soft);
+  }
+
+  /* Sidebar */
+  .sidebar{
+    width:220px;
+    flex-shrink:0;
+    background:var(--bg-panel);
+    border-right:1px solid var(--border-soft);
+    padding:22px 14px;
+  }
+  .sidebar-brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:0 8px 20px;
+    margin-bottom:16px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .sidebar-brand .mark{
+    width:26px;height:26px;
+    border-radius:6px;
+    background:var(--accent);
+    color:#15130F;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+  }
+  .sidebar-brand .name{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:14px;
+    font-weight:600;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:9px 10px;
+    border-radius:6px;
+    color:var(--text-secondary);
+    font-size:13.5px;
+    cursor:pointer;
+    border-left:2px solid transparent;
+    margin-bottom:2px;
+  }
+  .nav-item .dot{width:16px;text-align:center;font-size:14px;opacity:.85;}
+  .nav-item:hover{background:var(--bg-elevated);color:var(--text-primary);}
+  .nav-item.active{
+    color:var(--text-primary);
+    background:var(--accent-soft);
+    border-left:2px solid var(--accent);
+  }
+
+  /* Main */
+  .main{flex:1;min-width:0;background:var(--bg-page);}
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 28px 16px;
+  }
+  .breadcrumb{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:19px;
+    color:var(--text-tertiary);
+  }
+  .breadcrumb strong{color:var(--text-primary);font-weight:600;}
+
+  .year-select{
+    display:flex;align-items:center;gap:6px;
+    color:var(--text-secondary);
+    font-size:13px;
+    cursor:pointer;
+  }
+
+  /* Month tab strip */
+  .months{
+    display:flex;
+    gap:22px;
+    padding:0 28px;
+    border-bottom:1px solid var(--border-soft);
+    overflow-x:auto;
+  }
+  .month-tab{
+    padding:10px 0 12px;
+    font-size:13.5px;
+    color:var(--text-tertiary);
+    white-space:nowrap;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    display:flex;
+    align-items:baseline;
+    gap:5px;
+  }
+  .month-tab .count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--text-tertiary);
+  }
+  .month-tab:hover{color:var(--text-secondary);}
+  .month-tab.active{
+    color:var(--text-primary);
+    border-bottom:2px solid var(--accent);
+  }
+
+  /* Stats cluster */
+  .stats{
+    display:flex;
+    gap:0;
+    padding:22px 28px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .stat{
+    padding-right:32px;
+    margin-right:32px;
+    border-right:1px solid var(--border-soft);
+  }
+  .stat:last-child{border-right:none;margin-right:0;padding-right:0;}
+  .stat .label{
+    font-size:11.5px;
+    color:var(--text-tertiary);
+    margin-bottom:5px;
+  }
+  .stat .value{
+    font-size:19px;
+    font-weight:500;
+  }
+  .stat .value.accent{color:var(--accent);}
+  .stat-bar-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;}
+  .stat-bar-track{
+    height:5px;
+    background:var(--bg-elevated);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .stat-bar-fill{
+    height:100%;
+    width:47%;
+    background:var(--accent);
+    border-radius:3px;
+  }
+  .stat-bar-legend{
+    display:flex;justify-content:space-between;
+    font-size:11.5px;color:var(--text-tertiary);
+  }
+  .stat-bar-legend .pct{color:var(--accent);font-family:'IBM Plex Mono',monospace;}
+
+  /* Toolbar */
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap:22px;
+    padding:16px 28px;
+  }
+  .tool-btn{
+    display:flex;align-items:center;gap:6px;
+    background:none;border:none;
+    color:var(--text-secondary);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:13px;
+    cursor:pointer;
+    padding:0;
+  }
+  .tool-btn:hover{color:var(--text-primary);}
+  .tool-btn.primary{
+    color:var(--bg-page);
+    background:var(--accent);
+    padding:7px 14px;
+    border-radius:5px;
+    font-weight:500;
+  }
+  .tool-btn.primary:hover{color:var(--bg-page);opacity:.9;}
+  .toolbar-spacer{flex:1;}
+  .partial-sum{
+    font-size:13px;
+    color:var(--text-secondary);
+  }
+  .partial-sum .num{color:var(--text-primary);}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;
+    font-size:11.5px;
+    font-weight:500;
+    color:var(--text-tertiary);
+    padding:10px 28px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  thead th.num-col{text-align:right;}
+  .day-group-header td{
+    padding:14px 28px 8px;
+    font-size:12.5px;
+    color:var(--text-tertiary);
+  }
+  .day-group-header .day-num{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--text-primary);
+    font-size:14px;
+    font-weight:600;
+    margin-right:8px;
+  }
+  .day-group-header .day-total{
+    float:right;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-secondary);
+  }
+  tbody tr.movement{
+    border-bottom:1px solid var(--border-soft);
+    cursor:pointer;
+  }
+  tbody tr.movement:hover{background:var(--bg-row-hover);}
+  tbody tr.movement.selected{background:var(--accent-soft);}
+  tbody td{
+    padding:11px 28px;
+    font-size:13.5px;
+    vertical-align:middle;
+  }
+  td.check-col{width:30px;padding-right:0;}
+  td.check-col input{
+    width:15px;height:15px;
+    accent-color:var(--accent);
+  }
+  td.category{color:var(--text-secondary);}
+  td.category,td.concept,td.paytype{position:relative;}
+  .concept{color:var(--text-primary);}
+  .concept .detail{
+    display:block;
+    color:var(--text-tertiary);
+    font-size:12px;
+    margin-top:2px;
+  }
+  .paytag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:var(--text-secondary);
+  }
+  .paytag .glyph{
+    width:14px;height:14px;
+    border-radius:3px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;
+    border:1px solid var(--border-strong);
+    color:var(--text-tertiary);
+  }
+  td.amount{
+    text-align:right;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-primary);
+  }
+
+  /* ---------- Theme switcher ---------- */
+  .theme-switcher{
+    position:fixed;
+    top:20px;right:20px;
+    z-index:60;
+    display:flex;
+    gap:6px;
+    background:var(--bg-panel);
+    border:1px solid var(--border-soft);
+    border-radius:8px;
+    padding:5px;
+  }
+  .theme-btn{
+    width:30px;height:30px;
+    border-radius:5px;
+    border:1px solid transparent;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .theme-btn .swatch{
+    width:14px;height:14px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.15);
+  }
+  .theme-btn[data-set="dorado"]{background:#1B1813;}
+  .theme-btn[data-set="dorado"] .swatch{background:#C99A44;}
+  .theme-btn[data-set="verde"]{background:#15221C;}
+  .theme-btn[data-set="verde"] .swatch{background:#7ED9BB;}
+  .theme-btn[data-set="cian"]{background:#12201F;}
+  .theme-btn[data-set="cian"] .swatch{background:#4FB8C4;}
+  .theme-btn[data-set="gris"]{background:#252523;}
+  .theme-btn[data-set="gris"] .swatch{background:#C9C4B9;}
+  .theme-btn.active{border-color:var(--accent);}
+
+  /* ---------- Inline row editing ---------- */
+  tr.movement{
+    transition:background-color .2s ease, box-shadow .2s ease;
+  }
+  tr.movement.editing{
+    background:var(--accent-soft);
+    box-shadow:inset 2px 0 0 var(--accent);
+  }
+  .view{
+    display:inline-block;
+    opacity:1;
+    transform:translateY(0);
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  tr.movement.editing .view{
+    display:none;
+    opacity:0;
+    transform:translateY(-3px);
+  }
+  .edit-field{
+    display:none;
+    opacity:0;
+    transform:translateY(3px);
+    transition:opacity .18s ease .04s, transform .18s ease .04s;
+  }
+  tr.movement.editing .edit-field{
+    display:inline-flex;
+    opacity:1;
+    transform:translateY(0);
+  }
+  select.edit-field.edit-input{display:none;}
+  tr.movement.editing select.edit-field.edit-input{display:inline-block;}
+  .concept-edit-group{
+    display:none;
+    flex-direction:column;
+    gap:4px;
+    width:100%;
+  }
+  tr.movement.editing .concept-edit-group{display:flex;}
+
+  .edit-input{
+    width:100%;
+    background:var(--bg-elevated);
+    border:1px solid var(--border-strong);
+    border-radius:4px;
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:12.5px;
+    padding:6px 8px;
+  }
+  .edit-input:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  input.amount-input{
+    font-family:'IBM Plex Mono',monospace;
+    text-align:right;
+  }
+
+  td.row-actions{
+    width:64px;
+    text-align:right;
+    white-space:nowrap;
+  }
+  .edit-trigger{
+    width:26px;height:26px;
+    border-radius:5px;
+    border:1px solid var(--border-strong);
+    background:none;
+    color:var(--text-tertiary);
+    font-size:12px;
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .15s ease, color .15s ease, border-color .15s ease;
+  }
+  tr.movement:hover .edit-trigger{opacity:1;}
+  tr.movement.editing .edit-trigger{display:none;}
+  .edit-trigger:hover{color:var(--text-primary);border-color:var(--text-secondary);}
+
+  .edit-actions{
+    display:none;
+    gap:6px;
+    opacity:0;
+    transition:opacity .18s ease .04s;
+  }
+  tr.movement.editing .edit-actions{
+    display:inline-flex;
+    opacity:1;
+  }
+  .save-btn,.cancel-btn{
+    width:26px;height:26px;
+    border-radius:5px;
+    border:1px solid var(--border-strong);
+    background:none;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .save-btn{color:var(--accent);border-color:var(--accent);}
+  .save-btn:hover{background:var(--accent-soft);}
+  .cancel-btn{color:var(--text-tertiary);}
+  .cancel-btn:hover{color:var(--text-primary);}
+</style>
+</head>
+<body>
+
+<div class="theme-switcher" id="themeSwitcher">
+  <button class="theme-btn active" data-set="dorado" title="Dorado"><span class="swatch"></span></button>
+  <button class="theme-btn" data-set="verde" title="Verde"><span class="swatch"></span></button>
+  <button class="theme-btn" data-set="cian" title="Cian"><span class="swatch"></span></button>
+  <button class="theme-btn" data-set="gris" title="Gris"><span class="swatch"></span></button>
+</div>
+
+<section class="intro">
+  <p class="intro-eyebrow">Finanzas — nota de diseño</p>
+  <h1>Mismos datos, jerarquía más clara</h1>
+  <p class="lede">
+    Tomé la captura que compartiste y armé una segunda versión con ajustes de color, tipografía
+    y estructura. Abajo está la explicación de cada cambio, y después el mockup completo con
+    los mismos movimientos de tu pantalla original.
+  </p>
+
+  <div class="rationale-grid">
+    <div class="rationale-card">
+      <h3><span class="idx">01</span> Color</h3>
+      <p>
+        Un solo acento dorado apagado (<code>#C99A44</code>) en vez de varios colores compitiendo
+        entre sí (el celeste de "Débito", el naranja de "Transferencia", el azul de selección).
+        El dorado ahora se reserva para lo que realmente importa: totales, la pestaña activa y
+        el estado seleccionado. Las categorías se distinguen con un punto de color discreto en
+        vez de depender del texto solo.
+      </p>
+    </div>
+    <div class="rationale-card">
+      <h3><span class="idx">02</span> Tipografía</h3>
+      <p>
+        Se suma <code>Space Grotesk</code> para títulos y navegación — le da carácter propio sin
+        perder legibilidad. El cuerpo de la tabla sigue en <code>IBM Plex Sans</code> y todos los
+        montos en <code>IBM Plex Mono</code> con cifras tabulares, para que los números se lean
+        alineados en columna. Los meses pasan de mayúsculas a minúsculas: es más fácil de leer
+        de un vistazo y menos "gritado".
+      </p>
+    </div>
+    <div class="rationale-card">
+      <h3><span class="idx">03</span> Layout</h3>
+      <p>
+        Los movimientos se agrupan por día con un encabezado que muestra el subtotal diario, en
+        vez de repetir el número de fecha en cada fila. El tipo de pago pasa de un ícono aislado
+        a una etiqueta con texto ("Débito", "Transferencia"), así no hay que memorizar qué
+        significa cada color. Las pestañas de mes son subrayado en vez de cajas sólidas — menos
+        peso visual cuando hay doce a la vista.
+      </p>
+    </div>
+    <div class="rationale-card">
+      <h3><span class="idx">04</span> Datos y contexto</h3>
+      <p>
+        El presupuesto, lo gastado y lo pendiente pasan a un clúster de estadísticas con una
+        barra más fina y legible, separado claramente de la tabla en vez de flotar sobre ella.
+        La acción principal ("Agregar") queda resaltada en dorado; el resto de las acciones del
+        toolbar son texto simple, sin caja, para no competir con ella.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider-label">Mockup con los cambios aplicados</div>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark">M</div>
+      <div class="name">Mis gestiones</div>
+    </div>
+    <div class="nav-item"><span class="dot">◌</span> Tomi</div>
+    <div class="nav-item active"><span class="dot">●</span> Finanzas</div>
+    <div class="nav-item"><span class="dot">△</span> Inversiones</div>
+    <div class="nav-item"><span class="dot">↑</span> Importar</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">Finanzas / <strong>Movimientos del mes</strong></div>
+      <div class="year-select">2026 ▾</div>
+    </div>
+
+    <div class="months">
+      <div class="month-tab active">septiembre</div>
+      <div class="month-tab">octubre</div>
+      <div class="month-tab">noviembre</div>
+      <div class="month-tab">diciembre <span class="count">26</span></div>
+      <div class="month-tab">enero <span class="count">27</span></div>
+      <div class="month-tab">febrero</div>
+      <div class="month-tab">marzo</div>
+      <div class="month-tab">abril</div>
+      <div class="month-tab">mayo</div>
+      <div class="month-tab">junio</div>
+      <div class="month-tab">julio</div>
+      <div class="month-tab">agosto</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="label">Presupuesto</div>
+        <div class="value num">$ 6.393.714,00</div>
+      </div>
+      <div class="stat">
+        <div class="label">Gastado</div>
+        <div class="value num accent">$ 3.010.553,18</div>
+      </div>
+      <div class="stat">
+        <div class="label">Pendiente</div>
+        <div class="value num">$ 3.383.160,82</div>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-track"><div class="stat-bar-fill"></div></div>
+        <div class="stat-bar-legend">
+          <span>del presupuesto usado</span>
+          <span class="pct">47%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="tool-btn primary">+ Agregar</button>
+      <button class="tool-btn">Agregar grupo</button>
+      <button class="tool-btn">Refrescar</button>
+      <button class="tool-btn">Eliminar</button>
+      <button class="tool-btn">Exportar</button>
+      <div class="toolbar-spacer"></div>
+      <div class="partial-sum">Suma parcial: <span class="num">$ 3.500,00</span></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="check-col"></th>
+          <th>Categoría</th>
+          <th>Concepto</th>
+          <th>Tipo de pago</th>
+          <th class="num-col">Monto</th>
+          <th class="row-actions-col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="day-group-header">
+          <td colspan="6">
+            <span class="day-num">10</span> septiembre
+            <span class="day-total">subtotal $ <span class="num">41.600,00</span></span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Hijos</span>
+            <select class="edit-field edit-input">
+              <option selected>Hijos</option>
+              <option>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">(Colegio-Extras) Kiosco<span class="detail">Estimado</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="(Colegio-Extras) Kiosco">
+              <input class="edit-input detail-input" value="Estimado" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">4.500,00</span>
+            <input class="edit-field edit-input amount-input" value="4.500,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Diario</span>
+            <select class="edit-field edit-input">
+              <option>Hijos</option>
+              <option selected>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">Comida<span class="detail">Kiosco · Jugo</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="Comida">
+              <input class="edit-input detail-input" value="Kiosco · Jugo" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">⌂</span>Transferencia</span></span>
+            <select class="edit-field edit-input">
+              <option>Débito</option>
+              <option selected>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">3.200,00</span>
+            <input class="edit-field edit-input amount-input" value="3.200,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement selected">
+          <td class="check-col"><input type="checkbox" checked></td>
+          <td class="category">
+            <span class="view">Diario</span>
+            <select class="edit-field edit-input">
+              <option>Hijos</option>
+              <option selected>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">Gaseosas<span class="detail">Kiosco</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="Gaseosas">
+              <input class="edit-input detail-input" value="Kiosco" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">⌂</span>Transferencia</span></span>
+            <select class="edit-field edit-input">
+              <option>Débito</option>
+              <option selected>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">3.500,00</span>
+            <input class="edit-field edit-input amount-input" value="3.500,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Diario</span>
+            <select class="edit-field edit-input">
+              <option>Hijos</option>
+              <option selected>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">Alcohol<span class="detail">Kiosco</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="Alcohol">
+              <input class="edit-input detail-input" value="Kiosco" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">⌂</span>Transferencia</span></span>
+            <select class="edit-field edit-input">
+              <option>Débito</option>
+              <option selected>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">14.400,00</span>
+            <input class="edit-field edit-input amount-input" value="14.400,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Diario</span>
+            <select class="edit-field edit-input">
+              <option>Hijos</option>
+              <option selected>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">Comida<span class="detail">Dos viandas en la rotisería</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="Comida">
+              <input class="edit-input detail-input" value="Dos viandas en la rotisería" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">16.000,00</span>
+            <input class="edit-field edit-input amount-input" value="16.000,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+
+        <tr class="day-group-header">
+          <td colspan="6">
+            <span class="day-num">9</span> septiembre
+            <span class="day-total">subtotal $ <span class="num">74.600,00</span></span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Hijos</span>
+            <select class="edit-field edit-input">
+              <option selected>Hijos</option>
+              <option>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">(Colegio-Extras) Kiosco</span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="(Colegio-Extras) Kiosco">
+              <input class="edit-input detail-input" value="" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">5.000,00</span>
+            <input class="edit-field edit-input amount-input" value="5.000,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Diario</span>
+            <select class="edit-field edit-input">
+              <option>Hijos</option>
+              <option selected>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">Otras<span class="detail">Cochera</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="Otras">
+              <input class="edit-input detail-input" value="Cochera" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">3.000,00</span>
+            <input class="edit-field edit-input amount-input" value="3.000,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Hijos</span>
+            <select class="edit-field edit-input">
+              <option selected>Hijos</option>
+              <option>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">(Colegio-Extras) Extras<span class="detail">Para el viaje a la granja de Sofía</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="(Colegio-Extras) Extras">
+              <input class="edit-input detail-input" value="Para el viaje a la granja de Sofía" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">35.000,00</span>
+            <input class="edit-field edit-input amount-input" value="35.000,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Hijos</span>
+            <select class="edit-field edit-input">
+              <option selected>Hijos</option>
+              <option>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">(Colegio-Extras) Kiosco</span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="(Colegio-Extras) Kiosco">
+              <input class="edit-input detail-input" value="" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">8.000,00</span>
+            <input class="edit-field edit-input amount-input" value="8.000,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Hijos</span>
+            <select class="edit-field edit-input">
+              <option selected>Hijos</option>
+              <option>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">(Colegio-Extras) Extras<span class="detail">Dos fotos de acto de Sofía</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="(Colegio-Extras) Extras">
+              <input class="edit-input detail-input" value="Dos fotos de acto de Sofía" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">16.000,00</span>
+            <input class="edit-field edit-input amount-input" value="16.000,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Diario</span>
+            <select class="edit-field edit-input">
+              <option>Hijos</option>
+              <option selected>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">Comida<span class="detail">6 medialunas</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="Comida">
+              <input class="edit-input detail-input" value="6 medialunas" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">3.600,00</span>
+            <input class="edit-field edit-input amount-input" value="3.600,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+        <tr class="movement">
+          <td class="check-col"><input type="checkbox"></td>
+          <td class="category">
+            <span class="view">Diario</span>
+            <select class="edit-field edit-input">
+              <option>Hijos</option>
+              <option selected>Diario</option>
+            </select>
+          </td>
+          <td class="concept">
+            <span class="view">Comida<span class="detail">Bolsa Lays mediana</span></span>
+            <span class="edit-field concept-edit-group">
+              <input class="edit-input concept-input" value="Comida">
+              <input class="edit-input detail-input" value="Bolsa Lays mediana" placeholder="Detalle (opcional)">
+            </span>
+          </td>
+          <td class="paytype">
+            <span class="view"><span class="paytag"><span class="glyph">$</span>Débito</span></span>
+            <select class="edit-field edit-input">
+              <option selected>Débito</option>
+              <option>Transferencia</option>
+            </select>
+          </td>
+          <td class="amount">
+            <span class="view">4.000,00</span>
+            <input class="edit-field edit-input amount-input" value="4.000,00">
+          </td>
+          <td class="row-actions">
+            <button class="edit-trigger" title="Editar">✎</button>
+            <span class="edit-actions">
+              <button class="save-btn" title="Guardar">✓</button>
+              <button class="cancel-btn" title="Cancelar">✕</button>
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+  document.querySelectorAll('.theme-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.documentElement.setAttribute('data-theme', btn.dataset.set);
+      document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.month-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.month-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+  document.querySelectorAll('tbody tr.movement').forEach(row=>{
+    row.addEventListener('click', (e)=>{
+      if(row.classList.contains('editing')) return;
+      if(e.target.closest('.row-actions')) return;
+      if(e.target.tagName === 'INPUT') return;
+      const cb = row.querySelector('input[type=checkbox]');
+      cb.checked = !cb.checked;
+      row.classList.toggle('selected', cb.checked);
+    });
+  });
+
+  // ---------- Inline row editing ----------
+  function populateEditFields(row){
+    const catView = row.querySelector('.category .view');
+    const catSelect = row.querySelector('.category select');
+    catSelect.value = catView.textContent.trim();
+
+    const conceptView = row.querySelector('.concept .view');
+    const mainInput = row.querySelector('.concept-input');
+    const detailInput = row.querySelector('.detail-input');
+    const detailEl = conceptView.querySelector('.detail');
+    const mainText = detailEl
+      ? conceptView.textContent.replace(detailEl.textContent, '').trim()
+      : conceptView.textContent.trim();
+    mainInput.value = mainText;
+    detailInput.value = detailEl ? detailEl.textContent.trim() : '';
+
+    const payView = row.querySelector('.paytype .view .paytag');
+    const paySelect = row.querySelector('.paytype select');
+    paySelect.value = payView.textContent.trim();
+
+    const amtView = row.querySelector('.amount .view');
+    const amtInput = row.querySelector('.amount-input');
+    amtInput.value = amtView.textContent.trim();
+  }
+
+  function commitEditFields(row){
+    const catView = row.querySelector('.category .view');
+    const catSelect = row.querySelector('.category select');
+    catView.textContent = catSelect.value;
+
+    const conceptView = row.querySelector('.concept .view');
+    const mainInput = row.querySelector('.concept-input');
+    const detailInput = row.querySelector('.detail-input');
+    const detailHtml = detailInput.value.trim()
+      ? `<span class="detail">${detailInput.value.trim()}</span>` : '';
+    conceptView.innerHTML = mainInput.value.trim() + detailHtml;
+
+    const payView = row.querySelector('.paytype .view .paytag');
+    const paySelect = row.querySelector('.paytype select');
+    const glyph = paySelect.value === 'Débito' ? '$' : '⌂';
+    payView.innerHTML = `<span class="glyph">${glyph}</span>${paySelect.value}`;
+
+    const amtView = row.querySelector('.amount .view');
+    const amtInput = row.querySelector('.amount-input');
+    amtView.textContent = amtInput.value.trim();
+  }
+
+  document.querySelectorAll('tr.movement').forEach(row=>{
+    const trigger = row.querySelector('.edit-trigger');
+    const saveBtn = row.querySelector('.save-btn');
+    const cancelBtn = row.querySelector('.cancel-btn');
+
+    trigger.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      populateEditFields(row);
+      row.classList.add('editing');
+    });
+    saveBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      commitEditFields(row);
+      row.classList.remove('editing');
+    });
+    cancelBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      row.classList.remove('editing');
+    });
+  });
+</script>
+</body>
+</html>
