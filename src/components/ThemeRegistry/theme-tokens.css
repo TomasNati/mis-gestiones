@@ -1,7 +1,6 @@
 /* ── Theme color schemes ── */
 /* Each theme sets the same token names so consumers stay theme-agnostic. */
 
-:root,
 [data-theme='dorado'] {
   --bg-page: #0e0c09;
   --bg-panel: #15130f;
@@ -32,6 +31,7 @@
   --border-strong: #33483c;
 }
 
+:root,
 [data-theme='cian'] {
   --bg-page: #08100f;
   --bg-panel: #0d1716;

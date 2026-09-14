@@ -16,10 +16,10 @@ import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import Link from 'next/link';
 import { useState, ReactNode, ElementType, HTMLAttributeAnchorTarget } from 'react';
+import { styles } from './Layout.styles';
 
 const DRAWER_WIDTH = 200;
 const DRAWER_COLLAPSED_WIDTH = 85;
-const ICON_WIDTH = 45;
 
 interface LinkItem {
   text: string;
@@ -94,7 +94,7 @@ const LinkItemComponent = ({
       </ListItemButton>
     </ListItem>
     {submenu && openSubmenu === href && (
-      <List sx={{ pl: 4 }}>
+      <List sx={styles.submenuList}>
         {submenu.map(({ text: subText, href: subHref, icon: SubIcon, target: SubTarget }) => (
           <ListItem key={subHref} disablePadding>
             <ListItemButton component={Link} href={subHref} target={SubTarget}>
@@ -122,28 +122,26 @@ const Layout = ({ children }: { children: ReactNode }) => {
     setOpenSubmenu(openSubmenu === href ? null : href);
   };
 
+  const drawerWidth = collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH;
+
   return (
     <>
       <Drawer
         sx={{
-          width: collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH,
-          flexShrink: 0,
+          ...styles.drawer,
+          width: drawerWidth,
           '& .MuiDrawer-paper': {
-            width: collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH,
-            boxSizing: 'border-box',
-            height: 'auto',
-            bottom: 0,
-          },
-          '& .MuiListItemIcon-root': {
-            minWidth: ICON_WIDTH,
+            ...(styles.drawerPaper as object),
+            width: drawerWidth,
           },
         }}
         variant="permanent"
         anchor="left"
+        elevation={0}
       >
         <List>
           <ListItem>
-            <ListItemButton onClick={onCollapse} sx={{ padding: '0px' }}>
+            <ListItemButton onClick={onCollapse} sx={styles.logoButton}>
               <ListItemIcon>
                 <DomainIcon />
               </ListItemIcon>
@@ -167,7 +165,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             </div>
           ))}
         </List>
-        <Divider sx={{ mt: 'auto' }} />
+        <Divider sx={styles.spacerDivider} />
         <List>
           {PLACEHOLDER_LINKS.map(({ text, icon: Icon, href, submenu }) => (
             <div key={href}>
@@ -187,11 +185,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
-          bgcolor: 'background.default',
-          ml: `${collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH}px`,
-          p: 3,
-          height: '100vh',
+          ...styles.main,
+          ml: `${drawerWidth}px`,
         }}
       >
         {children}

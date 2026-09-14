@@ -8,12 +8,12 @@ const STORAGE_KEY = 'theme';
 const VALID_THEMES: ThemeName[] = ['dorado', 'verde', 'cian', 'gris'];
 
 function getInitialTheme(): ThemeName {
-  if (typeof window === 'undefined') return 'dorado';
+  if (typeof window === 'undefined') return 'cian';
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored && VALID_THEMES.includes(stored as ThemeName)) {
     return stored as ThemeName;
   }
-  return 'dorado';
+  return 'cian';
 }
 
 interface ThemeContextValue {
@@ -22,7 +22,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  themeName: 'dorado',
+  themeName: 'cian',
   setThemeName: () => {},
 });
 
