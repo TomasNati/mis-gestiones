@@ -190,8 +190,12 @@ export const transformCurrencyToNumber = (currencyString: string): number | null
   }
 };
 
-export const transformNumberToCurrenty = (value?: number): string | undefined => {
-  return value?.toLocaleString('es-AR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export const transformNumberToCurrenty = (value?: number, decimals: number = 2): string | undefined => {
+  return value?.toLocaleString('es-AR', {
+    style: 'decimal',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 };
 
 export const generateUUID = (): string => {
@@ -202,7 +206,7 @@ export const generateUUID = (): string => {
   }
 
   const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (d + Math.random() * 16) % 16 | 0;
+    const r = ((d + Math.random() * 16) % 16) | 0;
     d = Math.floor(d / 16);
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });

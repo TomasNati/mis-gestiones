@@ -1,0 +1,1 @@
+export { GastosProgressBar } from './GastosProgressBar';

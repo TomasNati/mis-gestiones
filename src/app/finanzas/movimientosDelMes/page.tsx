@@ -1,7 +1,7 @@
 'use client';
 
 import { obtenerMovimientosPorFecha, obtenerGastosEstimadosTotalesPorFecha } from '@/lib/orm/data';
-import { Box, Breadcrumbs, Divider, IconButton, Link, Typography } from '@mui/material';
+import { Box, Divider, IconButton } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import {
   AnioYMes,
@@ -16,9 +16,11 @@ import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDel
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
+import { StatsCluster } from '@/components/Movimientos/StatsCluster';
 import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graficos/';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
+import Link from 'next/link';
 
 const MovimientosDelMes = () => {
   const [anioYMes, setAnioYMes] = useState<AnioYMes>({
@@ -26,13 +28,13 @@ const MovimientosDelMes = () => {
     mes: months[new Date().getMonth()],
   });
   const [movimientos, setMovimientos] = useState<MovimientoGastoGrilla[]>([]);
-  const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
     mensaje: '',
   });
   const [totalMensualEstimado, setTotalMensualEstimado] = useState(0);
+  const [mostrandoGraficos, setMostrandoGraficos] = useState(false);
 
   const obtenerMovimientos = useCallback(async (): Promise<MovimientoGastoGrilla[]> => {
     const fecha = new Date(anioYMes.anio, months.indexOf(anioYMes.mes), 1);
@@ -154,60 +156,91 @@ const MovimientosDelMes = () => {
     setMovimientos(movimientos);
   };
 
-  const onDividerClicked = () => {
-    setMostrandoGrilla(!mostrandoGrilla);
-  };
-
   const mostrarInformacion = !!(anioYMes.anio && anioYMes.mes);
-  const mostrandoGrafico = !mostrandoGrilla;
 
   return (
     <Box>
+      {/* Top bar */}
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
           alignItems: 'center',
+          justifyContent: 'space-between',
+          px: '28px',
+          pt: '20px',
+          pb: '16px',
         }}
       >
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link underline="hover" color="inherit" href="/finanzas">
+        <Box
+          component="nav"
+          sx={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '19px',
+            color: 'var(--text-tertiary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <Link href="/finanzas" style={{ color: 'var(--text-tertiary)' }}>
             Finanzas
           </Link>
-          <Typography color="text.primary">Movimientos del mes</Typography>
-        </Breadcrumbs>
+          <span style={{ color: 'var(--text-tertiary)' }}>/</span>
+          <Box component="span" sx={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+            Movimientos del mes
+          </Box>
+        </Box>
       </Box>
-      <SeleccionadorPeriodo anio={anioYMes.anio} mes={anioYMes.mes} setMesYAnio={oneMesYAnioChanged} mesesExclusivos />
+
+      {/* Month tabs + year selector */}
+      <SeleccionadorPeriodo
+        key={anioYMes.anio}
+        anio={anioYMes.anio}
+        mes={anioYMes.mes}
+        setMesYAnio={oneMesYAnioChanged}
+        mesesExclusivos
+      />
+
       {mostrarInformacion && (
         <>
-          <Box
-            sx={{
-              height: mostrandoGrafico ? '100%' : 0,
-              display: 'flex',
-              justifyContent: 'space-evenly',
-              alignItems: 'center',
-              overflow: 'hidden',
-            }}
-          >
-            <TipoDeGastoPorMes movimientos={movimientos} />
-            <CrecimientoDeGastosEnElMes movimientos={movimientos} totalEstimado={totalMensualEstimado} />
-          </Box>
-          <Divider>
-            <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>
+          {/* Charts (collapsible) */}
+          {mostrandoGraficos && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                py: '16px',
+              }}
+            >
+              <TipoDeGastoPorMes movimientos={movimientos} />
+              <CrecimientoDeGastosEnElMes movimientos={movimientos} totalEstimado={totalMensualEstimado} />
+            </Box>
+          )}
+          <Divider sx={{ borderColor: 'var(--border-soft)' }}>
+            <IconButton onClick={() => setMostrandoGraficos((v) => !v)} sx={{ color: 'var(--text-tertiary)' }}>
+              {mostrandoGraficos ? <ExpandLess /> : <ExpandMore />}
+            </IconButton>
           </Divider>
-          <Box sx={{ height: mostrandoGrilla ? '100%' : 0 }}>
-            <MovimientosDelMesGrilla
-              movimientos={movimientos}
-              anio={anioYMes.anio}
-              mes={months.indexOf(anioYMes.mes)}
-              totalMensualEstimado={totalMensualEstimado || 0}
-              onMovimientoActualizado={onMovimientoActualizado}
-              onMovimientosEliminados={onMovimientosEliminados}
-              onRefrescarMovimientos={onRefrescarMovimientos}
-              onCrearGrupoMovimientos={onCrearGrupoMovimientos}
-            />
-          </Box>
+
+          {/* Stats cluster */}
+          <StatsCluster
+            presupuesto={totalMensualEstimado || 0}
+            gastado={movimientos.reduce((acc, mov) => acc + (mov.monto || 0), 0)}
+            pt="0"
+          />
+
+          {/* Data grid with integrated toolbar */}
+          <MovimientosDelMesGrilla
+            movimientos={movimientos}
+            anio={anioYMes.anio}
+            mes={months.indexOf(anioYMes.mes)}
+            totalMensualEstimado={totalMensualEstimado || 0}
+            onMovimientoActualizado={onMovimientoActualizado}
+            onMovimientosEliminados={onMovimientosEliminados}
+            onRefrescarMovimientos={onRefrescarMovimientos}
+            onCrearGrupoMovimientos={onCrearGrupoMovimientos}
+          />
         </>
       )}
       <Notificacion configuracionProp={configNotificacion} />

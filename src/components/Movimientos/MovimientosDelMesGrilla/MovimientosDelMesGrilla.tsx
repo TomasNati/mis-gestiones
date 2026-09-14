@@ -21,16 +21,17 @@ import {
   GridRowSelectionModel,
   GridRenderEditCellParams,
 } from '@mui/x-data-grid';
-import { TipoDePagoEdicion, TipoDePagoVista } from './editores/TipoDePago/TipoDePago';
-import { Concepto, conceptoOperators } from './editores/Concepto/Concepto';
+import { TipoDePagoEdicion, TipoDePagoVista } from '../editores/TipoDePago/TipoDePago';
+import { Concepto, conceptoOperators } from '../editores/Concepto/Concepto';
 import { useEffect, useState } from 'react';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
-import { GrillaToolbar } from './GrillaToolbar';
-import { FechaEditInputCell, fechaOperators } from './editores/Fecha/Fecha';
+import { GrillaToolbar } from '../GrillaToolbar';
+import { FechaEditInputCell, fechaOperators } from '../editores/Fecha/Fecha';
 import { focusOnField, mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
-import { renderMontoEditInputCell } from './editores/Monto/Monto';
+import { renderMontoEditInputCell } from '../editores/Monto/Monto';
 import { EntidadNombre } from '@/components/comun/EntidadNombre';
 import { TextWithCopy } from '@/components/comun/TextWithCopy';
+import { styles } from './MovimientosDelMesGrilla.styles';
 
 const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimientoGasto>) => {
   const { id, value, field } = props;
@@ -41,7 +42,7 @@ const TipoDePagoEditInputCell = (props: GridRenderCellParams<any, TipoDeMovimien
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+    <Box sx={styles.tipoDePagoEditCell}>
       <TipoDePagoEdicion
         onTipoDePagoChange={handleChange}
         tipoDepagoInicial={value as TipoDeMovimientoGasto}
@@ -239,13 +240,9 @@ const MovimientosDelMesGrilla = ({
   const sumaTotalDelMes = rows.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
 
   return (
-    <Box sx={{ width: '100%', minWidth: 650 }}>
+    <Box sx={styles.gridContainer}>
       <DataGrid
-        sx={{
-          '& .MuiDataGrid-main': {
-            height: 'calc(99vh - 255px)',
-          },
-        }}
+        sx={styles.dataGrid}
         rows={rows}
         columns={columns}
         density="compact"

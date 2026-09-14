@@ -1,18 +1,10 @@
 import { months, years } from '@/lib/definitions';
-import {
-  Box,
-  FormControl,
-  Select,
-  MenuItem,
-  ToggleButton,
-  ToggleButtonGroup,
-  Button,
-  SelectChangeEvent,
-} from '@mui/material';
+import { Box, FormControl, Select, MenuItem, Button, SelectChangeEvent } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { useState, MouseEvent } from 'react';
-import { crearFecha, obtenerMesesPorAnio, moverFecha, AnioConMeses } from './seleccionadorPeriodoHelper';
+import { useState } from 'react';
+import { crearFecha, obtenerMesesPorAnio, moverFecha, AnioConMeses } from '../seleccionadorPeriodoHelper';
+import { styles } from './SeleccionadorPeriodo.styles';
 
 const initialDate = new Date();
 
@@ -76,16 +68,16 @@ const SeleccionadorPeriodo = ({
     }
   };
 
-  const onMesElegido = (_: MouseEvent<HTMLElement>, mes: string | null) => {
-    const mesAMostrarElegido = mesesAMostrar.find(({ meses }) => meses.includes(mes || ''));
-    if (!mesAMostrarElegido || !mes) return;
+  const onMesElegido = (mesSeleccionado: string) => {
+    const mesAMostrarElegido = mesesAMostrar.find(({ meses }) => meses.includes(mesSeleccionado));
+    if (!mesAMostrarElegido) return;
 
     updateAniosElegibles([mesAMostrarElegido.anio]);
-    setMesExclusivoElegido(mes);
-    setMesYAnio && setMesYAnio(mes, mesAMostrarElegido.anio);
+    setMesExclusivoElegido(mesSeleccionado);
+    setMesYAnio && setMesYAnio(mesSeleccionado, mesAMostrarElegido.anio);
   };
 
-  const onMesesElegidos = (_: MouseEvent<HTMLElement>, nuevosMeses: string[]) => {
+  const onMesesElegidos = (nuevosMeses: string[]) => {
     const nuevosMesesElegidos: AnioConMeses[] = [];
 
     mesesAMostrar.forEach(({ anio, meses }) => {
@@ -131,6 +123,8 @@ const SeleccionadorPeriodo = ({
   const moverADerechaDisabled = disableChangeMonths || primerMesVisibleElegido();
   const mesesElegidos = mesesConAniosElegidos.flatMap(({ meses }) => meses);
 
+  const mesesVisibles = mesesAMostrar.flatMap(({ meses }) => meses);
+
   const anioParaEnero = mesesAMostrar
     .find(({ meses }) => meses.includes('Enero'))
     ?.anio.toString()
@@ -140,25 +134,88 @@ const SeleccionadorPeriodo = ({
     ?.anio.toString()
     .slice(-2);
 
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        marginTop: '10px',
-      }}
-    >
-      <FormControl sx={{ width: '100px', marginRight: '10px', marginBottom: '5px' }}>
-        <Select
+  const etiquetaDeMes = (mesItem: string) => {
+    if (mesItem === 'Enero') return `enero ${anioParaEnero}`;
+    if (mesItem === 'Diciembre') return `diciembre ${anioParaDiciembre}`;
+    return mesItem.toLowerCase();
+  };
+
+  if (mesesExclusivos) {
+    return (
+      <Box sx={styles.exclusiveContainer}>
+        <FormControl size="small">
+          <Select
+            value={obtenerAnioDelMesActual()}
+            onChange={onAnioElegido}
+            variant="outlined"
+            sx={styles.exclusiveYearSelect}
+          >
+            {aniosElegibles.map((year) => (
+              <MenuItem key={year} value={year} sx={styles.exclusiveYearMenuItem}>
+                {year}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Box
+          component="button"
+          onClick={onMoverMesesIzquierda}
+          disabled={moverIzquierdaDisabled}
           sx={{
-            height: '100%',
-            '& .MuiSelect-select': {
-              padding: '2px 0 2px 4px',
-            },
+            ...styles.exclusiveNavButton,
+            mr: '6px',
+            color: moverIzquierdaDisabled ? 'var(--text-tertiary)' : 'var(--text-secondary)',
+            cursor: moverIzquierdaDisabled ? 'default' : 'pointer',
+            opacity: moverIzquierdaDisabled ? 0.3 : 1,
           }}
-          value={obtenerAnioDelMesActual()}
-          onChange={onAnioElegido}
         >
+          <ChevronLeftIcon sx={styles.chevronIcon} />
+        </Box>
+        {mesesVisibles.map((mesItem) => {
+          const isActive = mesItem === mesExclusivoElegido;
+          return (
+            <Box
+              key={mesItem}
+              component="button"
+              onClick={() => onMesElegido(mesItem)}
+              sx={{
+                ...styles.exclusiveTab,
+                color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                '&:hover': {
+                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                },
+              }}
+            >
+              {etiquetaDeMes(mesItem)}
+            </Box>
+          );
+        })}
+        <Box
+          component="button"
+          onClick={onMoverMesesDerecha}
+          disabled={moverADerechaDisabled}
+          sx={{
+            ...styles.exclusiveNavButton,
+            ml: '6px',
+            color: moverADerechaDisabled ? 'var(--text-tertiary)' : 'var(--text-secondary)',
+            cursor: moverADerechaDisabled ? 'default' : 'pointer',
+            opacity: moverADerechaDisabled ? 0.3 : 1,
+          }}
+        >
+          <ChevronRightIcon sx={styles.chevronIcon} />
+        </Box>
+      </Box>
+    );
+  }
+
+  // Multi-select mode (used by other pages) — keep original style
+  const mesesElegidosFlat = mesesConAniosElegidos.flatMap(({ meses }) => meses);
+
+  return (
+    <Box sx={styles.multiContainer}>
+      <FormControl sx={styles.yearFormControl}>
+        <Select sx={styles.yearSelect} value={obtenerAnioDelMesActual()} onChange={onAnioElegido}>
           {aniosElegibles.map((year) => (
             <MenuItem key={year} value={year}>
               {year}
@@ -166,51 +223,28 @@ const SeleccionadorPeriodo = ({
           ))}
         </Select>
       </FormControl>
-      <Box
-        sx={{
-          color: 'red',
-          display: 'flex',
-          gap: '10px',
-          '& .MuiButtonBase-root': {
-            paddingTop: '0px',
-            paddingBottom: '0px',
-            minWidth: 'unset',
-            height: '42.5px',
-            '& .MuiButton-iconSizeMedium': {
-              margin: '0px',
-            },
-          },
-        }}
-      >
+      <Box sx={styles.multiButtonRow}>
         <Button
           variant="contained"
           startIcon={<ChevronLeftIcon />}
           onClick={onMoverMesesIzquierda}
           disabled={moverIzquierdaDisabled}
         />
-        <ToggleButtonGroup
-          value={mesesExclusivos ? mesExclusivoElegido : mesesElegidos}
-          exclusive={mesesExclusivos}
-          onChange={mesesExclusivos ? onMesElegido : onMesesElegidos}
-          sx={{ paddingBottom: '5px' }}
-        >
-          {mesesAMostrar
-            .flatMap(({ meses }) => meses)
-            .map((mes) => (
-              <ToggleButton
-                key={mes}
-                value={mes}
-                aria-label="left aligned"
-                sx={{ padding: '8px', whiteSpace: 'nowrap' }}
+        <Box sx={styles.multiMonthsBox}>
+          {mesesVisibles.map((mesItem) => {
+            const isActive = mesesElegidosFlat.includes(mesItem);
+            return (
+              <Button
+                key={mesItem}
+                variant={isActive ? 'contained' : 'text'}
+                onClick={() => onMesesElegidos([...mesesElegidosFlat, mesItem])}
+                sx={styles.multiMonthButton}
               >
-                {mes === 'Enero'
-                  ? `${mes} (${anioParaEnero})`
-                  : mes === 'Diciembre'
-                    ? `${mes} (${anioParaDiciembre})`
-                    : mes}
-              </ToggleButton>
-            ))}
-        </ToggleButtonGroup>
+                {mesItem}
+              </Button>
+            );
+          })}
+        </Box>
         <Button
           variant="contained"
           startIcon={<ChevronRightIcon />}
