@@ -1,4 +1,4 @@
-import { Box, Button } from '@mui/material';
+import { Box, Button, Divider } from '@mui/material';
 import {
   GridRowModes,
   GridRowModesModel,
@@ -87,7 +87,7 @@ const GrillaToolbar = ({
   };
 
   const sumaDeMovimientosElegidos = movimientosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
-  const sumaFormateada = transformNumberToCurrenty(sumaDeMovimientosElegidos);
+  const sumaFormateada = transformNumberToCurrenty(sumaDeMovimientosElegidos, 0);
 
   return (
     <GridToolbarContainer sx={styles.toolbar}>
@@ -100,26 +100,24 @@ const GrillaToolbar = ({
         onGuardar={onGuardarGrupoMovimiento}
       />
 
-      <Button onClick={handleAgregarNuevoMovimiento} startIcon={<AddIcon />} sx={styles.addButton}>
+      <Button size="small" color="primary" onClick={handleAgregarNuevoMovimiento} startIcon={<AddIcon />}>
         Agregar
       </Button>
 
-      <Button onClick={handleAgregarGrupoOpen} startIcon={<LibraryAddIcon />} sx={styles.toolBtn}>
+      <Button size="small" color="primary" onClick={handleAgregarGrupoOpen} startIcon={<LibraryAddIcon />}>
         Agregar grupo
       </Button>
 
-      <Button onClick={onRefrescarMovimientos} startIcon={<RefreshIcon />} sx={styles.toolBtn}>
+      <Button size="small" color="primary" onClick={onRefrescarMovimientos} startIcon={<RefreshIcon />}>
         Refrescar
       </Button>
 
       <Button
+        size="small"
+        color="primary"
         onClick={handleEliminarMovimientos}
         startIcon={<DeleteIcon />}
         disabled={movimientosElegidos.length === 0}
-        sx={{
-          ...styles.toolBtn,
-          opacity: movimientosElegidos.length === 0 ? 0.4 : 1,
-        }}
       >
         Eliminar
       </Button>
@@ -127,6 +125,8 @@ const GrillaToolbar = ({
       <Box sx={styles.toolBtn}>
         <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
       </Box>
+
+      <Divider orientation="vertical" flexItem sx={{ borderColor: 'var(--border-soft)' }} />
 
       <Box sx={styles.sumaLabel}>
         Suma parcial:

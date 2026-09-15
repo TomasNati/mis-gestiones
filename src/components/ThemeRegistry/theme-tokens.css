@@ -1,6 +1,22 @@
 /* ── Theme color schemes ── */
 /* Each theme sets the same token names so consumers stay theme-agnostic. */
 
+:root,
+[data-theme='cian'] {
+  --bg-page: #08100f;
+  --bg-panel: #0d1716;
+  --bg-elevated: #12201f;
+  --bg-row-alt: #101b1a;
+  --bg-row-hover: #182726;
+  --accent: #4fb8c4;
+  --accent-soft: rgba(79, 184, 196, 0.14);
+  --text-primary: #e9f4f5;
+  --text-secondary: #87a3a6;
+  --text-tertiary: #5a7376;
+  --border-soft: #1f2e2e;
+  --border-strong: #2e4344;
+}
+
 [data-theme='dorado'] {
   --bg-page: #0e0c09;
   --bg-panel: #15130f;
@@ -31,33 +47,17 @@
   --border-strong: #33483c;
 }
 
-:root,
-[data-theme='cian'] {
-  --bg-page: #08100f;
-  --bg-panel: #0d1716;
-  --bg-elevated: #12201f;
-  --bg-row-alt: #101b1a;
-  --bg-row-hover: #182726;
-  --accent: #4fb8c4;
-  --accent-soft: rgba(79, 184, 196, 0.14);
-  --text-primary: #e9f4f5;
-  --text-secondary: #87a3a6;
-  --text-tertiary: #5a7376;
-  --border-soft: #1f2e2e;
-  --border-strong: #2e4344;
-}
-
 [data-theme='gris'] {
-  --bg-page: #161615;
-  --bg-panel: #1c1c1a;
-  --bg-elevated: #252523;
-  --bg-row-alt: #1f1f1d;
-  --bg-row-hover: #2c2c29;
-  --accent: #c9c4b9;
-  --accent-soft: rgba(201, 196, 185, 0.16);
-  --text-primary: #f7f6f3;
-  --text-secondary: #aca79d;
-  --text-tertiary: #78746a;
-  --border-soft: #343430;
-  --border-strong: #494943;
+  --bg-page: #0d1117;
+  --bg-panel: #151b23;
+  --bg-elevated: #3d444d;
+  --bg-row-alt: #151b23;
+  --bg-row-hover: #262c36;
+  --accent: #4493f8;
+  --accent-soft: rgba(68, 147, 248, 0.14);
+  --text-primary: #f0f6fc;
+  --text-secondary: #9198a1;
+  --text-tertiary: #656c76;
+  --border-soft: #3d444d;
+  --border-strong: #656c76;
 }

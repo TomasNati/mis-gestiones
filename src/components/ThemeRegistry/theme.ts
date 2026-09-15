@@ -48,6 +48,28 @@ const theme = createTheme({
           textTransform: 'none',
           fontFamily: "'Space Grotesk', sans-serif",
         },
+        textPrimary: {
+          color: 'var(--accent)',
+          '&:hover': {
+            backgroundColor: 'var(--accent-soft)',
+          },
+        },
+        outlinedPrimary: {
+          color: 'var(--accent)',
+          borderColor: 'var(--accent)',
+          '&:hover': {
+            borderColor: 'var(--accent)',
+            backgroundColor: 'var(--accent-soft)',
+          },
+        },
+        containedPrimary: {
+          backgroundColor: 'var(--accent)',
+          color: 'var(--bg-page)',
+          '&:hover': {
+            backgroundColor: 'var(--accent)',
+            opacity: 0.9,
+          },
+        },
       },
     },
     MuiAlert: {

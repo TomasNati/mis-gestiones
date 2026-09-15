@@ -1,6 +1,6 @@
 import { SxProps } from '@mui/system';
 
-const ICON_WIDTH = 45;
+const ICON_WIDTH = 33;
 
 interface LayoutStyles {
   drawer: SxProps;
@@ -31,6 +31,9 @@ export const styles: LayoutStyles = {
     '& .MuiListItemButton-root': {
       fontSize: '13px',
       color: 'var(--text-secondary)',
+      '& .MuiListItemText-primary': {
+        fontSize: '0.9rem',
+      },
       '&:hover': {
         backgroundColor: 'var(--bg-row-hover)',
         color: 'var(--text-primary)',
