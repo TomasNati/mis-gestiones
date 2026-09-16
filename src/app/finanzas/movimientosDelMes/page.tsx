@@ -12,7 +12,7 @@ import {
   months,
 } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
-import { MovimientosDelMesGrilla } from '@/components/Movimientos/MovimientosDelMesGrilla';
+import { MovimientosDelMesGrillaMRT } from '@/components/Movimientos/MovimientosDelMesGrilla';
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
@@ -231,7 +231,7 @@ const MovimientosDelMes = () => {
           />
 
           {/* Data grid with integrated toolbar */}
-          <MovimientosDelMesGrilla
+          <MovimientosDelMesGrillaMRT
             movimientos={movimientos}
             anio={anioYMes.anio}
             mes={months.indexOf(anioYMes.mes)}
