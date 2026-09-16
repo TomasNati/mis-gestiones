@@ -10,6 +10,7 @@ import {
   type MRT_ColumnDef,
   type MRT_ExpandedState,
   type MRT_GroupingState,
+  MRT_ToolbarAlertBanner,
 } from 'material-react-table';
 import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
@@ -21,7 +22,6 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { EntidadNombre } from '@/components/comun/EntidadNombre';
-import { TextWithCopy } from '@/components/comun/TextWithCopy';
 import { TipoDePagoVista } from '../editores/TipoDePago/TipoDePago';
 import { styles } from './MovimientosDelMesGrillaMRT.styles';
 
@@ -62,8 +62,8 @@ const MovimientosDelMesGrillaMRT = ({
     () => [
       {
         accessorKey: 'dia',
-        header: 'Día',
-        size: 0,
+        header: 'Fecha',
+        size: 100,
         enableHiding: false,
       },
       {
@@ -82,9 +82,16 @@ const MovimientosDelMesGrillaMRT = ({
         },
         id: 'concepto',
         header: 'Concepto',
-        size: 250,
+        size: 300,
         Cell: ({ row }) => (
-          <EntidadNombre nombre={row.original.concepto?.nombre} active={row.original.concepto?.active} />
+          <Box>
+            <EntidadNombre nombre={row.original.concepto?.nombre} active={row.original.concepto?.active} />
+            {row.original.comentarios ? (
+              <Box sx={{ color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: 1.4 }}>
+                {row.original.comentarios}
+              </Box>
+            ) : null}
+          </Box>
         ),
       },
       {
@@ -98,26 +105,58 @@ const MovimientosDelMesGrillaMRT = ({
         id: 'monto',
         header: 'Monto',
         size: 150,
+        muiTableHeadCellProps: {
+          align: 'right',
+        },
+        Cell: ({ cell }) => (
+          <Box
+            sx={{
+              textAlign: 'right',
+              fontFamily: "'IBM Plex Mono', monospace",
+              color: 'var(--text-primary)',
+            }}
+          >
+            {cell.getValue<string>()}
+          </Box>
+        ),
         aggregationFn: 'sum',
+        aggregatedCellStyle: {
+          overflow: 'visible',
+          whiteSpace: 'nowrap',
+          maxWidth: 'none',
+        },
         AggregatedCell: ({ table, row }) => {
           const groupedRows = row.subRows?.filter((r) => !r.getIsGrouped?.()) || [];
-          const sum = groupedRows.reduce(
-            (acc, r) => acc + (r.original?.monto || 0),
-            0,
-          );
+          const sum = groupedRows.reduce((acc, r) => acc + (r.original?.monto || 0), 0);
           return (
-            <Box sx={{ textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", color: 'var(--text-secondary)' }}>
+            <Box
+              sx={{
+                textAlign: 'right',
+                fontFamily: "'IBM Plex Mono', monospace",
+                color: 'var(--text-secondary)',
+                whiteSpace: 'nowrap',
+                overflow: 'visible',
+              }}
+            >
               subtotal $ {transformNumberToCurrenty(sum)}
             </Box>
           );
         },
       },
       {
-        accessorKey: 'comentarios',
-        header: 'Detalle',
-        size: 200,
-        grow: true,
-        Cell: ({ cell }) => <TextWithCopy displayText={cell.getValue<string>() || ''} copyButtonAlignment="right" />,
+        accessorKey: 'zzz',
+        id: 'zzz',
+        header: '',
+        size: 9999,
+        enableHiding: false,
+        enableSorting: false,
+        enableGrouping: false,
+        enablePinning: false,
+        enableResizing: false,
+        enableColumnActions: false,
+        enableClickToCopy: false,
+        enableGlobalFilter: false,
+        enableEditing: false,
       },
     ],
     [],
@@ -132,17 +171,26 @@ const MovimientosDelMesGrillaMRT = ({
     enableColumnFilters: false,
     enableGrouping: true,
     groupedColumnMode: 'remove',
+    positionToolbarAlertBanner: 'none',
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+        {table.getState().grouping.length > 0 && <MRT_ToolbarAlertBanner table={table} />}
+      </Box>
+    ),
     enableExpanding: true,
     enableExpandAll: false,
     onExpandedChange: setExpanded,
     displayColumnDefOptions: {
       'mrt-row-expand': {
-        header: 'Dia',
+        header: '',
       },
     },
     getRowId: (row) => row.id,
     enableRowSelection: (row) => !row.getIsGrouped(),
     onRowSelectionChange: setRowSelection,
+    initialState: {
+      density: 'compact',
+    },
     state: {
       rowSelection,
       grouping,
