@@ -184,7 +184,7 @@ const MovimientosDelMesGrillaMRT = ({
                 overflow: 'visible',
               }}
             >
-              subtotal $ {transformNumberToCurrenty(sum)}
+              subtotal $ {transformNumberToCurrenty(sum, 0)}
             </Box>
           );
         },
