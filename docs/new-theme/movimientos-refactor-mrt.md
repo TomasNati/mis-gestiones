@@ -61,7 +61,7 @@ La migración se separa en fases para reducir riesgo. La **Fase 1** es la única
 
 **1.A Verificación**
 - [x] `tsc --noEmit` ✓ y lint ✓ (ambos pasan).
-- [ ] Chequeo manual pendiente: cambio de tema, agrupación por día + subtotales, check-all + checkbox por movimiento, suma parcial, export CSV, refrescar.
+- [x] Chequeo manual pendiente: cambio de tema, agrupación por día + subtotales, check-all + checkbox por movimiento, suma parcial, export CSV, refrescar.
 
 ---
 
@@ -96,3 +96,5 @@ La migración se separa en fases para reducir riesgo. La **Fase 1** es la única
 - Quitar `@mui/x-data-grid` de `GrillaToolbar` únicamente (las otras grillas — Vencimiento/Presupuesto — siguen usándolo; la dependencia se mantiene).
 - Eliminar el componente viejo `MovimientosDelMesGrilla.tsx` (o su archivo de estilos) si quedó sin uso.
 - Verificación final completa: agregar, editar, eliminar, grupo, export, themes, notificaciones (`ConfiguracionNotificacion`).
+
+**Estado hoy (canonical git, verificado):** Fase 1 completa — tsc --noEmit exit 0; columna Monto con header right + fonte mono igual al subtotal; columnas: Fecha/Categoría/Concepto/Tipo de pago/Monto con anchos 100/100/250/130/150 + dummy zzz size 9999; density dense en initialState; toolbar custom actions con misma altura de la barra derecha.

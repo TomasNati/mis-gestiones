@@ -236,6 +236,7 @@ const MovimientosDelMes = () => {
             anio={anioYMes.anio}
             mes={months.indexOf(anioYMes.mes)}
             totalMensualEstimado={totalMensualEstimado || 0}
+            leftSeparator
             onMovimientoActualizado={onMovimientoActualizado}
             onMovimientosEliminados={onMovimientosEliminados}
             onRefrescarMovimientos={onRefrescarMovimientos}

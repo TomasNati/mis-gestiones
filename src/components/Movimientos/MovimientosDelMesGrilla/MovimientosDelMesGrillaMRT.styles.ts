@@ -9,6 +9,7 @@ interface MovimientosDelMesGrillaMRTStyles {
   topToolbar: SxProps;
   bottomToolbar: SxProps;
   toolbar: SxProps;
+  toolbarAlertBanner: SxProps;
   toolBtn: SxProps;
   spacer: SxProps;
   sumaLabel: SxProps;
@@ -83,6 +84,10 @@ export const styles: MovimientosDelMesGrillaMRTStyles = {
     px: '28px',
     py: '16px',
     borderBottom: '1px solid var(--border-soft)',
+    '& > .MuiBox-root': {
+      p: 0,
+      alignItems: 'center',
+    },
   },
   bottomToolbar: {
     backgroundColor: colors.background,
@@ -91,6 +96,34 @@ export const styles: MovimientosDelMesGrillaMRTStyles = {
     display: 'flex',
     alignItems: 'center',
     gap: '11px',
+  },
+  toolbarAlertBanner: {
+    '& .MuiAlert-root': {
+      backgroundColor: 'transparent',
+      color: 'var(--text-secondary)',
+    },
+    '& .MuiAlert-message': {
+      p: 0,
+    },
+    '& .MuiStack-root': {
+      fontSize: '13px',
+    },
+    '& span': {
+      fontSize: '13px',
+    },
+    '& .MuiChip-root': {
+      backgroundColor: 'var(--bg-elevated)',
+      color: 'var(--text-primary)',
+      fontSize: '13px',
+      height: '24px',
+      '& .MuiChip-label': {
+        fontSize: '13px',
+      },
+      '& .MuiChip-deleteIcon': {
+        fontSize: '16px',
+        color: 'var(--text-tertiary)',
+      },
+    },
   },
   toolBtn: {
     display: 'flex',

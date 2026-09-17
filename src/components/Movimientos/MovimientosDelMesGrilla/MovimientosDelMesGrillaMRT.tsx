@@ -1,18 +1,15 @@
-import { MovimientoGastoGrilla, ResultadoAPI, GrupoMovimiento, months } from '@/lib/definitions';
-import {
-  mapearSubcategoriasATiposDeConceptoExcel,
-  transformNumberToCurrenty,
-} from '@/lib/helpers';
+import { CategoriaUIMovimiento, MovimientoGastoGrilla, ResultadoAPI, GrupoMovimiento, months } from '@/lib/definitions';
+import { mapearSubcategoriasATiposDeConceptoExcel, transformNumberToCurrenty } from '@/lib/helpers';
 import {
   MaterialReactTable,
   useMaterialReactTable,
-  MRT_AggregationFns,
+  MRT_ExpandAllButton,
   type MRT_ColumnDef,
   type MRT_ExpandedState,
   type MRT_GroupingState,
   MRT_ToolbarAlertBanner,
 } from 'material-react-table';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -21,16 +18,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { eliminarMovimientos } from '@/lib/orm/actions';
+import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { EntidadNombre } from '@/components/comun/EntidadNombre';
 import { TipoDePagoVista } from '../editores/TipoDePago/TipoDePago';
+import { GrupoModal } from '../editores/GrupoModal/GrupoModal';
 import { styles } from './MovimientosDelMesGrillaMRT.styles';
-
 
 interface MovimientosDelMesGrillaMRTProps {
   movimientos: MovimientoGastoGrilla[];
   mes: number;
   anio: number;
   totalMensualEstimado: number;
+  leftSeparator?: boolean;
   onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => Promise<MovimientoGastoGrilla>;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
   onRefrescarMovimientos: () => void;
@@ -41,11 +41,55 @@ const MovimientosDelMesGrillaMRT = ({
   movimientos,
   mes,
   anio,
+  leftSeparator = false,
+  onMovimientoActualizado,
+  onMovimientosEliminados,
   onRefrescarMovimientos,
+  onCrearGrupoMovimientos,
 }: MovimientosDelMesGrillaMRTProps) => {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [grouping, setGrouping] = useState<MRT_GroupingState>(['dia']);
   const [expanded, setExpanded] = useState<MRT_ExpandedState>(true);
+  const [openAgregarGrupo, setOpenAgregarGrupo] = useState(false);
+  const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
+
+  useEffect(() => {
+    const fetchConceptos = async () => {
+      const categorias = await obtenerCategoriasDeMovimientos();
+      categorias.sort((a, b) => {
+        if (a.categoriaNombre < b.categoriaNombre) {
+          return -1;
+        }
+        if (a.categoriaNombre > b.categoriaNombre) {
+          return 1;
+        }
+        return 0;
+      });
+      setCategoriasMovimiento(categorias);
+    };
+    fetchConceptos();
+  }, []);
+
+  const handleAgregarGrupoOpen = () => {
+    setOpenAgregarGrupo(true);
+  };
+
+  const handleAgregarGrupoClose = () => {
+    setOpenAgregarGrupo(false);
+  };
+
+  const handleEliminarMovimientos = async () => {
+    const movimientosAEliminar = Object.keys(rowSelection);
+    if (movimientosAEliminar.length === 0) {
+      return;
+    }
+    const resultadoEliminacion = await eliminarMovimientos(movimientosAEliminar);
+    if (resultadoEliminacion.exitoso) {
+      setRowSelection({});
+      onRefrescarMovimientos();
+    }
+    onMovimientosEliminados(resultadoEliminacion);
+  };
 
   const data = useMemo(
     () =>
@@ -101,7 +145,7 @@ const MovimientosDelMesGrillaMRT = ({
         Cell: ({ cell }) => <TipoDePagoVista tipoDePago={cell.getValue() as any} />,
       },
       {
-        accessorFn: (row) => transformNumberToCurrenty(row.monto) || '',
+        accessorFn: (row) => transformNumberToCurrenty(row.monto, 0) || '',
         id: 'monto',
         header: 'Monto',
         size: 150,
@@ -172,11 +216,88 @@ const MovimientosDelMesGrillaMRT = ({
     enableGrouping: true,
     groupedColumnMode: 'remove',
     positionToolbarAlertBanner: 'none',
-    renderTopToolbarCustomActions: ({ table }) => (
-      <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        {table.getState().grouping.length > 0 && <MRT_ToolbarAlertBanner table={table} />}
-      </Box>
+    renderToolbarAlertBannerContent: ({ groupedAlert, selectedAlert }) => (
+      <>
+        {groupedAlert}
+        {selectedAlert && <Box sx={{ display: 'flex' }}>{selectedAlert}</Box>}
+      </>
     ),
+    renderTopToolbarCustomActions: () => {
+      const selectedRowIds = Object.keys(rowSelection);
+      const selectedMovimientos = data.filter((m) => selectedRowIds.includes(m.id));
+      const sumaParcial = selectedMovimientos.reduce((acc, m) => acc + (m.monto || 0), 0);
+      const sumaFormateada = transformNumberToCurrenty(sumaParcial, 0);
+
+      const handleExportCSV = () => {
+        const header = ['Categoría', 'Concepto', 'Tipo de pago', 'Monto', 'Detalle'];
+        const rows = data.map((row) => {
+          const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(row.concepto?.subcategoriaId);
+          return [
+            row.categoria?.nombre || '',
+            concepto || row.concepto?.nombre || '',
+            row.tipoDeGasto || '',
+            row.monto?.toString() || '',
+            row.comentarios || '',
+          ];
+        });
+        const csvContent = [header.join(','), ...rows.map((r) => r.join(','))].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `movimientos-${monthName}-${anio}.csv`);
+        link.click();
+        URL.revokeObjectURL(url);
+      };
+
+      return (
+        <Box sx={styles.toolbar}>
+          <GrupoModal
+            open={openAgregarGrupo}
+            onClose={handleAgregarGrupoClose}
+            anio={anio}
+            mes={mes}
+            categoriasMovimiento={categoriasMovimiento}
+            onGuardar={onCrearGrupoMovimientos}
+          />
+          <MRT_ToolbarAlertBanner table={table} sx={styles.toolbarAlertBanner} />
+          {leftSeparator && <Divider orientation="vertical" flexItem sx={{ borderColor: 'var(--border-soft)' }} />}
+          <MRT_ExpandAllButton table={table} color="primary" />
+          <Divider orientation="vertical" flexItem sx={{ borderColor: 'var(--border-soft)' }} />
+          <Button size="small" color="primary" startIcon={<AddIcon />} disabled>
+            Agregar
+          </Button>
+          <Button size="small" color="primary" onClick={handleAgregarGrupoOpen} startIcon={<LibraryAddIcon />}>
+            Agregar grupo
+          </Button>
+          <Button size="small" color="primary" onClick={onRefrescarMovimientos} startIcon={<RefreshIcon />}>
+            Refrescar
+          </Button>
+          <Button
+            size="small"
+            color="primary"
+            onClick={handleEliminarMovimientos}
+            startIcon={<DeleteIcon />}
+            disabled={Object.keys(rowSelection).length === 0}
+          >
+            Eliminar
+          </Button>
+          <Box sx={styles.toolBtn}>
+            <Button size="small" color="primary" onClick={handleExportCSV} startIcon={<FileDownloadIcon />}>
+              Exportar
+            </Button>
+          </Box>
+          <Divider orientation="vertical" flexItem sx={{ borderColor: 'var(--border-soft)' }} />
+          <Box sx={styles.sumaLabel}>
+            Suma parcial:
+            <Box component="span" className="num" sx={styles.sumaValue}>
+              {sumaFormateada}
+            </Box>
+          </Box>
+          <Box sx={styles.spacer} />
+        </Box>
+      );
+    },
     enableExpanding: true,
     enableExpandAll: false,
     onExpandedChange: setExpanded,
@@ -211,64 +332,6 @@ const MovimientosDelMesGrillaMRT = ({
     }),
     muiTopToolbarProps: { sx: styles.topToolbar },
     muiBottomToolbarProps: { sx: styles.bottomToolbar },
-    renderBottomToolbarCustomActions: ({ table }) => {
-      const selectedRowIds = Object.keys(rowSelection);
-      const selectedMovimientos = data.filter((m) => selectedRowIds.includes(m.id));
-      const sumaParcial = selectedMovimientos.reduce((acc, m) => acc + (m.monto || 0), 0);
-      const sumaFormateada = transformNumberToCurrenty(sumaParcial, 0);
-
-      const handleExportCSV = () => {
-        const header = ['Categoría', 'Concepto', 'Tipo de pago', 'Monto', 'Detalle'];
-        const rows = data.map((row) => {
-          const [concepto] = mapearSubcategoriasATiposDeConceptoExcel(row.concepto?.subcategoriaId);
-          return [
-            row.categoria?.nombre || '',
-            concepto || row.concepto?.nombre || '',
-            row.tipoDeGasto || '',
-            row.monto?.toString() || '',
-            row.comentarios || '',
-          ];
-        });
-        const csvContent = [header.join(','), ...rows.map((r) => r.join(','))].join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `movimientos-${monthName}-${anio}.csv`);
-        link.click();
-        URL.revokeObjectURL(url);
-      };
-
-      return (
-        <Box sx={styles.toolbar}>
-          <Button size="small" color="primary" startIcon={<AddIcon />} disabled>
-            Agregar
-          </Button>
-          <Button size="small" color="primary" startIcon={<LibraryAddIcon />} disabled>
-            Agregar grupo
-          </Button>
-          <Button size="small" color="primary" onClick={onRefrescarMovimientos} startIcon={<RefreshIcon />}>
-            Refrescar
-          </Button>
-          <Button size="small" color="primary" startIcon={<DeleteIcon />} disabled>
-            Eliminar
-          </Button>
-          <Box sx={styles.toolBtn}>
-            <Button size="small" color="primary" onClick={handleExportCSV} startIcon={<FileDownloadIcon />}>
-              Exportar
-            </Button>
-          </Box>
-          <Divider orientation="vertical" flexItem sx={{ borderColor: 'var(--border-soft)' }} />
-          <Box sx={styles.sumaLabel}>
-            Suma parcial:
-            <Box component="span" className="num" sx={styles.sumaValue}>
-              {sumaFormateada}
-            </Box>
-          </Box>
-          <Box sx={styles.spacer} />
-        </Box>
-      );
-    },
     renderBottomToolbar: false,
   });
 
