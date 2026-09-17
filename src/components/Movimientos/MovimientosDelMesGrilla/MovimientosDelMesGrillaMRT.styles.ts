@@ -14,6 +14,7 @@ interface MovimientosDelMesGrillaMRTStyles {
   spacer: SxProps;
   sumaLabel: SxProps;
   sumaValue: SxProps;
+  skeleton: SxProps;
 }
 
 const colors = {
@@ -139,4 +140,7 @@ export const styles: MovimientosDelMesGrillaMRTStyles = {
     gap: '5px',
   },
   sumaValue: { color: 'var(--text-primary)' },
+  skeleton: {
+    opacity: 0.6,
+  },
 };

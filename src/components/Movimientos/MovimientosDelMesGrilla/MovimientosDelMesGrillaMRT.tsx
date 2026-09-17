@@ -31,6 +31,7 @@ interface MovimientosDelMesGrillaMRTProps {
   anio: number;
   totalMensualEstimado: number;
   leftSeparator?: boolean;
+  isLoading?: boolean;
   onMovimientoActualizado: (movimiento: MovimientoGastoGrilla) => Promise<MovimientoGastoGrilla>;
   onMovimientosEliminados: (resultado: ResultadoAPI) => void;
   onRefrescarMovimientos: () => void;
@@ -42,6 +43,7 @@ const MovimientosDelMesGrillaMRT = ({
   mes,
   anio,
   leftSeparator = false,
+  isLoading = false,
   onMovimientoActualizado,
   onMovimientosEliminados,
   onRefrescarMovimientos,
@@ -316,10 +318,21 @@ const MovimientosDelMesGrillaMRT = ({
       rowSelection,
       grouping,
       expanded,
+      isLoading,
     },
     onGroupingChange: setGrouping,
     muiTablePaperProps: { sx: styles.tablePaper },
     muiTableContainerProps: { sx: styles.tableContainer },
+    muiCircularProgressProps: {
+      color: 'primary',
+      thickness: 5,
+      size: 55,
+    },
+    muiSkeletonProps: {
+      animation: 'pulse',
+      height: 28,
+      sx: styles.skeleton,
+    },
     muiTableHeadProps: { sx: styles.tableHead },
     muiTableBodyProps: { sx: styles.tableBody },
     muiTableBodyRowProps: ({ row }) => ({

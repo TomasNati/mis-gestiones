@@ -2,7 +2,7 @@
 
 import { obtenerMovimientosPorFecha, obtenerGastosEstimadosTotalesPorFecha } from '@/lib/orm/data';
 import { Box, Divider, IconButton } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   AnioYMes,
   GrupoMovimiento,
@@ -12,6 +12,7 @@ import {
   months,
 } from '@/lib/definitions';
 import { setDateAsUTC } from '@/lib/helpers';
+import { useQuery } from '@tanstack/react-query';
 import { MovimientosDelMesGrillaMRT } from '@/components/Movimientos/MovimientosDelMesGrilla';
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
@@ -27,43 +28,46 @@ const MovimientosDelMes = () => {
     anio: new Date().getFullYear(),
     mes: months[new Date().getMonth()],
   });
-  const [movimientos, setMovimientos] = useState<MovimientoGastoGrilla[]>([]);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
     mensaje: '',
   });
-  const [totalMensualEstimado, setTotalMensualEstimado] = useState(0);
   const [mostrandoGraficos, setMostrandoGraficos] = useState(false);
 
-  const obtenerMovimientos = useCallback(async (): Promise<MovimientoGastoGrilla[]> => {
-    const fecha = new Date(anioYMes.anio, months.indexOf(anioYMes.mes), 1);
-    const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
+  const mostrarInformacion = !!(anioYMes.anio && anioYMes.mes);
 
-    const [movimientos, totalEstimadoParaElMes] = await Promise.all([
-      obtenerMovimientosPorFecha(primerDiaDelMesActual),
-      obtenerGastosEstimadosTotalesPorFecha(primerDiaDelMesActual),
-    ]);
+  const movimientosQuery = useQuery({
+    queryKey: ['movimientosDelMes', anioYMes],
+    enabled: mostrarInformacion,
+    queryFn: async (): Promise<{
+      movimientos: MovimientoGastoGrilla[];
+      totalMensualEstimado: number;
+    }> => {
+      const fecha = new Date(anioYMes.anio, months.indexOf(anioYMes.mes), 1);
+      const primerDiaDelMesActual = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
 
-    setTotalMensualEstimado(totalEstimadoParaElMes);
+      const [movimientos, totalEstimadoParaElMes] = await Promise.all([
+        obtenerMovimientosPorFecha(primerDiaDelMesActual),
+        obtenerGastosEstimadosTotalesPorFecha(primerDiaDelMesActual),
+      ]);
 
-    const movimientosNoCredito = movimientos.filter((movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito');
-    const movimientosCredito = movimientos.filter((movimiento) => movimiento.tipoDeGasto.toString() === 'Credito');
-    const movimientosOrdenados = [...movimientosNoCredito, ...movimientosCredito];
-    movimientosOrdenados.forEach((mov) => {
-      mov.fecha = setDateAsUTC(mov.fecha);
-    });
-    return movimientosOrdenados;
-  }, [anioYMes]);
+      const movimientosNoCredito = movimientos.filter(
+        (movimiento) => movimiento.tipoDeGasto.toString() !== 'Credito',
+      );
+      const movimientosCredito = movimientos.filter(
+        (movimiento) => movimiento.tipoDeGasto.toString() === 'Credito',
+      );
+      const movimientosOrdenados = [...movimientosNoCredito, ...movimientosCredito];
+      movimientosOrdenados.forEach((mov) => {
+        mov.fecha = setDateAsUTC(mov.fecha);
+      });
+      return { movimientos: movimientosOrdenados, totalMensualEstimado: totalEstimadoParaElMes };
+    },
+  });
 
-  useEffect(() => {
-    const refrescarMovimientos = async () => {
-      const movimientos = await obtenerMovimientos();
-      setMovimientos(movimientos);
-    };
-
-    refrescarMovimientos();
-  }, [anioYMes, obtenerMovimientos]);
+  const movimientos = movimientosQuery.data?.movimientos ?? [];
+  const totalMensualEstimado = movimientosQuery.data?.totalMensualEstimado ?? 0;
 
   const oneMesYAnioChanged = async (mesNuevo: string, anioNuevo: number) => {
     setAnioYMes({ anio: anioNuevo, mes: mesNuevo });
@@ -151,12 +155,9 @@ const MovimientosDelMes = () => {
     }
   };
 
-  const onRefrescarMovimientos = async () => {
-    const movimientos = await obtenerMovimientos();
-    setMovimientos(movimientos);
+  const onRefrescarMovimientos = () => {
+    movimientosQuery.refetch();
   };
-
-  const mostrarInformacion = !!(anioYMes.anio && anioYMes.mes);
 
   return (
     <Box>
@@ -236,6 +237,7 @@ const MovimientosDelMes = () => {
             anio={anioYMes.anio}
             mes={months.indexOf(anioYMes.mes)}
             totalMensualEstimado={totalMensualEstimado || 0}
+            isLoading={movimientosQuery.isFetching}
             leftSeparator
             onMovimientoActualizado={onMovimientoActualizado}
             onMovimientosEliminados={onMovimientosEliminados}
