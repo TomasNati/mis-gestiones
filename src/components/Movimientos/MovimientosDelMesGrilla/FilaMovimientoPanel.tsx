@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
@@ -18,7 +19,7 @@ interface FilaMovimientoPanelProps {
   categoriasMovimiento: CategoriaUIMovimiento[];
   anio: number;
   mes: number;
-  onGuardar: (movimiento: MovimientoGastoGrilla) => void;
+  onGuardar: (movimiento: MovimientoGastoGrilla) => Promise<void>;
   onCancelar: () => void;
 }
 
@@ -36,43 +37,58 @@ const FilaMovimientoPanel = ({
   const [tipoDeGasto, setTipoDeGasto] = useState<TipoDeMovimientoGasto | undefined>(fila.tipoDeGasto);
   const [monto, setMonto] = useState<number | undefined>(undefined);
   const [comentarios, setComentarios] = useState<string>(fila.comentarios ?? '');
+  const [guardando, setGuardando] = useState(false);
 
   const diasDelMes = obtenerDiasEnElMes(new Date(anio, mes, 1));
 
+  const fechaRef = useRef<HTMLElement>(null);
   const montoRef = useRef<HTMLElement>(null);
   const comentariosRef = useRef<HTMLElement>(null);
   const guardarRef = useRef<HTMLElement>(null);
 
-  const handleGuardar = () => {
-    const montoFinal = monto ?? fila.monto;
-    const valido =
-      !!fila.id &&
-      dia != null &&
-      dia >= 1 &&
-      dia <= diasDelMes &&
-      !!concepto &&
-      tipoDeGasto != null &&
-      montoFinal != null &&
-      montoFinal > 0.01;
-    if (!valido) {
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      fechaRef.current?.querySelector<HTMLElement>('input')?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const montoFinal = monto ?? fila.monto;
+  const valido =
+    !!fila.id &&
+    dia != null &&
+    dia >= 1 &&
+    dia <= diasDelMes &&
+    !!concepto &&
+    tipoDeGasto != null &&
+    montoFinal != null &&
+    montoFinal > 0.01;
+
+  const handleGuardar = async () => {
+    if (!valido || guardando) {
       return;
     }
-    onGuardar({
-      ...fila,
-      categoria: { nombre: concepto.categoriaNombre, active: concepto.categoriaActive },
-      fecha: new Date(anio, mes, dia),
-      concepto,
-      tipoDeGasto,
-      monto: montoFinal,
-      comentarios,
-    });
+    setGuardando(true);
+    try {
+      await onGuardar({
+        ...fila,
+        categoria: { nombre: concepto.categoriaNombre, active: concepto.categoriaActive },
+        fecha: new Date(anio, mes, dia),
+        concepto,
+        tipoDeGasto,
+        monto: montoFinal,
+        comentarios,
+      });
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
     <Box
       sx={styles.filaPanel}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && !guardando) {
           onCancelar();
         }
       }}
@@ -88,14 +104,16 @@ const FilaMovimientoPanel = ({
       >
         {esNuevo ? 'Agregando movimiento' : 'Editando movimiento'}
       </Box>
-      <Fecha
-        diasDelMes={diasDelMes}
-        initialValue={fila.dia}
-        onChange={setDia}
-        onTabPressed={() => {}}
-        label="Día"
-        size="small"
-      />
+      <Box ref={fechaRef}>
+        <Fecha
+          diasDelMes={diasDelMes}
+          initialValue={fila.dia}
+          onChange={setDia}
+          onTabPressed={() => {}}
+          label="Día"
+          size="small"
+        />
+      </Box>
       <Concepto
         categoriasMovimiento={categoriasMovimiento}
         conceptoInicial={concepto}
@@ -131,11 +149,18 @@ const FilaMovimientoPanel = ({
         <NumberInput valorInicial={fila.monto?.toString()} onBlur={setMonto} label="Monto" size="small" />
       </Box>
       <Box ref={guardarRef}>
-        <Button size="small" variant="contained" color="primary" startIcon={<SaveIcon />} onClick={handleGuardar}>
+        <Button
+          size="small"
+          variant="contained"
+          color="primary"
+          disabled={!valido}
+          startIcon={guardando ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
+          onClick={handleGuardar}
+        >
           {esNuevo ? 'Agregar' : 'Guardar'}
         </Button>
       </Box>
-      <Button size="small" variant="outlined" startIcon={<CloseIcon />} onClick={onCancelar}>
+      <Button size="small" variant="outlined" startIcon={<CloseIcon />} onClick={onCancelar} disabled={guardando}>
         Cancelar
       </Button>
       <Box

@@ -28,12 +28,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import EditIcon from '@mui/icons-material/Edit';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 import { eliminarMovimientos } from '@/lib/orm/actions';
 import { obtenerCategoriasDeMovimientos } from '@/lib/orm/data';
 import { EntidadNombre } from '@/components/comun/EntidadNombre';
+import { TextWithCopy } from '@/components/comun/TextWithCopy';
 import { TipoDePagoVista } from '../editores/TipoDePago/TipoDePago';
 import { GrupoModal } from '../editores/GrupoModal/GrupoModal';
 import { FilaMovimientoPanel } from './FilaMovimientoPanel';
@@ -286,8 +286,12 @@ const MovimientosDelMesGrillaMRT = ({
           <Box>
             <EntidadNombre nombre={row.original.concepto?.nombre} active={row.original.concepto?.active} />
             {row.original.comentarios ? (
-              <Box sx={{ color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: 1.4 }}>
-                {row.original.comentarios}
+              <Box sx={{ display: 'block' }}>
+                <TextWithCopy
+                  displayText={row.original.comentarios}
+                  copyButtonAlignment="right"
+                  displaySx={{ color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: 1.4 }}
+                />
               </Box>
             ) : null}
           </Box>
@@ -301,15 +305,17 @@ const MovimientosDelMesGrillaMRT = ({
         muiTableHeadCellProps: {
           align: 'right',
         },
-        Cell: ({ cell }) => (
-          <Box
-            sx={{
-              textAlign: 'right',
-              fontFamily: "'IBM Plex Mono', monospace",
-              color: 'var(--text-primary)',
-            }}
-          >
-            {cell.getValue<string>()}
+        Cell: ({ row, cell }) => (
+          <Box sx={{ textAlign: 'right' }}>
+            <TextWithCopy
+              displayText={cell.getValue<string>()}
+              copyText={row.original.monto?.toString()}
+              copyButtonAlignment="right"
+              displaySx={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                color: 'var(--text-primary)',
+              }}
+            />
           </Box>
         ),
         aggregationFn: 'sum',
@@ -336,7 +342,18 @@ const MovimientosDelMesGrillaMRT = ({
           );
         },
       },
-      ],
+      {
+        id: 'spacer',
+        accessorFn: () => '',
+        header: '',
+        size: 9999,
+        enableHiding: false,
+        Cell: () => null,
+        enableColumnDragging: false,
+        enableColumnOrdering: false,
+        enableColumnFilter: false,
+      },
+    ],
     [],
   );
 
@@ -443,6 +460,7 @@ const MovimientosDelMesGrillaMRT = ({
     enableExpanding: true,
     enableExpandAll: false,
     onExpandedChange: setExpanded,
+    enableRowActions: false,
     renderDetailPanel: ({ row, table }) => {
       if (editandoId !== row.id) {
         return null;
@@ -456,27 +474,6 @@ const MovimientosDelMesGrillaMRT = ({
           onGuardar={handleGuardar}
           onCancelar={cerrarPanel}
         />
-      );
-    },
-    enableRowActions: true,
-    positionActionsColumn: 'last',
-    renderRowActions: ({ row }) => {
-      if (row.getIsGrouped()) {
-        return null;
-      }
-      return (
-        <Box sx={styles.editActionCell}>
-          <Tooltip title="Editar" placement="right-start">
-            <IconButton
-              className="edit-trigger"
-              size="small"
-              sx={styles.editTrigger}
-              onClick={() => abrirPanel(row)}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
       );
     },
     displayColumnDefOptions: {
@@ -495,12 +492,6 @@ const MovimientosDelMesGrillaMRT = ({
               <Box component="span">({row.subRows?.length})</Box>
             </Box>
           );
-        },
-      },
-      'mrt-row-actions': {
-        size: 9999,
-        muiTableBodyCellProps: {
-          align: 'right',
         },
       },
     },
@@ -555,7 +546,7 @@ const MovimientosDelMesGrillaMRT = ({
       }
       const editando = editandoId === row.id;
       return {
-        onClick: (event) => {
+        onDoubleClick: (event) => {
           if ((event.target as HTMLElement).closest('button, input, select, textarea, a')) {
             return;
           }
