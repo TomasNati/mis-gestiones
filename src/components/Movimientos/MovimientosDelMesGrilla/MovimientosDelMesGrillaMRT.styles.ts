@@ -6,6 +6,9 @@ interface MovimientosDelMesGrillaMRTStyles {
   tableHead: SxProps;
   tableBody: SxProps;
   tableBodyRow: SxProps;
+  editActionCell: SxProps;
+  editTrigger: SxProps;
+  filaPanel: SxProps;
   topToolbar: SxProps;
   bottomToolbar: SxProps;
   toolbar: SxProps;
@@ -73,9 +76,37 @@ export const styles: MovimientosDelMesGrillaMRTStyles = {
       color: 'var(--text-primary)',
       borderColor: 'var(--border-soft)',
     },
+    '& .edit-trigger': {
+      opacity: 0,
+      transition: 'opacity 150ms ease, color 150ms ease, border-color 150ms ease',
+    },
+    '& .MuiTableRow-root:hover .edit-trigger': {
+      opacity: 1,
+    },
   },
   tableBodyRow: {
     backgroundColor: colors.background,
+  },
+  editActionCell: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    p: 0,
+  },
+  editTrigger: {
+    color: 'var(--text-tertiary)',
+    '&:hover': {
+      color: 'var(--text-primary)',
+      backgroundColor: 'transparent',
+    },
+  },
+  filaPanel: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: '12px',
+    p: '12px 16px',
+    backgroundColor: 'var(--accent-soft)',
   },
   topToolbar: {
     backgroundColor: colors.background,

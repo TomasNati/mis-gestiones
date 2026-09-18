@@ -74,27 +74,28 @@ La migración se separa en fases para reducir riesgo. La **Fase 1** es la única
 - `editores/TipoDePago/TipoDePago.tsx` ya está libre de grid — sin cambios.
 - Verificar que `GrupoModal`/`FilaGrupoModal` sigan compilando (usan `Concepto`/`TipoDePagoEdicion`).
 
-**2.2 Edición inline (points 4 y 5 del doc)**
-- `enableEditing: true` + `editDisplayMode: 'row'`.
-- Celdas de edición custom vía prop `Edit` de cada columna, usando los editores extraídos (Fecha, Concepto, TipoDePagoEdicion, NumberInput). Fecha por defecto: hoy (si mes actual) o día 1 (portar lógica actual).
-- Columna de acciones con ícono de editar que aparece en hover (mock `.edit-trigger`) + Guardar/Cancelar inline (mock `.save-btn`/`.cancel-btn`, similar a `MRT_EditActionButtons`).
-- Portar la validación actual (`id && fecha && concepto && tipoDeGasto !== null && monto > 0.01`) a `onEditingRowSave`; si inválido, revertir (no commitear) — equivalente a `processRowUpdate` (MovimientosDelMesGrilla.tsx:203).
-- Commit a través de `onMovimientoActualizado` (no cambia la API desde la página).
+**2.2 Edición por panel que reemplaza la fila (mix inline/modal — decisión del usuario)**
+- Click sobre una fila (o su botón hover) → la fila se **oculta** (`display: none` vía `muiTableBodyRowProps`) y en su lugar se renderiza un panel a ancho completo (colSpan) con **todos** los campos: Día (puede cambiar la fecha), Categoría y concepto (autocomplete `Concepto`), Tipo de pago (`TipoDePagoEdicion`), Monto (`NumberInput`), Comentarios (`TextField`) + Guardar/Cancelar.
+- Implementado con `renderDetailPanel` + expansión controlada: `state.expanded` pasa a ser un objeto con los ids de grupo `dia:N` (ya no booleano `true`, para que las hojas no abran paneles vacíos). La celda `mrt-row-expand` solo muestra el caret para filas de grupo (override via `displayColumnDefOptions`); en hojas no se renderiza nada.
+- `abrirPanel(row)` marca `editandoId` + expande el leaf; `cerrarPanel()` colapsa y limpia `editandoId`; Escape en el paper cierra. Guardar: valida (`id && dia válido && concepto && tipoDeGasto != null && monto > 0.01`), commitea con `onMovimientoActualizado`, actualiza el mirror `filas` y re-expande el día destino si el día cambió.
+- El toggle del toolbar de expandir/contraer ahora es un botón custom (`toggleExpandirDias`) que solo alterna las filas de grupo (no las hojas), porque `MRT_ExpandAllButton` expandiría todos los leaves mostrando paneles vacíos.
+- Edición agrupada: `FilaMovimientoPanel.tsx` (componente propio).
 
-**2.3 Agregar fila top (point 6 del doc)**
-- `creatingRow` + `onCreatingRowChange` (row de creación arriba en modo edición).
-- Init del row: `isNew: true`, fecha = hoy si mes actual sino día 1.
-- Commit en `onCreatingRowSave` por el mismo `onMovimientoActualizado`; luego actualizar `rows` (portar Flujo de `processRowUpdate`).
+**2.3 Agregar fila (point 6 del doc) — panel nuevo en el día actual**
+- [x] El botón "Agregar" del toolbar (antes deshabilitado) ahora inserta una **fila sintética** (`id: 'nuevo-<timestamp>'`, `isNew: true`) en el tope del mirror `filas` y abre su panel vía el mismo mecanismo (`editandoId` + expansión). La fila nueva queda agrupada bajo el día actual (hoy si el mes mostrado es el actual, si no día 1), primeros en el grupo (días nuevos arriba).
+- [x] `FilaMovimientoPanel` detecta `fila.isNew`: concepto inicia `null` (obligatorio elegirlo), botón "Agregar" (vs "Guardar"), label "Agregando movimiento". La validación reusa la misma (`id` es el tempId, válido).
+- [x] Guardar nuevo → `onMovimientoActualizado` (isNew) crea vía `crearMovimientos` y devuelve el movimiento con id real; `handleGuardar` reemplaza la fila tempId por la real (`isNew: false`) in-place, re-expande el día destino y cierra el panel.
+- [x] Cancelar/Escape/cerrar mientras `isNew` → la fila sintética se **elimina** del mirror (`cerrarPanel` filtra `f.isNew` con el id en edición; portar el flujo de `processRowUpdate`/Escape del grid viejo). El CSV export filtra filas `isNew` (no exportar filas en edición).
 
 ---
 
 ### Fase 3 — Acciones del toolbar + limpieza
 
-- **Agregar** → conectar el botón del toolbar a `onCreatingRowChange` (habilitar).
+- **Agregar** → conectado en 2.3 (botón → fila sintética + panel). ✔
 - **Agregar grupo** → conectar `GrupoModal` (ya usado hoy, `GrillaToolbar.tsx:94`) en el toolbar de MRT.
 - **Eliminar** → conectar `eliminarMovimientos` con `movimientosElegidos` (portar `handleEliminarMovimientos`).
 - Quitar `@mui/x-data-grid` de `GrillaToolbar` únicamente (las otras grillas — Vencimiento/Presupuesto — siguen usándolo; la dependencia se mantiene).
 - Eliminar el componente viejo `MovimientosDelMesGrilla.tsx` (o su archivo de estilos) si quedó sin uso.
 - Verificación final completa: agregar, editar, eliminar, grupo, export, themes, notificaciones (`ConfiguracionNotificacion`).
 
-**Estado hoy (canonical git, verificado):** Fase 1 completa — tsc --noEmit exit 0; columna Monto con header right + fonte mono igual al subtotal; columnas: Fecha/Categoría/Concepto/Tipo de pago/Monto con anchos 100/100/250/130/150 + dummy zzz size 9999; density dense en initialState; toolbar custom actions con misma altura de la barra derecha.
+**Estado hoy (canonical git, verificado):** Fase 1 completa — tsc --noEmit exit 0; columnas: Fecha/Categoría/Concepto/Tipo de pago/Monto con anchos 100/100/250/130/150; density dense en initialState; toolbar custom actions con misma altura de la barra derecha. **Fase 2 completa (2.1 + 2.2 + 2.3)** — edición por panel que reemplaza la fila (click o botón hover) y **Agregar** (panel en fila nueva agrupada en el día actual, valor por defecto hoy/día 1). Pendiente verificación manual en navegador. Fase 3 pendiente.
