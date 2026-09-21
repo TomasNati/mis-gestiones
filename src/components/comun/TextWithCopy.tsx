@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, SxProps, Tooltip, Typography } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
@@ -20,6 +20,7 @@ interface TextWithCopyProps {
   copyText?: string;
   copyButtonAlignment?: 'left' | 'right';
   maxWidth?: number | string;
+  displaySx?: SxProps;
 }
 
 export const TextWithCopy = ({
@@ -27,6 +28,7 @@ export const TextWithCopy = ({
   copyText,
   copyButtonAlignment = 'left',
   maxWidth = '100%',
+  displaySx,
 }: TextWithCopyProps) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -50,7 +52,7 @@ export const TextWithCopy = ({
         variant="body2"
         noWrap
         title={displayText}
-        sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
+        sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', ...displaySx }}
       >
         {displayText}
       </Typography>

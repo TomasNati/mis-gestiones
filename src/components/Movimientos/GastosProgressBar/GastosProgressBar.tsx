@@ -1,6 +1,8 @@
-import React from 'react';
+'use client';
+
 import { Box, LinearProgress, Typography } from '@mui/material';
 import { transformNumberToCurrenty } from '@/lib/helpers';
+import { styles } from './GastosProgressBar.styles';
 
 interface GastosProgressBarProps {
   presupuesto: number;
@@ -9,23 +11,23 @@ interface GastosProgressBarProps {
 
 const GastosProgressBar: React.FC<GastosProgressBarProps> = ({ presupuesto, gastado }) => {
   const remaining = presupuesto - gastado;
-  const progress = (gastado / presupuesto) * 100;
+  const progress = presupuesto > 0 ? (gastado / presupuesto) * 100 : 0;
 
   const restoFormateado = transformNumberToCurrenty(remaining);
   const gastadoFormateado = transformNumberToCurrenty(gastado);
   const presupuestoFormateado = transformNumberToCurrenty(presupuesto);
 
   return (
-    <Box sx={{ flexGrow: 1, maxWidth: '540px' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-        <Box sx={{ width: '100%', mr: 1 }}>
+    <Box sx={styles.container}>
+      <Box sx={styles.barRow}>
+        <Box sx={styles.barWrap}>
           <LinearProgress variant="determinate" value={progress} />
         </Box>
-        <Box sx={{ minWidth: 35 }}>
+        <Box sx={styles.barLabel}>
           <Typography variant="body2" color="text.secondary">{`${Math.round(progress)}%`}</Typography>
         </Box>
       </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Box sx={styles.legendRow}>
         <Typography variant="body2">Presupuesto: {presupuestoFormateado}</Typography>
         <Typography variant="body2">Gastado: {gastadoFormateado}</Typography>
         <Typography variant="body2">

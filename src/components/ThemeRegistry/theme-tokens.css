@@ -1,0 +1,17 @@
+/* ── Color scheme (GitHub dark) ── */
+/* Single fixed scheme, no theme switching. */
+
+:root {
+  --bg-page: #0d1117;
+  --bg-panel: #151b23;
+  --bg-elevated: #3d444d;
+  --bg-row-alt: #151b23;
+  --bg-row-hover: #262c36;
+  --accent: #4493f8;
+  --accent-soft: rgba(68, 147, 248, 0.14);
+  --text-primary: #f0f6fc;
+  --text-secondary: #9198a1;
+  --text-tertiary: #656c76;
+  --border-soft: #3d444d;
+  --border-strong: #656c76;
+}

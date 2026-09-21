@@ -13,11 +13,11 @@ interface BuscarMovimientosResultadosMRTStyles {
 }
 
 const colors = {
-  background: '#27343b',
-  hoverBackground: '#234655',
-  scrollbarColor: '#3d5a6b',
-  scrollbarTrackColor: '#1a252b',
-  scrollbarThumbHoverColor: '#4a6d7f',
+  background: 'var(--bg-panel)',
+  hoverBackground: 'var(--bg-row-hover)',
+  scrollbarColor: 'var(--border-strong)',
+  scrollbarTrackColor: 'var(--bg-page)',
+  scrollbarThumbHoverColor: 'var(--text-tertiary)',
 };
 
 export const styles: BuscarMovimientosResultadosMRTStyles = {

@@ -1,4 +1,4 @@
-import { Box, Button } from '@mui/material';
+import { Box, Button, Divider } from '@mui/material';
 import {
   GridRowModes,
   GridRowModesModel,
@@ -15,10 +15,9 @@ import { generateUUID, transformNumberToCurrenty } from '@/lib/helpers';
 import { eliminarMovimientos } from '@/lib/orm/actions';
 import { MovimientoGastoGrilla, ResultadoAPI, CategoriaUIMovimiento, GrupoMovimiento } from '@/lib/definitions';
 import { useState } from 'react';
-import { GrupoModal } from './editores/GrupoModal/GrupoModal';
-import { GastosProgressBar } from './GastosProgressBar';
+import { GrupoModal } from '../editores/GrupoModal/GrupoModal';
+import { styles } from './GrillaToolbar.styles';
 
-// augment the props for the toolbar slot
 declare module '@mui/x-data-grid' {
   interface ToolbarPropsOverrides {
     setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -42,7 +41,6 @@ const GrillaToolbar = ({
   mes = new Date().getMonth(),
   movimientosElegidos = [],
   sumaTotalDelMes = 0,
-  totalMensualEstimado = 0,
   onMovimientosEliminados = () => {},
   onRefrescarMovimientos = () => {},
   onGuardarGrupoMovimiento = () => {},
@@ -61,9 +59,7 @@ const GrillaToolbar = ({
   const handleAgregarNuevoMovimiento = () => {
     const id = generateUUID();
     const fechaActual = new Date();
-    const dia = fechaActual.getFullYear() === anio && fechaActual.getMonth() === mes 
-      ? fechaActual.getDate()
-      : 1;
+    const dia = fechaActual.getFullYear() === anio && fechaActual.getMonth() === mes ? fechaActual.getDate() : 1;
 
     const nuevoMovimiento = {
       id,
@@ -91,11 +87,10 @@ const GrillaToolbar = ({
   };
 
   const sumaDeMovimientosElegidos = movimientosElegidos.reduce((acc, movimiento) => acc + movimiento.monto!, 0);
-  const sumaFormateada = transformNumberToCurrenty(sumaDeMovimientosElegidos);
-  const sumaTotalFormateada = transformNumberToCurrenty(sumaTotalDelMes);
+  const sumaFormateada = transformNumberToCurrenty(sumaDeMovimientosElegidos, 0);
 
   return (
-    <GridToolbarContainer sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 3 }}>
+    <GridToolbarContainer sx={styles.toolbar}>
       <GrupoModal
         open={openAgregarGrupo}
         onClose={handleAgregarGrupoClose}
@@ -104,39 +99,43 @@ const GrillaToolbar = ({
         categoriasMovimiento={categoriasMovimiento}
         onGuardar={onGuardarGrupoMovimiento}
       />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: 'auto' }}>
-        <Button color="primary" startIcon={<RefreshIcon />} onClick={onRefrescarMovimientos}>
-          Refrescar
-        </Button>
-        <Button color="primary" startIcon={<AddIcon />} onClick={() => handleAgregarNuevoMovimiento()}>
-          Agregar
-        </Button>
-        <Button color="primary" startIcon={<LibraryAddIcon />} onClick={handleAgregarGrupoOpen}>
-          Agregar grupo
-        </Button>
-        <Button
-          color="primary"
-          startIcon={<DeleteIcon />}
-          onClick={handleEliminarMovimientos}
-          disabled={movimientosElegidos.length === 0}
-        >
-          Eliminar
-        </Button>
+
+      <Button size="small" color="primary" onClick={handleAgregarNuevoMovimiento} startIcon={<AddIcon />}>
+        Agregar
+      </Button>
+
+      <Button size="small" color="primary" onClick={handleAgregarGrupoOpen} startIcon={<LibraryAddIcon />}>
+        Agregar grupo
+      </Button>
+
+      <Button size="small" color="primary" onClick={onRefrescarMovimientos} startIcon={<RefreshIcon />}>
+        Refrescar
+      </Button>
+
+      <Button
+        size="small"
+        color="primary"
+        onClick={handleEliminarMovimientos}
+        startIcon={<DeleteIcon />}
+        disabled={movimientosElegidos.length === 0}
+      >
+        Eliminar
+      </Button>
+
+      <Box sx={styles.toolBtn}>
         <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
-        <Box>
-          <span style={{ marginRight: '5px', marginLeft: '5px' }}>Suma parcial:</span>
-          <span>{sumaFormateada}</span>
-        </Box>
-        {totalMensualEstimado <= 0 ? (
-          <Box>
-            <span style={{ marginRight: '5px', marginLeft: '5px' }}>Suma Total:</span>
-            <span>{sumaTotalFormateada}</span>
-          </Box>
-        ) : null}
       </Box>
-      {totalMensualEstimado > 0 ? (
-        <GastosProgressBar presupuesto={totalMensualEstimado} gastado={sumaTotalDelMes} />
-      ) : null}
+
+      <Divider orientation="vertical" flexItem sx={{ borderColor: 'var(--border-soft)' }} />
+
+      <Box sx={styles.sumaLabel}>
+        Suma parcial:
+        <Box component="span" className="num" sx={styles.sumaValue}>
+          {sumaFormateada}
+        </Box>
+      </Box>
+
+      <Box sx={styles.spacer} />
     </GridToolbarContainer>
   );
 };

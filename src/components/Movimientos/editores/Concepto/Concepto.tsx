@@ -50,6 +50,7 @@ const Concepto = ({
         className="input-concepto"
         ref={ref}
         onKeyDown={handleKeyDown}
+        autoComplete
         options={categoriasMovimiento}
         groupBy={(option: CategoriaUIMovimiento) => option.categoriaNombre}
         getOptionLabel={(option: CategoriaUIMovimiento) => option.nombre}
