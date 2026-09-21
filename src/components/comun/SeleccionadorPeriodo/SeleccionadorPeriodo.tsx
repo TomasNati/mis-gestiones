@@ -237,7 +237,12 @@ const SeleccionadorPeriodo = ({
               <Button
                 key={mesItem}
                 variant={isActive ? 'contained' : 'text'}
-                onClick={() => onMesesElegidos([...mesesElegidosFlat, mesItem])}
+                onClick={() => {
+                  const nuevosMeses = isActive
+                    ? mesesElegidosFlat.filter((mes) => mes !== mesItem)
+                    : [...mesesElegidosFlat, mesItem];
+                  onMesesElegidos(nuevosMeses);
+                }}
                 sx={styles.multiMonthButton}
               >
                 {mesItem}

@@ -129,10 +129,12 @@ const MovimientosDelMesGrillaMRT = ({
 
   const data = useMemo<MovimientoFila[]>(
     () =>
-      filas.map((m) => ({
-        ...m,
-        dia: new Date(m.fecha).getUTCDate(),
-      })),
+      filas
+        .map((m) => ({
+          ...m,
+          dia: new Date(m.fecha).getUTCDate(),
+        }))
+        .sort((a, b) => b.dia - a.dia),
     [filas],
   );
 
