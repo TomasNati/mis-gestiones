@@ -4,14 +4,14 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#4FB8C4',
+      main: '#4493F8',
     },
     secondary: {
-      main: '#4FB8C4',
+      main: '#4493F8',
     },
     background: {
-      default: '#08100F',
-      paper: '#0D1716',
+      default: '#0D1117',
+      paper: '#151B23',
     },
   },
   typography: {
@@ -76,7 +76,7 @@ const theme = createTheme({
       styleOverrides: {
         root: ({ ownerState }) => ({
           ...(ownerState.severity === 'info' && {
-            backgroundColor: '#4FB8C4',
+            backgroundColor: '#4493F8',
           }),
         }),
       },
@@ -85,7 +85,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#4FB8C4',
+            borderColor: '#4493F8',
           },
         },
       },
@@ -100,13 +100,13 @@ const theme = createTheme({
     MuiToggleButton: {
       styleOverrides: {
         root: {
-          color: '#5a7376',
-          borderColor: '#1f2e2e',
+          color: '#656c76',
+          borderColor: '#3d444d',
           '&.Mui-selected': {
-            backgroundColor: 'rgba(79,184,196,0.14)',
-            color: '#E9F4F5',
+            backgroundColor: 'rgba(68,147,248,0.14)',
+            color: '#F0F6FC',
             '&:hover': {
-              backgroundColor: 'rgba(79,184,196,0.2)',
+              backgroundColor: 'rgba(68,147,248,0.2)',
             },
           },
         },
