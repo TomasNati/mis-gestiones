@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movimientos del mes · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .charts { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px var(--gutter) 20px; border-bottom: 1px solid var(--border-soft); }
+  .charts .panel-header { flex-wrap: wrap; gap: 6px 12px; }
+  .charts .panel-header h3 { white-space: nowrap; }
+  .hbars { display: flex; flex-direction: column; gap: 10px; }
+  .hbar { display: grid; grid-template-columns: 96px 1fr 84px; align-items: center; gap: 10px; font-size: 12.5px; }
+  .hbar .name { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .hbar .track { height: 14px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
+  .hbar .track > i { display: block; height: 100%; background: var(--accent); border-radius: 0 3px 3px 0; }
+  .hbar .track > i.muted { background: var(--series-muted); }
+  .hbar .val { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-primary); }
+  .hbar .val small { color: var(--text-tertiary); margin-left: 4px; font-size: 11px; }
+  .table .concept-copy { opacity: 0; transition: opacity 0.12s var(--ease); vertical-align: middle; margin-left: 4px; }
+  .table tr:hover .concept-copy { opacity: 1; }
+  .paytype { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px 0 5px; border-radius: var(--radius-sm); border: 1px solid var(--border-soft); background: var(--bg-elevated); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .paytype .icon { width: 13px; height: 13px; color: var(--text-tertiary); }
+  .group-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .group-table th { text-align: left; font-size: 11.5px; font-weight: 500; color: var(--text-tertiary); padding: 0 8px 8px 0; }
+  .group-table td { padding: 4px 8px 4px 0; vertical-align: middle; }
+  .group-table td:last-child, .group-table th:last-child { padding-right: 0; width: 1%; }
+  .filter-input { width: 280px; }
+  .month-total { font-size: 12px; color: var(--text-tertiary); }
+</style>
+</head>
+<body data-page="finanzas-movimientos">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <a href="finanzas-dashboard.html">Finanzas</a>
+      <span class="sep">/</span>
+      <span class="current">Movimientos del mes</span>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn ghost is-on" data-toggle="#charts" type="button"><i data-icon="chart-line"></i> Gráficos</button>
+      <button class="btn ghost" type="button" title="Refrescar"><i data-icon="refresh"></i> Refrescar</button>
+      <button class="btn" type="button"><i data-icon="download"></i> Exportar CSV</button>
+    </div>
+  </header>
+
+  <div class="months">
+    <button class="year" type="button">2026 <i data-icon="chevron-down" class="sm"></i></button>
+    <button class="month-nav" type="button" title="12 meses anteriores"><i data-icon="chevron-left"></i></button>
+    <button class="month-tab" type="button">octubre <span class="yr">'25</span> <span class="count">88</span></button>
+    <button class="month-tab" type="button">noviembre <span class="yr">'25</span> <span class="count">91</span></button>
+    <button class="month-tab" type="button">diciembre <span class="yr">'25</span> <span class="count">104</span></button>
+    <button class="month-tab" type="button">enero <span class="count">79</span></button>
+    <button class="month-tab" type="button">febrero <span class="count">83</span></button>
+    <button class="month-tab" type="button">marzo <span class="count">95</span></button>
+    <button class="month-tab" type="button">abril <span class="count">90</span></button>
+    <button class="month-tab" type="button">mayo <span class="count">97</span></button>
+    <button class="month-tab" type="button">junio <span class="count">86</span></button>
+    <button class="month-tab" type="button">julio <span class="count">102</span></button>
+    <button class="month-tab" type="button">agosto <span class="count">93</span></button>
+    <button class="month-tab is-active is-current" type="button">septiembre <span class="count">96</span></button>
+    <button class="month-nav" type="button" title="12 meses siguientes" disabled><i data-icon="chevron-right"></i></button>
+  </div>
+
+  <section id="charts" class="collapsible is-open">
+    <div class="charts">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Gasto acumulado <span class="hint">vs. ritmo del presupuesto</span></h3>
+          <div class="legend">
+            <span class="item"><span class="swatch line" style="background: var(--series-1)"></span>Acumulado</span>
+            <span class="item"><span class="swatch line" style="background: var(--text-tertiary)"></span>Ritmo esperado</span>
+            <span class="item"><span class="swatch" style="background: var(--series-muted)"></span>Por día</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="viz" id="cumulativeChart"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Por tipo de pago</h3>
+          <span class="hint">$ 5.030.467</span>
+        </div>
+        <div class="panel-body hbars">
+          <div class="hbar"><span class="name"><i data-icon="landmark" class="sm"></i>Débito</span><span class="track"><i style="width: 69%"></i></span><span class="val">3.461.212<small>69%</small></span></div>
+          <div class="hbar"><span class="name"><i data-icon="credit-card" class="sm"></i>Crédito</span><span class="track"><i style="width: 23%"></i></span><span class="val">1.148.951<small>23%</small></span></div>
+          <div class="hbar"><span class="name"><i data-icon="banknote" class="sm"></i>Efectivo</span><span class="track"><i style="width: 8%"></i></span><span class="val">420.304<small>8%</small></span></div>
+          <p class="faint" style="font-size: 11.5px; margin-top: 6px;">El crédito se imputa al mes del resumen, no al de la compra.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Categorías con más gasto</h3>
+          <a class="viz-table-toggle" href="finanzas-buscar.html">Ver detalle <i data-icon="arrow-right" class="sm"></i></a>
+        </div>
+        <div class="panel-body hbars">
+          <div class="hbar"><span class="name">Servicios</span><span class="track"><i style="width: 100%"></i></span><span class="val">1.930.000<small>38%</small></span></div>
+          <div class="hbar"><span class="name">Hijos</span><span class="track"><i style="width: 64%"></i></span><span class="val">1.240.000<small>25%</small></span></div>
+          <div class="hbar"><span class="name">Diario</span><span class="track"><i style="width: 36%"></i></span><span class="val">690.000<small>14%</small></span></div>
+          <div class="hbar"><span class="name">Educación</span><span class="track"><i style="width: 17%"></i></span><span class="val">320.000<small>6%</small></span></div>
+          <div class="hbar"><span class="name">Salud</span><span class="track"><i style="width: 11%"></i></span><span class="val">210.000<small>4%</small></span></div>
+          <div class="hbar"><span class="name faint">Otras (8)</span><span class="track"><i class="muted" style="width: 33%"></i></span><span class="val">640.467<small>13%</small></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="label">Presupuesto</div>
+      <div class="value">$ 6.393.714</div>
+      <div class="delta">30 subcategorías estimadas</div>
+    </div>
+    <div class="stat">
+      <div class="label">Gastado</div>
+      <div class="value accent">$ 5.030.467</div>
+      <div class="delta up"><i data-icon="arrow-up-right"></i> 6,2% vs. agosto a esta fecha</div>
+    </div>
+    <div class="stat">
+      <div class="label">Pendiente</div>
+      <div class="value">$ 1.363.247</div>
+      <div class="delta">para 8 días restantes</div>
+    </div>
+    <div class="stat">
+      <div class="label">Promedio diario</div>
+      <div class="value">$ 228.657</div>
+      <div class="delta">objetivo $ 213.124</div>
+    </div>
+    <div class="stat stat--wide">
+      <div class="meter is-warn"><i style="width: 79%"></i><span class="tick" style="left: 73%" title="Esperado a hoy: 73%"></span></div>
+      <div class="meter-legend"><span>79% del presupuesto usado · 73% del mes transcurrido</span><span class="pct">+6 pts</span></div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <button class="btn primary" type="button" data-toggle="#newRow"><i data-icon="plus"></i> Agregar</button>
+    <button class="btn" type="button" data-modal-open="#grupoModal"><i data-icon="receipt"></i> Agregar grupo</button>
+    <span class="bulk-actions" data-bulk-actions>
+      <span><b data-selection-count>0</b> seleccionados · <span class="num" data-selection-sum>$ 0</span></span>
+      <button class="btn xs ghost" type="button"><i data-icon="download"></i> Exportar</button>
+      <button class="btn xs ghost danger" type="button"><i data-icon="trash"></i> Eliminar</button>
+    </span>
+    <span class="divider"></span>
+    <button class="icon-btn" type="button" title="Contraer todos los días"><i data-icon="chevrons-up"></i></button>
+    <label class="input sm filter-input"><span class="prefix"><i data-icon="filter"></i></span><input type="text" placeholder="Filtrar en el mes… (concepto, monto, comentario)"></label>
+    <span class="spacer"></span>
+    <span class="summary">96 movimientos · 22 días</span>
+  </div>
+
+  <div class="table-wrap">
+  <table class="table table--flush" id="movTable">
+    <thead>
+      <tr>
+        <th class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar todo"></label></th>
+        <th style="width: 130px">Tipo de pago</th>
+        <th style="width: 130px">Categoría</th>
+        <th>Concepto</th>
+        <th class="num" style="width: 140px">Monto</th>
+        <th class="actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr id="newRow" class="collapsible">
+        <td colspan="6" style="padding: 0">
+          <div class="inline-panel">
+            <div class="caption"><i data-icon="plus" class="sm"></i> Agregando movimiento · <kbd>Esc</kbd> para cancelar</div>
+            <div class="fields">
+              <label class="field"><span class="field-label">Día</span><span class="input mono is-focus"><input type="number" value="22" min="1" max="30"></span></label>
+              <label class="field"><span class="field-label">Categoría y concepto <span class="req">*</span></span><span class="select"><span class="placeholder">Buscar concepto…</span><i data-icon="chevron-down" class="caret"></i></span></label>
+              <div class="field"><span class="field-label">Tipo de pago</span>
+                <div class="segmented">
+                  <button type="button" class="is-active" title="Efectivo (E)"><i data-icon="banknote"></i> Efectivo</button>
+                  <button type="button" title="Débito (D)"><i data-icon="landmark"></i> Débito</button>
+                  <button type="button" title="Crédito (C)"><i data-icon="credit-card"></i> Crédito</button>
+                </div>
+              </div>
+              <label class="field"><span class="field-label">Monto <span class="req">*</span></span><span class="input mono right"><span class="prefix">$</span><input type="text" placeholder="0"></span></label>
+              <label class="field"><span class="field-label">Comentarios</span><span class="input"><input type="text" placeholder="Establecimiento, detalle…"></span></label>
+              <div class="actions">
+                <button class="btn primary" type="button"><i data-icon="check"></i> Agregar</button>
+                <button class="btn" type="button" data-toggle="#newRow"><i data-icon="x"></i></button>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar día 22"></label></td>
+        <td colspan="3"><i data-icon="chevron-down" class="caret"></i><span class="day">22</span><span class="day-meta">martes · 4 movimientos</span></td>
+        <td class="num"><span class="subtotal">subtotal <b>$ 267.779</b></span></td>
+        <td class="actions"></td>
+      </tr>
+      <tr data-amount="7700">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Comida</span><span class="cell-secondary">Oriente</span></td>
+        <td class="num"><span class="cur">$</span>7.700</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="4500">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">(Colegio-Extras) Kiosco</span></td>
+        <td class="num"><span class="cur">$</span>4.500</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-editing" data-amount="2300">
+        <td colspan="6" style="padding: 0">
+          <div class="inline-panel">
+            <div class="caption"><i data-icon="pencil" class="sm"></i> Editando movimiento · <kbd>Esc</kbd> para cancelar · <kbd>Enter</kbd> para guardar</div>
+            <div class="fields">
+              <label class="field"><span class="field-label">Día</span><span class="input mono"><input type="number" value="22" min="1" max="30"></span></label>
+              <label class="field"><span class="field-label">Categoría y concepto <span class="req">*</span></span><span class="select"><span><span class="faint">Diario ·</span> Gaseosas</span><i data-icon="chevron-down" class="caret"></i></span></label>
+              <div class="field"><span class="field-label">Tipo de pago</span>
+                <div class="segmented">
+                  <button type="button" class="is-active" title="Efectivo (E)"><i data-icon="banknote"></i> Efectivo</button>
+                  <button type="button" title="Débito (D)"><i data-icon="landmark"></i> Débito</button>
+                  <button type="button" title="Crédito (C)"><i data-icon="credit-card"></i> Crédito</button>
+                </div>
+              </div>
+              <label class="field"><span class="field-label">Monto <span class="req">*</span></span><span class="input mono right is-focus"><span class="prefix">$</span><input type="text" value="2.300"></span></label>
+              <label class="field"><span class="field-label">Comentarios</span><span class="input"><input type="text" value="Oriente - Coca 600 ml"></span></label>
+              <div class="actions">
+                <button class="btn primary" type="button"><i data-icon="check"></i> Guardar</button>
+                <button class="btn" type="button"><i data-icon="x"></i></button>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr data-amount="253279">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Servicios</td>
+        <td><span class="cell-primary">Edese</span><span class="cell-secondary">Vencimiento 23/09 · pagado</span></td>
+        <td class="num"><span class="cur">$</span>253.279</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+
+      <tr class="row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar día 21"></label></td>
+        <td colspan="3"><i data-icon="chevron-down" class="caret"></i><span class="day">21</span><span class="day-meta">lunes · 9 movimientos</span></td>
+        <td class="num"><span class="subtotal">subtotal <b>$ 153.965</b></span></td>
+        <td class="actions"></td>
+      </tr>
+      <tr data-amount="24765">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Regalos</td>
+        <td><span class="cell-primary">Regalos</span><span class="cell-secondary">Robux para Sofi por el día del estudiante. Confirmar monto</span></td>
+        <td class="num"><span class="cur">$</span>24.765</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-selected" data-amount="12100">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Comida</span><span class="cell-secondary">Super Más</span></td>
+        <td class="num"><span class="cur">$</span>12.100</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-selected" data-amount="4000">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Gaseosas</span><span class="cell-secondary">Super Más - Coca 2.25 L</span></td>
+        <td class="num"><span class="cur">$</span>4.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="10500">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Alcohol</span><span class="cell-secondary">Super Más</span></td>
+        <td class="num"><span class="cur">$</span>10.500</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="17000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Educación</td>
+        <td><span class="cell-primary">Materiales escuela</span><span class="cell-secondary">Cotillón, para la fiesta de los 80 y títere</span></td>
+        <td class="num"><span class="cur">$</span>17.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="54000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="credit-card"></i>Crédito</span></td>
+        <td class="dim">Salud</td>
+        <td><span class="cell-primary">Farmacia</span><span class="cell-secondary">Farmacity - ibuprofeno y vitaminas</span></td>
+        <td class="num"><span class="cur">$</span>54.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="25000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Hogar</td>
+        <td><span class="cell-primary">Cosas para la casa</span><span class="cell-secondary">Arreglos y cambios de pila de relojes de Nati</span></td>
+        <td class="num"><span class="cur">$</span>25.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="3000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Hogar</td>
+        <td><span class="cell-primary">Cosas para la casa</span><span class="cell-secondary">Separadores</span></td>
+        <td class="num"><span class="cur">$</span>3.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="2600">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Transporte</td>
+        <td><span class="cell-primary">Taxi</span></td>
+        <td class="num"><span class="cur">$</span>2.600</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="1000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Comida</span><span class="cell-secondary">Kiosco Urquiza · 6 medialunas</span></td>
+        <td class="num"><span class="cur">$</span>1.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+
+      <tr class="row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar día 20"></label></td>
+        <td colspan="3"><i data-icon="chevron-down" class="caret"></i><span class="day">20</span><span class="day-meta">domingo · 3 movimientos</span></td>
+        <td class="num"><span class="subtotal">subtotal <b>$ 141.440</b></span></td>
+        <td class="actions"></td>
+      </tr>
+      <tr data-amount="86450">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Supermercado</span><span class="cell-secondary">Changomás · compra semanal</span></td>
+        <td class="num"><span class="cur">$</span>86.450</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="9990">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="credit-card"></i>Crédito</span></td>
+        <td class="dim">Entretenimiento</td>
+        <td><span class="cell-primary">Netflix</span></td>
+        <td class="num"><span class="cur">$</span>9.990</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="45000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="credit-card"></i>Crédito</span></td>
+        <td class="dim">Auto</td>
+        <td><span class="cell-primary">Nafta</span><span class="cell-secondary">YPF</span></td>
+        <td class="num"><span class="cur">$</span>45.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+
+      <tr class="row-group is-collapsed">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar día 19"></label></td>
+        <td colspan="3"><i data-icon="chevron-down" class="caret"></i><span class="day">19</span><span class="day-meta">sábado · 2 movimientos</span></td>
+        <td class="num"><span class="subtotal">subtotal <b>$ 343.370</b></span></td>
+        <td class="actions"></td>
+      </tr>
+      <tr class="is-hidden" data-amount="103370">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Servicios</td>
+        <td><span class="cell-primary">Personal</span></td>
+        <td class="num"><span class="cur">$</span>103.370</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden" data-amount="240000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">Colegio</span><span class="cell-secondary">Cuota septiembre</span></td>
+        <td class="num"><span class="cur">$</span>240.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+
+      <tr class="row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar día 18"></label></td>
+        <td colspan="3"><i data-icon="chevron-down" class="caret"></i><span class="day">18</span><span class="day-meta">viernes · 5 movimientos</span></td>
+        <td class="num"><span class="subtotal">subtotal <b>$ 98.240</b></span></td>
+        <td class="actions"></td>
+      </tr>
+      <tr data-amount="38900">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Restaurants</span><span class="cell-secondary">Cena con los chicos</span></td>
+        <td class="num"><span class="cur">$</span>38.900</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="21500">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">Deportes y juegos</span><span class="cell-secondary">Cuota tenis Tomi</span></td>
+        <td class="num"><span class="cur">$</span>21.500</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="14200">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="credit-card"></i>Crédito</span></td>
+        <td class="dim">Servicios Online</td>
+        <td><span class="cell-primary">Spotify</span><span class="cell-secondary">Plan familiar</span></td>
+        <td class="num"><span class="cur">$</span>14.200</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="18640">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Productos personales</span><span class="cell-secondary">Farmacity</span></td>
+        <td class="num"><span class="cur">$</span>18.640</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="5000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">(Colegio-Extras) Kiosco</span></td>
+        <td class="num"><span class="cur">$</span>5.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" title="Editar"><i data-icon="pencil"></i></button><button class="icon-btn xs" title="Duplicar"><i data-icon="copy"></i></button><button class="icon-btn xs danger" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="table-footer">
+    <span>Mostrando 5 de 22 días · los días sin movimientos no se listan</span>
+    <span class="month-total">Total del mes <span class="num" style="color: var(--text-primary)">$ 5.030.467</span></span>
+  </div>
+
+</div>
+</div>
+
+<div class="modal-backdrop" id="grupoModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="grupoTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="grupoTitle">Agregar grupo de movimientos</h2>
+        <div class="sub">Varios movimientos de un mismo ticket: el establecimiento y el tipo de pago se comparten.</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row" style="grid-template-columns: 90px 1fr auto 150px">
+        <label class="field"><span>Día</span><span class="input mono"><input type="number" value="22"></span></label>
+        <label class="field"><span>Establecimiento</span><span class="select"><span>Changomás</span><i data-icon="chevron-down" class="caret"></i></span></label>
+        <div class="field"><span class="field-label">Tipo de pago</span>
+          <div class="segmented">
+            <button type="button" title="Efectivo (E)"><i data-icon="banknote"></i> Efectivo</button>
+            <button type="button" class="is-active" title="Débito (D)"><i data-icon="landmark"></i> Débito</button>
+            <button type="button" title="Crédito (C)"><i data-icon="credit-card"></i> Crédito</button>
+          </div>
+        </div>
+        <label class="field"><span>Total del ticket</span><span class="input mono right"><span class="prefix">$</span><input type="text" value="15.000"></span></label>
+      </div>
+
+      <table class="group-table">
+        <thead>
+          <tr><th style="width: 130px">Monto</th><th style="width: 70px">Resto</th><th>Concepto</th><th>Comentarios</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="input mono right sm"><span class="prefix">$</span><input type="text" value="8.300"></span></td>
+            <td><label class="checkbox"><input type="checkbox"></label></td>
+            <td><span class="select sm"><span><span class="faint">Diario ·</span> Comida</span><i data-icon="chevron-down" class="caret"></i></span></td>
+            <td><span class="input sm"><input type="text" value="Verdura y carne"></span></td>
+            <td><button class="icon-btn xs danger" type="button" title="Quitar"><i data-icon="trash"></i></button></td>
+          </tr>
+          <tr>
+            <td><span class="input mono right sm"><span class="prefix">$</span><input type="text" value="4.000"></span></td>
+            <td><label class="checkbox"><input type="checkbox"></label></td>
+            <td><span class="select sm"><span><span class="faint">Diario ·</span> Gaseosas</span><i data-icon="chevron-down" class="caret"></i></span></td>
+            <td><span class="input sm"><input type="text" value="Coca 2.25 L"></span></td>
+            <td><button class="icon-btn xs danger" type="button" title="Quitar"><i data-icon="trash"></i></button></td>
+          </tr>
+          <tr>
+            <td><span class="input mono right sm" style="opacity: .6"><span class="prefix">$</span><input type="text" value="2.700" disabled></span></td>
+            <td><label class="checkbox"><input type="checkbox" checked></label></td>
+            <td><span class="select sm"><span><span class="faint">Hogar ·</span> Cosas para la casa</span><i data-icon="chevron-down" class="caret"></i></span></td>
+            <td><span class="input sm"><input type="text" placeholder="Opcional"></span></td>
+            <td><button class="icon-btn xs danger" type="button" title="Quitar"><i data-icon="trash"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div>
+        <button class="btn ghost accent sm" type="button"><i data-icon="plus"></i> Agregar movimiento</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="left">Asignado <span class="num">$ 12.300</span> de <span class="num">$ 15.000</span> · resto <span class="num">$ 2.700</span> se completa solo</span>
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" data-modal-close><i data-icon="check"></i> Guardar 3 movimientos</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script>
+(function () {
+  const W = 640, H = 220, m = { t: 14, r: 64, b: 24, l: 46 };
+  const cum = [420, 1035, 1110, 1180, 1470, 1530, 1600, 1690, 1990, 2110, 2180, 2260, 2340, 2860, 3130, 3210, 3290, 3380, 3980, 4270, 4763, 5030];
+  const budget = 6394, days = 30, today = cum.length;
+  const x = (d) => m.l + (d / days) * (W - m.l - m.r);
+  const y = (v) => m.t + (1 - v / budget) * (H - m.t - m.b);
+  const fmt = (v) => (v / 1000).toFixed(1).replace('.', ',') + ' M';
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Gasto acumulado del mes contra el ritmo del presupuesto">';
+  s += '<g class="grid">';
+  [0, 2000, 4000, 6000].forEach((v) => { s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>'; s += '<text class="num-t" x="' + (m.l - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + (v ? v / 1000 + ' M' : '0') + '</text>'; });
+  s += '</g>';
+  s += '<line x1="' + x(0) + '" y1="' + y(0) + '" x2="' + x(days) + '" y2="' + y(budget) + '" stroke="var(--text-tertiary)" stroke-width="1.5" stroke-dasharray="4 4"/>';
+  s += '<text x="' + (x(days) + 6) + '" y="' + (y(budget) + 4) + '" class="end-label">presupuesto</text>';
+  const bw = Math.max(3, (W - m.l - m.r) / days - 4);
+  cum.forEach((v, i) => { const prev = i ? cum[i - 1] : 0; const d = v - prev; const h = (d / budget) * (H - m.t - m.b); s += '<rect x="' + (x(i + 1) - bw / 2) + '" y="' + (y(0) - h) + '" width="' + bw + '" height="' + h + '" fill="var(--series-muted)" rx="2"/>'; });
+  s += '<line x1="' + x(today) + '" x2="' + x(today) + '" y1="' + m.t + '" y2="' + y(0) + '" stroke="var(--border-strong)" stroke-width="1"/>';
+  s += '<text x="' + x(today) + '" y="' + (H - 6) + '" text-anchor="middle">hoy</text>';
+  [1, 5, 10, 15, 20, 25, 30].forEach((d) => { if (d !== today) s += '<text class="num-t" x="' + x(d) + '" y="' + (H - 6) + '" text-anchor="middle">' + d + '</text>'; });
+  const pts = cum.map((v, i) => [x(i + 1), y(v)]);
+  s += '<path class="line" stroke="var(--series-1)" d="M' + pts.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L') + '"/>';
+  const last = pts[pts.length - 1];
+  s += '<circle class="dot" cx="' + last[0] + '" cy="' + last[1] + '" r="4.5" fill="var(--series-1)"/>';
+  s += '<text x="' + (last[0] + 8) + '" y="' + (last[1] + 4) + '" class="end-label strong num-t">$ ' + fmt(cum[cum.length - 1]) + '</text>';
+  s += '</svg>';
+  document.getElementById('cumulativeChart').innerHTML = s;
+})();
+</script>
+</body>
+</html>

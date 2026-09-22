@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Importar · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .steps { display: flex; align-items: center; gap: 12px; padding: 4px 0 20px; }
+  .step { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); white-space: nowrap; }
+  .step .n { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; border: 1px solid var(--border-soft); background: var(--bg-page); font-family: var(--font-mono); font-size: 11.5px; color: var(--text-tertiary); }
+  .step .n .icon { width: 12px; height: 12px; }
+  .step.is-done { color: var(--text-secondary); }
+  .step.is-done .n { border-color: var(--border-strong); background: var(--bg-elevated); color: var(--text-primary); }
+  .step.is-current { color: var(--text-primary); font-weight: 500; }
+  .step.is-current .n { border-color: var(--accent-emphasis); background: var(--accent-emphasis); color: #fff; }
+  .step-line { flex: 0 1 64px; height: 1px; background: var(--border-soft); }
+  .step-line.is-done { background: var(--border-strong); }
+  .origin-row { grid-template-columns: auto 120px 180px; align-items: end; justify-content: start; }
+  .origin-help { margin-top: 10px; font-size: 11.5px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px; }
+  .import-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
+  .paste { min-height: 320px; width: 100%; tab-size: 11; white-space: pre; overflow: auto; line-height: 1.7; }
+  .paytype { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px 0 5px; border-radius: var(--radius-sm); border: 1px solid var(--border-soft); background: var(--bg-elevated); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .paytype .icon { width: 13px; height: 13px; color: var(--text-tertiary); }
+  .preview td:first-child, .preview th:first-child { padding-left: 16px; width: 28px; }
+  .preview td:last-child, .preview th:last-child { padding-right: 16px; }
+  .preview tr.is-error { box-shadow: inset 2px 0 0 var(--danger); }
+  .import-body { padding-bottom: 24px; }
+  .import-bar { position: sticky; bottom: 0; z-index: 5; margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 12px var(--gutter); border-top: 1px solid var(--border-soft); background: var(--bg-page); }
+  .import-bar .spacer { flex: 1; }
+  .example { margin: 0; padding: 12px 14px; background: var(--bg-inset); border: 1px solid var(--border-soft); border-radius: var(--radius); font-family: var(--font-mono); font-size: 12px; line-height: 1.7; color: var(--text-secondary); tab-size: 14; overflow-x: auto; }
+  .example b { color: var(--text-primary); font-weight: 500; }
+  .col-list { display: flex; flex-wrap: wrap; gap: 4px; }
+  .col-list .chip { padding: 0 8px; font-family: var(--font-mono); font-size: 11.5px; }
+  .toast { bottom: 76px; }
+</style>
+</head>
+<body data-page="importar">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <span class="current">Importar</span>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn ghost" type="button" data-modal-open="#formatoModal"><i data-icon="file-text"></i> Ver formato esperado</button>
+    </div>
+  </header>
+
+  <div class="import-body">
+  <section class="section">
+    <div class="steps" aria-label="Pasos de la importación">
+      <span class="step is-done"><span class="n"><i data-icon="check"></i></span>Origen</span>
+      <span class="step-line is-done"></span>
+      <span class="step is-current" aria-current="step"><span class="n">2</span>Pegar datos</span>
+      <span class="step-line"></span>
+      <span class="step"><span class="n">3</span>Revisar e importar</span>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h3>Origen</h3>
+        <span class="hint">Qué vas a importar y a qué período corresponde</span>
+      </div>
+      <div class="panel-body">
+        <div class="form-row origin-row">
+          <div class="field"><span class="field-label">Tipo</span>
+            <div class="segmented">
+              <button type="button" class="is-active"><i data-icon="receipt"></i> Gastos del mes</button>
+              <button type="button"><i data-icon="chart-bar"></i> Presupuesto del mes</button>
+              <button type="button"><i data-icon="moon"></i> Horas de sueño de Tomi</button>
+            </div>
+          </div>
+          <div class="field"><span class="field-label">Año</span><span class="select"><span class="num">2026</span><i data-icon="chevron-down" class="caret"></i></span></div>
+          <div class="field"><span class="field-label">Mes</span><span class="select"><span>Septiembre</span><i data-icon="chevron-down" class="caret"></i></span></div>
+        </div>
+        <p class="origin-help"><i data-icon="info" class="sm"></i>El mes y el año se aplican a todas las filas que no traigan fecha completa.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="import-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <h3><i data-icon="clipboard-paste" class="faint"></i> Pegar datos</h3>
+          <span class="hint">día · categoría · pago · monto · concepto · comentario</span>
+        </div>
+        <div class="panel-body">
+          <textarea class="textarea mono paste" spellcheck="false" aria-label="Datos separados por tab">21	Diario	Débito	$12.100,00	Comida	Super Más
+21	Diario	Débito	$4.000,00	Gaseosas	Super Más - Coca 2.25 L
+20	Hijos	Crédito	$13.000,00	Deportes y juegos	Lawn Tennis
+20	Salud	Crédito	$54.000,00	Farmacia	Farmacity
+19	Diario	Débito	$8.750,00	Verdulería	El Tano
+21	Diario	Débito	$10.500,00	Alcohol	Super Más
+18	Transporte	Efectivo	$2.600,00	Taxi	
+18	Servicios	Débito	$253.279,00	Edese	Vencimiento 23/09</textarea>
+        </div>
+        <div class="panel-footer">
+          <span><span class="num">8</span> filas detectadas · separador: tab</span>
+          <button class="btn xs ghost" type="button"><i data-icon="refresh"></i> Volver a analizar</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Vista previa</h3>
+          <span class="hint">septiembre 2026</span>
+        </div>
+        <div class="panel-body flush">
+          <table class="table dense preview">
+            <thead>
+              <tr>
+                <th class="num">#</th>
+                <th class="num" style="width: 44px">Día</th>
+                <th>Categoría · Concepto</th>
+                <th style="width: 100px">Pago</th>
+                <th class="num" style="width: 100px">Monto</th>
+                <th style="width: 1%">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="num faint">1</td>
+                <td class="num">21</td>
+                <td><span class="cell-primary"><span class="faint">Diario ·</span> Comida</span><span class="cell-secondary">Super Más</span></td>
+                <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+                <td class="num"><span class="cur">$</span>12.100</td>
+                <td><span class="pill success"><i data-icon="check" class="sm"></i>OK</span></td>
+              </tr>
+              <tr>
+                <td class="num faint">2</td>
+                <td class="num">21</td>
+                <td><span class="cell-primary"><span class="faint">Diario ·</span> Gaseosas</span><span class="cell-secondary">Super Más - Coca 2.25 L</span></td>
+                <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+                <td class="num"><span class="cur">$</span>4.000</td>
+                <td><span class="pill success"><i data-icon="check" class="sm"></i>OK</span></td>
+              </tr>
+              <tr>
+                <td class="num faint">3</td>
+                <td class="num">20</td>
+                <td><span class="cell-primary"><span class="faint">Hijos ·</span> Deportes y juegos</span><span class="cell-secondary">Lawn Tennis</span></td>
+                <td><span class="paytype"><i data-icon="credit-card"></i>Crédito</span></td>
+                <td class="num"><span class="cur">$</span>13.000</td>
+                <td><span class="pill success"><i data-icon="check" class="sm"></i>OK</span></td>
+              </tr>
+              <tr>
+                <td class="num faint">4</td>
+                <td class="num">20</td>
+                <td><span class="cell-primary"><span class="faint">Salud ·</span> Farmacia</span><span class="cell-secondary">Farmacity</span></td>
+                <td><span class="paytype"><i data-icon="credit-card"></i>Crédito</span></td>
+                <td class="num"><span class="cur">$</span>54.000</td>
+                <td><span class="pill success"><i data-icon="check" class="sm"></i>OK</span></td>
+              </tr>
+              <tr class="is-error">
+                <td class="num faint">5</td>
+                <td class="num">19</td>
+                <td><span class="cell-primary"><span class="faint">Diario ·</span> <span class="t-danger">Verdulería</span></span><span class="cell-secondary">“Verdulería” no existe en Diario · El Tano</span><button class="btn xs mt-2" type="button">Asignar…</button></td>
+                <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+                <td class="num"><span class="cur">$</span>8.750</td>
+                <td><span class="pill danger"><i data-icon="alert-circle" class="sm"></i>Concepto desconocido</span></td>
+              </tr>
+              <tr>
+                <td class="num faint">6</td>
+                <td class="num">21</td>
+                <td><span class="cell-primary"><span class="faint">Diario ·</span> Alcohol</span><span class="cell-secondary">Super Más</span></td>
+                <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+                <td class="num"><span class="cur">$</span>10.500</td>
+                <td><span class="pill attention" title="Ya existe un movimiento igual el 21/09"><i data-icon="alert-triangle" class="sm"></i>Posible duplicado</span></td>
+              </tr>
+              <tr>
+                <td class="num faint">7</td>
+                <td class="num">18</td>
+                <td><span class="cell-primary"><span class="faint">Transporte ·</span> Taxi</span></td>
+                <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+                <td class="num"><span class="cur">$</span>2.600</td>
+                <td><span class="pill success"><i data-icon="check" class="sm"></i>OK</span></td>
+              </tr>
+              <tr>
+                <td class="num faint">8</td>
+                <td class="num">18</td>
+                <td><span class="cell-primary"><span class="faint">Servicios ·</span> Edese</span><span class="cell-secondary">Vencimiento 23/09</span></td>
+                <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+                <td class="num"><span class="cur">$</span>253.279</td>
+                <td><span class="pill success"><i data-icon="check" class="sm"></i>OK</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span><span class="num">6</span> listas · <span class="t-danger"><span class="num">1</span> con error</span> · <span class="t-attention"><span class="num">1</span> advertencia</span></span>
+          <span>A importar <span class="num" style="color: var(--text-primary)">$ 349.479</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div class="import-bar">
+    <button class="btn ghost" type="button"><i data-icon="x"></i> Limpiar</button>
+    <span class="spacer"></span>
+    <label class="checkbox"><input type="checkbox" checked><span>Omitir filas con error</span></label>
+    <button class="btn" type="button"><i data-icon="download"></i> Descargar plantilla</button>
+    <button class="btn primary" type="button"><i data-icon="upload"></i> Importar 7 movimientos</button>
+  </div>
+
+</div>
+</div>
+
+<div class="toast success" role="status"><i data-icon="check-circle"></i><span>Importación realizada · <span class="num">7</span> movimientos en septiembre 2026</span><button class="icon-btn xs" type="button" title="Cerrar"><i data-icon="x"></i></button><span class="progress"></span></div>
+
+<div class="modal-backdrop" id="formatoModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="formatoTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="formatoTitle">Formato esperado</h2>
+        <div class="sub">Una fila por registro, con las columnas en este orden. La primera fila puede ser el encabezado.</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <table class="table dense">
+        <thead>
+          <tr><th style="width: 190px">Tipo</th><th>Columnas</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="cell-primary">Gastos del mes</td><td><span class="col-list"><span class="chip">día</span><span class="chip">categoría</span><span class="chip">tipo de pago</span><span class="chip">monto</span><span class="chip">concepto</span><span class="chip">comentario</span></span></td></tr>
+          <tr><td class="cell-primary">Presupuesto del mes</td><td><span class="col-list"><span class="chip">categoría</span><span class="chip">subcategoría</span><span class="chip">monto estimado</span></span></td></tr>
+          <tr><td class="cell-primary">Horas de sueño de Tomi</td><td><span class="col-list"><span class="chip">día</span><span class="chip">hora desde</span><span class="chip">hora hasta</span><span class="chip">comentario</span></span></td></tr>
+        </tbody>
+      </table>
+      <div class="field">
+        <span class="field-label">Ejemplo · Gastos del mes</span>
+<pre class="example"><b>21</b>	Diario	Débito	$12.100,00	Comida	Super Más
+<b>20</b>	Hijos	Crédito	$13.000,00	Deportes y juegos	Lawn Tennis
+<b>18</b>	Transporte	Efectivo	$2.600,00	Taxi</pre>
+      </div>
+      <div class="alert info"><i data-icon="info"></i><span>Podés copiar directo desde Excel/Sheets: las columnas llegan separadas por tab. El monto acepta <span class="mono">$12.100,00</span> o <span class="mono">$12,100.00</span>.</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button"><i data-icon="download"></i> Descargar plantilla</button>
+      <button class="btn primary" type="button" data-modal-close>Entendido</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presupuesto del mes · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .is-dirty { box-shadow: inset 2px 0 0 var(--accent); }
+  .table td.is-dirty .cell-primary { color: var(--accent); }
+  .budget-table th.month, .budget-table td.num { width: 130px; }
+  .budget-table td.num .input { width: 104px; margin-left: auto; }
+  .budget-table tr.row-category .cell-secondary { font-weight: 400; color: var(--text-secondary); }
+  .budget-table tr.row-category .badge { margin-left: 6px; font-weight: 500; color: var(--text-secondary); }
+  .budget-table th.is-current { color: var(--text-primary); }
+  .budget-table th.is-current::after { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-left: 6px; vertical-align: 2px; }
+  .budget-table .st { width: 6px; height: 6px; background: currentColor; margin-right: 6px; vertical-align: 1px; }
+  .budget-table tfoot .cell-secondary { font-weight: 400; color: var(--text-secondary); }
+  .budget-table td.indent .pill { margin-left: 8px; height: 18px; font-size: 11px; }
+  .budget-table .cell-secondary.t-success { color: var(--success); }
+  .budget-table .cell-secondary.t-attention { color: var(--attention); }
+  .budget-table .cell-secondary.t-danger { color: var(--danger); }
+  .budget-table .cell-secondary.t-done { color: var(--done); }
+  .months--multi .month-tab { padding: 4px 5px; margin: 8px 0; }
+  .months .strip-end { gap: 10px; padding-left: 10px; margin-left: 4px; }
+  .months .strip-end .switch { white-space: nowrap; }
+  .months--multi .year { margin-right: 4px; }
+  .pct-input { width: 92px; }
+  .filter-input { width: 250px; }
+  .legend-pills { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-pills .pill { height: 22px; font-weight: 400; }
+  .toast .sub { color: var(--text-tertiary); font-size: 12px; margin-left: 4px; }
+</style>
+</head>
+<body data-page="finanzas-presupuesto">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <a href="finanzas-dashboard.html">Finanzas</a>
+      <span class="sep">/</span>
+      <span class="current">Presupuesto del mes</span>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn ghost" type="button" title="Descartar los cambios sin guardar"><i data-icon="undo"></i> Descartar</button>
+      <button class="btn" type="button"><i data-icon="download"></i> Exportar</button>
+      <button class="btn primary" type="button"><i data-icon="save"></i> Guardar cambios <span class="badge">3</span></button>
+    </div>
+  </header>
+
+  <div class="months months--multi">
+    <button class="year" type="button">2026 <i data-icon="chevron-down" class="sm"></i></button>
+    <button class="month-nav" type="button" title="Año anterior"><i data-icon="chevron-left"></i></button>
+    <button class="month-tab" type="button">enero</button>
+    <button class="month-tab" type="button">febrero</button>
+    <button class="month-tab" type="button">marzo</button>
+    <button class="month-tab" type="button">abril</button>
+    <button class="month-tab is-active" type="button">mayo</button>
+    <button class="month-tab is-active" type="button">junio</button>
+    <button class="month-tab is-active" type="button">julio</button>
+    <button class="month-tab is-active" type="button">agosto</button>
+    <button class="month-tab is-active is-current" type="button">septiembre</button>
+    <button class="month-tab" type="button">octubre</button>
+    <button class="month-tab" type="button">noviembre</button>
+    <button class="month-tab" type="button">diciembre</button>
+    <button class="month-nav" type="button" title="Año siguiente"><i data-icon="chevron-right"></i></button>
+    <span class="spacer"></span>
+    <span class="strip-end">
+      <label class="switch"><input type="checkbox"><span>Incluir inactivos</span></label>
+      <span class="faint" style="font-size: 12px; white-space: nowrap;">Elegí meses consecutivos</span>
+    </span>
+  </div>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="label">Presupuesto septiembre</div>
+      <div class="value">$ 6.393.714</div>
+      <div class="delta">20 subcategorías activas</div>
+    </div>
+    <div class="stat">
+      <div class="label">Real acumulado</div>
+      <div class="value accent">$ 5.030.467</div>
+      <div class="delta">al 22 de septiembre</div>
+    </div>
+    <div class="stat">
+      <div class="label">Desvío</div>
+      <div class="value">−$ 1.363.247</div>
+      <div class="delta down"><i data-icon="arrow-down-right"></i> 21% por debajo</div>
+    </div>
+    <div class="stat">
+      <div class="label">Sobre presupuesto</div>
+      <div class="value">4 subcategorías</div>
+      <div class="delta">2 por poco · 2 por mucho</div>
+    </div>
+    <div class="stat stat--wide">
+      <div class="meter is-warn"><i style="width: 79%"></i><span class="tick" style="left: 73%" title="Esperado a hoy: 73%"></span></div>
+      <div class="meter-legend"><span>79% del presupuesto usado · 73% del mes transcurrido</span><span class="pct">79%</span></div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <label class="input sm filter-input"><span class="prefix"><i data-icon="filter"></i></span><input type="text" placeholder="Filtrar categoría o subcategoría…"></label>
+    <div class="segmented sm">
+      <button type="button" class="is-active">Estimado y real</button>
+      <button type="button">Solo estimado</button>
+      <button type="button">Solo real</button>
+    </div>
+    <span class="divider"></span>
+    <label class="input sm mono right pct-input" title="Porcentaje a aplicar sobre el estimado de septiembre"><input type="text" value="12,5"><span class="suffix">%</span></label>
+    <button class="btn sm" type="button"><i data-icon="percent" class="sm"></i> Aplicar a 3 seleccionadas</button>
+    <span class="spacer"></span>
+    <span class="legend-pills">
+      <span class="pill outline success"><span class="dot"></span>Dentro</span>
+      <span class="pill outline attention"><span class="dot"></span>Cerca del límite ≥ 85 %</span>
+      <span class="pill outline danger"><span class="dot"></span>Pasado ≤ 15 %</span>
+      <span class="pill outline done"><span class="dot"></span>Muy pasado</span>
+    </span>
+    <span class="divider"></span>
+    <span class="summary">Suma parcial <span class="num" data-selection-sum>$ 457.000</span></span>
+  </div>
+
+  <div class="table-wrap">
+  <table class="table table--flush dense budget-table">
+    <thead>
+      <tr>
+        <th class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar todo"></label></th>
+        <th>Categoría / Subcategoría</th>
+        <th class="num month">Mayo</th>
+        <th class="num month">Junio</th>
+        <th class="num month">Julio</th>
+        <th class="num month">Agosto</th>
+        <th class="num month is-current">Septiembre</th>
+        <th class="num month">Promedio</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="row-category row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Diario"></label></td>
+        <td><i data-icon="chevron-down" class="caret"></i>Diario <span class="badge">4</span></td>
+        <td class="num">3.438.000<span class="cell-secondary">3.219.690</span></td>
+        <td class="num">3.493.000<span class="cell-secondary">3.332.880</span></td>
+        <td class="num">3.644.000<span class="cell-secondary">3.457.930</span></td>
+        <td class="num">3.727.000<span class="cell-secondary">3.635.270</span></td>
+        <td class="num">3.664.524<span class="cell-secondary">2.418.567</span></td>
+        <td class="num">3.593.305<span class="cell-secondary">3.212.867</span></td>
+      </tr>
+      <tr data-amount="2178524">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Supermercado"></label></td>
+        <td class="indent">Supermercado</td>
+        <td class="num"><span class="cell-primary">2.145.000</span><span class="cell-secondary t-attention" title="Real 93 % del estimado"><span class="dot-series st"></span>1.994.850</span></td>
+        <td class="num"><span class="cell-primary">2.200.000</span><span class="cell-secondary t-attention" title="Real 97 % del estimado"><span class="dot-series st"></span>2.134.000</span></td>
+        <td class="num"><span class="cell-primary">2.255.000</span><span class="cell-secondary t-attention" title="Real 88 % del estimado"><span class="dot-series st"></span>1.984.400</span></td>
+        <td class="num"><span class="cell-primary">2.338.000</span><span class="cell-secondary t-attention" title="Real 99 % del estimado"><span class="dot-series st"></span>2.314.620</span></td>
+        <td class="num"><span class="cell-primary">2.178.524</span><span class="cell-secondary t-success" title="Real 52 % del estimado"><span class="dot-series st"></span>1.123.527</span></td>
+        <td class="num dim">2.223.305<span class="cell-secondary">1.910.279</span></td>
+      </tr>
+      <tr data-amount="825000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Comida"></label></td>
+        <td class="indent">Comida</td>
+        <td class="num"><span class="cell-primary">715.000</span><span class="cell-secondary t-attention" title="Real 90 % del estimado"><span class="dot-series st"></span>643.500</span></td>
+        <td class="num"><span class="cell-primary">715.000</span><span class="cell-secondary t-attention" title="Real 97 % del estimado"><span class="dot-series st"></span>693.550</span></td>
+        <td class="num"><span class="cell-primary">770.000</span><span class="cell-secondary t-danger" title="Real 102 % del estimado"><span class="dot-series st"></span>785.400</span></td>
+        <td class="num"><span class="cell-primary">770.000</span><span class="cell-secondary t-attention" title="Real 94 % del estimado"><span class="dot-series st"></span>723.800</span></td>
+        <td class="num"><span class="cell-primary">825.000</span><span class="cell-secondary t-success" title="Real 78 % del estimado"><span class="dot-series st"></span>643.500</span></td>
+        <td class="num dim">759.000<span class="cell-secondary">697.950</span></td>
+      </tr>
+      <tr data-amount="193000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Gaseosas"></label></td>
+        <td class="indent">Gaseosas</td>
+        <td class="num"><span class="cell-primary">165.000</span><span class="cell-secondary t-success" title="Real 82 % del estimado"><span class="dot-series st"></span>135.300</span></td>
+        <td class="num"><span class="cell-primary">165.000</span><span class="cell-secondary t-attention" title="Real 91 % del estimado"><span class="dot-series st"></span>150.150</span></td>
+        <td class="num"><span class="cell-primary">179.000</span><span class="cell-secondary t-attention" title="Real 87 % del estimado"><span class="dot-series st"></span>155.730</span></td>
+        <td class="num"><span class="cell-primary">179.000</span><span class="cell-secondary t-attention" title="Real 95 % del estimado"><span class="dot-series st"></span>170.050</span></td>
+        <td class="num"><span class="cell-primary">193.000</span><span class="cell-secondary t-success" title="Real 66 % del estimado"><span class="dot-series st"></span>127.380</span></td>
+        <td class="num dim">176.200<span class="cell-secondary">147.722</span></td>
+      </tr>
+      <tr data-amount="468000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Restaurants"></label></td>
+        <td class="indent">Restaurants</td>
+        <td class="num"><span class="cell-primary">413.000</span><span class="cell-secondary t-danger" title="Real 108 % del estimado"><span class="dot-series st"></span>446.040</span></td>
+        <td class="num"><span class="cell-primary">413.000</span><span class="cell-secondary t-attention" title="Real 86 % del estimado"><span class="dot-series st"></span>355.180</span></td>
+        <td class="num"><span class="cell-primary">440.000</span><span class="cell-secondary t-done" title="Real 121 % del estimado"><span class="dot-series st"></span>532.400</span></td>
+        <td class="num"><span class="cell-primary">440.000</span><span class="cell-secondary t-attention" title="Real 97 % del estimado"><span class="dot-series st"></span>426.800</span></td>
+        <td class="num"><span class="cell-primary">468.000</span><span class="cell-secondary t-danger" title="Real 112 % del estimado"><span class="dot-series st"></span>524.160</span></td>
+        <td class="num dim">434.800<span class="cell-secondary">456.916</span></td>
+      </tr>
+      <tr class="row-category row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Servicios"></label></td>
+        <td><i data-icon="chevron-down" class="caret"></i>Servicios <span class="badge">4</span></td>
+        <td class="num">427.000<span class="cell-secondary">410.980</span></td>
+        <td class="num">452.000<span class="cell-secondary">451.450</span></td>
+        <td class="num">475.000<span class="cell-secondary">467.430</span></td>
+        <td class="num">488.000<span class="cell-secondary">482.200</span></td>
+        <td class="num">507.000<span class="cell-secondary">448.150</span></td>
+        <td class="num">469.800<span class="cell-secondary">452.042</span></td>
+      </tr>
+      <tr class="is-selected" data-amount="260000">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked aria-label="Seleccionar Edese"></label></td>
+        <td class="indent">Edese</td>
+        <td class="num"><span class="cell-primary">210.000</span><span class="cell-secondary t-attention" title="Real 97 % del estimado"><span class="dot-series st"></span>203.700</span></td>
+        <td class="num"><span class="cell-primary">220.000</span><span class="cell-secondary t-danger" title="Real 101 % del estimado"><span class="dot-series st"></span>222.200</span></td>
+        <td class="num"><span class="cell-primary">230.000</span><span class="cell-secondary t-attention" title="Real 96 % del estimado"><span class="dot-series st"></span>220.800</span></td>
+        <td class="num"><span class="cell-primary">240.000</span><span class="cell-secondary t-attention" title="Real 99 % del estimado"><span class="dot-series st"></span>237.600</span></td>
+        <td class="num"><span class="cell-primary">260.000</span><span class="cell-secondary t-attention" title="Real 97 % del estimado"><span class="dot-series st"></span>253.240</span></td>
+        <td class="num dim">232.000<span class="cell-secondary">227.508</span></td>
+      </tr>
+      <tr class="is-selected" data-amount="105000">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked aria-label="Seleccionar Personal"></label></td>
+        <td class="indent">Personal</td>
+        <td class="num"><span class="cell-primary">92.000</span><span class="cell-secondary t-attention" title="Real 99 % del estimado"><span class="dot-series st"></span>91.080</span></td>
+        <td class="num"><span class="cell-primary">95.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>95.000</span></td>
+        <td class="num"><span class="cell-primary">98.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>98.000</span></td>
+        <td class="num"><span class="cell-primary">100.000</span><span class="cell-secondary t-danger" title="Real 102 % del estimado"><span class="dot-series st"></span>102.000</span></td>
+        <td class="num"><span class="cell-primary">105.000</span><span class="cell-secondary t-attention" title="Real 98 % del estimado"><span class="dot-series st"></span>103.370</span></td>
+        <td class="num dim">98.000<span class="cell-secondary">97.890</span></td>
+      </tr>
+      <tr class="is-selected" data-amount="92000">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked aria-label="Seleccionar Flow Personal"></label></td>
+        <td class="indent">Flow Personal</td>
+        <td class="num"><span class="cell-primary">80.000</span><span class="cell-secondary t-attention" title="Real 98 % del estimado"><span class="dot-series st"></span>78.400</span></td>
+        <td class="num"><span class="cell-primary">82.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>82.000</span></td>
+        <td class="num"><span class="cell-primary">85.000</span><span class="cell-secondary t-attention" title="Real 99 % del estimado"><span class="dot-series st"></span>84.150</span></td>
+        <td class="num"><span class="cell-primary">88.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>88.000</span></td>
+        <td class="num"><span class="cell-primary">92.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>91.540</span></td>
+        <td class="num dim">85.400<span class="cell-secondary">84.818</span></td>
+      </tr>
+      <tr data-amount="50000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Naturgy"></label></td>
+        <td class="indent">Naturgy</td>
+        <td class="num"><span class="cell-primary">45.000</span><span class="cell-secondary t-success" title="Real 84 % del estimado"><span class="dot-series st"></span>37.800</span></td>
+        <td class="num"><span class="cell-primary">55.000</span><span class="cell-secondary t-attention" title="Real 95 % del estimado"><span class="dot-series st"></span>52.250</span></td>
+        <td class="num"><span class="cell-primary">62.000</span><span class="cell-secondary t-danger" title="Real 104 % del estimado"><span class="dot-series st"></span>64.480</span></td>
+        <td class="num"><span class="cell-primary">60.000</span><span class="cell-secondary t-attention" title="Real 91 % del estimado"><span class="dot-series st"></span>54.600</span></td>
+        <td class="num"><span class="cell-primary">50.000</span><span class="cell-secondary t-success" title="Real 0 % del estimado"><span class="dot-series st"></span>0</span></td>
+        <td class="num dim">54.400<span class="cell-secondary">41.826</span></td>
+      </tr>
+      <tr class="row-category row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Hijos"></label></td>
+        <td><i data-icon="chevron-down" class="caret"></i>Hijos <span class="badge">4</span></td>
+        <td class="num">675.000<span class="cell-secondary">577.050</span></td>
+        <td class="num">565.000<span class="cell-secondary">478.850</span></td>
+        <td class="num">793.000<span class="cell-secondary">836.370</span></td>
+        <td class="num">600.000<span class="cell-secondary">470.200</span></td>
+        <td class="num">638.000<span class="cell-secondary">727.640</span></td>
+        <td class="num">654.200<span class="cell-secondary">618.022</span></td>
+      </tr>
+      <tr data-amount="240000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Colegio"></label></td>
+        <td class="indent">Colegio</td>
+        <td class="num"><span class="cell-primary">220.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>220.000</span></td>
+        <td class="num"><span class="cell-primary">220.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>220.000</span></td>
+        <td class="num"><span class="cell-primary">240.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>240.000</span></td>
+        <td class="num"><span class="cell-primary">240.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>240.000</span></td>
+        <td class="num"><span class="cell-primary">240.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>240.000</span></td>
+        <td class="num dim">232.000<span class="cell-secondary">232.000</span></td>
+      </tr>
+      <tr data-amount="110000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Deportes y juegos"></label></td>
+        <td class="indent">Deportes y juegos</td>
+        <td class="num"><span class="cell-primary">90.000</span><span class="cell-secondary t-attention" title="Real 95 % del estimado"><span class="dot-series st"></span>85.500</span></td>
+        <td class="num"><span class="cell-primary">90.000</span><span class="cell-secondary t-attention" title="Real 88 % del estimado"><span class="dot-series st"></span>79.200</span></td>
+        <td class="num"><span class="cell-primary">100.000</span><span class="cell-secondary t-attention" title="Real 99 % del estimado"><span class="dot-series st"></span>99.000</span></td>
+        <td class="num"><span class="cell-primary">100.000</span><span class="cell-secondary t-danger" title="Real 105 % del estimado"><span class="dot-series st"></span>105.000</span></td>
+        <td class="num is-dirty"><span class="input sm mono right is-focus"><input value="120.000" aria-label="Estimado Deportes y juegos septiembre"></span></td>
+        <td class="num dim">98.000<span class="cell-secondary">87.380</span></td>
+      </tr>
+      <tr data-amount="40000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar (Colegio-Extras) Kiosco"></label></td>
+        <td class="indent">(Colegio-Extras) Kiosco</td>
+        <td class="num"><span class="cell-primary">35.000</span><span class="cell-secondary t-attention" title="Real 97 % del estimado"><span class="dot-series st"></span>33.950</span></td>
+        <td class="num"><span class="cell-primary">35.000</span><span class="cell-secondary t-danger" title="Real 111 % del estimado"><span class="dot-series st"></span>38.850</span></td>
+        <td class="num"><span class="cell-primary">40.000</span><span class="cell-secondary t-done" title="Real 118 % del estimado"><span class="dot-series st"></span>47.200</span></td>
+        <td class="num"><span class="cell-primary">40.000</span><span class="cell-secondary t-attention" title="Real 93 % del estimado"><span class="dot-series st"></span>37.200</span></td>
+        <td class="num"><span class="cell-primary">40.000</span><span class="cell-secondary t-done" title="Real 131 % del estimado"><span class="dot-series st"></span>52.400</span></td>
+        <td class="num dim">38.000<span class="cell-secondary">41.920</span></td>
+      </tr>
+      <tr data-amount="248000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Ropa"></label></td>
+        <td class="indent">Ropa</td>
+        <td class="num"><span class="cell-primary">330.000</span><span class="cell-secondary t-success" title="Real 72 % del estimado"><span class="dot-series st"></span>237.600</span></td>
+        <td class="num"><span class="cell-primary">220.000</span><span class="cell-secondary t-success" title="Real 64 % del estimado"><span class="dot-series st"></span>140.800</span></td>
+        <td class="num"><span class="cell-primary">413.000</span><span class="cell-secondary t-danger" title="Real 109 % del estimado"><span class="dot-series st"></span>450.170</span></td>
+        <td class="num"><span class="cell-primary">220.000</span><span class="cell-secondary t-success" title="Real 40 % del estimado"><span class="dot-series st"></span>88.000</span></td>
+        <td class="num"><span class="cell-primary">248.000</span><span class="cell-secondary t-done" title="Real 148 % del estimado"><span class="dot-series st"></span>367.040</span></td>
+        <td class="num dim">286.200<span class="cell-secondary">256.722</span></td>
+      </tr>
+      <tr class="row-category row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Salud"></label></td>
+        <td><i data-icon="chevron-down" class="caret"></i>Salud <span class="badge">2</span></td>
+        <td class="num">1.018.000<span class="cell-secondary">980.050</span></td>
+        <td class="num">1.018.000<span class="cell-secondary">1.021.300</span></td>
+        <td class="num">1.100.000<span class="cell-secondary">1.082.100</span></td>
+        <td class="num">1.100.000<span class="cell-secondary">1.078.520</span></td>
+        <td class="num">1.183.000<span class="cell-secondary">1.190.720</span></td>
+        <td class="num">1.083.800<span class="cell-secondary">1.070.538</span></td>
+      </tr>
+      <tr data-amount="990000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Prepaga"></label></td>
+        <td class="indent">Prepaga</td>
+        <td class="num"><span class="cell-primary">853.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>853.000</span></td>
+        <td class="num"><span class="cell-primary">853.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>853.000</span></td>
+        <td class="num"><span class="cell-primary">921.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>921.000</span></td>
+        <td class="num"><span class="cell-primary">921.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>921.000</span></td>
+        <td class="num is-dirty"><span class="cell-primary">990.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>990.000</span></td>
+        <td class="num dim">907.600<span class="cell-secondary">907.600</span></td>
+      </tr>
+      <tr data-amount="193000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Farmacia"></label></td>
+        <td class="indent">Farmacia</td>
+        <td class="num"><span class="cell-primary">165.000</span><span class="cell-secondary t-success" title="Real 77 % del estimado"><span class="dot-series st"></span>127.050</span></td>
+        <td class="num"><span class="cell-primary">165.000</span><span class="cell-secondary t-danger" title="Real 102 % del estimado"><span class="dot-series st"></span>168.300</span></td>
+        <td class="num"><span class="cell-primary">179.000</span><span class="cell-secondary t-attention" title="Real 90 % del estimado"><span class="dot-series st"></span>161.100</span></td>
+        <td class="num"><span class="cell-primary">179.000</span><span class="cell-secondary t-attention" title="Real 88 % del estimado"><span class="dot-series st"></span>157.520</span></td>
+        <td class="num"><span class="cell-primary">193.000</span><span class="cell-secondary t-danger" title="Real 104 % del estimado"><span class="dot-series st"></span>200.720</span></td>
+        <td class="num dim">176.200<span class="cell-secondary">162.938</span></td>
+      </tr>
+      <tr class="row-category row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Hogar"></label></td>
+        <td><i data-icon="chevron-down" class="caret"></i>Hogar <span class="badge">2</span></td>
+        <td class="num">315.000<span class="cell-secondary">310.880</span></td>
+        <td class="num">315.000<span class="cell-secondary">415.100</span></td>
+        <td class="num">346.000<span class="cell-secondary">321.760</span></td>
+        <td class="num">346.000<span class="cell-secondary">255.100</span></td>
+        <td class="num">373.000<span class="cell-secondary">221.200</span></td>
+        <td class="num">339.000<span class="cell-secondary">304.808</span></td>
+      </tr>
+      <tr data-amount="330000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Cosas para la casa"></label></td>
+        <td class="indent">Cosas para la casa</td>
+        <td class="num"><span class="cell-primary">275.000</span><span class="cell-secondary t-success" title="Real 80 % del estimado"><span class="dot-series st"></span>220.000</span></td>
+        <td class="num"><span class="cell-primary">275.000</span><span class="cell-secondary t-danger" title="Real 114 % del estimado"><span class="dot-series st"></span>313.500</span></td>
+        <td class="num"><span class="cell-primary">303.000</span><span class="cell-secondary t-attention" title="Real 92 % del estimado"><span class="dot-series st"></span>278.760</span></td>
+        <td class="num"><span class="cell-primary">303.000</span><span class="cell-secondary t-success" title="Real 70 % del estimado"><span class="dot-series st"></span>212.100</span></td>
+        <td class="num is-dirty"><span class="cell-primary">330.000</span><span class="cell-secondary t-success" title="Real 54 % del estimado"><span class="dot-series st"></span>178.200</span></td>
+        <td class="num dim">297.200<span class="cell-secondary">240.512</span></td>
+      </tr>
+      <tr data-amount="43000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Aportes Claudia"></label></td>
+        <td class="indent">Aportes Claudia</td>
+        <td class="num"><span class="cell-primary">40.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>40.000</span></td>
+        <td class="num"><span class="cell-primary">40.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>40.000</span></td>
+        <td class="num"><span class="cell-primary">43.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>43.000</span></td>
+        <td class="num"><span class="cell-primary">43.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>43.000</span></td>
+        <td class="num"><span class="cell-primary">43.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>43.000</span></td>
+        <td class="num dim">41.800<span class="cell-secondary">41.800</span></td>
+      </tr>
+      <tr data-amount="0" style="opacity:.55">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Limpieza"></label></td>
+        <td class="indent">Limpieza <span class="pill" title="Inactiva con gasto en el período">Inactiva</span></td>
+        <td class="num"><span class="cell-primary"><span class="faint">—</span></span><span class="cell-secondary faint" title="Sin estimado">50.880</span></td>
+        <td class="num"><span class="cell-primary"><span class="faint">—</span></span><span class="cell-secondary faint" title="Sin estimado">61.600</span></td>
+        <td class="num"><span class="cell-primary"><span class="faint">—</span></span><span class="cell-secondary faint">—</span></td>
+        <td class="num"><span class="cell-primary"><span class="faint">—</span></span><span class="cell-secondary faint">—</span></td>
+        <td class="num"><span class="cell-primary"><span class="faint">—</span></span><span class="cell-secondary faint">—</span></td>
+        <td class="num dim"><span class="faint">—</span><span class="cell-secondary">22.496</span></td>
+      </tr>
+      <tr class="row-category row-group is-collapsed">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Entretenimiento"></label></td>
+        <td><i data-icon="chevron-down" class="caret"></i>Entretenimiento <span class="badge">3</span></td>
+        <td class="num">25.000<span class="cell-secondary">21.000</span></td>
+        <td class="num">25.000<span class="cell-secondary">24.840</span></td>
+        <td class="num">28.190<span class="cell-secondary">24.190</span></td>
+        <td class="num">28.190<span class="cell-secondary">24.190</span></td>
+        <td class="num">28.190<span class="cell-secondary">24.190</span></td>
+        <td class="num">26.914<span class="cell-secondary">23.682</span></td>
+      </tr>
+      <tr class="is-hidden" data-amount="9990">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Netflix"></label></td>
+        <td class="indent">Netflix</td>
+        <td class="num"><span class="cell-primary">9.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>9.000</span></td>
+        <td class="num"><span class="cell-primary">9.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>9.000</span></td>
+        <td class="num"><span class="cell-primary">9.990</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>9.990</span></td>
+        <td class="num"><span class="cell-primary">9.990</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>9.990</span></td>
+        <td class="num"><span class="cell-primary">9.990</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>9.990</span></td>
+        <td class="num dim">9.594<span class="cell-secondary">9.594</span></td>
+      </tr>
+      <tr class="is-hidden" data-amount="14200">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Spotify"></label></td>
+        <td class="indent">Spotify</td>
+        <td class="num"><span class="cell-primary">12.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>12.000</span></td>
+        <td class="num"><span class="cell-primary">12.000</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>12.000</span></td>
+        <td class="num"><span class="cell-primary">14.200</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>14.200</span></td>
+        <td class="num"><span class="cell-primary">14.200</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>14.200</span></td>
+        <td class="num"><span class="cell-primary">14.200</span><span class="cell-secondary t-attention" title="Real 100 % del estimado"><span class="dot-series st"></span>14.200</span></td>
+        <td class="num dim">13.320<span class="cell-secondary">13.320</span></td>
+      </tr>
+      <tr class="is-hidden" data-amount="4000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar BTS Weverse"></label></td>
+        <td class="indent">BTS Weverse</td>
+        <td class="num"><span class="cell-primary">4.000</span><span class="cell-secondary t-success" title="Real 0 % del estimado"><span class="dot-series st"></span>0</span></td>
+        <td class="num"><span class="cell-primary">4.000</span><span class="cell-secondary t-attention" title="Real 96 % del estimado"><span class="dot-series st"></span>3.840</span></td>
+        <td class="num"><span class="cell-primary">4.000</span><span class="cell-secondary t-success" title="Real 0 % del estimado"><span class="dot-series st"></span>0</span></td>
+        <td class="num"><span class="cell-primary">4.000</span><span class="cell-secondary t-success" title="Real 0 % del estimado"><span class="dot-series st"></span>0</span></td>
+        <td class="num"><span class="cell-primary">4.000</span><span class="cell-secondary t-success" title="Real 0 % del estimado"><span class="dot-series st"></span>0</span></td>
+        <td class="num dim">4.000<span class="cell-secondary">768</span></td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td></td>
+        <td>Total</td>
+        <td class="num">5.898.000<span class="cell-secondary">5.519.650</span></td>
+        <td class="num">5.868.000<span class="cell-secondary">5.724.420</span></td>
+        <td class="num">6.386.190<span class="cell-secondary">6.189.780</span></td>
+        <td class="num">6.289.190<span class="cell-secondary">5.945.480</span></td>
+        <td class="num">6.393.714<span class="cell-secondary">5.030.467</span></td>
+        <td class="num">6.167.019<span class="cell-secondary">5.681.959</span></td>
+      </tr>
+    </tfoot>
+  </table>
+  </div>
+
+  <div class="table-footer">
+    <span>24 subcategorías · 4 inactivas ocultas <span class="faint">· estimado arriba, real abajo · doble clic en una celda para editar</span></span>
+    <span>Suma total <span class="num" style="color: var(--text-primary)">$ 6.393.714</span></span>
+  </div>
+
+  <section class="section mt-5" style="padding-bottom: 32px;">
+    <div class="section-title"><h2>Estado vacío</h2><span class="hint">sin meses seleccionados</span></div>
+    <div class="panel">
+      <div class="empty">
+        <i data-icon="calendar"></i>
+        <h3>Elegí uno o más meses</h3>
+        <p>Seleccioná meses consecutivos en la barra de arriba para ver y editar el presupuesto.</p>
+        <button class="btn sm mt-2" type="button"><i data-icon="calendar"></i> Ir al mes actual</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<div class="toast success" role="status">
+  <i data-icon="check-circle"></i>
+  <span>Presupuesto guardado · 3 cambios<span class="sub">septiembre</span></span>
+  <button class="icon-btn xs" type="button" title="Cerrar"><i data-icon="x"></i></button>
+  <span class="progress"></span>
+</div>
+
+<script src="assets/shell.js"></script>
+</body>
+</html>

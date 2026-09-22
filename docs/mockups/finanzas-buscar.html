@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buscar movimientos · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .filters .field.w-date { min-width: 136px; max-width: 150px; }
+  .filters .field.w-sm { max-width: 130px; }
+  .filters .select .chips { flex-wrap: nowrap; }
+  .filters .segmented.sm { height: var(--control-h); }
+  .empty .btn .icon { width: 16px; height: 16px; color: var(--text-secondary); }
+  .query-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px var(--gutter); border-bottom: 1px solid var(--border-soft); }
+  .query-row .label { font-size: 12px; color: var(--text-tertiary); margin-right: 4px; }
+  .query-row .timing { margin-left: auto; font-size: 12px; }
+  .query-row .chip b { font-weight: 500; color: var(--text-secondary); }
+  .stat--wide .spark-row { display: flex; align-items: center; gap: 12px; }
+  .stat--wide .spark-row .sparkline { flex: 1; }
+  mark { background: var(--attention-soft); color: var(--text-primary); border-radius: 2px; padding: 0 2px; }
+  .paytype { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px 0 5px; border-radius: var(--radius-sm); border: 1px solid var(--border-soft); background: var(--bg-elevated); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .paytype .icon { width: 13px; height: 13px; color: var(--text-tertiary); }
+  .table td.date { text-align: left; }
+  .table td.date .cell-secondary { font-family: var(--font-body); }
+  .states { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; padding-bottom: 32px; }
+  .results-section { margin-top: var(--space-5); }
+</style>
+</head>
+<body data-page="finanzas-buscar">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <a href="finanzas-dashboard.html">Finanzas</a>
+      <span class="sep">/</span>
+      <span class="current">Buscar movimientos</span>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn ghost" type="button" data-modal-open="#saveSearchModal"><i data-icon="save"></i> Guardar búsqueda</button>
+      <button class="btn" type="button"><i data-icon="download"></i> Exportar resultados</button>
+    </div>
+  </header>
+
+  <form class="filters" onsubmit="return false">
+    <div class="field w-date">
+      <label for="fDesde">Desde</label>
+      <label class="input mono"><span class="prefix"><i data-icon="calendar"></i></span><input id="fDesde" type="text" value="01/03/2026"></label>
+    </div>
+    <div class="field w-date">
+      <label for="fHasta">Hasta</label>
+      <label class="input mono"><span class="prefix"><i data-icon="calendar"></i></span><input id="fHasta" type="text" value="22/09/2026"></label>
+    </div>
+    <div class="field w-lg">
+      <label>Categorías</label>
+      <div class="select" tabindex="0">
+        <span class="chips">
+          <span class="chip">Diario <button class="icon-btn" type="button" title="Quitar Diario"><i data-icon="x"></i></button></span>
+          <span class="chip">Hijos <button class="icon-btn" type="button" title="Quitar Hijos"><i data-icon="x"></i></button></span>
+        </span>
+        <i data-icon="chevron-down" class="caret"></i>
+      </div>
+    </div>
+    <div class="field w-lg">
+      <label>Subcategorías</label>
+      <div class="select" tabindex="0"><span class="placeholder">Todas las de Diario e Hijos</span><i data-icon="chevron-down" class="caret"></i></div>
+    </div>
+    <div class="field">
+      <label>Tipo de pago</label>
+      <div class="segmented sm" data-multi>
+        <button type="button" class="is-active" aria-pressed="true"><i data-icon="banknote"></i> Efectivo</button>
+        <button type="button" class="is-active" aria-pressed="true"><i data-icon="landmark"></i> Débito</button>
+        <button type="button" aria-pressed="false"><i data-icon="credit-card"></i> Crédito</button>
+      </div>
+    </div>
+    <div class="field w-sm">
+      <label for="fMin">Monto mín.</label>
+      <label class="input mono right"><span class="prefix">$</span><input id="fMin" type="text" value="1.000"></label>
+    </div>
+    <div class="field w-sm">
+      <label for="fMax">Monto máx.</label>
+      <label class="input mono right"><span class="prefix">$</span><input id="fMax" type="text" value="100.000"></label>
+    </div>
+    <div class="field w-lg">
+      <label for="fDetalle">Detalle</label>
+      <label class="input is-focus"><span class="prefix"><i data-icon="search"></i></span><input id="fDetalle" type="text" value="coca" placeholder="Concepto o comentario…"></label>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" type="reset">Limpiar</button>
+      <button class="btn primary" type="submit"><i data-icon="search"></i> Buscar</button>
+    </div>
+  </form>
+
+  <div class="query-row">
+    <span class="label">Filtros activos</span>
+    <span class="chip">Últimos 6 meses <button class="icon-btn" type="button" title="Quitar filtro"><i data-icon="x"></i></button></span>
+    <span class="chip"><b>Categoría:</b> Diario, Hijos <button class="icon-btn" type="button" title="Quitar filtro"><i data-icon="x"></i></button></span>
+    <span class="chip"><b>Pago:</b> Efectivo, Débito <button class="icon-btn" type="button" title="Quitar filtro"><i data-icon="x"></i></button></span>
+    <span class="chip"><b>Detalle:</b> coca <button class="icon-btn" type="button" title="Quitar filtro"><i data-icon="x"></i></button></span>
+    <span class="timing faint"><span class="num">43</span> resultados en <span class="num">0,3</span> s</span>
+  </div>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="label">Resultados</div>
+      <div class="value">43</div>
+      <div class="delta">en 7 meses · 28 días distintos</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total</div>
+      <div class="value accent">$ 812.340</div>
+      <div class="delta">16 % del gasto en Diario e Hijos</div>
+    </div>
+    <div class="stat">
+      <div class="label">Promedio</div>
+      <div class="value">$ 18.891</div>
+      <div class="delta">por movimiento</div>
+    </div>
+    <div class="stat">
+      <div class="label">Mayor</div>
+      <div class="value">$ 86.450</div>
+      <div class="delta">Supermercado · 20/09</div>
+    </div>
+    <div class="stat stat--wide">
+      <div class="spark-row">
+        <svg class="sparkline" id="spark" height="36" viewBox="0 0 280 36" preserveAspectRatio="none" role="img" aria-label="Total por mes de marzo a septiembre"></svg>
+        <span class="num" style="font-size: 12.5px; color: var(--text-primary)">$ 112.300</span>
+      </div>
+      <div class="meter-legend"><span>Total por mes, mar–sep</span><span>sep a la fecha</span></div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <div class="segmented sm">
+      <button type="button" class="is-active"><i data-icon="list"></i> Lista</button>
+      <button type="button"><i data-icon="calendar"></i> Por mes</button>
+      <button type="button"><i data-icon="folder-tree"></i> Por categoría</button>
+    </div>
+    <span class="divider"></span>
+    <span class="summary">Ordenado por fecha, más recientes primero</span>
+    <span class="spacer"></span>
+    <span class="select sm inline"><span>20 por página</span><i data-icon="chevron-down" class="caret"></i></span>
+  </div>
+
+  <div class="table-wrap">
+  <table class="table table--flush">
+    <thead>
+      <tr>
+        <th class="is-sorted" style="width: 150px"><span class="sort">Fecha <i data-icon="sort-asc" style="transform: rotate(180deg)"></i></span></th>
+        <th style="width: 120px"><span class="sort">Categoría <i data-icon="sort"></i></span></th>
+        <th>Concepto</th>
+        <th style="width: 130px">Tipo de pago</th>
+        <th class="num" style="width: 140px"><span class="sort">Monto <i data-icon="sort"></i></span></th>
+        <th class="actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="num date"><span>22/09/2026</span><span class="cell-secondary">martes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Gaseosas</span><span class="cell-secondary">Oriente - <mark>Coca</mark> 600 ml</span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>2.300</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>21/09/2026</span><span class="cell-secondary">lunes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Gaseosas</span><span class="cell-secondary">Super Más - <mark>Coca</mark> 2.25 L</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>4.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>20/09/2026</span><span class="cell-secondary">domingo</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Supermercado</span><span class="cell-secondary">Changomás · compra semanal, 4 <mark>Coca</mark> 2.25 L</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>86.450</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>18/09/2026</span><span class="cell-secondary">viernes</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">(Colegio-Extras) Kiosco</span><span class="cell-secondary">Kiosco Urquiza · alfajor y <mark>Coca</mark> chica</span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>3.200</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>15/09/2026</span><span class="cell-secondary">martes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Comida</span><span class="cell-secondary">Oriente · milanesas y <mark>Coca</mark></span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>14.800</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>12/09/2026</span><span class="cell-secondary">sábado</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Gaseosas</span><span class="cell-secondary">Changomás - <mark>Coca</mark> Zero 1.5 L x2</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>5.600</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>09/09/2026</span><span class="cell-secondary">miércoles</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">Cumpleaños</span><span class="cell-secondary">Cumple de Sofi · <mark>Coca</mark> y snacks</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>23.400</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>05/09/2026</span><span class="cell-secondary">sábado</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Comida</span><span class="cell-secondary">Super Más · picada y <mark>Coca</mark></span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>18.900</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>02/09/2026</span><span class="cell-secondary">miércoles</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Kiosco</span><span class="cell-secondary">Kiosco Urquiza - <mark>Coca</mark> 500 ml</span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>1.500</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>29/08/2026</span><span class="cell-secondary">sábado</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Supermercado</span><span class="cell-secondary">Changomás · compra semanal, <mark>Coca</mark> x6</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>48.300</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>26/08/2026</span><span class="cell-secondary">miércoles</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Gaseosas</span><span class="cell-secondary">Oriente - <mark>Coca</mark> 1.5 L</span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>2.900</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>22/08/2026</span><span class="cell-secondary">sábado</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">Salidas</span><span class="cell-secondary">Merienda con Tomi · <mark>Coca</mark> grande</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>16.700</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>18/08/2026</span><span class="cell-secondary">martes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Gaseosas</span><span class="cell-secondary">Super Más - <mark>Coca</mark> 2.25 L</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>3.800</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>14/08/2026</span><span class="cell-secondary">viernes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Comida</span><span class="cell-secondary">Oriente · empanadas y <mark>Coca</mark></span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>12.600</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>08/08/2026</span><span class="cell-secondary">sábado</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">(Colegio-Extras) Kiosco</span><span class="cell-secondary">Kiosco Urquiza - <mark>Coca</mark> chica</span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>1.200</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>03/08/2026</span><span class="cell-secondary">lunes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Supermercado</span><span class="cell-secondary">Changomás · <mark>Coca</mark> x4 y limpieza</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>42.150</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>31/07/2026</span><span class="cell-secondary">viernes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Gaseosas</span><span class="cell-secondary">Super Más - <mark>Coca</mark> Zero 2.25 L</span></td>
+        <td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td>
+        <td class="num"><span class="cur">$</span>3.600</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>28/07/2026</span><span class="cell-secondary">martes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Comida</span><span class="cell-secondary">Oriente · pizza y <mark>Coca</mark></span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>15.900</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>25/07/2026</span><span class="cell-secondary">sábado</span></td>
+        <td class="dim">Hijos</td>
+        <td><span class="cell-primary">Cumpleaños</span><span class="cell-secondary">Cumple en el colegio · <mark>Coca</mark> x3</span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>9.000</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="num date"><span>20/07/2026</span><span class="cell-secondary">lunes</span></td>
+        <td class="dim">Diario</td>
+        <td><span class="cell-primary">Kiosco</span><span class="cell-secondary">Kiosco Urquiza - <mark>Coca</mark> 500 ml</span></td>
+        <td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td>
+        <td class="num"><span class="cur">$</span>1.400</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Abrir en el mes"><i data-icon="external-link"></i></button><button class="icon-btn xs" type="button" title="Duplicar"><i data-icon="copy"></i></button></span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="table-footer">
+    <span><span class="num">1–20</span> de <span class="num">43</span> · suma de la página <span class="num" style="color: var(--text-primary)">$ 317.700</span></span>
+    <span class="pager">
+      <button class="icon-btn" type="button" title="Página anterior" disabled><i data-icon="chevron-left" class="sm"></i></button>
+      <button class="icon-btn is-active" type="button">1</button>
+      <button class="icon-btn" type="button">2</button>
+      <button class="icon-btn" type="button">3</button>
+      <button class="icon-btn" type="button" title="Página siguiente"><i data-icon="chevron-right" class="sm"></i></button>
+    </span>
+  </div>
+
+  <section class="section results-section">
+    <div class="section-title">
+      <h2>Estado vacío</h2>
+      <span class="hint">y estado de carga mientras llega la respuesta</span>
+    </div>
+    <div class="states">
+      <div class="panel">
+        <div class="panel-header"><h3>Sin resultados</h3><span class="hint">Detalle: coca zero · Crédito</span></div>
+        <div class="panel-body flush">
+          <div class="empty">
+            <i data-icon="search"></i>
+            <h3>Sin resultados para «coca zero»</h3>
+            <p>Probá con menos filtros o ampliá el rango de fechas.</p>
+            <button class="btn mt-2" type="button"><i data-icon="x"></i> Limpiar filtros</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h3>Cargando</h3><span class="hint">Buscando en 7 meses…</span></div>
+        <div class="panel-body flush">
+          <table class="table dense">
+            <thead>
+              <tr><th style="width: 110px">Fecha</th><th style="width: 100px">Categoría</th><th>Concepto</th><th class="num" style="width: 100px">Monto</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="skeleton" style="width: 76px"></span></td><td><span class="skeleton" style="width: 48px"></span></td><td><span class="skeleton" style="width: 62%"></span></td><td class="num"><span class="skeleton" style="width: 56px"></span></td></tr>
+              <tr><td><span class="skeleton" style="width: 76px"></span></td><td><span class="skeleton" style="width: 40px"></span></td><td><span class="skeleton" style="width: 44%"></span></td><td class="num"><span class="skeleton" style="width: 64px"></span></td></tr>
+              <tr><td><span class="skeleton" style="width: 76px"></span></td><td><span class="skeleton" style="width: 52px"></span></td><td><span class="skeleton" style="width: 71%"></span></td><td class="num"><span class="skeleton" style="width: 44px"></span></td></tr>
+              <tr><td><span class="skeleton" style="width: 76px"></span></td><td><span class="skeleton" style="width: 36px"></span></td><td><span class="skeleton" style="width: 38%"></span></td><td class="num"><span class="skeleton" style="width: 60px"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<div class="modal-backdrop" id="saveSearchModal">
+  <div class="modal narrow" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="saveTitle">Guardar búsqueda</h2>
+        <div class="sub">Queda disponible en Buscar con los mismos filtros.</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <label class="field"><span class="field-label">Nombre</span><span class="input is-focus"><input type="text" value="Coca en Diario e Hijos"></span></label>
+      <dl class="kv">
+        <dt>Período</dt><dd>Últimos 6 meses <span class="faint">(relativo)</span></dd>
+        <dt>Categorías</dt><dd>Diario, Hijos</dd>
+        <dt>Tipo de pago</dt><dd>Efectivo, Débito</dd>
+        <dt>Monto</dt><dd class="num">$ 1.000 – $ 100.000</dd>
+        <dt>Detalle</dt><dd>coca</dd>
+      </dl>
+      <label class="checkbox"><input type="checkbox" checked> Mantener el período relativo a hoy</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" data-modal-close><i data-icon="save"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script>
+(function () {
+  document.querySelectorAll('.segmented[data-multi]').forEach((seg) => {
+    seg.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      e.stopPropagation();
+      const on = !b.classList.contains('is-active');
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  });
+
+  const data = [98.4, 121.2, 104.6, 131.9, 118.3, 125.6, 112.3];
+  const W = 280, H = 36, pad = 5;
+  const max = Math.max.apply(null, data), min = Math.min.apply(null, data);
+  const x = (i) => pad + (i / (data.length - 1)) * (W - pad * 2);
+  const y = (v) => pad + (1 - (v - min) / (max - min)) * (H - pad * 2);
+  const pts = data.map((v, i) => x(i).toFixed(1) + ' ' + y(v).toFixed(1));
+  const n = pts.length;
+  let s = '<path d="M' + pts.slice(0, n - 1).join(' L') + '"/>';
+  s += '<path class="current" d="M' + pts[n - 2] + ' L' + pts[n - 1] + '"/>';
+  document.getElementById('spark').innerHTML = s;
+})();
+</script>
+</body>
+</html>

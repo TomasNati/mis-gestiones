@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resumen de finanzas · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .dash { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; padding-top: 20px; }
+  .dash .span-2 { grid-column: 1 / -1; }
+  .panel-link { font-size: 12px; color: var(--accent); display: inline-flex; align-items: center; gap: 4px; }
+  .panel-link:hover { text-decoration: underline; }
+  .panel-header .head-left { display: flex; align-items: baseline; gap: 8px; }
+  .paytype { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px 0 5px; border-radius: var(--radius-sm); border: 1px solid var(--border-soft); background: var(--bg-elevated); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .paytype .icon { width: 13px; height: 13px; color: var(--text-tertiary); }
+  .table td.day { font-family: var(--font-mono); color: var(--text-secondary); width: 44px; }
+  .list { display: flex; flex-direction: column; }
+  .list .row { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 44px; border-bottom: 1px solid var(--border-muted); font-size: 13.5px; }
+  .list .row:last-child { border-bottom: 0; }
+  .list .row:hover { background: var(--bg-row-hover); }
+  .list .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .list .name small { color: var(--text-tertiary); font-size: 12px; margin-left: 6px; }
+  .list .date { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); width: 44px; }
+  .list .amount { font-family: var(--font-mono); font-variant-numeric: tabular-nums; width: 96px; text-align: right; }
+  .list .amount .cur { color: var(--text-tertiary); margin-right: 3px; }
+  .list .status { width: 116px; display: flex; justify-content: flex-end; }
+  .hbars { display: flex; flex-direction: column; gap: 10px; }
+  .hbar { display: grid; grid-template-columns: 96px 1fr 84px; align-items: center; gap: 10px; font-size: 12.5px; }
+  .hbar .name { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .hbar .track { height: 14px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
+  .hbar .track > i { display: block; height: 100%; background: var(--accent); border-radius: 0 3px 3px 0; }
+  .hbar .track > i.muted { background: var(--series-muted); }
+  .hbar .val { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-primary); }
+  .hbar .val small { color: var(--text-tertiary); margin-left: 4px; font-size: 11px; }
+  .hbars.cmp .hbar { grid-template-columns: 120px minmax(0, 1fr) 190px 64px; }
+  .hbars.cmp .track { position: relative; overflow: visible; }
+  .hbars.cmp .track > i.over { background: var(--danger); }
+  .hbars.cmp .track .est { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--text-secondary); }
+  .hbars.cmp .flag { display: flex; justify-content: flex-start; }
+  .legend .swatch.tick { width: 2px; height: 12px; border-radius: 0; background: var(--text-secondary); }
+  .note-line { margin-top: 20px; }
+</style>
+</head>
+<body data-page="finanzas-dashboard">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <a href="finanzas-dashboard.html">Finanzas</a>
+      <span class="sep">/</span>
+      <span class="current">Resumen</span>
+    </nav>
+    <div class="topbar-actions">
+      <span class="select inline" tabindex="0"><i data-icon="calendar" class="sm" style="color: var(--text-tertiary)"></i><span>septiembre 2026</span><i data-icon="chevron-down" class="caret"></i></span>
+      <a class="btn" href="finanzas-movimientos.html">Ir a movimientos <i data-icon="arrow-right"></i></a>
+    </div>
+  </header>
+
+  <section class="stats" style="border-top: 1px solid var(--border-soft)">
+    <div class="stat">
+      <div class="label">Gastado en septiembre</div>
+      <div class="value accent">$ 5.030.467</div>
+      <div class="delta up"><i data-icon="arrow-up-right"></i> 6,2 % vs. agosto</div>
+    </div>
+    <div class="stat">
+      <div class="label">Presupuesto</div>
+      <div class="value">$ 6.393.714</div>
+      <div class="delta">30 subcategorías estimadas</div>
+    </div>
+    <div class="stat">
+      <div class="label">Pendiente</div>
+      <div class="value">$ 1.363.247</div>
+      <div class="delta">8 días restantes</div>
+    </div>
+    <div class="stat">
+      <div class="label">Vencimientos próximos</div>
+      <div class="value">3</div>
+      <div class="delta t-danger"><i data-icon="alert-circle"></i> 1 vencido</div>
+    </div>
+    <div class="stat stat--wide">
+      <div class="meter is-warn"><i style="width: 79%"></i><span class="tick" style="left: 73%" title="Esperado a hoy: 73 %"></span></div>
+      <div class="meter-legend"><span>79 % usado · 73 % del mes</span><span class="pct">+6 pts</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="dash">
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="head-left"><h3>Últimos movimientos</h3><span class="hint">hoy y ayer</span></div>
+          <a class="panel-link" href="finanzas-movimientos.html">Ver todos <i data-icon="arrow-right" class="sm"></i></a>
+        </div>
+        <div class="panel-body flush">
+          <table class="table dense">
+            <thead>
+              <tr><th>Día</th><th style="width: 110px">Categoría</th><th>Concepto</th><th style="width: 110px">Tipo</th><th class="num" style="width: 110px">Monto</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="day">22</td><td class="dim">Diario</td><td><span class="cell-primary">Comida</span><span class="cell-secondary inline">Oriente</span></td><td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td><td class="num"><span class="cur">$</span>7.700</td></tr>
+              <tr><td class="day">22</td><td class="dim">Hijos</td><td><span class="cell-primary">(Colegio-Extras) Kiosco</span></td><td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td><td class="num"><span class="cur">$</span>4.500</td></tr>
+              <tr><td class="day">22</td><td class="dim">Diario</td><td><span class="cell-primary">Gaseosas</span><span class="cell-secondary inline">Oriente - Coca 600 ml</span></td><td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td><td class="num"><span class="cur">$</span>2.300</td></tr>
+              <tr><td class="day">22</td><td class="dim">Servicios</td><td><span class="cell-primary">Edese</span><span class="cell-secondary inline">vencimiento 23/09</span></td><td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td><td class="num"><span class="cur">$</span>253.279</td></tr>
+              <tr><td class="day">21</td><td class="dim">Regalos</td><td><span class="cell-primary">Regalos</span><span class="cell-secondary inline">Robux para Sofi</span></td><td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td><td class="num"><span class="cur">$</span>24.765</td></tr>
+              <tr><td class="day">21</td><td class="dim">Diario</td><td><span class="cell-primary">Comida</span><span class="cell-secondary inline">Super Más</span></td><td><span class="paytype"><i data-icon="landmark"></i>Débito</span></td><td class="num"><span class="cur">$</span>12.100</td></tr>
+              <tr><td class="day">21</td><td class="dim">Salud</td><td><span class="cell-primary">Farmacia</span><span class="cell-secondary inline">Farmacity</span></td><td><span class="paytype"><i data-icon="credit-card"></i>Crédito</span></td><td class="num"><span class="cur">$</span>54.000</td></tr>
+              <tr><td class="day">21</td><td class="dim">Hogar</td><td><span class="cell-primary">Cosas para la casa</span><span class="cell-secondary inline">Separadores</span></td><td><span class="paytype"><i data-icon="banknote"></i>Efectivo</span></td><td class="num"><span class="cur">$</span>3.000</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="head-left"><h3>Próximos vencimientos</h3><span class="hint">hasta el 05/10</span></div>
+          <a class="panel-link" href="finanzas-vencimientos.html">Ver todos <i data-icon="arrow-right" class="sm"></i></a>
+        </div>
+        <div class="list">
+          <div class="row"><span class="date">20/09</span><span class="name">Tarjeta Visa<small>resumen ago</small></span><span class="amount"><span class="cur">$</span>412.380</span><span class="status"><span class="pill danger"><i data-icon="alert-circle"></i>Vencido</span></span></div>
+          <div class="row"><span class="date">23/09</span><span class="name">ABL Ciudad<small>cuota 9</small></span><span class="amount"><span class="cur">$</span>38.450</span><span class="status"><span class="pill attention"><i data-icon="clock"></i>Vence mañana</span></span></div>
+          <div class="row"><span class="date">23/09</span><span class="name">Edese<small>luz</small></span><span class="amount"><span class="cur">$</span>253.279</span><span class="status"><span class="pill success"><i data-icon="check"></i>Pagado</span></span></div>
+          <div class="row"><span class="date">26/09</span><span class="name">Metrogas</span><span class="amount"><span class="cur">$</span>48.900</span><span class="status"><span class="pill">Pendiente</span></span></div>
+          <div class="row"><span class="date">01/10</span><span class="name">Colegio<small>cuota octubre</small></span><span class="amount"><span class="cur">$</span>240.000</span><span class="status"><span class="pill">Pendiente</span></span></div>
+          <div class="row"><span class="date">05/10</span><span class="name">Seguro auto</span><span class="amount"><span class="cur">$</span>86.200</span><span class="status"><span class="pill">Pendiente</span></span></div>
+        </div>
+      </div>
+
+      <div class="panel span-2">
+        <div class="panel-header">
+          <div class="head-left"><h3>Gasto por categoría vs. presupuesto</h3><span class="hint">8 categorías con más gasto · septiembre</span></div>
+          <div class="legend">
+            <span class="item"><span class="swatch" style="background: var(--accent)"></span>Gastado</span>
+            <span class="item"><span class="swatch" style="background: var(--danger)"></span>Gastado, pasado del presupuesto</span>
+            <span class="item"><span class="swatch tick"></span>Presupuesto</span>
+          </div>
+        </div>
+        <div class="panel-body hbars cmp" id="catBars"></div>
+      </div>
+
+      <div class="panel span-2">
+        <div class="panel-header">
+          <div class="head-left"><h3>Tendencia · últimos 6 meses</h3><span class="hint">gasto total por mes</span></div>
+          <div class="legend">
+            <span class="item"><span class="swatch" style="background: var(--series-muted)"></span>Meses anteriores</span>
+            <span class="item"><span class="swatch" style="background: var(--accent)"></span>Mes actual (a la fecha)</span>
+            <span class="item"><span class="swatch line" style="background: var(--text-tertiary)"></span>Presupuesto</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="viz" id="trendChart"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="table-footer note-line">
+    <span>Datos al <span class="num">22/09/2026</span> · se actualiza al abrir la página</span>
+    <span class="faint">Crédito imputado al mes del resumen</span>
+  </div>
+
+</div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script>
+(function () {
+  const cats = [
+    ['Servicios', 1930000, 2100000],
+    ['Hijos', 1240000, 1150000],
+    ['Diario', 690000, 820000],
+    ['Educación', 320000, 300000],
+    ['Salud', 210000, 350000],
+    ['Hogar', 180000, 250000],
+    ['Transporte', 150000, 200000],
+    ['Entretenimiento', 130000, 110000],
+  ];
+  const fmt = (n) => n.toLocaleString('es-AR');
+  const max = Math.max.apply(null, cats.map((c) => Math.max(c[1], c[2])));
+  document.getElementById('catBars').innerHTML = cats.map(([name, real, est]) => {
+    const over = real > est;
+    return '<div class="hbar"><span class="name">' + name + '</span>' +
+      '<span class="track"><i class="' + (over ? 'over' : '') + '" style="width:' + (real / max * 100).toFixed(1) + '%"></i>' +
+      '<span class="est" style="left:' + (est / max * 100).toFixed(1) + '%" title="Presupuesto $ ' + fmt(est) + '"></span></span>' +
+      '<span class="val">' + fmt(real) + '<small>de ' + fmt(est) + '</small></span>' +
+      '<span class="flag">' + (over ? '<span class="pill danger">pasado</span>' : '') + '</span></div>';
+  }).join('');
+
+  const months = ['abr', 'may', 'jun', 'jul', 'ago', 'sep'];
+  const totals = [4620, 4950, 5410, 5880, 4740, 5030];
+  const budget = 6394, top = 7000;
+  const W = 1100, H = 220, m = { t: 16, r: 84, b: 26, l: 46 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const y = (v) => m.t + (1 - v / top) * ih;
+  const band = iw / months.length, bw = 24;
+  const cx = (i) => m.l + band * i + band / 2;
+  const fmtM = (v) => (v / 1000).toFixed(2).replace('.', ',') + ' M';
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Gasto total por mes de abril a septiembre contra el presupuesto">';
+  s += '<g class="grid">';
+  [0, 2000, 4000, 6000].forEach((v) => {
+    s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>';
+    s += '<text class="num-t" x="' + (m.l - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + (v ? v / 1000 + ' M' : '0') + '</text>';
+  });
+  s += '</g>';
+  totals.forEach((v, i) => {
+    const last = i === totals.length - 1;
+    const h = y(0) - y(v);
+    s += '<rect x="' + (cx(i) - bw / 2) + '" y="' + y(v) + '" width="' + bw + '" height="' + h + '" rx="2" fill="' + (last ? 'var(--accent)' : 'var(--series-muted)') + '"><title>' + months[i] + ': $ ' + fmtM(v) + '</title></rect>';
+    s += '<text x="' + cx(i) + '" y="' + (H - 6) + '" text-anchor="middle"' + (last ? ' class="end-label strong"' : '') + '>' + months[i] + '</text>';
+    if (last) s += '<text class="end-label strong num-t" x="' + cx(i) + '" y="' + (y(v) - 8) + '" text-anchor="middle">$ ' + fmtM(v) + '</text>';
+  });
+  s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y(budget) + '" y2="' + y(budget) + '" stroke="var(--text-tertiary)" stroke-width="1.5" stroke-dasharray="4 4"/>';
+  s += '<text class="end-label" x="' + (W - m.r + 8) + '" y="' + (y(budget) + 4) + '">presupuesto</text>';
+  s += '<text class="num-t" x="' + (W - m.r + 8) + '" y="' + (y(budget) + 18) + '">6,39 M</text>';
+  s += '</svg>';
+  document.getElementById('trendChart').innerHTML = s;
+})();
+</script>
+</body>
+</html>

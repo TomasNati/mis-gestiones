@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inversiones · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .date-input { width: auto; min-width: 210px; cursor: pointer; white-space: nowrap; }
+  #historyBanner:not(.is-open) { display: none; }
+  #historyBanner.is-open { display: flex; }
+  .stat .delta.t-success { color: var(--success); }
+  .stats .stat { min-width: 140px; padding-right: 24px; margin-right: 24px; }
+  .stats .stat--wide { min-width: 220px; }
+  .stat .legend .pct { font-family: var(--font-mono); color: var(--text-primary); margin-left: 2px; }
+  .date-input .val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-primary); }
+  .alerts { display: flex; flex-direction: column; gap: 8px; padding-bottom: 14px; }
+  .alerts .alert .btn { margin-left: auto; align-self: center; }
+  .alerts .alert.info { align-items: center; }
+  .currency-bar { min-height: 48px; padding-top: 8px; padding-bottom: 8px; border-top: 1px solid var(--border-soft); }
+  .stack100 { display: flex; gap: 2px; height: 8px; border-radius: 3px; overflow: hidden; }
+  .stack100 > i { display: block; height: 100%; }
+  .stack100 > i:first-child { border-radius: 3px 0 0 3px; }
+  .stack100 > i:last-child { border-radius: 0 3px 3px 0; }
+  .stat--wide .label { margin-bottom: 0; }
+  .charts { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; padding: 16px var(--gutter) 20px; border-bottom: 1px solid var(--border-soft); }
+  .charts .panel-body .legend { margin-top: 10px; }
+  .comp-block + .comp-block { margin-top: 18px; }
+  .comp-block .field-label { margin-bottom: 8px; }
+  .comp-block .legend { margin-top: 8px; }
+  .comp-title { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin: 20px 0 6px; }
+  .hbar .track { height: 14px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; display: block; }
+  .hbar .track > i { display: block; height: 100%; background: var(--accent); border-radius: 0 3px 3px 0; }
+  .type-table td.bar { width: 45%; }
+  .type-table td:first-child, .type-table th:first-child { padding-left: 0; }
+  .type-table td:last-child, .type-table th:last-child { padding-right: 0; }
+  .renta { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.03em; color: var(--text-tertiary); }
+  .filter-input { width: 260px; }
+  .tb-divider { width: 1px; height: 20px; background: var(--border-muted); margin: 0 4px; }
+  .btn.danger.filled { background: var(--danger-emphasis); border-color: var(--danger-emphasis); color: #fff; }
+  .btn.danger.filled .icon { color: #fff; }
+</style>
+</head>
+<body data-page="inversiones">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <span class="current">Inversiones</span>
+    </nav>
+    <div class="topbar-actions">
+      <button class="input date-input" type="button" data-toggle="#historyBanner" title="Elegir una fecha pasada abre el estado guardado en modo lectura"><span class="prefix"><i data-icon="calendar"></i></span><span class="faint">Fecha del estado ·</span><span class="val">22/09/2026</span></button>
+      <button class="btn" type="button"><i data-icon="save"></i> Guardar estado</button>
+      <label class="switch" title="Reemplaza el estado ya guardado para hoy"><input type="checkbox"><span>Sobreescribir</span></label>
+      <span class="tb-divider"></span>
+      <button class="btn ghost is-on" type="button" data-toggle="#charts"><i data-icon="chart-bar"></i> Gráficos</button>
+      <button class="btn primary" type="button" data-modal-open="#nuevaModal"><i data-icon="plus"></i> Nueva inversión</button>
+    </div>
+  </header>
+
+  <section class="section alerts">
+    <div class="alert warn"><i data-icon="alert-triangle"></i><span><b>Sin precio guardado para hoy</b> en <span class="mono">AL30</span> y <span class="mono">GD35</span> — se usa la última cotización disponible (<span class="num">19/09</span>).</span></div>
+    <div class="alert info collapsible" id="historyBanner"><i data-icon="clock"></i><span>Viendo el estado guardado del <b class="num">15/09/2026</b> · solo lectura</span><button class="btn sm" type="button" data-toggle="#historyBanner"><i data-icon="undo"></i> Volver a hoy</button></div>
+  </section>
+
+  <div class="toolbar currency-bar">
+    <div class="segmented sm" role="group" aria-label="Moneda">
+      <button type="button" class="is-active">Peso</button>
+      <button type="button">Dólar</button>
+    </div>
+    <div class="segmented sm" role="group" aria-label="Tipo de cambio">
+      <button type="button" class="is-active">Oficial</button>
+      <button type="button">Bolsa</button>
+      <button type="button">CCL</button>
+    </div>
+    <span class="summary">Dólar oficial <span class="num">$ 1.420</span> · bolsa <span class="num">$ 1.455</span> · CCL <span class="num">$ 1.470</span></span>
+    <span class="spacer"></span>
+    <span class="summary"><i data-icon="save" class="sm"></i> Último estado guardado: <span class="num">19/09/2026 22:10</span></span>
+  </div>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="label">Total cartera</div>
+      <div class="value accent">$ 81.955.264</div>
+      <div class="delta t-success"><i data-icon="arrow-up-right"></i> +2,4 % vs. 19/09</div>
+    </div>
+    <div class="stat">
+      <div class="label">En dólares (oficial)</div>
+      <div class="value">US$ 57.715</div>
+      <div class="delta">a <span class="num">$ 1.420</span> por dólar</div>
+    </div>
+    <div class="stat">
+      <div class="label">Renta variable</div>
+      <div class="value">58 %</div>
+      <div class="delta"><span class="num">$ 47.533.540</span></div>
+    </div>
+    <div class="stat">
+      <div class="label">Renta fija</div>
+      <div class="value">25 %</div>
+      <div class="delta"><span class="num">$ 20.489.900</span></div>
+    </div>
+    <div class="stat">
+      <div class="label">Mixta</div>
+      <div class="value">17 %</div>
+      <div class="delta"><span class="num">$ 13.931.824</span></div>
+    </div>
+    <div class="stat stat--wide">
+      <div class="label">Composición por broker</div>
+      <div class="stack100" role="img" aria-label="PPI 65,5 %, Balanz 34,5 %"><i style="width: 65.5%; background: var(--series-1)"></i><i style="width: 34.5%; background: var(--series-2)"></i></div>
+      <div class="legend">
+        <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI <span class="pct">65,5 %</span></span>
+        <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz <span class="pct">34,5 %</span></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="charts" class="collapsible is-open">
+    <div class="charts">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Evolución por broker <span class="hint">cierre semanal</span></h3>
+          <div class="segmented sm" role="group" aria-label="Rango">
+            <button type="button" class="is-active">3 m</button>
+            <button type="button">6 m</button>
+            <button type="button">1 a</button>
+            <button type="button"><i data-icon="calendar" class="sm"></i> Otro</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="viz" id="brokerChart"></div>
+          <div class="legend">
+            <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI</span>
+            <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Composición</h3>
+          <span class="hint num">$ 81.955.264</span>
+        </div>
+        <div class="panel-body">
+          <div class="comp-block">
+            <div class="field-label">Por broker</div>
+            <div class="stack100"><i style="width: 65.5%; background: var(--series-1)"></i><i style="width: 34.5%; background: var(--series-2)"></i></div>
+            <div class="legend">
+              <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI <span class="value">$ 53,7 M · 65,5 %</span></span>
+              <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz <span class="value">$ 28,3 M · 34,5 %</span></span>
+            </div>
+          </div>
+          <div class="comp-block">
+            <div class="field-label">Por tipo de renta</div>
+            <div class="stack100"><i style="width: 25%; background: var(--series-3)"></i><i style="width: 58%; background: var(--series-1)"></i><i style="width: 17%; background: var(--series-4)"></i></div>
+            <div class="legend">
+              <span class="item"><span class="swatch" style="background: var(--series-3)"></span>Fija <span class="value">25 %</span></span>
+              <span class="item"><span class="swatch" style="background: var(--series-1)"></span>Variable <span class="value">58 %</span></span>
+              <span class="item"><span class="swatch" style="background: var(--series-4)"></span>Mixta <span class="value">17 %</span></span>
+            </div>
+          </div>
+          <div class="comp-title">Por tipo de instrumento</div>
+          <table class="table dense type-table">
+            <tbody>
+              <tr><td class="dim">CEDEAR</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 100%"></i></span></span></td><td class="num">41 %</td><td class="num faint">$ 33,6 M</td></tr>
+              <tr><td class="dim">FCI</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 66%"></i></span></span></td><td class="num">27 %</td><td class="num faint">$ 22,1 M</td></tr>
+              <tr><td class="dim">BONO</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 44%"></i></span></span></td><td class="num">18 %</td><td class="num faint">$ 14,7 M</td></tr>
+              <tr><td class="dim">ON</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 17%"></i></span></span></td><td class="num">7 %</td><td class="num faint">$ 5,7 M</td></tr>
+              <tr><td class="dim">CRIPTO</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 12%"></i></span></span></td><td class="num">5 %</td><td class="num faint">$ 4,1 M</td></tr>
+              <tr><td class="dim">ACCIÓN</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 5%"></i></span></span></td><td class="num">2 %</td><td class="num faint">$ 1,7 M</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <span class="bulk-actions is-visible" data-bulk-actions>
+      <span><b data-selection-count>1</b> seleccionada · <span class="num" data-selection-sum>$ 12.518.800</span></span>
+      <button class="btn xs ghost danger" type="button"><i data-icon="trash"></i> Eliminar</button>
+    </span>
+    <label class="input sm filter-input"><span class="prefix"><i data-icon="filter"></i></span><input type="text" placeholder="Filtrar instrumento o broker…"></label>
+    <div class="segmented sm" role="group" aria-label="Tipo de renta">
+      <button type="button" class="is-active">Todos</button>
+      <button type="button">Renta fija</button>
+      <button type="button">Renta variable</button>
+    </div>
+    <span class="spacer"></span>
+    <span class="summary">14 inversiones · 2 brokers</span>
+  </div>
+
+  <div class="table-wrap">
+  <table class="table table--flush" id="invTable">
+    <thead>
+      <tr>
+        <th class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar todo"></label></th>
+        <th class="is-sorted"><span class="sort">Instrumento <i data-icon="sort-asc"></i></span></th>
+        <th style="width: 110px">Tipo</th>
+        <th class="num" style="width: 120px">Cantidad</th>
+        <th style="width: 110px">Renta</th>
+        <th class="num" style="width: 130px">Precio</th>
+        <th class="num" style="width: 190px">Total</th>
+        <th class="num" style="width: 80px">%</th>
+        <th class="actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar PPI"></label></td>
+        <td colspan="5"><i data-icon="chevron-down" class="caret"></i><span class="day">PPI</span><span class="day-meta">9 inversiones</span></td>
+        <td class="num"><span class="subtotal">subtotal <b>$ 53.680.969</b></span></td>
+        <td class="num faint">65,5 %</td>
+        <td class="actions"></td>
+      </tr>
+      <tr data-amount="2444625">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Invesco QQQ Trust"><span class="cell-primary mono">QQQ</span><span class="cell-secondary">Invesco QQQ Trust · CEDEAR</span></td>
+        <td><span class="pill outline">CEDEAR</span></td>
+        <td class="num">41</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">$</span>59.625</td>
+        <td class="num"><span class="cur">$</span>2.444.625</td>
+        <td class="num faint">3,0 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="2691000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="SPDR Dow Jones Industrial Average"><span class="cell-primary mono">DIA</span><span class="cell-secondary">SPDR Dow Jones Industrial Average · CEDEAR</span></td>
+        <td><span class="pill outline">CEDEAR</span></td>
+        <td class="num">65</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">$</span>41.400</td>
+        <td class="num"><span class="cur">$</span>2.691.000</td>
+        <td class="num faint">3,3 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="2155020">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Financial Select Sector SPDR"><span class="cell-primary mono">XLF</span><span class="cell-secondary">Financial Select Sector SPDR · CEDEAR</span></td>
+        <td><span class="pill outline">CEDEAR</span></td>
+        <td class="num">49</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">$</span>43.980</td>
+        <td class="num"><span class="cur">$</span>2.155.020</td>
+        <td class="num faint">2,6 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-selected" data-amount="12518800">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked></label></td>
+        <td title="Apple Inc."><span class="cell-primary mono">AAPL</span><span class="cell-secondary">Apple Inc. · CEDEAR</span></td>
+        <td><span class="pill outline">CEDEAR</span></td>
+        <td class="num">680</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">$</span>18.410</td>
+        <td class="num"><span class="cur">$</span>12.518.800</td>
+        <td class="num faint">15,3 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="13931824">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Allaria Fondos · cuotapartes"><span class="cell-primary mono">Allaria Latam Clase A</span><span class="cell-secondary">Allaria Fondos · cuotapartes · FCI</span></td>
+        <td><span class="pill outline">FCI</span></td>
+        <td class="num">7.725,31</td>
+        <td><span class="renta">MIXTA</span></td>
+        <td class="num"><span class="cur">US$</span>1,27</td>
+        <td class="num"><span class="cur">$</span>13.931.824</td>
+        <td class="num faint">17,0 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="8899500">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Bonar 2030 · ley local"><span class="cell-primary mono">AL30</span><span class="cell-secondary">Bonar 2030 · ley local · BONO</span></td>
+        <td><span class="pill outline">BONO</span></td>
+        <td class="num">8.500</td>
+        <td><span class="renta">FIJA</span></td>
+        <td class="num"><span class="cur">$</span>1.047</td>
+        <td class="num"><span class="cur">$</span>8.899.500</td>
+        <td class="num faint">10,9 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="5850000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Global 2035 · ley Nueva York"><span class="cell-primary mono">GD35</span><span class="cell-secondary">Global 2035 · ley Nueva York · BONO</span></td>
+        <td><span class="pill outline">BONO</span></td>
+        <td class="num">7.800</td>
+        <td><span class="renta">FIJA</span></td>
+        <td class="num faint" title="Sin precio guardado para hoy · el total usa la cotización del 19/09">—</td>
+        <td class="num"><span class="cur">$</span>5.850.000</td>
+        <td class="num faint">7,1 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="1650000">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="YPF S.A."><span class="cell-primary mono">YPFD</span><span class="cell-secondary">YPF S.A. · ACCIÓN</span></td>
+        <td><span class="pill outline">ACCIÓN</span></td>
+        <td class="num">40</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">$</span>41.250</td>
+        <td class="num"><span class="cur">$</span>1.650.000</td>
+        <td class="num faint">2,0 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="3540200">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Telecom Argentina · ON 2031"><span class="cell-primary mono">TLC5O</span><span class="cell-secondary">Telecom Argentina · ON 2031 · ON</span></td>
+        <td><span class="pill outline">ON</span></td>
+        <td class="num">3.100</td>
+        <td><span class="renta">FIJA</span></td>
+        <td class="num"><span class="cur">$</span>1.142</td>
+        <td class="num"><span class="cur">$</span>3.540.200</td>
+        <td class="num faint">4,3 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Balanz"></label></td>
+        <td colspan="5"><i data-icon="chevron-down" class="caret"></i><span class="day">Balanz</span><span class="day-meta">5 inversiones</span></td>
+        <td class="num"><span class="subtotal">subtotal <b>$ 28.274.295</b></span></td>
+        <td class="num faint">34,5 %</td>
+        <td class="actions"></td>
+      </tr>
+      <tr data-amount="4101926">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Bitcoin"><span class="cell-primary mono">BTC</span><span class="cell-secondary">Bitcoin · CRIPTO</span></td>
+        <td><span class="pill outline">CRIPTO</span></td>
+        <td class="num">0,0257</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">US$</span>112.400</td>
+        <td class="num"><span class="cur">$</span>4.101.926</td>
+        <td class="num faint">5,0 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="8192269">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Balanz Capital · FCI clase A"><span class="cell-primary mono">Balanz Acciones</span><span class="cell-secondary">Balanz Capital · FCI clase A · FCI</span></td>
+        <td><span class="pill outline">FCI</span></td>
+        <td class="num">2.878,93</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">$</span>2.845,60</td>
+        <td class="num"><span class="cur">$</span>8.192.269</td>
+        <td class="num faint">10,0 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="5899500">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="Microsoft Corp."><span class="cell-primary mono">MSFT</span><span class="cell-secondary">Microsoft Corp. · CEDEAR</span></td>
+        <td><span class="pill outline">CEDEAR</span></td>
+        <td class="num">230</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="skeleton" style="width: 64px"></span></td>
+        <td class="num"><span class="skeleton" style="width: 84px"></span></td>
+        <td class="num faint">7,2 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="7880400">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="SPDR S&P 500 ETF Trust"><span class="cell-primary mono">SPY</span><span class="cell-secondary">SPDR S&P 500 ETF Trust · CEDEAR</span></td>
+        <td><span class="pill outline">CEDEAR</span></td>
+        <td class="num">180</td>
+        <td><span class="renta">VARIABLE</span></td>
+        <td class="num"><span class="cur">$</span>43.780</td>
+        <td class="num"><span class="cur">$</span>7.880.400</td>
+        <td class="num faint">9,6 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="2200200">
+        <td class="check"><label class="checkbox"><input type="checkbox"></label></td>
+        <td title="YPF · ON clase XXXIII 2033"><span class="cell-primary mono">YMCXO</span><span class="cell-secondary">YPF · ON clase XXXIII 2033 · ON</span></td>
+        <td><span class="pill outline">ON</span></td>
+        <td class="num">1.900</td>
+        <td><span class="renta">FIJA</span></td>
+        <td class="num"><span class="cur">$</span>1.158</td>
+        <td class="num"><span class="cur">$</span>2.200.200</td>
+        <td class="num faint">2,7 %</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar cantidad" data-modal-open="#editarModal"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar" data-modal-open="#deleteModal"><i data-icon="trash"></i></button></span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="table-footer">
+    <span>14 inversiones · precios al <span class="num">22/09/2026</span></span>
+    <span class="flex gap-3">
+      <span class="flex gap-2">Por página <span class="select sm inline"><span class="num">50</span><i data-icon="chevron-down" class="caret"></i></span></span>
+      <span class="pager">
+        <button class="icon-btn" type="button" disabled><i data-icon="chevron-left" class="sm"></i></button>
+        <button class="icon-btn is-active" type="button">1</button>
+        <button class="icon-btn" type="button" disabled><i data-icon="chevron-right" class="sm"></i></button>
+      </span>
+    </span>
+  </div>
+
+</div>
+</div>
+
+<div class="modal-backdrop" id="nuevaModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nuevaTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="nuevaTitle">Nueva inversión</h2>
+        <div class="sub">El precio se toma de la última cotización guardada del instrumento.</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <span class="field-label">Instrumento <span class="req">*</span></span>
+        <span class="select is-focus"><span class="flex gap-2"><i data-icon="search" class="sm faint"></i><span><span class="mono">AAPL</span> · Apple Inc. <span class="faint">· CEDEAR</span></span></span><i data-icon="chevron-down" class="caret"></i></span>
+        <span class="help">Buscá por ticker o nombre</span>
+      </div>
+      <div class="form-row c2">
+        <label class="field"><span class="field-label">Cantidad <span class="req">*</span></span><span class="input mono right"><input type="text" placeholder="0"></span></label>
+        <div class="field"><span class="field-label">Broker <span class="req">*</span></span><span class="select"><span>PPI</span><i data-icon="chevron-down" class="caret"></i></span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" data-modal-close><i data-icon="check"></i> Crear</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="editarModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editarTitle">
+    <div class="modal-header">
+      <h2 id="editarTitle">Editar inversión</h2>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <dl class="kv">
+        <dt>Instrumento</dt><dd><span class="mono">QQQ</span> · Invesco QQQ Trust</dd>
+        <dt>Tipo</dt><dd><span class="pill outline">CEDEAR</span></dd>
+        <dt>Renta</dt><dd><span class="renta">VARIABLE</span></dd>
+        <dt>Broker</dt><dd>PPI</dd>
+      </dl>
+      <label class="field" style="max-width: 220px"><span class="field-label">Cantidad <span class="req">*</span></span><span class="input mono right is-focus"><input type="text" value="41"></span></label>
+      <div class="alert info"><i data-icon="info"></i><span>Se recomienda usar <b>Guardar estado</b> antes de guardar los cambios, para conservar el historial con la cantidad actual.</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" data-modal-close><i data-icon="check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal narrow" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <div class="modal-header">
+      <h2 id="deleteTitle">Eliminar inversión</h2>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p>¿Eliminar la inversión en <b class="mono">QQQ</b>? Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn danger filled" type="button" data-modal-close><i data-icon="trash"></i> Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script>
+(function () {
+  const W = 620, H = 330, m = { t: 22, r: 16, b: 24, l: 40 };
+  const weeks = ['07/07', '14/07', '21/07', '28/07', '04/08', '11/08', '18/08', '25/08', '01/09', '08/09', '15/09', '22/09'];
+  const ppi = [45.1, 45.8, 46.4, 46.0, 47.3, 48.9, 49.6, 50.2, 51.4, 52.0, 52.6, 53.7];
+  const balanz = [22.4, 22.9, 23.1, 23.6, 24.2, 24.8, 25.3, 25.9, 26.6, 27.2, 27.7, 28.3];
+  const max = 90;
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const step = iw / weeks.length;
+  const bw = Math.min(24, step - 12);
+  const y = (v) => m.t + (1 - v / max) * ih;
+  const hh = (v) => (v / max) * ih;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Valor de la cartera por broker, cierre semanal de julio a septiembre">';
+  s += '<g class="grid">';
+  [0, 25, 50, 75].forEach((v) => {
+    s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>';
+    s += '<text class="num-t" x="' + (m.l - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + (v ? v + ' M' : '0') + '</text>';
+  });
+  s += '</g>';
+  weeks.forEach((w, i) => {
+    const cx = m.l + step * i + step / 2, x = cx - bw / 2;
+    const h1 = hh(ppi[i]), h2 = hh(balanz[i]);
+    s += '<rect x="' + x + '" y="' + (y(0) - h1) + '" width="' + bw + '" height="' + h1 + '" fill="var(--series-1)" rx="2"><title>' + w + ' · PPI $ ' + ppi[i].toFixed(1).replace('.', ',') + ' M</title></rect>';
+    s += '<rect x="' + x + '" y="' + (y(0) - h1 - h2) + '" width="' + bw + '" height="' + (h2 - 2) + '" fill="var(--series-2)" rx="2"><title>' + w + ' · Balanz $ ' + balanz[i].toFixed(1).replace('.', ',') + ' M</title></rect>';
+    if (i % 2 === 1) s += '<text class="num-t" x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + w + '</text>';
+    if (i === weeks.length - 1) {
+      const tot = (ppi[i] + balanz[i]).toFixed(1).replace('.', ',');
+      s += '<text class="end-label strong num-t" x="' + cx + '" y="' + (y(0) - h1 - h2 - 8) + '" text-anchor="middle">$ ' + tot + ' M</text>';
+    }
+  });
+  s += '</svg>';
+  document.getElementById('brokerChart').innerHTML = s;
+})();
+</script>
+</body>
+</html>

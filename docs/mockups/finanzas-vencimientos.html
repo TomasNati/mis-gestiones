@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vencimientos · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .table .pay-link { opacity: 0; margin-left: 4px; vertical-align: middle; transition: opacity 0.12s var(--ease); }
+  .table tr:hover .pay-link { opacity: 1; }
+  .table .unconf { height: 18px; font-size: 11px; font-weight: 400; margin-right: 8px; font-family: var(--font-body); }
+  .table tbody tr.today-row { height: 34px; background: var(--bg-panel); }
+  .table tbody tr.today-row:hover { background: var(--bg-panel); }
+  .table tr.today-row td { padding-top: 6px; padding-bottom: 6px; box-shadow: inset 0 1px 0 var(--accent); }
+  .table tr.today-row .day { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--accent); margin-right: 8px; }
+  .table tr.today-row .day-meta { font-size: 12px; color: var(--text-tertiary); }
+  .venc-table th.state { width: 150px; }
+  .venc-table th.date { width: 190px; }
+  .venc-table th.amount { width: 130px; }
+  .venc-table th.anual { width: 80px; }
+  .venc-table th.pago { width: 220px; }
+  .filters .tristate b { font-weight: 500; color: var(--text-primary); }
+  .filters .select .chips { flex: 1; min-width: 0; }
+  .field-label .req { color: var(--danger); }
+  .filters .field.date-field { min-width: 0; width: 138px; }
+  .filters .field.w-lg { width: 250px; }
+  .filters .field .tristate { white-space: nowrap; }
+  .pago-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+  .switch-field { justify-content: flex-end; height: 100%; padding-bottom: 7px; }
+</style>
+</head>
+<body data-page="finanzas-vencimientos">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <a href="finanzas-dashboard.html">Finanzas</a>
+      <span class="sep">/</span>
+      <span class="current">Vencimientos</span>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn" type="button" data-modal-open="#copiarModal"><i data-icon="copy"></i> Copiar del mes anterior</button>
+      <button class="btn primary" type="button" data-modal-open="#vencModal"><i data-icon="plus"></i> Agregar vencimiento</button>
+    </div>
+  </header>
+
+  <div class="filters">
+    <label class="field date-field"><span class="field-label">Desde</span><span class="input mono"><span class="prefix"><i data-icon="calendar"></i></span><input type="text" value="01/09/2026"></span></label>
+    <label class="field date-field"><span class="field-label">Hasta</span><span class="input mono"><span class="prefix"><i data-icon="calendar"></i></span><input type="text" value="30/09/2026"></span></label>
+    <div class="btn-group">
+      <button class="btn" type="button" title="Mes anterior"><i data-icon="chevron-left"></i></button>
+      <button class="btn" type="button" title="Mes siguiente"><i data-icon="chevron-right"></i></button>
+    </div>
+    <div class="field w-lg"><span class="field-label">Tipo</span>
+      <span class="select">
+        <span class="chips">
+          <span class="chip">Servicios<button class="icon-btn" type="button" title="Quitar"><i data-icon="x"></i></button></span>
+          <span class="chip">Seguros<button class="icon-btn" type="button" title="Quitar"><i data-icon="x"></i></button></span>
+        </span>
+        <i data-icon="chevron-down" class="caret"></i>
+      </span>
+    </div>
+    <div class="field"><span class="field-label">Anual</span><button class="tristate" type="button" title="Clic para alternar: cualquiera · sí · no"><span class="dot"></span>cualquiera</button></div>
+    <div class="field"><span class="field-label">Pagado</span><button class="tristate is-no" type="button" title="Clic para alternar: cualquiera · sí · no"><span class="dot"></span><b>No</b> · solo pendientes</button></div>
+    <div class="actions">
+      <button class="btn ghost" type="button">Limpiar</button>
+      <button class="btn" type="button"><i data-icon="search"></i> Buscar</button>
+    </div>
+  </div>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="label">Total del período</div>
+      <div class="value">$ 1.152.000</div>
+      <div class="delta">01/09 al 30/09</div>
+    </div>
+    <div class="stat">
+      <div class="label">Pagado</div>
+      <div class="value success">$ 668.000</div>
+      <div class="delta">9 de 16</div>
+    </div>
+    <div class="stat">
+      <div class="label">Pendiente</div>
+      <div class="value">$ 484.000</div>
+      <div class="delta">7 vencimientos · 2 esta semana</div>
+    </div>
+    <div class="stat">
+      <div class="label">Vencidos</div>
+      <div class="value danger">1</div>
+      <div class="delta"><i data-icon="alert-circle"></i> Naturgy · hace 2 días</div>
+    </div>
+    <div class="stat stat--wide">
+      <div class="meter"><i style="width: 58%"></i></div>
+      <div class="meter-legend"><span>58% pagado del período</span><span class="pct">58%</span></div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <span class="bulk-actions is-visible" data-bulk-actions>
+      <span><b data-selection-count>2</b> seleccionados · <span class="num" data-selection-sum>$ 62.116</span></span>
+      <button class="btn xs ghost" type="button" data-modal-open="#copiarModal"><i data-icon="copy"></i> Copiar</button>
+      <button class="btn xs ghost" type="button"><i data-icon="check"></i> Marcar pagados</button>
+      <button class="btn xs ghost danger" type="button"><i data-icon="trash"></i> Eliminar</button>
+    </span>
+    <span class="divider"></span>
+    <span class="summary"><span class="num">16</span> vencimientos</span>
+    <span class="spacer"></span>
+    <span class="summary">Suma parcial <span class="num" data-selection-sum>$ 62.116</span></span>
+  </div>
+
+  <div class="table-wrap">
+  <table class="table table--flush venc-table">
+    <thead>
+      <tr>
+        <th class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar todo"></label></th>
+        <th class="state">Estado</th>
+        <th>Vencimiento</th>
+        <th class="num date is-sorted"><span class="sort">Fecha <i data-icon="sort-asc"></i></span></th>
+        <th class="num amount">Monto</th>
+        <th class="anual">Anual</th>
+        <th class="pago">Pago</th>
+        <th class="actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-amount="103370">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Personal"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Personal</span></td>
+        <td class="num">01/09/2026</td>
+        <td class="num"><span class="cur">$</span>103.370</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">01/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="30100">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Aguas de Santiago"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Aguas de Santiago</span><span class="cell-secondary">Bimestral · julio-agosto</span></td>
+        <td class="num">01/09/2026</td>
+        <td class="num"><span class="cur">$</span>30.100</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">01/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="43000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Aportes Claudia"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Hogar ·</span> Aportes Claudia</span></td>
+        <td class="num">05/09/2026</td>
+        <td class="num"><span class="cur">$</span>43.000</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">01/09/2026</span><span class="cell-secondary inline">· $ 43.083</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="40000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Contadora"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Contadora</span><span class="cell-secondary">Honorarios agosto</span></td>
+        <td class="num">06/09/2026</td>
+        <td class="num"><span class="cur">$</span>40.000</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">01/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="91562">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Flow Personal"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Flow Personal</span></td>
+        <td class="num">10/09/2026</td>
+        <td class="num"><span class="cur">$</span>91.562</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">09/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="26595">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Dto. Tuc-Cór - SAT"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Dto. Tuc-Cór - SAT</span></td>
+        <td class="num">10/09/2026</td>
+        <td class="num"><span class="cur">$</span>26.595</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">09/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="3829">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar BTS Weverse"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Entretenimiento ·</span> BTS Weverse</span><span class="cell-secondary">Membresía anual Sofi</span></td>
+        <td class="num">15/09/2026</td>
+        <td class="num"><span class="cur">$</span>3.829</td>
+        <td><span class="pill outline">Anual</span></td>
+        <td class="nowrap"><span class="num">15/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="76265">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Auto"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Seguros ·</span> Auto</span><span class="cell-secondary">La Segunda · cuota 9 de 12</span></td>
+        <td class="num">15/09/2026</td>
+        <td class="num"><span class="cur">$</span>76.265</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">14/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="44086">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Naturgy (Gasnor)"></label></td>
+        <td><span class="pill danger"><i data-icon="alert-circle" class="sm"></i>Vencido</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Naturgy (Gasnor)</span></td>
+        <td class="num">20/09/2026</td>
+        <td class="num"><span class="cur">$</span>44.086</td>
+        <td><span class="faint">—</span></td>
+        <td class="faint">—</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="today-row">
+        <td class="check"></td>
+        <td colspan="7"><span class="day">Hoy</span><span class="day-meta">martes 22 de septiembre · 7 vencimientos por delante</span></td>
+      </tr>
+      <tr data-amount="253279">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Edese"></label></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Pagado</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Edese</span></td>
+        <td class="num">23/09/2026</td>
+        <td class="num"><span class="cur">$</span>253.279</td>
+        <td><span class="faint">—</span></td>
+        <td class="nowrap"><span class="num">22/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="19975">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Bahía - ABSA"></label></td>
+        <td><span class="pill attention"><i data-icon="clock" class="sm"></i>Vence en 2 días</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Bahía - ABSA</span></td>
+        <td class="num">24/09/2026</td>
+        <td class="num"><span class="cur">$</span>19.975</td>
+        <td><span class="faint">—</span></td>
+        <td class="faint">—</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="240000">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Colegio"></label></td>
+        <td><span class="pill attention"><i data-icon="clock" class="sm"></i>Vence en 3 días</span></td>
+        <td><span class="cell-primary"><span class="faint">Educación ·</span> Colegio</span><span class="cell-secondary">Cuota octubre · débito automático</span></td>
+        <td class="num">25/09/2026</td>
+        <td class="num"><span class="cur">$</span>240.000</td>
+        <td><span class="faint">—</span></td>
+        <td class="faint">—</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="55858">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Monotributo Nati"></label></td>
+        <td><span class="pill">Pendiente</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Monotributo Nati</span><span class="cell-secondary">Categoría D</span></td>
+        <td class="num">26/09/2026</td>
+        <td class="num"><span class="cur">$</span>55.858</td>
+        <td><span class="faint">—</span></td>
+        <td class="faint">—</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-selected" data-amount="56570">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked aria-label="Seleccionar Dto. Tuc-Cór - Edet"></label></td>
+        <td><span class="pill">Pendiente</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Dto. Tuc-Cór - Edet</span></td>
+        <td class="num"><span class="pill outline unconf" title="Fecha estimada, falta confirmar">sin confirmar</span>28/09/2026</td>
+        <td class="num"><span class="cur">$</span>56.570</td>
+        <td><span class="faint">—</span></td>
+        <td class="faint">—</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-selected" data-amount="5546">
+        <td class="check"><label class="checkbox"><input type="checkbox" checked aria-label="Seleccionar Dto. Tuc-Cór - Naturgy"></label></td>
+        <td><span class="pill">Pendiente</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Dto. Tuc-Cór - Naturgy</span></td>
+        <td class="num">29/09/2026</td>
+        <td class="num"><span class="cur">$</span>5.546</td>
+        <td><span class="faint">—</span></td>
+        <td class="faint">—</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr data-amount="61965">
+        <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Bahía - Municipal"></label></td>
+        <td><span class="pill">Pendiente</span></td>
+        <td><span class="cell-primary"><span class="faint">Servicios ·</span> Bahía - Municipal</span><span class="cell-secondary">ABL y asfaltado 2º cuota</span></td>
+        <td class="num"><span class="pill outline unconf" title="Fecha estimada, falta confirmar">sin confirmar</span>30/09/2026</td>
+        <td class="num"><span class="cur">$</span>61.965</td>
+        <td><span class="pill outline">Anual</span></td>
+        <td class="faint">—</td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="table-footer">
+    <span>9 pagados · 6 pendientes · 1 vencido</span>
+    <span class="flex gap-3">
+      <span>Filas por página</span>
+      <span class="select sm inline">50 <i data-icon="chevron-down" class="caret sm"></i></span>
+      <span class="num">1–16 de 16</span>
+      <span class="pager">
+        <button class="icon-btn" type="button" title="Página anterior" disabled><i data-icon="chevron-left" class="sm"></i></button>
+        <button class="icon-btn is-active" type="button">1</button>
+        <button class="icon-btn" type="button" title="Página siguiente" disabled><i data-icon="chevron-right" class="sm"></i></button>
+      </span>
+    </span>
+  </div>
+
+  <section class="section mt-5" style="padding-bottom: 32px;">
+    <div class="section-title"><h2>Estado vacío</h2><span class="hint">período sin vencimientos</span></div>
+    <div class="panel">
+      <div class="empty">
+        <i data-icon="calendar"></i>
+        <h3>No hay vencimientos entre el 01/10 y el 31/10</h3>
+        <p>Copiá los del mes anterior o cargá uno nuevo.</p>
+        <button class="btn sm mt-2" type="button" data-modal-open="#copiarModal"><i data-icon="copy"></i> Copiar de septiembre</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<div class="modal-backdrop" id="vencModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="vencTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="vencTitle">Agregar vencimiento</h2>
+        <div class="sub">Se puede vincular con un movimiento de pago más adelante</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row c2">
+        <label class="field"><span class="field-label">Fecha <span class="req">*</span></span><span class="input mono is-focus"><span class="prefix"><i data-icon="calendar"></i></span><input type="text" value="22/10/2026"></span></label>
+        <div class="field switch-field"><label class="switch"><input type="checkbox" checked><span>Fecha confirmada</span></label></div>
+      </div>
+      <label class="field"><span class="field-label">Tipo <span class="req">*</span></span><span class="select"><span><span class="faint">Servicios ·</span> Edese</span><i data-icon="chevron-down" class="caret"></i></span></label>
+      <div class="form-row c2">
+        <label class="field"><span class="field-label">Monto <span class="req">*</span></span><span class="input mono right"><span class="prefix">$</span><input type="text" value="253.279"></span></label>
+        <div class="field switch-field"><label class="switch"><input type="checkbox"><span>Anual</span></label></div>
+      </div>
+      <div class="pago-row">
+        <label class="field"><span class="field-label">Pago relacionado</span><span class="select"><span class="placeholder">Buscar movimiento de pago…</span><i data-icon="chevron-down" class="caret"></i></span></label>
+        <button class="btn" type="button"><i data-icon="plus"></i> Crear movimiento de pago</button>
+      </div>
+      <label class="field"><span class="field-label">Comentarios</span><textarea class="textarea" placeholder="Nro. de cliente, período, cuota…"></textarea></label>
+    </div>
+    <div class="modal-footer">
+      <span class="left">Sin pago vinculado queda como pendiente</span>
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" data-modal-close><i data-icon="check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="copiarModal">
+  <div class="modal narrow" role="dialog" aria-modal="true" aria-labelledby="copiarTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="copiarTitle">Copiar vencimientos</h2>
+        <div class="sub">Se copian los 2 seleccionados</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <label class="field"><span class="field-label">Fecha de copiado</span><span class="input mono"><span class="prefix"><i data-icon="calendar"></i></span><input type="text" value="22/10/2026"></span><span class="help">Se conserva el día de cada vencimiento en el mes elegido.</span></label>
+      <div class="alert info"><i data-icon="info"></i><span>Los montos se copian sin ajustar; revisalos después.</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" data-modal-close><i data-icon="copy"></i> Copiar 2 vencimientos</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+</body>
+</html>

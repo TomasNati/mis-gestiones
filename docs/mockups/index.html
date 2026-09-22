@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema visual · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .intro { padding: 8px var(--gutter) 24px; max-width: 880px; }
+  .intro h1 { font-size: 28px; line-height: 1.2; margin-bottom: 10px; }
+  .intro p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+  .pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .page-card { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius); transition: border-color 0.12s var(--ease); }
+  .page-card:hover { border-color: var(--border-strong); }
+  .page-card .title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+  .page-card .title .icon { color: var(--accent); }
+  .page-card .route { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-tertiary); }
+  .page-card p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+  .page-card .foot { margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  .block { padding: 20px var(--gutter); border-top: 1px solid var(--border-soft); }
+  .block h2 { font-size: 16px; margin-bottom: 4px; }
+  .block > p.lead { color: var(--text-secondary); font-size: 13px; margin-bottom: 16px; max-width: 72ch; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .rule { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; font-size: 13px; color: var(--text-secondary); padding: 8px 0; border-bottom: 1px solid var(--border-muted); }
+  .rule .idx { font-family: var(--font-mono); font-size: 11px; color: var(--accent); padding-top: 3px; }
+  .rule b { color: var(--text-primary); font-weight: 600; }
+  .type-row { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border-muted); }
+  .type-row .k { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-tertiary); }
+  .demo-table { max-width: 720px; }
+  .status-demo { display: grid; grid-template-columns: 180px 1fr; gap: 8px 16px; align-items: center; font-size: 13px; color: var(--text-secondary); }
+  .mapping { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .mapping th { text-align: left; font-size: 11.5px; font-weight: 500; color: var(--text-tertiary); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--border-soft); }
+  .mapping td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--border-muted); vertical-align: top; color: var(--text-secondary); }
+  .mapping td:first-child { color: var(--text-primary); }
+  .mapping code { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-primary); background: var(--bg-elevated); padding: 1px 5px; border-radius: 3px; }
+</style>
+</head>
+<body data-page="index">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb"><span class="current">Sistema visual</span></nav>
+    <div class="topbar-actions">
+      <a class="btn" href="finanzas-movimientos.html"><i data-icon="receipt"></i> Página de referencia</a>
+    </div>
+  </header>
+
+  <section class="intro">
+    <h1>Mismos datos, una sola forma de mostrarlos</h1>
+    <p>
+      Estos mockups toman el estilo de <strong>Movimientos del mes</strong> (paleta GitHub dark, Space Grotesk + IBM Plex, densidad alta, un solo acento)
+      y lo extienden al resto de la app. Todo comparte <code class="mono">assets/app.css</code>: los tokens, la barra lateral, el encabezado con
+      migas de pan, la tira de meses, el clúster de estadísticas, la barra de herramientas, las tablas y los modales.
+      Cada página agrega solo el CSS propio de su contenido.
+    </p>
+  </section>
+
+  <section class="section">
+    <div class="section-title"><h2>Páginas</h2><span class="hint">Abrí cada una; la barra lateral navega entre ellas</span></div>
+    <div class="pages">
+      <a class="page-card" href="finanzas-movimientos.html">
+        <span class="title"><i data-icon="receipt"></i> Movimientos del mes</span>
+        <span class="route">/finanzas/movimientosDelMes</span>
+        <p>Referencia. Gráficos plegables, estadísticas con ritmo esperado, agrupación por día, edición en línea y modal de grupo.</p>
+        <span class="foot"><span class="pill accent">referencia</span><span class="pill">edición en línea</span></span>
+      </a>
+      <a class="page-card" href="finanzas-presupuesto.html">
+        <span class="title"><i data-icon="chart-bar"></i> Presupuesto del mes</span>
+        <span class="route">/finanzas/presupuestoDelMes</span>
+        <p>Meses múltiples como chips, estimado y real por celda con estado semántico, categorías plegables y edición masiva por porcentaje.</p>
+        <span class="foot"><span class="pill">semáforo</span><span class="pill">bulk edit</span></span>
+      </a>
+      <a class="page-card" href="finanzas-vencimientos.html">
+        <span class="title"><i data-icon="clock"></i> Vencimientos</span>
+        <span class="route">/finanzas/vencimientos</span>
+        <p>Filtros en una barra, estado como etiqueta en vez de fila pintada, separador "Hoy", modales de alta y copia.</p>
+        <span class="foot"><span class="pill success">pagado</span><span class="pill danger">vencido</span></span>
+      </a>
+      <a class="page-card" href="finanzas-buscar.html">
+        <span class="title"><i data-icon="search"></i> Buscar movimientos</span>
+        <span class="route">/finanzas/buscarMovimientos</span>
+        <p>Filtros con resumen en chips, estadísticas de los resultados, resaltado del término y estados vacío y de carga.</p>
+        <span class="foot"><span class="pill">chips</span><span class="pill">estados</span></span>
+      </a>
+      <a class="page-card" href="finanzas-dashboard.html">
+        <span class="title"><i data-icon="layout"></i> Resumen de finanzas</span>
+        <span class="route">/finanzas</span>
+        <p>Reemplaza el dashboard actual: últimos movimientos, próximos vencimientos, gasto por categoría y tendencia de seis meses.</p>
+        <span class="foot"><span class="pill">nuevo</span></span>
+      </a>
+      <a class="page-card" href="inversiones.html">
+        <span class="title"><i data-icon="chart-line"></i> Inversiones</span>
+        <span class="route">/inversiones</span>
+        <p>Moneda y tipo de dólar como segmentos, composición en barras apiladas, tabla agrupada por broker y modo historial.</p>
+        <span class="foot"><span class="pill">agrupado</span><span class="pill">historial</span></span>
+      </a>
+      <a class="page-card" href="tomi.html">
+        <span class="title"><i data-icon="smile"></i> Agenda de sueño de Tomi</span>
+        <span class="route">/tomi</span>
+        <p>Línea de tiempo de 24 h con una sola tinta, notas como etiquetas con punto de color, días sin registro y modal del día.</p>
+        <span class="foot"><span class="pill">timeline</span></span>
+      </a>
+      <a class="page-card" href="importar.html">
+        <span class="title"><i data-icon="upload"></i> Importar</span>
+        <span class="route">/importar · /finanzas/importar</span>
+        <p>Une las dos páginas de importación en un flujo de tres pasos con vista previa y validación por fila.</p>
+        <span class="foot"><span class="pill">wizard</span></span>
+      </a>
+      <a class="page-card" href="settings.html">
+        <span class="title"><i data-icon="settings"></i> Configuración</span>
+        <span class="route">/settings/admin · /settings/api</span>
+        <p>Administrador de categorías nativo (hoy es un iframe externo) y una ficha de acceso a la API en lugar del Swagger embebido.</p>
+        <span class="foot"><span class="pill">nativo</span></span>
+      </a>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Reglas</h2>
+    <p class="lead">Lo que hace que las páginas se vean de la misma familia, en el orden en que conviene aplicarlas.</p>
+    <div class="two">
+      <div>
+        <div class="rule"><span class="idx">01</span><span><b>Un acento.</b> El azul se reserva para la acción primaria, el tab activo, la selección y el foco. Nada más es azul.</span></div>
+        <div class="rule"><span class="idx">02</span><span><b>Color solo para estado.</b> Verde pagado, ámbar cerca del límite, rojo pasado o vencido, violeta muy pasado. Siempre con texto o ícono al lado.</span></div>
+        <div class="rule"><span class="idx">03</span><span><b>Nunca filas pintadas.</b> El estado vive en una etiqueta dentro de la fila; la fila mantiene el fondo de la tabla.</span></div>
+        <div class="rule"><span class="idx">04</span><span><b>Números en mono.</b> Montos, fechas, horas y contadores usan IBM Plex Mono con cifras tabulares, alineados a la derecha.</span></div>
+      </div>
+      <div>
+        <div class="rule"><span class="idx">05</span><span><b>Bordes, no sombras.</b> La profundidad la dan los bordes y dos tonos de fondo. La sombra aparece solo en modales y tooltips.</span></div>
+        <div class="rule"><span class="idx">06</span><span><b>Mismo marco en todas.</b> Migas de pan a la izquierda, acciones a la derecha, tira de meses debajo cuando hay período, estadísticas, herramientas, tabla.</span></div>
+        <div class="rule"><span class="idx">07</span><span><b>Acciones al pasar el mouse.</b> Editar, duplicar y eliminar aparecen al hover o al seleccionar; la tabla queda limpia en reposo.</span></div>
+        <div class="rule"><span class="idx">08</span><span><b>Gráficos sobrios.</b> Barras finas, un solo eje, leyenda si hay más de una serie, texto siempre en tonos de texto y nunca en el color de la serie.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Color</h2>
+    <p class="lead">Tokens de GitHub Primer dark. Los nombres coinciden con las variables de <code class="mono">theme-tokens.css</code> del proyecto donde ya existían.</p>
+    <div class="swatches">
+      <div class="swatch-card"><div class="color" style="background: var(--bg-page)"></div><div class="meta"><b>--bg-page</b><span>#0d1117 · fondo</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--bg-panel)"></div><div class="meta"><b>--bg-panel</b><span>#151b23 · paneles, grupos</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--bg-elevated)"></div><div class="meta"><b>--bg-elevated</b><span>#212830 · botones, pistas</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--bg-overlay)"></div><div class="meta"><b>--bg-overlay</b><span>#1c2129 · modales</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--border-muted)"></div><div class="meta"><b>--border-muted</b><span>#262c36 · filas</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--border-soft)"></div><div class="meta"><b>--border-soft</b><span>#3d444d · paneles</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--text-primary)"></div><div class="meta"><b>--text-primary</b><span>#f0f6fc</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--text-secondary)"></div><div class="meta"><b>--text-secondary</b><span>#9198a1</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--text-tertiary)"></div><div class="meta"><b>--text-tertiary</b><span>#656c76</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--accent)"></div><div class="meta"><b>--accent</b><span>#4493f8 · texto y bordes</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--accent-emphasis)"></div><div class="meta"><b>--accent-emphasis</b><span>#1f6feb · botón primario</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--success)"></div><div class="meta"><b>--success</b><span>#3fb950 · pagado, ok</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--attention)"></div><div class="meta"><b>--attention</b><span>#d29922 · cerca del límite</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--danger)"></div><div class="meta"><b>--danger</b><span>#f85149 · pasado, vencido</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--done)"></div><div class="meta"><b>--done</b><span>#a371f7 · muy pasado</span></div></div>
+    </div>
+    <div class="section-title mt-5"><h2 style="font-size: 13.5px">Series para gráficos</h2><span class="hint">orden fijo, validado para daltonismo sobre #0d1117</span></div>
+    <div class="swatches">
+      <div class="swatch-card"><div class="color" style="background: var(--series-1)"></div><div class="meta"><b>--series-1</b><span>#4493f8</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--series-2)"></div><div class="meta"><b>--series-2</b><span>#d95926</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--series-3)"></div><div class="meta"><b>--series-3</b><span>#199e70</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--series-4)"></div><div class="meta"><b>--series-4</b><span>#c98500</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--series-5)"></div><div class="meta"><b>--series-5</b><span>#d55181</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--series-6)"></div><div class="meta"><b>--series-6</b><span>#008300</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--series-7)"></div><div class="meta"><b>--series-7</b><span>#9085e9</span></div></div>
+      <div class="swatch-card"><div class="color" style="background: var(--series-8)"></div><div class="meta"><b>--series-8</b><span>#e66767</span></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Tipografía</h2>
+    <p class="lead">Tres familias con un trabajo cada una. Escala: 11 · 12 · 13 · 14 · 16 · 19 · 24.</p>
+    <div class="type-row"><span class="k">display · Space Grotesk 600 · 19px</span><span class="display" style="font-size: 19px; font-weight: 600">Finanzas / Movimientos del mes</span></div>
+    <div class="type-row"><span class="k">display · día de grupo · 14px</span><span class="display" style="font-size: 14px; font-weight: 600">22 <span class="faint" style="font-family: var(--font-body); font-weight: 400; font-size: 12px">martes · 4 movimientos</span></span></div>
+    <div class="type-row"><span class="k">body · IBM Plex Sans 400 · 13.5px</span><span style="font-size: 13.5px">Cotillón, para la fiesta de los 80 y títere</span></div>
+    <div class="type-row"><span class="k">secondary · 12px · terciario</span><span class="faint" style="font-size: 12px">Super Más - Coca 2.25 L</span></div>
+    <div class="type-row"><span class="k">label · 11.5px · 500 · +0.02em</span><span class="faint" style="font-size: 11.5px; font-weight: 500; letter-spacing: .02em">Tipo de pago</span></div>
+    <div class="type-row"><span class="k">mono · IBM Plex Mono 500 · 19px</span><span class="num" style="font-size: 19px; font-weight: 500">$ 5.030.467</span></div>
+    <div class="type-row"><span class="k">mono · 13.5px · tabular</span><span class="num" style="font-size: 13.5px">253.279 &nbsp; 22/09/2026 &nbsp; 11 h 10 m</span></div>
+  </section>
+
+  <section class="block">
+    <h2>Controles</h2>
+    <p class="lead">Un botón primario por vista. El resto son neutros o fantasma. Altura 32px, o 28px dentro de barras de herramientas densas.</p>
+    <div class="demo-row mb-4">
+      <button class="btn primary"><i data-icon="plus"></i> Agregar</button>
+      <button class="btn"><i data-icon="receipt"></i> Agregar grupo</button>
+      <button class="btn ghost"><i data-icon="refresh"></i> Refrescar</button>
+      <button class="btn ghost is-on"><i data-icon="chart-line"></i> Gráficos</button>
+      <button class="btn danger"><i data-icon="trash"></i> Eliminar</button>
+      <button class="btn" disabled>Deshabilitado</button>
+      <button class="btn sm">Pequeño</button>
+      <button class="icon-btn outlined" title="Más"><i data-icon="more-horizontal"></i></button>
+      <span class="btn-group"><button class="btn"><i data-icon="chevron-left"></i></button><button class="btn"><i data-icon="chevron-right"></i></button></span>
+    </div>
+    <div class="demo-row mb-4" style="align-items: flex-end">
+      <label class="field" style="width: 200px"><span>Texto</span><span class="input"><input type="text" placeholder="Buscar concepto…"></span></label>
+      <label class="field" style="width: 160px"><span>Monto</span><span class="input mono right"><span class="prefix">$</span><input type="text" value="12.100"></span></label>
+      <label class="field" style="width: 160px"><span>Fecha</span><span class="input mono"><span class="prefix"><i data-icon="calendar"></i></span><input type="text" value="22/09/2026"></span></label>
+      <label class="field" style="width: 200px"><span>Selector</span><span class="select"><span><span class="faint">Diario ·</span> Gaseosas</span><i data-icon="chevron-down" class="caret"></i></span></label>
+      <label class="field" style="width: 200px"><span>Con foco</span><span class="input is-focus"><input type="text" value="Coca 600 ml"></span></label>
+      <label class="field" style="width: 180px"><span>Con error <span class="req">*</span></span><span class="input is-error"><input type="text" value="-500"></span><span class="error"><i data-icon="alert-circle" class="sm"></i> Debe ser mayor a 0</span></label>
+    </div>
+    <div class="demo-row mb-4">
+      <div class="segmented"><button class="is-active"><i data-icon="banknote"></i> Efectivo</button><button><i data-icon="landmark"></i> Débito</button><button><i data-icon="credit-card"></i> Crédito</button></div>
+      <div class="segmented sm"><button class="is-active">Peso</button><button>Dólar</button></div>
+      <label class="switch"><input type="checkbox" checked><span>Incluir inactivos</span></label>
+      <label class="checkbox"><input type="checkbox" checked> Anual</label>
+      <label class="checkbox"><input type="checkbox"> Fecha confirmada</label>
+      <span class="tristate"><span class="dot"></span> Pagado · cualquiera</span>
+      <span class="tristate is-yes"><span class="dot"></span> Pagado · sí</span>
+      <span class="tristate is-no"><span class="dot"></span> Pagado · no</span>
+      <span class="chips"><span class="chip">Servicios <button class="icon-btn"><i data-icon="x"></i></button></span><span class="chip">Seguros <button class="icon-btn"><i data-icon="x"></i></button></span></span>
+    </div>
+    <div class="demo-row">
+      <span class="pill success"><i data-icon="check"></i> Pagado</span>
+      <span class="pill attention"><i data-icon="clock"></i> Vence en 2 días</span>
+      <span class="pill danger"><i data-icon="alert-circle"></i> Vencido</span>
+      <span class="pill done">Muy pasado</span>
+      <span class="pill">Pendiente</span>
+      <span class="pill outline">Anual</span>
+      <span class="pill accent">referencia</span>
+      <span class="badge">12</span>
+      <span class="badge accent">3</span>
+      <span class="note-badge"><span class="dot" style="background: var(--series-1)"></span>GE</span>
+      <span class="note-badge"><span class="dot" style="background: var(--series-4)"></span>OR</span>
+      <span class="note-badge"><span class="dot" style="background: var(--series-8)"></span>CA</span>
+      <span class="note-badge"><span class="dot" style="background: var(--series-7)"></span>CR</span>
+      <span class="note-badge"><span class="dot" style="background: var(--series-2)"></span>MA</span>
+      <kbd>Esc</kbd> <kbd>Enter</kbd>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Semáforo del presupuesto</h2>
+    <p class="lead">Aplica a las celdas de Presupuesto, al medidor del mes y a las barras por categoría. Umbrales sobre el estimado.</p>
+    <div class="status-demo">
+      <span class="pill success"><span class="dot"></span> Dentro</span><span>Real por debajo del 85 % del estimado. Se muestra en texto normal; no hace falta llamar la atención.</span>
+      <span class="pill attention"><span class="dot"></span> Cerca del límite</span><span>Entre 85 % y 100 %. Ámbar: todavía hay margen, pero conviene mirarlo.</span>
+      <span class="pill danger"><span class="dot"></span> Pasado por poco</span><span>Entre 100 % y 115 %. Rojo.</span>
+      <span class="pill done"><span class="dot"></span> Pasado por mucho</span><span>Más de 115 %. Violeta, para distinguirlo de un exceso menor de un vistazo.</span>
+    </div>
+    <div class="mt-4" style="max-width: 520px; display: grid; gap: 10px">
+      <div><div class="meter"><i style="width: 62%"></i></div><div class="meter-legend"><span>Diario · $ 690.000 de $ 1.100.000</span><span class="pct">62 %</span></div></div>
+      <div><div class="meter is-warn"><i style="width: 91%"></i></div><div class="meter-legend"><span>Hijos · $ 1.240.000 de $ 1.360.000</span><span class="pct">91 %</span></div></div>
+      <div><div class="meter is-over"><i style="width: 100%"></i></div><div class="meter-legend"><span>Salud · $ 210.000 de $ 190.000</span><span class="pct">110 %</span></div></div>
+      <div><div class="meter is-far-over"><i style="width: 100%"></i></div><div class="meter-legend"><span>Regalos · $ 84.765 de $ 40.000</span><span class="pct">212 %</span></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Tabla</h2>
+    <p class="lead">Anatomía compartida: encabezado pegajoso en terciario, filas de 40px, agrupación con fondo de panel, selección con barra azul a la izquierda, acciones al hover.</p>
+    <div class="panel demo-table">
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th class="check"><label class="checkbox"><input type="checkbox"></label></th><th>Concepto</th><th>Estado</th><th class="num">Monto</th><th class="actions"></th></tr></thead>
+          <tbody>
+            <tr class="row-group"><td class="check"><label class="checkbox"><input type="checkbox"></label></td><td colspan="2"><i data-icon="chevron-down" class="caret"></i><span class="day">22</span><span class="day-meta">martes · 2 movimientos</span></td><td class="num"><span class="subtotal">subtotal <b>$ 261.000</b></span></td><td></td></tr>
+            <tr data-amount="253279"><td class="check"><label class="checkbox"><input type="checkbox"></label></td><td><span class="cell-primary">Edese</span><span class="cell-secondary">Servicios · débito</span></td><td><span class="pill success"><i data-icon="check"></i> Pagado</span></td><td class="num"><span class="cur">$</span>253.279</td><td class="actions"><span class="row-actions"><button class="icon-btn xs"><i data-icon="pencil"></i></button><button class="icon-btn xs danger"><i data-icon="trash"></i></button></span></td></tr>
+            <tr class="is-selected" data-amount="7700"><td class="check"><label class="checkbox"><input type="checkbox" checked></label></td><td><span class="cell-primary">Comida</span><span class="cell-secondary">Oriente</span></td><td><span class="pill">Pendiente</span></td><td class="num"><span class="cur">$</span>7.700</td><td class="actions"><span class="row-actions"><button class="icon-btn xs"><i data-icon="pencil"></i></button><button class="icon-btn xs danger"><i data-icon="trash"></i></button></span></td></tr>
+            <tr><td class="check"><label class="checkbox"><input type="checkbox"></label></td><td><span class="skeleton" style="width: 120px"></span><span class="cell-secondary"><span class="skeleton" style="width: 80px; height: 10px"></span></span></td><td><span class="skeleton" style="width: 70px; height: 18px"></span></td><td class="num"><span class="skeleton" style="width: 64px"></span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer"><span>3 filas · 1 seleccionada</span><span class="pager"><button class="icon-btn"><i data-icon="chevron-left"></i></button><button class="icon-btn is-active">1</button><button class="icon-btn">2</button><button class="icon-btn"><i data-icon="chevron-right"></i></button></span></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>De aquí al código</h2>
+    <p class="lead">Correspondencia entre las piezas del mockup y lo que hoy existe en el proyecto, para planificar la implementación.</p>
+    <table class="mapping">
+      <thead><tr><th>Pieza del mockup</th><th>Hoy en el proyecto</th><th>Cambio sugerido</th></tr></thead>
+      <tbody>
+        <tr><td>Tokens (<code>:root</code> en app.css)</td><td><code>theme-tokens.css</code> con 13 variables</td><td>Ampliar con <code>--bg-inset</code>, <code>--bg-overlay</code>, <code>--border-muted</code>, semánticos y <code>--series-*</code>; mapear a <code>theme.ts</code> (palette.success/warning/error).</td></tr>
+        <tr><td>Barra lateral</td><td><code>Layout.tsx</code> con Drawer de MUI y submenú desplegable</td><td>Fondo de página con borde, submenú Finanzas siempre visible con riel, ítem activo por ruta (usePathname), botón de colapso en la marca.</td></tr>
+        <tr><td>Encabezado con migas</td><td>Solo en Movimientos; el resto usa h2, Typography o nada</td><td>Componente <code>PageHeader</code> con breadcrumb + acciones, usado en todas las páginas.</td></tr>
+        <tr><td>Tira de meses</td><td><code>SeleccionadorPeriodo</code> con dos estilos (tabs vs. botones azules)</td><td>Un solo estilo; el modo múltiple pasa a chips (<code>.months--multi</code>).</td></tr>
+        <tr><td>Estadísticas</td><td><code>StatsCluster</code> solo en Movimientos</td><td>Generalizar: acepta N stats + un medidor; agregar estados ámbar/rojo/violeta.</td></tr>
+        <tr><td>Etiquetas de estado</td><td>Filas pintadas (Vencimientos), texto coloreado (Presupuesto)</td><td>Componente <code>Pill</code>; las grillas dejan de pintar filas.</td></tr>
+        <tr><td>Tablas</td><td>DataGrid (Presupuesto, Vencimientos), MRT (Movimientos, Buscar, Inversiones), Table (Tomi)</td><td>Unificar en MRT con un <code>muiTableProps</code> compartido que aplique esta anatomía; Tomi puede quedar en Table con las mismas clases.</td></tr>
+        <tr><td>Gráficos</td><td>MUI X Charts con tres paletas distintas y tortas</td><td>Una paleta <code>--series-*</code>, barras en vez de tortas, un eje, leyenda + etiquetas directas escasas.</td></tr>
+        <tr><td>Modales</td><td>Dialog de MUI con estilos por defecto</td><td>Tema global de <code>MuiDialog</code>: fondo overlay, borde, encabezado con subtítulo, pie con acciones a la derecha.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+</div>
+<script src="assets/shell.js"></script>
+</body>
+</html>

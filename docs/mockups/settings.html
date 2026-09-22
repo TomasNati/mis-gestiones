@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración · Mis gestiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  [data-tab-panel] { display: none; }
+  [data-tab-panel].is-active { display: block; }
+  .months .month-tab .icon { align-self: center; color: var(--text-tertiary); }
+  .months .month-tab.is-active .icon { color: var(--accent); }
+  .search-input { width: 320px; }
+  .cat-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .table td.cat-mix { font-size: 12px; }
+  .table--flush td.indent:first-child { padding-left: calc(var(--gutter) + 22px); }
+  .field-label .req { color: var(--danger); }
+  .edit-name { max-width: 320px; }
+  .edit-actions { display: inline-flex; gap: 4px; }
+  .api-section { padding-top: 20px; padding-bottom: 28px; display: flex; flex-direction: column; gap: 16px; }
+  .api-kv { grid-template-columns: 150px 1fr; align-items: center; }
+  .api-kv dd { display: flex; align-items: center; gap: 6px; }
+  .api-kv .url { font-family: var(--font-mono); font-size: 13px; }
+  .table .method { min-width: 62px; justify-content: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: .02em; }
+  .table td.route { font-size: 12.5px; }
+  .empty-demo { border-top: 1px solid var(--border-soft); padding: 20px var(--gutter) 28px; }
+  .empty-demo .panel { margin-top: 0; }
+</style>
+</head>
+<body data-page="settings-admin">
+<div class="main">
+<div class="page">
+
+  <header class="topbar">
+    <nav class="breadcrumb">
+      <a href="settings.html">Configuración</a>
+      <span class="sep">/</span>
+      <span class="current" data-crumb>Categorías</span>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn primary" type="button" data-modal-open="#catModal" data-cat-only><i data-icon="plus"></i> Nueva categoría</button>
+    </div>
+  </header>
+
+  <div class="months" data-tabs="settings">
+    <button class="month-tab is-active" type="button" data-tab="categorias"><i data-icon="folder-tree" class="sm"></i> Categorías <span class="count">12</span></button>
+    <button class="month-tab" type="button" data-tab="api"><i data-icon="plug" class="sm"></i> API <span class="count">12</span></button>
+    <span class="spacer"></span>
+    <span class="strip-end" data-cat-only>
+      <div class="segmented sm">
+        <button type="button" class="is-active">Gestiones</button>
+        <button type="button">Inversiones</button>
+      </div>
+      <label class="switch"><input type="checkbox" checked><span>Solo activas</span></label>
+    </span>
+  </div>
+
+  <div data-tab-panel="categorias" data-tab-group="settings" class="is-active">
+    <div class="toolbar">
+      <label class="input sm search-input"><span class="prefix"><i data-icon="search"></i></span><input type="text" placeholder="Buscar categoría o subcategoría…"></label>
+      <span class="divider"></span>
+      <span class="summary"><span class="num">12</span> categorías · <span class="num">80</span> subcategorías</span>
+      <span class="spacer"></span>
+      <button class="btn ghost sm" type="button"><i data-icon="chevrons-down"></i> Expandir todo</button>
+    </div>
+
+    <div class="table-wrap">
+    <table class="table table--flush">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th style="width: 180px">Tipo</th>
+          <th style="width: 150px">Subcategorías</th>
+          <th style="width: 130px">Estado</th>
+          <th class="actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr class="row-group">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Diario</span></td>
+        <td class="faint cat-mix">9 variables</td>
+        <td><span class="badge">9</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Comida</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="mono faint">3 detalles</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Supermercado</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Gaseosas</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Alcohol</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-inactive" style="opacity:.6">
+        <td class="indent"><span class="cell-primary">Cig</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill">Inactiva</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Productos personales</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="mono faint">2 detalles</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Restaurants</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-editing">
+        <td class="indent"><span class="input sm is-focus edit-name"><input type="text" value="Kiosco y golosinas" aria-label="Nombre de la subcategoría"></span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="edit-actions"><button class="btn xs primary" type="button" title="Guardar"><i data-icon="check"></i></button><button class="btn xs" type="button" title="Cancelar"><i data-icon="x"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Otras</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Educación</span></td>
+        <td class="faint cat-mix">2 fijos · 2 variables</td>
+        <td><span class="badge">4</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Colegio</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="mono faint">2 detalles</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Materiales escuela</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Inglés</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Cursos online</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Entretenimiento</span></td>
+        <td class="faint cat-mix">4 fijos · 6 variables</td>
+        <td><span class="badge">10</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Netflix</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Spotify</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Disney+</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Cine</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Salidas</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Libros</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Juegos</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Recitales</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-inactive is-hidden" style="opacity:.6">
+        <td class="indent"><span class="cell-primary">YouTube Premium</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill">Inactiva</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Otros</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Hijos</span></td>
+        <td class="faint cat-mix">2 fijos · 5 variables</td>
+        <td><span class="badge">7</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Colegio</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">(Colegio-Extras) Kiosco</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Deportes y juegos</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="mono faint">2 detalles</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Ropa</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Cumpleaños</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Médico</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Mesada</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Hogar</span></td>
+        <td class="faint cat-mix">5 variables</td>
+        <td><span class="badge">5</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Cosas para la casa</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Limpieza</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Arreglos</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Jardín</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Muebles</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Regalos</span></td>
+        <td class="faint cat-mix">3 variables</td>
+        <td><span class="badge">3</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Regalos</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Cumpleaños familia</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Navidad</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Salud</span></td>
+        <td class="faint cat-mix">1 fijo · 5 variables</td>
+        <td><span class="badge">6</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Farmacia</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Prepaga</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Consultas</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Odontología</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Análisis</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Óptica</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Seguros</span></td>
+        <td class="faint cat-mix">4 fijos</td>
+        <td><span class="badge">4</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Auto</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Hogar</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Vida</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-inactive is-hidden" style="opacity:.6">
+        <td class="indent"><span class="cell-primary">Celular</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill">Inactiva</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Servicios</span></td>
+        <td class="faint cat-mix">19 fijos</td>
+        <td><span class="badge">19</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Personal</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Edese</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Aguas de Santiago</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-inactive" style="opacity:.6">
+        <td class="indent"><span class="cell-primary">Cablevision</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill">Inactiva</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Gasnor</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Contadora</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Monotributo Nati</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Flow Personal</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Bahía - ABSA</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Bahía - ARBA</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="mono faint">2 detalles</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Bahía - Municipal</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Dto. Tuc-Cór - SAT</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Dto. Tuc-Cór - Edet</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Naturgy (Gasnor)</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Seguros - Auto</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">TIC</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Santiago - Inmobiliario municipal</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Santiago - Rentas provincial</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr>
+        <td class="indent"><span class="cell-primary">Sueldo Claudia</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="mono faint">3 detalles</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Tecnología</span></td>
+        <td class="faint cat-mix">1 fijo · 1 variable</td>
+        <td><span class="badge">2</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Hardware</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Software</span></td>
+        <td><span class="pill outline">FIJO</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Transporte</span></td>
+        <td class="faint cat-mix">6 variables</td>
+        <td><span class="badge">6</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Nafta</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Taxi</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Peajes</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Estacionamiento</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Service auto</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Colectivo</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="row-group is-collapsed">
+        <td><i data-icon="chevron-down" class="caret"></i><span class="display cat-name">Viajes</span></td>
+        <td class="faint cat-mix">5 variables</td>
+        <td><span class="badge">5</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar categoría"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Agregar subcategoría"><i data-icon="plus"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar categoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Pasajes</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Alojamiento</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Comidas de viaje</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Excursiones</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      <tr class="is-hidden">
+        <td class="indent"><span class="cell-primary">Seguro de viaje</span></td>
+        <td><span class="pill outline">VARIABLE</span></td>
+        <td><span class="faint">—</span></td>
+        <td><span class="pill success"><i data-icon="check" class="sm"></i>Activa</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar subcategoría"><i data-icon="pencil"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar subcategoría"><i data-icon="trash"></i></button></span></td>
+      </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="table-footer">
+      <span>Las categorías inactivas se ocultan en los selectores pero conservan su historial.</span>
+      <span class="faint">En subcategorías, la columna muestra la cantidad de detalles</span>
+    </div>
+
+    <div class="empty-demo">
+      <div class="section-title"><h2>Estado vacío</h2><span class="hint">búsqueda sin resultados</span></div>
+      <div class="panel">
+        <div class="empty">
+          <i data-icon="search"></i>
+          <h3>Sin resultados para “mascotas”</h3>
+          <p>No hay categorías ni subcategorías con ese nombre. Revisá el filtro “Solo activas” o creá una nueva.</p>
+          <button class="btn sm" type="button" data-modal-open="#catModal"><i data-icon="plus"></i> Nueva categoría</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-tab-panel="api" data-tab-group="settings">
+    <section class="section api-section">
+      <div class="panel">
+        <div class="panel-header">
+          <h3><i data-icon="key" class="sm"></i> Acceso a la API</h3>
+          <a class="btn sm" href="https://mis-gestiones-backend.vercel.app/docs" target="_blank" rel="noopener"><i data-icon="external-link"></i> Abrir Swagger</a>
+        </div>
+        <div class="panel-body">
+          <dl class="kv api-kv" style="margin: 0">
+            <dt>URL base</dt>
+            <dd><span class="url">https://mis-gestiones-backend.vercel.app</span><button class="icon-btn xs" type="button" title="Copiar URL"><i data-icon="copy"></i></button></dd>
+            <dt>Autenticación</dt>
+            <dd>Basic auth · mismas credenciales de la app</dd>
+            <dt>Versión</dt>
+            <dd><span class="mono">1.0.0</span><span class="faint">· OAS 3.1</span></dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Endpoints <span class="badge">12</span></h3>
+          <span class="hint">Vercel + FastAPI</span>
+        </div>
+        <table class="table dense">
+          <thead>
+            <tr>
+              <th style="width: 96px; padding-left: 16px">Método</th>
+              <th>Ruta</th>
+              <th>Descripción</th>
+              <th style="width: 180px; padding-right: 16px">Grupo</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><span class="pill accent method">GET</span></td>
+            <td class="mono route">/</td>
+            <td>Read Root</td>
+            <td class="dim">default</td>
+          </tr>
+          <tr>
+            <td><span class="pill success method">POST</span></td>
+            <td class="mono route">/api/movimientos-gasto</td>
+            <td>Buscar movimientos</td>
+            <td class="dim">Movimiento Gasto</td>
+          </tr>
+          <tr>
+            <td><span class="pill success method">POST</span></td>
+            <td class="mono route">/api/vencimientos</td>
+            <td>Buscar vencimientos</td>
+            <td class="dim">Vencimientos</td>
+          </tr>
+          <tr>
+            <td><span class="pill accent method">GET</span></td>
+            <td class="mono route">/api/categorias</td>
+            <td>Listar categorías</td>
+            <td class="dim">Categoría</td>
+          </tr>
+          <tr>
+            <td><span class="pill accent method">GET</span></td>
+            <td class="mono route">/api/categoria/<span class="faint">{id}</span></td>
+            <td>Obtener categoría</td>
+            <td class="dim">Categoría</td>
+          </tr>
+          <tr>
+            <td><span class="pill attention method">PUT</span></td>
+            <td class="mono route">/api/categoria/<span class="faint">{id}</span></td>
+            <td>Actualizar categoría</td>
+            <td class="dim">Categoría</td>
+          </tr>
+          <tr>
+            <td><span class="pill danger method">DELETE</span></td>
+            <td class="mono route">/api/categoria/<span class="faint">{id}</span></td>
+            <td>Eliminar categoría</td>
+            <td class="dim">Categoría</td>
+          </tr>
+          <tr>
+            <td><span class="pill success method">POST</span></td>
+            <td class="mono route">/api/categoria</td>
+            <td>Crear categoría</td>
+            <td class="dim">Categoría</td>
+          </tr>
+          <tr>
+            <td><span class="pill accent method">GET</span></td>
+            <td class="mono route">/api/subcategorias</td>
+            <td>Listar subcategorías</td>
+            <td class="dim">Subcategoría</td>
+          </tr>
+          <tr>
+            <td><span class="pill success method">POST</span></td>
+            <td class="mono route">/api/subcategoria</td>
+            <td>Crear subcategoría</td>
+            <td class="dim">Subcategoría</td>
+          </tr>
+          <tr>
+            <td><span class="pill accent method">GET</span></td>
+            <td class="mono route">/api/conceptos-movimientos</td>
+            <td>Listar conceptos de movimientos</td>
+            <td class="dim">Conceptos</td>
+          </tr>
+          <tr>
+            <td><span class="pill accent method">GET</span></td>
+            <td class="mono route">/api/agenda-tomi/dias</td>
+            <td>Días de la agenda de Tomi</td>
+            <td class="dim">Agenda Tomi</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+</div>
+</div>
+
+<div class="modal-backdrop" id="catModal">
+  <div class="modal narrow" role="dialog" aria-modal="true" aria-labelledby="catTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="catTitle">Nueva categoría</h2>
+        <div class="sub">Después podés agregarle subcategorías</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <label class="field"><span class="field-label">Nombre <span class="req">*</span></span><span class="input is-focus"><input type="text" placeholder="Ej.: Mascotas"></span></label>
+      <div class="form-row c2">
+        <div class="field"><span class="field-label">Sección</span>
+          <div class="segmented"><button type="button" class="is-active">Gestiones</button><button type="button">Inversiones</button></div>
+        </div>
+        <div class="field"><span class="field-label">Tipo</span>
+          <div class="segmented"><button type="button" class="is-active">VARIABLE</button><button type="button">FIJO</button></div>
+        </div>
+      </div>
+      <label class="switch"><input type="checkbox" checked><span>Activa</span></label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" data-modal-close><i data-icon="check"></i> Crear</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script>
+(function () {
+  document.querySelectorAll('tr.row-group .actions').forEach((td) => td.addEventListener('click', (e) => e.stopPropagation()));
+  const labels = { categorias: 'Categorías', api: 'API' };
+  function sync(name) {
+    document.querySelector('[data-crumb]').textContent = labels[name];
+    document.querySelectorAll('[data-cat-only]').forEach((el) => el.classList.toggle('is-hidden', name !== 'categorias'));
+    document.querySelectorAll('.nav-item[data-nav^="settings-"]').forEach((a) => a.classList.toggle('is-active', a.getAttribute('data-nav') === 'settings-' + (name === 'api' ? 'api' : 'admin')));
+  }
+  document.addEventListener('click', (e) => { const t = e.target.closest('[data-tabs="settings"] [data-tab]'); if (t) sync(t.getAttribute('data-tab')); });
+  document.addEventListener('DOMContentLoaded', () => {
+    if (location.hash === '#api') document.querySelector('[data-tab="api"]').click();
+  });
+  window.addEventListener("hashchange", () => {
+    document.querySelector(location.hash === "#api" ? "[data-tab=\"api\"]" : "[data-tab=\"categorias\"]").click();
+  });
+})();
+</script>
+</body>
+</html>
