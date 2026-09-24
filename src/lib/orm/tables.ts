@@ -21,6 +21,7 @@ export const subcategorias = misgestiones.table('finanzas_subcategoria', {
     .references(() => categorias.id)
     .notNull(),
   tipoDeGasto: varchar('tipodegasto', { length: 255 }).notNull(),
+  comprobantesPath: varchar('comprobantes_path', { length: 256 }),
   active: boolean('active').notNull().default(true),
 });
 

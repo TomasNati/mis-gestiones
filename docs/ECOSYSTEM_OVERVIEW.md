@@ -162,8 +162,9 @@ erDiagram
     finanzas_subcategoria {
         id uuid PK
         nombre varchar
-        tipodegasto varchar
+        tipodegasto varchar "nullable"
         categoria uuid FK
+        comprobantes_path varchar(256) "nullable"
         comentarios text
         active boolean
     }
