@@ -11,7 +11,7 @@ technologies, and how they fit together.
 
 | Repo | Role | Stack | Deployed to |
 |------|------|-------|-------------|
-| `mis-gestiones-backend` | Core REST API + market data + Drive | Python 3.13, FastAPI, SQLAlchemy, PostgreSQL | Vercel (`mis-gestiones-backend.vercel.app`) |
+| `mis-gestiones-backend` | Core REST API + market data | Python 3.13, FastAPI, SQLAlchemy, PostgreSQL | Vercel (`mis-gestiones-backend.vercel.app`) |
 | `mis-gestiones` | Main web app (UI + its own serverless API + direct DB) | Next.js 16, React 19, MUI, Drizzle ORM, Neon Postgres | Vercel (`mis-gestiones-opal-kappa.vercel.app`) |
 | `mis-gestiones-admin` | Admin SPA for master data | React 19, Vite, MUI, React Query | Vercel (`mis-gestiones-admin.vercel.app`) |
 | `mis-gestiones-mobile` | Mobile app (expenses + sleep tracking) | React Native, Expo SDK 54, TypeScript | EAS build (Android APK) |
@@ -23,16 +23,12 @@ technologies, and how they fit together.
 The central REST API and the ecosystem's connection to external market data.
 
 - **Purpose:** Exposes finances (categorías, subcategorías, movimientos de gasto,
-  vencimientos), investments (instrumentos, precios, inversiones), market quotes
-  (dólar, crypto, FCI mutual funds, US/AR tickers), and Google Drive file storage
-  for receipts (comprobantes).
+  vencimientos), investments (instrumentos, precios, inversiones), and market quotes
+  (dólar, crypto, FCI mutual funds, US/AR tickers).
 - **Technologies:** Python 3.13, FastAPI + Uvicorn, SQLAlchemy 2.x ORM over
-  PostgreSQL (`psycopg2`), schemas `misgestiones` and `inversiones`. External
-  integrations via `yfinance` (Yahoo Finance), CAFCI, crypto/exchange services,
-  and `google-api-python-client` (Drive).
-- **Key endpoint groups** (under `/api`): `finanzas`, `inversiones`,
-  `cotizaciones`, `drive` (Drive routes are API-key protected via
-  `BACKEND_SHARED_SECRET`).
+  PostgreSQL (  `psycopg2`), schemas `misgestiones` and `inversiones`. External
+  integrations via `yfinance` (Yahoo Finance), CAFCI and crypto/exchange services.
+- **Key endpoint groups** (under `/api`): `finanzas`, `inversiones`, `cotizaciones`.
 - **Notable:** CORS whitelists the admin and web-app origins. The README is an
   unmodified Vercel boilerplate template — the real behavior lives in the code.
 
@@ -93,7 +89,7 @@ flowchart TB
     mobile["mis-gestiones-mobile<br/>(React Native / Expo)"]
     backend["mis-gestiones-backend<br/>(Python FastAPI)"]
     db[("PostgreSQL<br/>Neon / Vercel<br/>schemas: misgestiones, inversiones")]
-    ext["External services<br/>Yahoo Finance, CAFCI,<br/>crypto/dólar, Google Drive"]
+    ext["External services<br/>Yahoo Finance, CAFCI,<br/>crypto/dólar"]
 
     admin -->|"REST /api"| backend
     web -->|"REST /api"| backend
@@ -125,7 +121,7 @@ Key relationships:
 | `mis-gestiones-admin` | `mis-gestiones-backend` | Axios REST (`VITE_BACKEND_API`) |
 | `mis-gestiones` (web) | `mis-gestiones-backend` + its own serverless API + Neon DB | Axios REST, Next API routes, Drizzle |
 | `mis-gestiones-mobile` | `mis-gestiones` serverless API | `expo/fetch` REST |
-| `mis-gestiones-backend` | PostgreSQL + external market/Drive services | SQLAlchemy, HTTP APIs |
+| `mis-gestiones-backend` | PostgreSQL + external market services | SQLAlchemy, HTTP APIs |
 
 ---
 
