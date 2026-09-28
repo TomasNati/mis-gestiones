@@ -1,5 +1,13 @@
 # Plan de implementación — comprobantes de pago
 
+> **Estado (2026-09-28):** el **almacenamiento está hecho y en producción**.
+> `POST /api/comprobantes` (subir) y `GET /api/comprobantes/descargar`
+> (descargar) están commiteados en `../mis-gestiones-backend` (`db30dc8`,
+> pusheado a `main` → desplegado en `mis-gestiones-backend.vercel.app`) y
+> verificados contra el repo real. Son **por path**, sin base de datos. Falta
+> la tabla `finanzas_comprobante_pago` y todo el paso 2 (UI) y 3 (borrar Drive).
+> Detalle exacto de qué quedó hecho y qué no, abajo y en cada sección.
+
 Documento derivado de [Design.md](./Design.md). El diseño original proponía hacer
 todo desde la app web; la implementación definitiva se reparte así:
 
@@ -66,162 +74,192 @@ sus decisiones de tamaño, streaming y errores se reutilizan tal cual.
 
 ## Paso 1 — GitHub, base de datos y endpoints (todo en `../mis-gestiones-backend`)
 
+> Progreso: **1.1 parcial · 1.2 parcial · 1.3 no · 1.4 no · 1.5 hecho · 1.6 parcial · 1.7 parcial · 1.8 parcial**
+> Commits: `db30dc8` (endpoint para subir y descargar archivos de github).
+
 ### 1.1 Conexión con GitHub
 
-- [ ] Crear un fine-grained PAT sobre `TomasNati/comprobantes-pago` con permiso
-      `Contents: Read and write` **únicamente** sobre ese repo.
-- [ ] Agregar las variables de entorno siguiendo el estilo del repo:
+- [x] Fine-grained PAT sobre `TomasNati/comprobantes-pago` con permiso
+      `Contents: Read and write` **únicamente** sobre ese repo. **Confirmado en
+      producción**: un `GET /descargar` de un path inexistente devuelve 404 (no
+      401/403), o sea que el PAT autentica bien desde Vercel.
+- [x] Variables de entorno en `.env`, `.env.example` y panel de Vercel:
       `GITHUB_TOKEN`, `GITHUB_REPO_OWNER=TomasNati`,
-      `GITHUB_REPO_NAME=comprobantes-pago`, `GITHUB_REPO_BRANCH=main` — en
-      `.env`, `.env.example` y en el panel de Vercel.
-- [ ] Definir la identidad de autoría de los commits (name/email) en el payload
-      del commit: el repo no tiene un `.gitignore` ni identidad configurada y los
-      commits los crea el token, no una persona.
-- [ ] Tamaño máximo de upload como variable de entorno. La variable ya existe en
-      el repo (`MAX_UPLOAD_BYTES`, hoy en 4.000.000) así que se reutiliza el
-      nombre; cambian el default y el clamp:
-      - default **2.000.000** bytes (2MB) si no está definida o no parsea;
-      - **tope duro de 4.000.000** bytes: si el valor configurado lo supera, se
-        usa 4.000.000 y se loguea un warning, porque el body de la función no
-        puede pasar de 4.5MB;
-      - resolver el valor **una sola vez** al importar el módulo, no en cada
-        request;
-      - actualizar `.env`, `.env.example` y las variables de Vercel con el
-        default nuevo, y dejar el clamp comentado junto a la definición.
-- [ ] La UI (paso 2) tiene que leer el límite efectivo para validar en el cliente
-      antes de subir, y no un número hardcodeado en el componente.
+      `GITHUB_REPO_NAME=comprobantes-pago`, `GITHUB_REPO_BRANCH=main`.
+- [x] Identidad de autoría de los commits en el payload del commit, vía
+      `GITHUB_COMMIT_AUTHOR_NAME` / `GITHUB_COMMIT_AUTHOR_EMAIL` (el repo no
+      tiene `.gitignore` ni identidad configurada y los commits los crea el
+      token).
+- [x] `MAX_UPLOAD_BYTES` reutiliza la variable que ya existía; cambian el
+      default y el clamp, resueltos **una sola vez** al importar `github.py`:
+      default **2.000.000**, tope duro de **4.000.000** con warning por log, y
+      default también si no parsea o es `<= 0`. `.env` y `.env.example`
+      actualizados a `2000000`.
+- [x] La UI lee el límite efectivo desde el backend: existe
+      `GET /api/comprobantes/limites`. **Pendiente que la UI lo consuma** (paso 2).
+
+> Desvío de la variable en Vercel: hay que agregar `GITHUB_TOKEN`,
+> `GITHUB_REPO_OWNER`, `GITHUB_REPO_NAME`, `GITHUB_REPO_BRANCH`,
+> `GITHUB_COMMIT_AUTHOR_NAME` y `GITHUB_COMMIT_AUTHOR_EMAIL`. Al verificar en
+> producción el flujo anduvo, así que ya están cargadas.
 
 ### 1.2 Cliente de GitHub
 
-- [ ] `github.py` (raíz, reemplaza a `drive.py`) con `httpx`, replicando el patrón
-      de import protegido de `drive.py` para que la app arranque igual si falta
-      la librería.
-- [ ] Operaciones de **escritura** sobre la **Git Data API**, con la rama
+- [x] `github.py` (raíz) con `httpx`, **reemplaza a `drive.py`**. No usa
+      import protegido: `httpx` ya es dependencia dura (el backend no arranca sin
+      base de datos igual), y el patrón de import protegido de `drive.py` solo
+      tenía sentido para las librerías opcionales de Google.
+- [x] Operaciones de **escritura** sobre la **Git Data API**, con la rama
       resuelta en cada write (read → tree → commit → ref), para que una subida
-      múltiple y un rename sean **un solo commit** cada uno:
-      - `obtener_sha_de_rama()`
-      - `crear_blob(contenido: bytes) -> sha` (binario va en base64)
-      - `crear_arbol(base_tree_sha, entradas) -> sha` (alta: blob; baja:
-        `sha: null`; rename: delete + add en el mismo árbol, atómico)
-      - `crear_commit(parents, tree) -> sha`
-      - `actualizar_ref(sha)`
-- [ ] Lectura con la Contents API y `Accept: application/vnd.github.raw`: un
+      múltiple sea **un solo commit**:
+      - [x] `obtener_sha_de_rama()`
+      - [x] `crear_blob(contenido: bytes) -> sha` (binario en base64)
+      - [x] `crear_arbol(base_tree_sha, entradas) -> sha`
+      - [x] `crear_commit(parents, tree) -> sha`
+      - [x] `actualizar_ref(sha)`
+- [x] Lectura con la Contents API y `Accept: application/vnd.github.raw`: un
       request, bytes directos, sin base64. 404 si el archivo ya no está.
-- [ ] Funciones de dominio: `subir_archivos(rutas, datos)` (un commit para N
-      archivos), `leer_archivo(ruta)`, `borrar_archivo(ruta)`,
-      `renombrar_archivo(ruta_anterior, ruta_nueva)`.
-- [ ] Las escrituras de un mismo request se ejecutan **en serie**: GitHub
-      documenta que `PUT` y `DELETE` de Contents en paralelo entran en
-      conflicto. El rollback de una subida parcial va por el camino de Git Data,
-      que no sufre ese conflicto.
-- [ ] `map_http_error` copiado del patrón de `drive.py` (404 → 404, 403 → 403,
-      resto → 502) y log en el borde.
-- [ ] Chequeo de tamaño contra el valor resuelto de `MAX_UPLOAD_BYTES` (default
-      2MB, clamp 4MB) **antes** de llegar a memoria: `Content-Length` primero,
-      después conteo por chunks de 256KB abortando con 413. Es el patrón exacto
-      del upload que se borró de Drive.
-- [ ] Exponer el límite efectivo en la respuesta del listado (o en un endpoint de
-      config) para que el cliente de la UI valide antes de subir y muestre el
-      error en el mismo mensaje, en vez de recibir un 413 seco.
-- [ ] Smoke test manual: crear un blob de prueba, leerlo, renombrarlo y borrarlo
-      en el repo real.
+- [x] Funciones de dominio: `escribir_paths(entradas, mensaje)` (**un commit
+      para N archivos**) y `leer_archivo(ruta)`.
+      - [ ] `borrar_archivo(ruta)` — **no implementada**, falta para el `DELETE`
+        de 1.6.
+      - [ ] `renombrar_archivo(ruta_anterior, ruta_nueva)` — **no implementada**,
+        falta para el `PATCH` de 1.6.
+- [x] Las escrituras de un mismo request se ejecutan **en serie**.
+- [x] `map_http_error` copiado del patrón de `drive.py` (404 → 404, 403 → 403,
+      401 → 502, resto → 502) y log en el borde. **Más** un helper `_check()`
+      delante de cada `raise_for_status()`: sin él los status de GitHub se
+      escapaban como `httpx.HTTPStatusError` y FastAPI devolvía 500 con stack
+      trace. Los errores de transporte (timeout/DNS) los mapea el router.
+- [x] Chequeo de tamaño contra el valor resuelto de `MAX_UPLOAD_BYTES`
+      **antes** de llegar a memoria: `Content-Length` primero, después conteo
+      por chunks de 256KB abortando con 413.
+- [x] Límite efectivo expuesto en `GET /api/comprobantes/limites`.
+- [x] Smoke test manual contra el repo real: blob de prueba creado, leído,
+      renombrado, borrado y **repo verificado sin basura** (queda solo
+      `README.md`).
 
 ### 1.3 Construcción de rutas
 
 - [ ] `comprobantes.py` (raíz, junto a `drive.py`) con el armado del `subpath`
       según el diseño: `{año}/{mes}{-comentario}.{ext}`, tomado de
       `vencimiento.fecha`.
-- [ ] Comentario slugificado (sin acentos, sin espacios ni caracteres raros),
-      omitido cuando está vacío y se sube un solo archivo.
+      **Estado:** la primera tanda no lo incluye. El upload actual **recibe el
+      path completo ya armado desde el cliente** (`path` = carpeta destino +
+      nombre de archivo), sin knowledge de vencimientos. El armado del subpath
+      se hace recién cuando exista la tabla y el endpoint sea por
+      `vencimiento_id`.
+- [x] Sanitización del path (`normalizar_path`): acepta separadores Windows y
+      Unix, descarta barras duplicadas, y **rechaza** `..`, segmentos ocultos
+      (` .algo`), `:` y globbing, con tope de 1000 caracteres. Sin esto, un
+      `path` con traversal escribiría fuera del repo.
+- [x] Allowlist de extensiones (`.pdf`, `.jpg`, `.jpeg`, `.png`, `.heic`) →
+      415. La deducción de MIME con `mimetypes.guess_type` quedó solo del lado
+      de la **descarga** (`Content-Type` de la respuesta); en la subida no hace
+      falta porque no se guarda metadata de tipo.
 - [ ] Sufijo numérico ante colisión de nombre dentro del mismo `path`.
-- [ ] Allowlist de extensiones (pdf, jpg, png, heic) y deducción de MIME con
-      `mimetypes.guess_type` como fallback cuando el cliente manda
-      `application/octet-stream` (React Native/Expo).
+      **Reemplazado por decisión de producto:** el upload **rechaza** con 409
+      si el path destino ya existe, en vez de inventar un sufijo. Ver
+      "Decisiones pendientes" §6.
 - [ ] Recorte del subpath para no exceder el `varchar(256)` de
-      `comprobantes_path` ni la longitud de path de GitHub.
-- [ ] `path` completo = `subcategoria.comprobantesPath` + `subpath`, normalizado
-      sin barras duplicadas.
+      `comprobantes_path`. **Aplazado**: sin tabla, el path no se persiste.
+- [x] `path` completo normalizado sin barras duplicadas.
 
 ### 1.4 Base de datos
 
-- [ ] DDL idempotente documentado en `docs/comprobantes.md` del repo del backend
-      (patrón de `docs/inversiones.md`): `CREATE SCHEMA IF NOT EXISTS
-      misgestiones`, `pgcrypto`, `CREATE TABLE IF NOT EXISTS`, índice por
-      `vencimiento_id` y único parcial sobre `(vencimiento_id, subpath)` con
-      `active = true`. Aplicar a mano.
-- [ ] Modelo `ComprobantePago` en `structure.py`: `id`, `vencimientoId`
-      (FK a `misgestiones.finanzas_vencimiento`), `subpath`, `comentarios`,
-      `active`, `__table_args__ = {'schema': 'misgestiones'}`.
-- [ ] Desvío deliberado respecto del doc: **no** se agrega `path` a
-      `finanzas_movimientogasto`. El doc dice una cosa y después la supera; la
-      raíz sale de `Subcategoria.comprobantesPath`, que ya existe. Sí se agrega
-      `comentarios TEXT`, porque el rename necesita persistir el comentario y la
-      lista de campos del doc lo omite.
-- [ ] Queries en `db/comprobantes.py` con la convención de `db/gestiones.py`
-      (`obtener_*`, `crear_*`, `actualizar_*`, `eliminar_*`; un
-      `with Session(database.engine)` por función; baja lógica con `active =
-      False`; `selectinload` para la relación con `Vencimiento`).
-- [ ] DTOs Pydantic en `models/comprobantes.py` con `Config.from_attributes`, y
-      los wrappers de lista que usa el resto de la API.
+Sin cambios: **no empezada**. La primera tanda es deliberadamente sin base de
+datos, para validar el repo de GitHub y el contrato HTTP antes de meter el DDL.
+Todo lo de 1.4 sigue pendiente tal cual está escrito.
 
 ### 1.5 Autenticación
 
-- [ ] Extraer `require_api_key` de `api/routers/drive.py` a `api/security.py` para
-      que el router nuevo lo reutilice en vez de duplicarlo (y quede listo para el
-      paso 3, que borra el de Drive).
+- [x] `require_api_key` extraído de `api/routers/drive.py` a `api/security.py`,
+      y reutilizado desde el router de Drive (que ahora importa, en vez de
+      duplicar) y desde el router de comprobantes.
 
 ### 1.6 Endpoints
 
-Router nuevo `api/routers/comprobantes.py` con
-`APIRouter(prefix="/api/comprobantes", tags=["Comprobantes"])`, **sin** repetir el
-prefijo en los decoradores (el router de Drive tiene ese bug y expone
-`/api/drive/api/drive/...`). Registrarlo en `main.py` (import + `include_router`).
+Router `api/routers/comprobantes.py` con
+`APIRouter(prefix="/api/comprobantes", tags=["Comprobantes"], dependencies=[Depends(require_api_key)])`,
+**sin** repetir el prefijo en los decoradores. Registrado en `main.py`.
 
-- [ ] `POST /api/comprobantes` — `multipart/form-data` con `vencimiento_id`,
-      `comentario` opcional y `files: List[UploadFile]`. Valida en el server:
-      vencimiento existente y `active`, `pagoId IS NOT NULL` (regla dura del
-      diseño), `comprobantesPath` no vacío, tamaño por archivo contra
-      `MAX_UPLOAD_BYTES` y extensiones. Sube a GitHub y recién después inserta
-      las filas; ante un fallo parcial borra los archivos ya subidos y revierte
-      lo insertado.
-- [ ] `GET /api/comprobantes?vencimiento_ids=a,b,c` — lectura por lote, para que la
-      grilla resuelva en un solo request cuántos comprobantes tiene cada
-      vencimiento. La respuesta incluye el `max_upload_bytes` efectivo.
-- [ ] `GET /api/comprobantes/{id}/descargar` — `def` (no `async def`) con
-      `StreamingResponse`, `Content-Disposition` con el nombre URL-quoteado y
-      `media_type` deducido. Resuelve `path + subpath`; 404 si el archivo ya no
-      está en GitHub.
-- [ ] `PATCH /api/comprobantes/{id}` — body con el nuevo `comentario`: calcula el
-      subpath nuevo, renombra en GitHub y actualiza la fila. 409 si el nombre
-      destino ya existe.
-- [ ] `DELETE /api/comprobantes/{id}` — baja lógica de la fila + borrado del
-      archivo en GitHub.
-- [ ] Shape de errores `{ "error": ..., "message": ... }` con 400/401/404/409/413/415/502,
-      como en el router de Drive.
+- [x] `POST /api/comprobantes` — `multipart/form-data` con `path` (carpeta
+      destino) y `files: List[UploadFile]`. Sube a GitHub y devuelve `201` con
+      el commit, los archivos y el `max_upload_bytes` efectivo.
+      **Desvío del plan:** no valida `vencimiento_id`, `pagoId IS NOT NULL` ni
+      `comprobantesPath`, porque no hay tabla todavía. Es la capa de storage
+      pura; esas validaciones van en el endpoint por `vencimiento_id`.
+      No hace falta que la carpeta exista: en git las carpetas no son objetos y
+      la Git Data API las arma sola a partir del path del blob.
+- [x] `GET /api/comprobantes/descargar?path=<path completo>` — `def` (no
+      `async def`), `StreamingResponse`, `Content-Disposition` con el nombre
+      URL-quoteado y `media_type` deducido. 404 si el archivo ya no está en
+      GitHub; 413 si el archivo pasa `MAX_UPLOAD_BYTES`.
+      **Desvío del plan:** es por path, no por `id`, por lo mismo que arriba.
+- [x] `GET /api/comprobantes/limites` — el `max_upload_bytes` efectivo, para que
+      la UI valide antes de subir en vez de recibir un 413 seco.
+- [ ] `GET /api/comprobantes?vencimiento_ids=a,b,c` — lectura por lote, para que
+      la grilla resuelva en un solo request cuántos comprobantes tiene cada
+      vencimiento. **Depende de la tabla.**
+- [ ] `PATCH /api/comprobantes/{id}` — rename por comentario. **Depende de la
+      tabla** y de `renombrar_archivo`.
+- [ ] `DELETE /api/comprobantes/{id}` — baja lógica + borrado en GitHub.
+      **Depende de la tabla** y de `borrar_archivo`.
+- [x] Shape de errores `{ "error": ..., "message": ... }` con
+      400/401/404/409/413/415/422/502.
 
 ### 1.7 Documentación
 
+- [x] `docs/comprobantes.md` en el repo del backend: contrato de los endpoints,
+      variables de entorno, tabla de errores, y los detalles de implementación
+      que no hay que romper (escrituras en serie, el JSON de un directorio en la
+      descarga, el cap de descarga, la validación del path de subida).
 - [ ] Actualizar `docs/ECOSYSTEM_OVERVIEW.md` de este repo para listar el grupo
-      `comprobantes` entre los endpoint groups del backend y volver a citar Drive
-      donde corresponda.
-- [ ] Documentar los endpoints nuevos en `docs/` del repo del backend (el
-      `/docs` de FastAPI se regenera solo, pero el README del repo de
-      comprobantes conviene mantenerlo como spec).
+      `comprobantes` entre los endpoint groups del backend.
+- [ ] README del repo de comprobantes como spec. **Opcional**: hoy el contrato
+      vive en `docs/comprobantes.md` del backend.
 
 ### 1.8 Verificación
 
-- [ ] `python -c "import main"` y `uvicorn main:app --reload --port 5001`.
-- [ ] Matriz con `curl` contra los 5 endpoints con `X-API-Key`: subida simple,
-      subida múltiple, listado, descarga (verificar bytes y `Content-Disposition`),
-      rename, delete; y los casos de error: sin key, sin pago, path vacío,
-      archivo demasiado grande, extensión no permitida, nombre destino repetido.
-- [ ] Confirmar en el repo `TomasNati/comprobantes-pago` que quedaron los commits
-      esperados y que no hay basura de las pruebas.
-- [ ] Recién ahí, commit y push a `main` (despliegue a producción).
+- [x] `python -c "import main"` y `uvicorn main:app --reload`.
+- [x] Matriz con `curl` **en local** contra el repo real: subida simple,
+      múltiple (1 commit, verificado), round-trip de bytes con `cmp`, 409 por
+      path existente, 413 de subida (por `Content-Length` y por el lector por
+      chunks) y de descarga, 404 de path inexistente, 415 de extensión, 400 de
+      path vacío/traversal/largo, 401 de key inválida, 422 de header ausente.
+- [x] Repo `TomasNati/comprobantes-pago` verificado sin basura de pruebas.
+- [x] Commiteado (`db30dc8`) y pusheado a `main` → **desplegado en producción**.
+- [x] Verificado en producción: `GET /limites` con key válida devuelve `200` con
+      el repo y la rama correctos; `GET /descargar` de un path inexistente
+      devuelve `404` (prueba de que el PAT funciona desde Vercel).
+
+#### Bugs encontrados y corregidos durante la verificación
+
+Anotados porque son las trampas del diseño, noobvios al leer el código:
+
+1. **Fuga del PAT en la descarga.** `GET /descargar?path=<carpeta>` devolvía
+   `200` con el listado JSON de GitHub, que trae un `download_url` de
+   `raw.githubusercontent.com` **con el token embebido**. Ahora `leer_archivo`
+   descarta cualquier respuesta `application/json` y responde 404. Ese chequeo
+   no es opcional: sin él, el endpoint filtra la credencial.
+2. **`path` vacío escribía en la raíz del repo** con `201` en vez de `400`,
+   porque `normalizar_path` descarta las barras iniciales. La carpeta destino
+   ahora se valida por separado del path completo.
+3. **`map_http_error` era código muerto en el path de escritura.** Los seis
+   helpers de la Git Data API usaban `raise_for_status()` crudo → 500 con stack
+   trace. Se agregaron `_check()` y el mapeo de errores de transporte en el
+   router.
+4. **Un archivo en medio de una ruta de carpeta daba 500** (GitHub responde 422
+   al crear el árbol). Ahora se detecta antes y devuelve `409` con `"ya hay un
+   archivo donde va una carpeta"`.
+
 
 ---
 
 ## Paso 2 — UI en este repo (solo mención, no se ejecuta en esta tanda)
+
+> Sigue íntegro. Depende de que los endpoints por `vencimiento_id` queden
+> congelados (paso 1.4 + 1.6), no de los que hoy están en producción.
 
 - [ ] Proxy server-side en `src/app/api/comprobantes/**/route.ts` que reenvía al
       backend agregando `X-API-Key` desde el server. Route Handler, no server
@@ -230,13 +268,21 @@ prefijo en los decoradores (el router de Drive tiene ese bug y expone
 - [ ] Columna de comprobantes en `VencimientoGrilla.tsx`: ícono de descarga si
       hay uno solo, ícono de lista si hay varios.
 - [ ] `ComprobantesModal` con la lista y la descarga de cada uno.
-- [ ] Selector de archivos + validación de tamaño en `CrearPagoModal.tsx`.
+- [ ] Selector de archivos + validación de tamaño en `CrearPagoModal.tsx`, leyendo
+      el límite de `GET /api/comprobantes/limites` (ya existe) y no un número
+      hardcodeado.
 - [ ] Sección de comprobantes en `AgregarEditarModal.tsx` con descargar, eliminar,
       cambiar el comentario y agregar nuevos.
 - [ ] Hooks `src/hooks/useComprobantes.ts`, siguiendo el precedente de
       `src/hooks/inversiones`.
 
 Depende de que los endpoints del paso 1 queden con el contrato congelado.
+
+> Contexto para cuando se implemente: hoy `src/lib/api.ts` (línea 24) usa
+> `NEXT_PUBLIC_BACKEND_BASE_URL` y se importa desde componentes `'use client'`,
+> o sea que el browser pega **al backend directo** y sin secreto. Por eso el
+> proxy server-side no es opcional: es la única forma de que el
+> `BACKEND_SHARED_SECRET` no termine en el bundle.
 
 ---
 
@@ -266,12 +312,43 @@ Depende de que los endpoints del paso 1 queden con el contrato congelado.
    variable esté miseada, porque el body de una función de Vercel no puede
    pasar de 4.5MB. El mismo cap vale para la descarga, que es una response.
    Los 5MB del diseño original quedan reemplazados por este valor configurable.
-2. **Nombre de la tabla.** Recomendación: `misgestiones.finanzas_comprobante_pago`
-   (la de `Design.md`, que es la más descriptiva). Choca con la convención de
-   nombres de casa sin underscores.
-3. **Origen de `{año}/{mes}`.** `vencimiento.fecha` o `pago.fecha`: difieren
-   cuando una factura se paga con atraso. El plan asume `vencimiento.fecha`.
-4. **Repo y PAT.** `TomasNati/comprobantes-pago` está definido; falta confirmar
-   quién crea el token y si el repo sigue siendo privado.
-5. **Paso 3.** Interpretado como la limpieza de los endpoints de Drive. Confirmar
-   que ese era el alcance buscado.
+   **Implementado** en `github.py`, verificado con 413 en subida y en descarga.
+2. **Nombre de la tabla — sigue pendiente.** Recomendación:
+   `misgestiones.finanzas_comprobante_pago` (la de `Design.md`, que es la más
+   descriptiva). Choca con la convención de nombres de casa sin underscores.
+   Bloqueante del paso 1.4.
+3. **Origen de `{año}/{mes}` — sigue pendiente.** `vencimiento.fecha` o
+   `pago.fecha`: difieren cuando una factura se paga con atraso. El plan asume
+   `vencimiento.fecha`.
+4. **Repo y PAT — resuelto.** `TomasNati/comprobantes-pago`, privado, con PAT
+   fine-grained de `Contents: Read and write` solo sobre ese repo. Verificado
+   funcionando desde producción.
+5. **Paso 3 — sigue pendiente.** Interpretado como la limpieza de los endpoints
+   de Drive. Confirmar que ese era el alcance buscado.
+6. **Colisión de nombres en el upload — resuelto por decisión de producto.**
+   El plan(original) pedía "sufijo numérico ante colisión de nombre"; lo
+   implementado **rechaza con 409** si el path destino ya existe, sin inventar
+   nombres. Razón: un comprobante con nombre inventado es indistinguible del
+   real en el repo, y el 409 obliga a decidir el nombre a propósito. Si más
+   adelante se quiere el overwrite o el sufijo, es un parámetro nuevo.
+7. **Contrato por path vs. por `vencimiento_id` — desvío consciente.** La
+   primera tanda expone upload y download **por path crudo**, sin base de
+   datos, para validar el repo y el HTTP antes de meter el DDL. Consecuencias a
+   tener en cuenta al seguir:
+   - Las validaciones duras del diseño (`pagoId IS NOT NULL`,
+     `comprobantesPath` no vacío) **no están**: las haré el endpoint por
+     `vencimiento_id` cuando exista la tabla.
+   - El path lo decide el cliente. Esa es la superficie a cerrar después; hoy
+     la única defensa es el `X-API-Key` compartido más la sanitización del path.
+   - Un 404 de descarga no distingue "no existe" de "existe pero inactivo": no
+     hay tabla que filtrar por `active`.
+8. **Auth: el `X-API-Key` es un secreto compartido, no autenticación.** No hay
+   usuarios ni scopes. Como el secreto no puede ir al browser, el proxy
+   server-side del paso 2 es lo que termina gating el acceso de la web app, y
+   el `X-API-Key` realmente bloquea los golpes directos contra
+   `mis-gestiones-backend.vercel.app`. **Contexto relevante que excede esta
+   feature:** los routers `finanzas`, `inversiones` y `cotizaciones` del backend
+   **no tienen ninguna auth** (verificado en producción: `GET /api/categorias`
+   devuelve 200 sin credencial, e incluso hay `DELETE` sin protección). Cerrar
+   eso es una tarea aparte que rompe la web app y el móvil, y no es un cambio de
+   una línea.
