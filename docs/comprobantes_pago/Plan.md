@@ -74,7 +74,7 @@ sus decisiones de tamaño, streaming y errores se reutilizan tal cual.
 
 ## Paso 1 — GitHub, base de datos y endpoints (todo en `../mis-gestiones-backend`)
 
-> Progreso: **1.1 parcial · 1.2 parcial · 1.3 no · 1.4 no · 1.5 hecho · 1.6 parcial · 1.7 parcial · 1.8 parcial**
+> Progreso: **1.1 parcial · 1.2 parcial · 1.3 no · 1.4 parcial · 1.5 hecho · 1.6 parcial · 1.7 parcial · 1.8 parcial**
 > Commits: `db30dc8` (endpoint para subir y descargar archivos de github).
 
 ### 1.1 Conexión con GitHub
@@ -167,9 +167,30 @@ sus decisiones de tamaño, streaming y errores se reutilizan tal cual.
 
 ### 1.4 Base de datos
 
-Sin cambios: **no empezada**. La primera tanda es deliberadamente sin base de
-datos, para validar el repo de GitHub y el contrato HTTP antes de meter el DDL.
-Todo lo de 1.4 sigue pendiente tal cual está escrito.
+**DDL hecho; falta el uso de la tabla.**
+
+- [x] Nombre decided: **`finanzas_comprobante_pago`** (la de `Design.md`). Choca
+      con la convención de nombres de casa sin underscores, y está bien: es la
+      más descriptiva.
+- [x] Script `docs/comprobantes.sql` en el backend, idempotente, siguiendo el
+      precedente de `docs/inversiones.md`. **Aplicado a la base** y verificado
+      contra `information_schema`: columnas e índices (parciales) como pide el
+      script.
+      - `id UUID PK`, `active BOOLEAN`, `vencimiento_id UUID NOT NULL` → FK a
+        `finanzas_vencimiento`, `subpath VARCHAR(256) NOT NULL`.
+      - Verificado contra la base: `finanzas_vencimiento.id` es `uuid NOT NULL` y
+        `finanzas_subcategoria.comprobantes_path` es `varchar(256)`, así que el
+        ancho del `subpath` cierra con el `path`.
+      - FK **sin `ON DELETE`**, como las demás de finanzas: nada se borra hard.
+      - Índice parcial en `vencimiento_id` (la grilla cuenta por vencimiento en
+        un request) y **único parcial** en `(vencimiento_id, subpath)`:
+        refleja el 409 por colisión de nombre del upload, y el `WHERE active`
+        deja reusar un nombre después de dar de baja el comprobante anterior.
+- [x] Modelo `ComprobantePago` en `structure.py` (atributos en camelCase
+      `vencimientoId` sobre columnas snake_case, como `pagoId` → `pago`).
+- [ ] DTOs Pydantic en `models/comprobantes.py`.
+- [ ] Queries en `db/gestiones.py` (o `db/comprobantes.py`): alta, baja lógica,
+      rename del `subpath`, y conteo por lote de `vencimiento_ids`.
 
 ### 1.5 Autenticación
 
@@ -214,8 +235,10 @@ Router `api/routers/comprobantes.py` con
       variables de entorno, tabla de errores, y los detalles de implementación
       que no hay que romper (escrituras en serie, el JSON de un directorio en la
       descarga, el cap de descarga, la validación del path de subida).
-- [ ] Actualizar `docs/ECOSYSTEM_OVERVIEW.md` de este repo para listar el grupo
-      `comprobantes` entre los endpoint groups del backend.
+- [x] `docs/ECOSYSTEM_OVERVIEW.md` de este repo actualizado: `comprobantes`
+      entre los endpoint groups (y su `X-API-Key`), el repo
+      `TomasNati/comprobantes-pago` como quinto repo del ecosistema, la tabla
+      nueva en el ER diagram, y la nota de que es backend-only (sin Drizzle).
 - [ ] README del repo de comprobantes como spec. **Opcional**: hoy el contrato
       vive en `docs/comprobantes.md` del backend.
 
@@ -313,10 +336,10 @@ Depende de que los endpoints del paso 1 queden con el contrato congelado.
    pasar de 4.5MB. El mismo cap vale para la descarga, que es una response.
    Los 5MB del diseño original quedan reemplazados por este valor configurable.
    **Implementado** en `github.py`, verificado con 413 en subida y en descarga.
-2. **Nombre de la tabla — sigue pendiente.** Recomendación:
-   `misgestiones.finanzas_comprobante_pago` (la de `Design.md`, que es la más
-   descriptiva). Choca con la convención de nombres de casa sin underscores.
-   Bloqueante del paso 1.4.
+2. **Nombre de la tabla — resuelto.** `misgestiones.finanzas_comprobante_pago`
+   (la de `Design.md`). Choca con la convención de nombres de casa sin
+   underscores, y se aceptó igual por ser la más descriptiva. DDL en
+   `docs/comprobantes.sql` del backend.
 3. **Origen de `{año}/{mes}` — sigue pendiente.** `vencimiento.fecha` o
    `pago.fecha`: difieren cuando una factura se paga con atraso. El plan asume
    `vencimiento.fecha`.

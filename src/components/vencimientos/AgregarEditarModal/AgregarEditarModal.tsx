@@ -8,12 +8,15 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
+  InputAdornment,
   TextField,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { styles } from './AgregarEditarModal.styles';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -23,6 +26,28 @@ import { obtenerMovimientosParaVencimientosUI } from '@/components/vencimientos/
 import { CrearPagoModal } from './CrearPagoModal';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
+
+const MESES = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
+
+const prefijoAnioMes = (fecha: dayjs.Dayjs | null) => (fecha ? `${fecha.year()}/${MESES[fecha.month()]}` : '');
+
+const extensionArchivo = (nombre: string) => {
+  const ultimoPunto = nombre.lastIndexOf('.');
+  return ultimoPunto > 0 ? nombre.slice(ultimoPunto + 1).toLowerCase() : '';
+};
 
 dayjs.extend(utc);
 
@@ -36,6 +61,16 @@ interface FormState {
   fechaConfirmada: boolean;
   comentarios: string;
 }
+
+interface ComprobanteState {
+  archivo: File | null;
+  comentario: string;
+}
+
+const comprobanteInicial: ComprobanteState = {
+  archivo: null,
+  comentario: '',
+};
 
 const defaultState: FormState = {
   id: undefined,
@@ -97,6 +132,29 @@ export const AgregarEditarModal = ({
   const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>(pagos);
   const [form, setForm] = useState<FormState>(mapVencimientoToForm(tiposDeVencimiento, vencimiento));
   const [showCrearPago, setShowCrearPago] = useState(false);
+  const [comprobante, setComprobante] = useState<ComprobanteState>(comprobanteInicial);
+
+  const tienePago = Boolean(form.pagoId);
+
+  const prefijo = prefijoAnioMes(form.fecha);
+  const extension = comprobante.archivo ? extensionArchivo(comprobante.archivo.name) : '';
+  const comentario = comprobante.comentario.trim();
+  const nombreComprobante = comprobante.archivo
+    ? `${prefijo}${comentario ? `-${comentario}` : ''}${extension ? `.${extension}` : ''}`
+    : '';
+
+  const handleArchivoSeleccionado = (event: ChangeEvent<HTMLInputElement>) => {
+    const archivo = event.target.files?.[0] || null;
+    event.target.value = '';
+    setComprobante({ archivo, comentario: '' });
+  };
+
+  const handlePagoChanged = (pago: MovimientoDeVencimiento | null) => {
+    handleChangeSimple('pagoId', pago ? pago.id : null);
+    if (!pago) {
+      setComprobante(comprobanteInicial);
+    }
+  };
 
   const handleTipoChanged = async (tipo: Subcategoria | null) => {
     if (!tipo) {
@@ -123,6 +181,18 @@ export const AgregarEditarModal = ({
 
   const handleGuardar = () => {
     if (!errors.length) {
+      if (comprobante.archivo) {
+        console.log('comprobante de pago', {
+          vencimientoId: form.id,
+          pagoId: form.pagoId,
+          archivo: {
+            nombre: comprobante.archivo.name,
+            size: comprobante.archivo.size,
+            type: comprobante.archivo.type,
+          },
+          subpath: nombreComprobante,
+        });
+      }
       const vencimiento: VencimientoUI = {
         id: form.id,
         fecha: toUTC(form.fecha?.toDate() || new Date()),
@@ -191,7 +261,7 @@ export const AgregarEditarModal = ({
               }
               value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
               renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
-              onChange={(_, value) => handleChangeSimple('pagoId', value ? value.id : null)}
+              onChange={(_, value) => handlePagoChanged(value)}
               getOptionKey={(option: MovimientoDeVencimiento) => option.id}
               size="small"
               sx={{ flex: 1 }}
@@ -208,6 +278,48 @@ export const AgregarEditarModal = ({
                 </IconButton>
               </span>
             </Tooltip>
+          </Box>
+          <Box display="flex" flexDirection="column" gap={1}>
+            <Tooltip title={tienePago ? 'Adjuntar el comprobante del pago' : 'Asociar un pago primero'}>
+              <span>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  size="small"
+                  startIcon={<AttachFileIcon />}
+                  disabled={!tienePago}
+                  fullWidth
+                >
+                  {comprobante.archivo ? comprobante.archivo.name : 'Comprobante de pago'}
+                  <input type="file" hidden onChange={handleArchivoSeleccionado} />
+                </Button>
+              </span>
+            </Tooltip>
+            {comprobante.archivo ? (
+              <>
+                <TextField
+                  label="Comentario"
+                  value={comprobante.comentario}
+                  onChange={(e) => setComprobante((prev) => ({ ...prev, comentario: e.target.value }))}
+                  fullWidth
+                  size="small"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Typography variant="body2" color="text.secondary" noWrap>
+                            {prefijo}
+                          </Typography>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  Se va a guardar como {nombreComprobante}
+                </Typography>
+              </>
+            ) : null}
           </Box>
           {showCrearPago && (
             <CrearPagoModal

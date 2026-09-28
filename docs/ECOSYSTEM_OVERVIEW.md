@@ -1,13 +1,13 @@
 # Mis Gestiones — Ecosystem Overview
 
-A personal finance, investment, and household-tracking system spread across four
+A personal finance, investment, and household-tracking system spread across five
 repositories. This document summarizes what each repo does, its main
 technologies, and how they fit together.
 
 > Domain language is Spanish throughout (e.g. *movimiento*, *concepto*,
-> *vencimiento*, *inversión*, *instrumento*, *cotización*).
+> *vencimiento*, *inversión*, *instrumento*, *cotización*, *comprobante*).
 
-## The four repositories
+## The five repositories
 
 | Repo | Role | Stack | Deployed to |
 |------|------|-------|-------------|
@@ -15,6 +15,8 @@ technologies, and how they fit together.
 | `mis-gestiones` | Main web app (UI + its own serverless API + direct DB) | Next.js 16, React 19, MUI, Drizzle ORM, Neon Postgres | Vercel (`mis-gestiones-opal-kappa.vercel.app`) |
 | `mis-gestiones-admin` | Admin SPA for master data | React 19, Vite, MUI, React Query | Vercel (`mis-gestiones-admin.vercel.app`) |
 | `mis-gestiones-mobile` | Mobile app (expenses + sleep tracking) | React Native, Expo SDK 54, TypeScript | EAS build (Android APK) |
+| `TomasNati/comprobantes-pago` | **Private git repo used as blob storage** for payment receipts | git (files as blobs) | GitHub |
+
 
 ---
 
@@ -24,11 +26,19 @@ The central REST API and the ecosystem's connection to external market data.
 
 - **Purpose:** Exposes finances (categorías, subcategorías, movimientos de gasto,
   vencimientos), investments (instrumentos, precios, inversiones), and market quotes
-  (dólar, crypto, FCI mutual funds, US/AR tickers).
+  (dólar, crypto, FCI mutual funds, US/AR tickers). Also the **only** component
+  that talks to the `comprobantes-pago` storage repo: receipts are uploaded,
+  renamed and downloaded by the backend, never straight from a client.
 - **Technologies:** Python 3.13, FastAPI + Uvicorn, SQLAlchemy 2.x ORM over
   PostgreSQL (  `psycopg2`), schemas `misgestiones` and `inversiones`. External
   integrations via `yfinance` (Yahoo Finance), CAFCI and crypto/exchange services.
-- **Key endpoint groups** (under `/api`): `finanzas`, `inversiones`, `cotizaciones`.
+- **Key endpoint groups** (under `/api`): `finanzas`, `inversiones`, `cotizaciones`,
+  `comprobantes`.
+- **Auth is uneven.** `comprobantes` is the only group behind a shared secret
+  (`X-API-Key` vs. `BACKEND_SHARED_SECRET`, checked in `api/security.py`); the
+  other three have none. Anything user-facing in `comprobantes` has to go through
+  the web app's server-side proxy, because the secret can't be shipped to a
+  browser.
 - **Notable:** CORS whitelists the admin and web-app origins. The README is an
   unmodified Vercel boilerplate template — the real behavior lives in the code.
 
@@ -78,6 +88,26 @@ The on-the-go companion for the most frequent daily entries.
   `/movimientos`, `/conceptos-movimientos`, `/agenda-tomi/dias`, and
   `/finanzas/movimiento-update`.
 
+## `TomasNati/comprobantes-pago` — Receipt storage
+
+Not an application: a **private git repo used as blob storage** for payment
+receipts (comprobantes de pago). It replaced Google Drive, which was dropped for
+exceeding quota.
+
+- **Purpose:** Versioned home of the receipt files. The path of a file inside the
+  repo *is* its address, and every upload is a commit.
+- **Technologies:** Just git. The backend drives it over the GitHub API
+  (`github.py`): writes go through the **Git Data API** so a multi-file upload is
+  a single atomic commit; reads use the Contents API with
+  `Accept: application/vnd.github.raw` (bytes directly, no base64).
+- **Path layout:** `subcategoria.comprobantes_path` (e.g. `edese`) +
+  `{año}/{mes}[-comentario].{ext}` from the vencimiento's date. Only the second
+  half is stored in the database (`finanzas_comprobante_pago.subpath`), so moving
+  a subcategoría moves its receipts.
+- **Access:** A fine-grained PAT with `Contents: Read and write` on this repo
+  alone, held by the backend only. No client ever sees a `raw.githubusercontent.com`
+  URL or the token.
+
 ---
 
 ## How the repos relate
@@ -90,6 +120,7 @@ flowchart TB
     backend["mis-gestiones-backend<br/>(Python FastAPI)"]
     db[("PostgreSQL<br/>Neon / Vercel<br/>schemas: misgestiones, inversiones")]
     ext["External services<br/>Yahoo Finance, CAFCI,<br/>crypto/dólar"]
+    storage[("TomasNati/comprobantes-pago<br/>(private git repo<br/>receipt files as blobs)")]
 
     admin -->|"REST /api"| backend
     web -->|"REST /api"| backend
@@ -97,6 +128,7 @@ flowchart TB
     backend --> db
     web -->|"Drizzle ORM"| db
     backend --> ext
+    backend -->|"commits / reads (GitHub API)"| storage
 ```
 
 Key relationships:
@@ -113,6 +145,9 @@ Key relationships:
   that the web and mobile apps then use when recording movimientos and inversiones.
 - **No shared code / monorepo.** Integration is entirely over HTTP and the shared
   database; there are no shared packages linking the repos.
+- **The storage repo is reachable only by the backend.** Receipts are binary
+  blobs in git, so the file bytes never travel browser → GitHub: they go
+  browser → web-app proxy → backend → git. The database only stores the path.
 
 ### Client → API summary
 
@@ -121,7 +156,7 @@ Key relationships:
 | `mis-gestiones-admin` | `mis-gestiones-backend` | Axios REST (`VITE_BACKEND_API`) |
 | `mis-gestiones` (web) | `mis-gestiones-backend` + its own serverless API + Neon DB | Axios REST, Next API routes, Drizzle |
 | `mis-gestiones-mobile` | `mis-gestiones` serverless API | `expo/fetch` REST |
-| `mis-gestiones-backend` | PostgreSQL + external market services | SQLAlchemy, HTTP APIs |
+| `mis-gestiones-backend` | PostgreSQL + external market services + the `comprobantes-pago` git repo | SQLAlchemy, HTTP APIs, GitHub API |
 
 ---
 
@@ -131,7 +166,9 @@ The shared Postgres database is split into two schemas. They are independent —
 there are no foreign keys crossing between them. The backend (SQLAlchemy) and the
 web app (Drizzle) map to the same tables; a few `misgestiones` tables
 (`finanzas_gastoestimado`, `tomiagenda_dia`, `tomiagenda_eventosuenio`) exist only
-in the web app's Drizzle schema.
+in the web app's Drizzle schema; `finanzas_comprobante_pago` exists only in the
+backend's SQLAlchemy models (its DDL lives in the backend's `docs/comprobantes.sql`,
+and there is no migration tooling anywhere — DDL is applied by hand).
 
 > All primary keys are `uuid`. `active` is a soft-delete flag present on every
 > table. Column names are the physical (lowercase) names as stored in Postgres.
@@ -147,6 +184,7 @@ erDiagram
     finanzas_subcategoria ||--o{ finanzas_vencimiento : "categorizes"
     finanzas_subcategoria ||--o{ finanzas_gastoestimado : "estimates"
     finanzas_movimientogasto ||--o| finanzas_vencimiento : "pays"
+    finanzas_vencimiento ||--o{ finanzas_comprobante_pago : "has receipts"
     tomiagenda_dia ||--o{ tomiagenda_eventosuenio : "has"
 
     finanzas_categoria {
@@ -190,6 +228,12 @@ erDiagram
         fechaconfirmada boolean
         pago uuid FK "nullable -> movimientogasto"
         comentarios text
+        active boolean
+    }
+    finanzas_comprobante_pago {
+        id uuid PK
+        vencimiento_id uuid FK
+        subpath varchar(256)
         active boolean
     }
     finanzas_gastoestimado {
