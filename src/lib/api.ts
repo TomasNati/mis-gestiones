@@ -19,6 +19,11 @@ import {
   InstrumentoExterior,
   InstrumentoLocal,
   CotizacionDolar,
+  ComprobantePago,
+  ComprobantePagoParaSubir,
+  ComprobanteErrorAPI,
+  ComprobanteDetalleValidacion,
+  LimitesComprobantes,
 } from './definitions';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
@@ -133,6 +138,67 @@ export const getCotizacionDolarOficial = async (): Promise<CotizacionDolar | nul
 export const getCotizacionesDolar = async (): Promise<CotizacionDolar[]> => {
   const { data } = await apiClient.get<CotizacionDolar[]>('/cotizaciones/dolar');
   return data ?? [];
+};
+
+const errorComprobante = (error: unknown, fallback: string): ComprobanteErrorAPI => {
+  if (axios.isAxiosError<ComprobanteErrorAPI>(error)) {
+    return (
+      error.response?.data ?? {
+        detail: { error: error.message || fallback, message: error.message || fallback },
+      }
+    );
+  }
+  const message = error instanceof Error ? error.message : fallback;
+  return { detail: { error: fallback, message } };
+};
+
+const esDetalleValidacion = (detail: ComprobanteErrorAPI['detail']): detail is ComprobanteDetalleValidacion[] =>
+  Array.isArray(detail);
+
+export const mensajeErrorComprobante = (error: unknown, fallback: string): string => {
+  const { detail } = errorComprobante(error, fallback);
+
+  if (esDetalleValidacion(detail)) {
+    const mensajes = detail
+      .map((errorValidacion) => errorValidacion.msg)
+      .filter((mensaje): mensaje is string => Boolean(mensaje));
+    return mensajes.length ? mensajes.join(', ') : fallback;
+  }
+
+  return detail.message || fallback;
+};
+
+const comprobantesClient = axios.create({
+  baseURL: backendBaseUrl,
+});
+
+export const subirComprobantePago = async (params: {
+  vencimientoId: string;
+  basePath: string;
+  comprobante: ComprobantePagoParaSubir;
+}): Promise<ComprobantePago> => {
+  const formData = new FormData();
+  formData.append('vencimiento_id', params.vencimientoId);
+  formData.append('base_path', params.basePath);
+  formData.append('subpath', params.comprobante.subpath);
+  formData.append('file', params.comprobante.archivo, params.comprobante.archivo.name);
+
+  try {
+    const { data } = await comprobantesClient.post<ComprobantePago>('/comprobantes', formData);
+    return data;
+  } catch (error: unknown) {
+    throw errorComprobante(error, `no se pudo subir el comprobante ${params.comprobante.subpath}`);
+  }
+};
+
+export const obtenerLimitesComprobantes = async (): Promise<LimitesComprobantes | null> => {
+  try {
+    const { data } = await comprobantesClient.get<LimitesComprobantes>('/comprobantes/limites');
+    return data;
+  } catch (error: unknown) {
+    console.error('no se pudieron obtener los limites de comprobantes:', error);
+    return null;
+  }
 };
 
 export default apiClient;

@@ -2,12 +2,14 @@
 
 import {
   BuscarVencimientosPayload,
+  ComprobantePagoParaSubir,
   MovimientoDeVencimiento,
   Subcategoria,
   TipoDeGasto,
   VencimientoUI,
 } from '@/lib/definitions';
 import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
+import { mensajeErrorComprobante, obtenerLimitesComprobantes, subirComprobantePago } from '@/lib/api';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useState } from 'react';
@@ -41,6 +43,8 @@ const Vencimientos = () => {
   const [buscarVencimientoPayload, setBuscarVencimientoPayload] = useState<BuscarVencimientosPayload>({
     ...buscarVencimientoPayloadDefault,
   });
+  const [maxUploadBytes, setMaxUploadBytes] = useState<number | null>(null);
+  const notificarError = (mensaje: string) => setConfigNotificacion({ open: true, severity: 'error', mensaje });
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
     severity: 'success',
@@ -81,6 +85,15 @@ const Vencimientos = () => {
     fetchVencimientos();
   }, [buscarVencimientoPayload]);
 
+  useEffect(() => {
+    const fetchLimites = async () => {
+      const limites = await obtenerLimitesComprobantes();
+      setMaxUploadBytes(limites?.max_upload_bytes ?? null);
+    };
+
+    fetchLimites();
+  }, []);
+
   const toggleOpenAgregarEditar = () => setShowAgregarEditarModal(!showAgregarEditarModal);
 
   const handleAgregarVencimiento = () => {
@@ -98,23 +111,85 @@ const Vencimientos = () => {
     setShowAgregarEditarModal(true);
   };
 
-  const handleGuardarVencimiento = async (vencimiento: VencimientoUI) => {
+  const subirComprobantes = async (
+    vencimientoId: string | undefined,
+    vencimiento: VencimientoUI,
+    comprobantes: ComprobantePagoParaSubir[],
+  ): Promise<string[]> => {
+    if (!comprobantes.length) {
+      return [];
+    }
+    if (!vencimientoId) {
+      return ['No se obtuvo el id del vencimiento, no se pudieron subir los comprobantes'];
+    }
+    const basePath = vencimiento.subcategoria.comprobantesPath;
+    if (!basePath) {
+      return ['La subcategoria del vencimiento no tiene comprobantes_path configurado'];
+    }
+
+    const dentroDeLimite: ComprobantePagoParaSubir[] = [];
+    const erroresDescartados: string[] = [];
+    comprobantes.forEach((comprobante) => {
+      if (maxUploadBytes && comprobante.archivo.size > maxUploadBytes) {
+        erroresDescartados.push(`${comprobante.subpath}: excede el tamaño máximo permitido`);
+      } else {
+        dentroDeLimite.push(comprobante);
+      }
+    });
+
+    const resultados = await Promise.allSettled(
+      dentroDeLimite.map((comprobante) => subirComprobantePago({ vencimientoId, basePath, comprobante })),
+    );
+
+    const erroresSubida = resultados.flatMap((resultado, indice) =>
+      resultado.status === 'rejected'
+        ? [`${dentroDeLimite[indice].subpath}: ${mensajeErrorComprobante(resultado.reason, 'error desconocido')}`]
+        : [],
+    );
+
+    return [...erroresDescartados, ...erroresSubida];
+  };
+
+  const handleGuardarVencimiento = async (vencimiento: VencimientoUI, comprobantes: ComprobantePagoParaSubir[]) => {
     const resultado = await persistirVencimiento(vencimiento);
+
     if (!resultado.exitoso) {
       setConfigNotificacion({
         open: true,
         severity: 'error',
         mensaje: resultado.errores.join('\n'),
       });
-    } else {
+      return;
+    }
+
+    const exitoVencimiento = vencimiento.id
+      ? 'Vencimiento actualizado correctamente'
+      : 'Vencimiento agregado correctamente';
+    const errores = await subirComprobantes(resultado.id, vencimiento, comprobantes);
+    const subidos = comprobantes.length - errores.length;
+
+    if (errores.length) {
+      const detalleFallos =
+        subidos === 0
+          ? 'no se pudo subir ningún comprobante'
+          : `no se pudieron subir ${errores.length} de ${comprobantes.length} comprobantes`;
       setConfigNotificacion({
         open: true,
-        severity: 'success',
-        mensaje: vencimiento.id ? 'Vencimiento agregados correctamente' : 'Vencimiento actualizado correctamente',
+        severity: 'error',
+        mensaje: `${exitoVencimiento}, pero ${detalleFallos}:\n${errores.join('\n')}`,
       });
       setShowAgregarEditarModal(false);
       buscarVencimientos(buscarVencimientoPayload);
+      return;
     }
+
+    setConfigNotificacion({
+      open: true,
+      severity: 'success',
+      mensaje: `${exitoVencimiento}${subidos > 0 ? `\n${subidos} comprobante(s) de pago subidos` : ''}`,
+    });
+    setShowAgregarEditarModal(false);
+    buscarVencimientos(buscarVencimientoPayload);
   };
 
   const handleBuscarVencimientos = async (payload: BuscarVencimientosPayload) => {
@@ -200,6 +275,8 @@ const Vencimientos = () => {
             tiposDeVencimiento={tiposDeVencimientos}
             onClose={toggleOpenAgregarEditar}
             onGuardar={handleGuardarVencimiento}
+            onNotificarError={notificarError}
+            maxUploadBytes={maxUploadBytes}
             open={showAgregarEditarModal}
             vencimiento={vencimientoAEditar}
             pagos={posiblesPagos}

@@ -97,6 +97,7 @@ export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<S
         nombre: subcategorias.nombre,
         tipoDeGasto: subcategorias.tipoDeGasto,
         active: subcategorias.active,
+        comprobantesPath: subcategorias.comprobantesPath,
         categoriaId: categorias.id,
         categoriaNombre: categorias.nombre,
         categoriaActive: categorias.active,
@@ -111,6 +112,7 @@ export const obtenerSubCategorias = async (tipoDeGasto?: TipoDeGasto): Promise<S
       nombre: subcategoriaDB.nombre,
       tipoDeGasto: subcategoriaDB.tipoDeGasto as TipoDeGasto,
       active: subcategoriaDB.active,
+      comprobantesPath: subcategoriaDB.comprobantesPath,
       categoria: {
         id: subcategoriaDB.categoriaId,
         nombre: subcategoriaDB.categoriaNombre,

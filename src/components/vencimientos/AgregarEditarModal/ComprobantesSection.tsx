@@ -44,10 +44,22 @@ export const nombreComprobanteArchivo = (prefijo: string, comprobante: Comproban
   return `${prefijo}${comentarioNormalizado ? `-${comentarioNormalizado}` : ''}${extension ? `.${extension}` : ''}`;
 };
 
+export const subpathsDuplicados = (comprobantes: ComprobanteState[], prefijo: string): string[] => {
+  const conteo = new Map<string, number>();
+  comprobantes
+    .filter(({ archivo }) => Boolean(archivo))
+    .map((comprobante) => nombreComprobanteArchivo(prefijo, comprobante))
+    .forEach((subpath) => conteo.set(subpath, (conteo.get(subpath) ?? 0) + 1));
+  return Array.from(conteo.entries())
+    .filter(([, veces]) => veces > 1)
+    .map(([subpath]) => subpath);
+};
+
 interface ComprobantesSectionProps {
   comprobantes: ComprobanteState[];
   prefijo: string;
   disabled: boolean;
+  duplicados: string[];
   onArchivoSeleccionado: (indice: number, archivo: File | null) => void;
   onComentarioChanged: (indice: number, comentario: string) => void;
   onEliminarArchivo: (indice: number) => void;
@@ -57,6 +69,7 @@ export const ComprobantesSection = ({
   comprobantes,
   prefijo,
   disabled,
+  duplicados,
   onArchivoSeleccionado,
   onComentarioChanged,
   onEliminarArchivo,
@@ -140,6 +153,12 @@ export const ComprobantesSection = ({
               ) : null}
             </Box>
           ))}
+          {duplicados.length > 0 ? (
+            <Typography variant="caption" color="error">
+              Hay comprobantes que se van a guardar con el mismo nombre: {duplicados.join(', ')}. Agregá un comentario
+              para distinguirlos.
+            </Typography>
+          ) : null}
         </Box>
       </AccordionDetails>
     </Accordion>

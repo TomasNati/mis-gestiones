@@ -24,6 +24,7 @@ export type Subcategoria = Entidad & {
   comentarios?: string;
   categoria: Categoria;
   tipoDeGasto: TipoDeGasto;
+  comprobantesPath?: string | null;
 };
 
 export type SubcategoriaDB = {
@@ -161,6 +162,49 @@ export type ResultadoAPI = {
 
 export type ResultadoAPICrear = ResultadoAPI & {
   idsCreados: string[];
+};
+
+export type ResultadoPersistirVencimiento = ResultadoAPI & {
+  id?: string;
+};
+
+export type ComprobantePago = {
+  id: string;
+  commit: string;
+  path: string;
+  nombre: string;
+  size: number;
+  subpath: string;
+  max_upload_bytes: number;
+};
+
+export type ComprobantePagoParaSubir = {
+  archivo: File;
+  subpath: string;
+};
+
+export type ComprobanteDetalle = {
+  error: string;
+  message: string;
+};
+
+// Cuando falla la validacion de la request, FastAPI devuelve un array de errores
+// en vez del shape del router: pasa, por ejemplo, si falta un campo obligatorio
+// del body.
+export type ComprobanteDetalleValidacion = {
+  type?: string;
+  loc?: (string | number)[];
+  msg?: string;
+};
+
+export type ComprobanteErrorAPI = {
+  detail: ComprobanteDetalle | ComprobanteDetalleValidacion[];
+};
+
+export type LimitesComprobantes = {
+  max_upload_bytes: number;
+  repo: string;
+  branch: string;
 };
 
 export interface ResultadoCrearMovimiento {
@@ -1286,6 +1330,7 @@ export interface VencimientoUI {
   subcategoria: {
     id: string;
     descripcion: string;
+    comprobantesPath?: string | null;
   };
   fecha: Date;
   monto: number;

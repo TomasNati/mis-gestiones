@@ -16,6 +16,7 @@ import {
   ResultadoCrearMovimiento,
   AgendaTomiDia,
   VencimientoUI,
+  ResultadoPersistirVencimiento,
 } from '../definitions';
 import { revalidatePath } from 'next/cache';
 import {
@@ -86,8 +87,7 @@ export async function eliminarMovimientos(ids: string[], revalidate = true) {
     await db.delete(movimientosGasto).where(inArray(movimientosGasto.id, ids));
   } catch (error: unknown) {
     console.log('Error al eliminar movimientos:', error);
-    const resultadoMensaje =
-      'Error al eliminar movimientos. Verifique que no estén asociados a un vencimiento.';
+    const resultadoMensaje = 'Error al eliminar movimientos. Verifique que no estén asociados a un vencimiento.';
     resultadoFinal.errores.push(resultadoMensaje);
     resultadoFinal.exitoso = false;
   }
@@ -362,8 +362,8 @@ const importarMovimientos = async (datos: ImportarMovimientoUI): Promise<Importa
   return Promise.resolve(resultadoFinal);
 };
 
-export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<ResultadoAPI> => {
-  const resultado: ResultadoAPI = {
+export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<ResultadoPersistirVencimiento> => {
+  const resultado: ResultadoPersistirVencimiento = {
     errores: [],
     exitoso: false,
   };
@@ -390,6 +390,7 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
           pago: vencimiento.pago?.id || null,
         })
         .where(eq(vencimientoDB.id, vencimiento.id));
+      resultado.id = vencimiento.id;
     } else {
       const [valRes, error] = validarCrearVencimiento(vencimiento);
       if (!valRes.success) {
@@ -398,15 +399,20 @@ export const persistirVencimiento = async (vencimiento: VencimientoUI): Promise<
       }
 
       const vencimientoSafe = valRes.data;
-      await db.insert(vencimientoDB).values({
-        subcategoria: vencimientoSafe.subcategoria.id,
-        fecha: fechaUTC,
-        monto: vencimientoSafe.monto.toString(),
-        comentarios: vencimientoSafe.comentarios || null,
-        esAnual: vencimientoSafe.esAnual,
-        fechaConfirmada: vencimientoSafe.fechaConfirmada || false,
-        pago: vencimientoSafe.pago?.id || null,
-      });
+      const insertados = await db
+        .insert(vencimientoDB)
+        .values({
+          subcategoria: vencimientoSafe.subcategoria.id,
+          fecha: fechaUTC,
+          monto: vencimientoSafe.monto.toString(),
+          comentarios: vencimientoSafe.comentarios || null,
+          esAnual: vencimientoSafe.esAnual,
+          fechaConfirmada: vencimientoSafe.fechaConfirmada || false,
+          pago: vencimientoSafe.pago?.id || null,
+        })
+        .returning({ insertedId: vencimientoDB.id });
+
+      resultado.id = insertados[0].insertedId;
     }
   } catch (error: unknown) {
     if (error instanceof Error) {

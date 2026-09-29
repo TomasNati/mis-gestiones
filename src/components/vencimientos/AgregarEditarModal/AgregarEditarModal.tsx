@@ -13,11 +13,11 @@ import {
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { styles } from './AgregarEditarModal.styles';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { MovimientoDeVencimiento, Subcategoria, VencimientoUI } from '@/lib/definitions';
+import { MovimientoDeVencimiento, Subcategoria, VencimientoUI, ComprobantePagoParaSubir } from '@/lib/definitions';
 import { formatDate, toUTC } from '@/lib/helpers';
 import { obtenerMovimientosParaVencimientosUI } from '@/components/vencimientos/vencimientosUtils';
 import { CrearPagoModal } from './CrearPagoModal';
@@ -26,6 +26,7 @@ import {
   ComprobantesSection,
   crearComprobantesIniciales,
   nombreComprobanteArchivo,
+  subpathsDuplicados,
 } from './ComprobantesSection';
 
 const isNumber = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
@@ -46,6 +47,9 @@ const MESES = [
 ];
 
 const prefijoAnioMes = (fecha: dayjs.Dayjs | null) => (fecha ? `${fecha.year()}/${MESES[fecha.month()]}` : '');
+
+const formatBytes = (bytes: number) =>
+  bytes >= 1000000 ? `${(bytes / 1000000).toFixed(1)} MB` : `${Math.ceil(bytes / 1000)} KB`;
 
 dayjs.extend(utc);
 
@@ -104,7 +108,9 @@ interface AgregarEditarModalProps {
   pagos?: MovimientoDeVencimiento[];
   open: boolean;
   onClose: () => void;
-  onGuardar: (vencimiento: VencimientoUI) => void;
+  onGuardar: (vencimiento: VencimientoUI, comprobantes: ComprobantePagoParaSubir[]) => void;
+  onNotificarError: (mensaje: string) => void;
+  maxUploadBytes: number | null;
   vencimiento?: VencimientoUI;
 }
 
@@ -115,6 +121,8 @@ export const AgregarEditarModal = ({
   vencimiento,
   onClose,
   onGuardar,
+  onNotificarError,
+  maxUploadBytes,
 }: AgregarEditarModalProps) => {
   const [errors, setErrors] = useState<string[]>(validateForm(mapVencimientoToForm(tiposDeVencimiento, vencimiento)));
   const [posiblesPagos, setPosiblesPagos] = useState<MovimientoDeVencimiento[]>(pagos);
@@ -126,16 +134,46 @@ export const AgregarEditarModal = ({
 
   const prefijo = prefijoAnioMes(form.fecha);
 
+  const duplicados = useMemo(() => subpathsDuplicados(comprobantes, prefijo), [comprobantes, prefijo]);
+
+  const validarArchivo = (archivo: File): boolean => {
+    if (maxUploadBytes && archivo.size > maxUploadBytes) {
+      onNotificarError(
+        `"${archivo.name}" supera el tamaño máximo permitido (${formatBytes(archivo.size)} de ${formatBytes(
+          maxUploadBytes,
+        )})`,
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const avisarDuplicados = (comprobantesNuevos: ComprobanteState[]) => {
+    const repetidos = subpathsDuplicados(comprobantesNuevos, prefijo);
+    if (repetidos.length) {
+      onNotificarError(
+        `Ya hay otro comprobante que se guardaría como "${repetidos[0]}". Modificá un comentario para que tengan nombres distintos.`,
+      );
+    }
+  };
+
   const handleArchivoSeleccionado = (indice: number, archivo: File | null) => {
-    setComprobantes((prev) => prev.map((item, i) => (i === indice ? { archivo, comentario: '' } : item)));
+    if (archivo && !validarArchivo(archivo)) {
+      return;
+    }
+    const nuevos = comprobantes.map((item, i) => (i === indice ? { archivo, comentario: '' } : item));
+    setComprobantes(nuevos);
+    avisarDuplicados(nuevos);
   };
 
   const handleComentarioChanged = (indice: number, comentario: string) => {
-    setComprobantes((prev) => prev.map((item, i) => (i === indice ? { ...item, comentario } : item)));
+    const nuevos = comprobantes.map((item, i) => (i === indice ? { ...item, comentario } : item));
+    setComprobantes(nuevos);
+    avisarDuplicados(nuevos);
   };
 
   const handleEliminarArchivo = (indice: number) => {
-    setComprobantes((prev) => prev.map((item, i) => (i === indice ? { archivo: null, comentario: '' } : item)));
+    setComprobantes(comprobantes.map((item, i) => (i === indice ? { archivo: null, comentario: '' } : item)));
   };
 
   const handlePagoChanged = (pago: MovimientoDeVencimiento | null) => {
@@ -170,24 +208,14 @@ export const AgregarEditarModal = ({
 
   const handleGuardar = () => {
     if (!errors.length) {
-      const archivosSeleccionados = comprobantes
-        .map((comprobante, indice) => ({ comprobante, indice }))
-        .filter(({ comprobante }) => Boolean(comprobante.archivo));
+      const comprobantesParaSubir: ComprobantePagoParaSubir[] = comprobantes
+        .map((comprobante) => comprobante)
+        .filter((comprobante) => Boolean(comprobante.archivo))
+        .map((comprobante) => ({
+          archivo: comprobante.archivo as File,
+          subpath: nombreComprobanteArchivo(prefijo, comprobante),
+        }));
 
-      if (archivosSeleccionados.length) {
-        console.log('comprobantes de pago', {
-          vencimientoId: form.id,
-          pagoId: form.pagoId,
-          archivos: archivosSeleccionados.map(({ comprobante, indice }) => ({
-            indice,
-            nombre: comprobante.archivo?.name,
-            size: comprobante.archivo?.size,
-            type: comprobante.archivo?.type,
-            comentario: comprobante.comentario.trim(),
-            subpath: nombreComprobanteArchivo(prefijo, comprobante),
-          })),
-        });
-      }
       const vencimiento: VencimientoUI = {
         id: form.id,
         fecha: toUTC(form.fecha?.toDate() || new Date()),
@@ -197,6 +225,7 @@ export const AgregarEditarModal = ({
         subcategoria: {
           id: form.tipo?.id || '',
           descripcion: '',
+          comprobantesPath: form.tipo?.comprobantesPath || null,
         },
         fechaConfirmada: form.fechaConfirmada,
         pago: form.pagoId
@@ -208,7 +237,7 @@ export const AgregarEditarModal = ({
             }
           : undefined,
       };
-      onGuardar(vencimiento);
+      onGuardar(vencimiento, comprobantesParaSubir);
     }
   };
 
@@ -278,6 +307,7 @@ export const AgregarEditarModal = ({
             comprobantes={comprobantes}
             prefijo={prefijo}
             disabled={!tienePago}
+            duplicados={duplicados}
             onArchivoSeleccionado={handleArchivoSeleccionado}
             onComentarioChanged={handleComentarioChanged}
             onEliminarArchivo={handleEliminarArchivo}
@@ -327,7 +357,12 @@ export const AgregarEditarModal = ({
         </Box>
       </DialogContent>
       <Box display="flex" justifyContent="center" sx={styles.buttonBar} gap={2}>
-        <Button onClick={handleGuardar} color="primary" variant="contained" disabled={errors.length > 0}>
+        <Button
+          onClick={handleGuardar}
+          color="primary"
+          variant="contained"
+          disabled={errors.length > 0 || duplicados.length > 0}
+        >
           Guardar
         </Button>
         <Button onClick={() => handleClose('')} color="secondary">
