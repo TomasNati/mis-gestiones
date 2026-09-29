@@ -365,7 +365,7 @@ const MovimientosDelMesGrillaMRT = ({
     enablePagination: false,
     enableSorting: false,
     enableColumnActions: false,
-    enableColumnFilters: false,
+    enableColumnFilters: true,
     enableGrouping: true,
     groupedColumnMode: 'remove',
     positionToolbarAlertBanner: 'none',
@@ -502,6 +502,8 @@ const MovimientosDelMesGrillaMRT = ({
     onRowSelectionChange: setRowSelection,
     initialState: {
       density: 'compact',
+      columnFilters: [{ id: 'tipoDeGasto', value: TipoDeMovimientoGasto.Credito }],
+      columnFilterFns: { tipoDeGasto: 'notEquals' },
     },
     state: {
       rowSelection,

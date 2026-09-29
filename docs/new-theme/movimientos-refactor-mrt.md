@@ -7,7 +7,7 @@ Mock de referencia: `docs/new-theme/finanzas-rediseno-propuesta.html`
 
 - **Librería:** `material-react-table` v3.2.1 (ya es dependencia, usada en `BuscarMovimientosResultadosMRT`). Nota: el doc decía "material-react-grid", no existe; es MRT, "as in other pages".
 - **Paginación:** se elimina — el mock muestra el mes completo. `enablePagination: false`.
-- **Filtros de columna** (Fecha/Concepto custom): se descartan por ahora.
+- **Filtros de columna** (Fecha/Concepto custom de MUI X): se descartan; se usan los filtros default de MRT (`enableColumnFilters`) en cada columna.
 - **Agrupación por día:** grouping nativo de MRT.
 - **Estilo:** seguir el patrón de `BuscarMovimientosResultadosMRT` (`.styles.ts` separado, `useMaterialReactTable` + `MaterialReactTable`, columnas con `useMemo`, hooks de sx `mui*Props`). Los colores ya usan CSS vars del tema.
 
@@ -35,7 +35,8 @@ La migración se separa en fases para reducir riesgo. La **Fase 1** es la única
   - Detalle (comentarios) → `TextWithCopy`
   - Columna oculta `dia` usada solo para agrupar
   - Columna de acciones (marginal) reservada para la Fase 2 — no renderizada aún
-- [x] `enablePagination: false`, `enableSorting: false`, `enableColumnFilters: false`, `enableColumnActions: false`.
+- [x] `enablePagination: false`, `enableSorting: false`, `enableColumnActions: false`.
+- [x] `enableColumnFilters: true` (Fase 4). Filtros default de MRT (subheader + ícono por columna). Default: `Tipo de pago ≠ Credito` vía `initialState.columnFilters` + `initialState.columnFilterFns` (se muestra todo menos crédito; el usuario lo puede limpiar desde el ícono de filtro).
 - [x] `mui*Props` de estilo equivalente a la grilla actual (fondo/padding/bordes por CSS vars).
 
 **1.6 Agrupación por día (point 3 del doc)**
