@@ -366,6 +366,7 @@ const MovimientosDelMesGrillaMRT = ({
     enableSorting: false,
     enableColumnActions: false,
     enableColumnFilters: true,
+    enableColumnFilterModes: true,
     enableGrouping: true,
     groupedColumnMode: 'remove',
     positionToolbarAlertBanner: 'none',
