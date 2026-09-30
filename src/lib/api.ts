@@ -24,6 +24,9 @@ import {
   ComprobanteErrorAPI,
   ComprobanteDetalleValidacion,
   LimitesComprobantes,
+  BusquedaComprobantesPago,
+  ComprobantesPorVencimiento,
+  MAX_VENCIMIENTOS_POR_BUSQUEDA,
 } from './definitions';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
@@ -199,6 +202,43 @@ export const obtenerLimitesComprobantes = async (): Promise<LimitesComprobantes 
     console.error('no se pudieron obtener los limites de comprobantes:', error);
     return null;
   }
+};
+
+export const buscarComprobantesPago = async (vencimientoIds: string[]): Promise<BusquedaComprobantesPago> => {
+  const vacio: BusquedaComprobantesPago = { total: 0, comprobantes: [] };
+  if (!vencimientoIds.length) {
+    return vacio;
+  }
+
+  const tandas: string[][] = [];
+  for (let i = 0; i < vencimientoIds.length; i += MAX_VENCIMIENTOS_POR_BUSQUEDA) {
+    tandas.push(vencimientoIds.slice(i, i + MAX_VENCIMIENTOS_POR_BUSQUEDA));
+  }
+
+  const resultados = await Promise.allSettled(
+    tandas.map((tanda) => comprobantesClient.post<BusquedaComprobantesPago>('/comprobantes/buscar', tanda)),
+  );
+
+  const errores: string[] = [];
+  const porVencimiento: ComprobantesPorVencimiento[] = [];
+  let total = 0;
+
+  resultados.forEach((resultado, indice) => {
+    if (resultado.status === 'rejected') {
+      errores.push(
+        `tanda ${indice + 1}/${tandas.length}: ${mensajeErrorComprobante(resultado.reason, 'error desconocido')}`,
+      );
+      return;
+    }
+    total += resultado.value.data.total;
+    porVencimiento.push(...resultado.value.data.comprobantes);
+  });
+
+  if (errores.length) {
+    console.error('no se pudieron consultar todos los comprobantes:', errores.join('; '));
+  }
+
+  return { total, comprobantes: porVencimiento };
 };
 
 export default apiClient;

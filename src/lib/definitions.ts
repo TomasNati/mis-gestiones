@@ -207,6 +207,28 @@ export type LimitesComprobantes = {
   branch: string;
 };
 
+
+export type ComprobantePagoBusqueda = {
+  id: string;
+  vencimiento_id: string;
+  subpath: string;
+  path: string | null;
+  nombre: string;
+  activo: boolean;
+};
+
+export type ComprobantesPorVencimiento = {
+  vencimiento_id: string;
+  comprobantes: ComprobantePagoBusqueda[];
+};
+
+export type BusquedaComprobantesPago = {
+  total: number;
+  comprobantes: ComprobantesPorVencimiento[];
+};
+
+export const MAX_VENCIMIENTOS_POR_BUSQUEDA = 100;
+
 export interface ResultadoCrearMovimiento {
   id?: string;
   error?: string;

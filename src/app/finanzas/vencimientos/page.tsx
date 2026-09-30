@@ -2,6 +2,7 @@
 
 import {
   BuscarVencimientosPayload,
+  ComprobantePagoBusqueda,
   ComprobantePagoParaSubir,
   MovimientoDeVencimiento,
   Subcategoria,
@@ -9,10 +10,15 @@ import {
   VencimientoUI,
 } from '@/lib/definitions';
 import { obtenerSubCategorias, obtenerVencimientos } from '@/lib/orm/data';
-import { mensajeErrorComprobante, obtenerLimitesComprobantes, subirComprobantePago } from '@/lib/api';
+import {
+  buscarComprobantesPago,
+  mensajeErrorComprobante,
+  obtenerLimitesComprobantes,
+  subirComprobantePago,
+} from '@/lib/api';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FilterComponent, FILTERS_DEFAULT } from '@/components/vencimientos/Filtros/Filtros';
 import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
 import { persistirVencimiento, eliminarVencimiento, copiarVencimientos } from '@/lib/orm/actions';
@@ -44,6 +50,10 @@ const Vencimientos = () => {
     ...buscarVencimientoPayloadDefault,
   });
   const [maxUploadBytes, setMaxUploadBytes] = useState<number | null>(null);
+  const [comprobantesPorVencimiento, setComprobantesPorVencimiento] = useState<
+    Record<string, ComprobantePagoBusqueda[]>
+  >({});
+  const requestComprobantesRef = useRef(0);
   const notificarError = (mensaje: string) => setConfigNotificacion({ open: true, severity: 'error', mensaje });
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
@@ -84,6 +94,33 @@ const Vencimientos = () => {
     fetchTiposDeVencimientos();
     fetchVencimientos();
   }, [buscarVencimientoPayload]);
+
+
+  useEffect(() => {
+    const vencimientosConId = vencimientos.filter((vencimiento): vencimiento is VencimientoUI & { id: string } =>
+      Boolean(vencimiento.id),
+    );
+    const token = (requestComprobantesRef.current += 1);
+    if (!vencimientosConId.length) {
+      return;
+    }
+
+    const fetchComprobantes = async () => {
+      const respuesta = await buscarComprobantesPago(vencimientosConId.map(({ id }) => id));
+
+      if (token !== requestComprobantesRef.current) {
+        return;
+      }
+
+      const porVencimiento: Record<string, ComprobantePagoBusqueda[]> = {};
+      respuesta.comprobantes.forEach(({ vencimiento_id, comprobantes }) => {
+        porVencimiento[vencimiento_id] = comprobantes;
+      });
+      setComprobantesPorVencimiento(porVencimiento);
+    };
+
+    fetchComprobantes();
+  }, [vencimientos]);
 
   useEffect(() => {
     const fetchLimites = async () => {
@@ -264,6 +301,7 @@ const Vencimientos = () => {
         <FilterComponent tiposDeVencimientos={tiposDeVencimientos} onBuscar={handleBuscarVencimientos} />
         <VencimientosGrilla
           vencimientos={vencimientos}
+          comprobantesPorVencimiento={comprobantesPorVencimiento}
           isLoading={isLoading}
           onEdit={handleEditarMovimiento}
           onDelete={handleEliminarVencimiento}

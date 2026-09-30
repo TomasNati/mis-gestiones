@@ -1,8 +1,9 @@
-import { VencimientoPago, VencimientoUI } from '@/lib/definitions';
+import { ComprobantePagoBusqueda, VencimientoPago, VencimientoUI } from '@/lib/definitions';
 import { formatDate, transformNumberToCurrenty } from '@/lib/helpers';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import HdrAutoOutlinedIcon from '@mui/icons-material/HdrAutoOutlined';
+import AttachFileIcon from '@mui/icons-material/AttachFileOutlined';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -11,7 +12,7 @@ import {
   GridRowSelectionModel,
   GridRowsProp,
 } from '@mui/x-data-grid';
-import { Box, styled } from '@mui/material';
+import { Box, styled, Tooltip } from '@mui/material';
 import { Toolbar } from './Toolbar/Toolbar';
 import { useState } from 'react';
 import dayjs from 'dayjs';
@@ -42,6 +43,7 @@ const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
 
 interface VencimientosGrillaProps {
   vencimientos: VencimientoUI[];
+  comprobantesPorVencimiento: Record<string, ComprobantePagoBusqueda[]>;
   isLoading?: boolean;
   onEdit: (vencimiento: VencimientoUI) => void;
   onDelete: (id: string) => void;
@@ -51,6 +53,7 @@ interface VencimientosGrillaProps {
 
 export const VencimientosGrilla = ({
   vencimientos,
+  comprobantesPorVencimiento,
   isLoading,
   onDelete,
   onEdit,
@@ -71,6 +74,11 @@ export const VencimientosGrilla = ({
     }
     return `${fechaFormateada}`;
   };
+
+  const detalleComprobantes = (comprobantes: ComprobantePagoBusqueda[]): string =>
+    comprobantes
+      .map(({ nombre, path }) => `${nombre}\n${path ?? 'sin path: la subcategoria no tiene comprobantes_path'}`)
+      .join('\n\n');
 
   const columns: GridColDef[] = [
     {
@@ -140,6 +148,28 @@ export const VencimientosGrilla = ({
       headerName: 'Pago',
       width: 200,
       valueFormatter: (pago: VencimientoPago | null, row: VencimientoUI) => formatPagoRealizado(pago, row),
+    },
+    {
+      field: 'comprobantes',
+      headerName: 'Comprobantes',
+      width: 130,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const comprobantes = comprobantesPorVencimiento[String(params.id)] ?? [];
+        if (!comprobantes.length) {
+          return null;
+        }
+        return (
+          <Tooltip
+            title={detalleComprobantes(comprobantes)}
+            placement="top-start"
+            slotProps={{ tooltip: { sx: { whiteSpace: 'pre-line' } } }}
+          >
+            <AttachFileIcon color="primary" sx={{ cursor: 'help' }} />
+          </Tooltip>
+        );
+      },
     },
     {
       field: 'comentarios',
