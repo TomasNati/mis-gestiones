@@ -16,7 +16,7 @@ Objetivo: Permitir subir y descargar comprobantes de pago asociados a un vencimi
 Revisar esto:
 
 2. La UI permitirá elegir uno o más archivo al momento de registrar el pago de un vencimiento, y opcionalmente agregar un comentario para su nombre
-   >> No se debería permitir subrir un archivo si no se ha registrado el pago del vencimiento.
+   >> ~~No se debería permitir subir un archivo si no se ha registrado el pago del vencimiento.~~ **Descartado**: se puede adjuntar un comprobante a un vencimiento impago (`pagoId` puede ser `NULL`). La única condición es que el vencimiento exista.
    >> Max size para los archivos: configurable por variable de ambiente `MAX_UPLOAD_BYTES` (en bytes), con default **2MB (2000000)** y tope duro de **4MB (4000000)**: si se configura un valor mayor, se usa 4MB. El límite se aplica también a la descarga, y la UI lo toma del backend para validar antes de subir.
 3. Por cada archivo elegido, 
     * Sea path = vencimiento.subcategoria.comprobantes_path

@@ -358,9 +358,9 @@ Depende de que los endpoints del paso 1 queden con el contrato congelado.
    primera tanda expone upload y download **por path crudo**, sin base de
    datos, para validar el repo y el HTTP antes de meter el DDL. Consecuencias a
    tener en cuenta al seguir:
-   - Las validaciones duras del diseño (`pagoId IS NOT NULL`,
-     `comprobantesPath` no vacío) **no están**: las haré el endpoint por
-     `vencimiento_id` cuando exista la tabla.
+   - La validación de `pagoId IS NOT NULL` **ya no aplica**: se decidió permitir
+     comprobantes en vencimientos impagos. Lo que sigue sin estar es el check de
+     `comprobantesPath` no vacío (el path lo sigue eligiendo el cliente).
    - El path lo decide el cliente. Esa es la superficie a cerrar después; hoy
      la única defensa es el `X-API-Key` compartido más la sanitización del path.
    - Un 404 de descarga no distingue "no existe" de "existe pero inactivo": no

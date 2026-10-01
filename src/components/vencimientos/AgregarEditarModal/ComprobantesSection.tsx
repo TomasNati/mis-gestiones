@@ -58,7 +58,6 @@ export const subpathsDuplicados = (comprobantes: ComprobanteState[], prefijo: st
 interface ComprobantesSectionProps {
   comprobantes: ComprobanteState[];
   prefijo: string;
-  disabled: boolean;
   duplicados: string[];
   onArchivoSeleccionado: (indice: number, archivo: File | null) => void;
   onComentarioChanged: (indice: number, comentario: string) => void;
@@ -68,7 +67,6 @@ interface ComprobantesSectionProps {
 export const ComprobantesSection = ({
   comprobantes,
   prefijo,
-  disabled,
   duplicados,
   onArchivoSeleccionado,
   onComentarioChanged,
@@ -84,13 +82,12 @@ export const ComprobantesSection = ({
 
   return (
     <Accordion
-      disabled={disabled}
       disableGutters
       sx={styles.comprobantesSection}
       slotProps={{ heading: { sx: { all: 'inherit', border: 0, px: 1 } } }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="comprobantes-content" id="comprobantes-header">
-        <Typography variant="body2" color={disabled ? 'text.disabled' : 'text.primary'}>
+        <Typography variant="body2" color="text.primary">
           Comprobantes de pago ({cantidadComprobantes}/{MAX_COMPROBANTES})
         </Typography>
       </AccordionSummary>
@@ -105,7 +102,6 @@ export const ComprobantesSection = ({
                       component="label"
                       color="primary"
                       size="small"
-                      disabled={disabled}
                       aria-label={`Seleccionar archivo ${indice + 1}`}
                     >
                       <AttachFileIcon fontSize="small" />
@@ -117,7 +113,7 @@ export const ComprobantesSection = ({
                   label="Comentario"
                   value={comprobante.comentario}
                   onChange={(e) => onComentarioChanged(indice, e.target.value)}
-                  disabled={disabled || !comprobante.archivo}
+                  disabled={!comprobante.archivo}
                   size="small"
                   sx={{ flex: 1 }}
                   slotProps={{
@@ -137,7 +133,7 @@ export const ComprobantesSection = ({
                     <IconButton
                       color="error"
                       size="small"
-                      disabled={disabled || !comprobante.archivo}
+                      disabled={!comprobante.archivo}
                       onClick={() => onEliminarArchivo(indice)}
                       aria-label={`Quitar archivo ${indice + 1}`}
                     >

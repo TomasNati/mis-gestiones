@@ -130,8 +130,6 @@ export const AgregarEditarModal = ({
   const [showCrearPago, setShowCrearPago] = useState(false);
   const [comprobantes, setComprobantes] = useState<ComprobanteState[]>(crearComprobantesIniciales);
 
-  const tienePago = Boolean(form.pagoId);
-
   const prefijo = prefijoAnioMes(form.fecha);
 
   const duplicados = useMemo(() => subpathsDuplicados(comprobantes, prefijo), [comprobantes, prefijo]);
@@ -178,9 +176,6 @@ export const AgregarEditarModal = ({
 
   const handlePagoChanged = (pago: MovimientoDeVencimiento | null) => {
     handleChangeSimple('pagoId', pago ? pago.id : null);
-    if (!pago) {
-      setComprobantes(crearComprobantesIniciales());
-    }
   };
 
   const handleTipoChanged = async (tipo: Subcategoria | null) => {
@@ -306,7 +301,6 @@ export const AgregarEditarModal = ({
           <ComprobantesSection
             comprobantes={comprobantes}
             prefijo={prefijo}
-            disabled={!tienePago}
             duplicados={duplicados}
             onArchivoSeleccionado={handleArchivoSeleccionado}
             onComentarioChanged={handleComentarioChanged}
