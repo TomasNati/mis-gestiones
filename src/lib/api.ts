@@ -20,6 +20,7 @@ import {
   InstrumentoLocal,
   CotizacionDolar,
   ComprobantePago,
+  ComprobantePagoBusqueda,
   ComprobantePagoParaSubir,
   ComprobanteErrorAPI,
   ComprobanteDetalleValidacion,
@@ -191,6 +192,46 @@ export const subirComprobantePago = async (params: {
     return data;
   } catch (error: unknown) {
     throw errorComprobante(error, `no se pudo subir el comprobante ${params.comprobante.subpath}`);
+  }
+};
+
+export const descargarComprobantePago = async (comprobante: ComprobantePagoBusqueda): Promise<void> => {
+  const nombre = comprobante.nombre;
+  if (!comprobante.path) {
+    throw new Error(
+      `${nombre} no se puede descargar: la subcategoria del vencimiento no tiene comprobantes_path configurado, o el path no normaliza`,
+    );
+  }
+
+  let blob: Blob;
+  try {
+    const respuesta = await comprobantesClient.get<Blob>('/comprobantes/descargar', {
+      params: { path: comprobante.path },
+      responseType: 'blob',
+    });
+    blob = respuesta.data;
+  } catch (error: unknown) {
+    const mensaje = mensajeErrorComprobante(error, `no se pudo descargar ${nombre}`);
+    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+    if (status === 404) {
+      throw new Error(
+        `${nombre} ya no esta en el repositorio de comprobantes. Se puede haber borrado el archivo sin dar de baja el registro.`,
+      );
+    }
+    throw new Error(mensaje);
+  }
+
+  const url = URL.createObjectURL(blob);
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = nombre;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    URL.revokeObjectURL(url);
   }
 };
 

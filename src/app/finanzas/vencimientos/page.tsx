@@ -307,6 +307,7 @@ const Vencimientos = () => {
           onDelete={handleEliminarVencimiento}
           onAdd={handleAgregarVencimiento}
           onCopy={handleCopyVencimientosClicked}
+          onNotificarError={notificarError}
         />
         {showAgregarEditarModal ? (
           <AgregarEditarModal

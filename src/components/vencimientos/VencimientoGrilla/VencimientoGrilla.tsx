@@ -12,10 +12,12 @@ import {
   GridRowSelectionModel,
   GridRowsProp,
 } from '@mui/x-data-grid';
-import { Box, styled, Tooltip } from '@mui/material';
+import { Box, IconButton, styled } from '@mui/material';
 import { Toolbar } from './Toolbar/Toolbar';
+import { ComprobantesPopover } from './ComprobantesPopover';
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import { descargarComprobantePago } from '@/lib/api';
 
 const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
   '& .row-pagado': {
@@ -49,6 +51,7 @@ interface VencimientosGrillaProps {
   onDelete: (id: string) => void;
   onAdd: () => void;
   onCopy: (ids: string[]) => void;
+  onNotificarError: (mensaje: string) => void;
 }
 
 export const VencimientosGrilla = ({
@@ -59,8 +62,12 @@ export const VencimientosGrilla = ({
   onEdit,
   onAdd,
   onCopy,
+  onNotificarError,
 }: VencimientosGrillaProps) => {
   const [vencimientosElegidos, setVencimientosElegidos] = useState<VencimientoUI[]>([]);
+  const [comprobantesAbiertos, setComprobantesAbiertos] = useState<ComprobantePagoBusqueda[]>([]);
+  const [anclaComprobantes, setAnclaComprobantes] = useState<HTMLElement | null>(null);
+  const [descargando, setDescargando] = useState<string | null>(null);
   const rows: GridRowsProp = vencimientos;
 
   const formatPagoRealizado = (pago: VencimientoPago | null, vencimiento: VencimientoUI) => {
@@ -75,10 +82,18 @@ export const VencimientosGrilla = ({
     return `${fechaFormateada}`;
   };
 
-  const detalleComprobantes = (comprobantes: ComprobantePagoBusqueda[]): string =>
-    comprobantes
-      .map(({ nombre, path }) => `${nombre}\n${path ?? 'sin path: la subcategoria no tiene comprobantes_path'}`)
-      .join('\n\n');
+  const handleDescargarComprobante = async (comprobante: ComprobantePagoBusqueda) => {
+    setDescargando(comprobante.id);
+    try {
+      await descargarComprobantePago(comprobante);
+    } catch (error: unknown) {
+      onNotificarError(error instanceof Error ? error.message : `no se pudo descargar ${comprobante.nombre}`);
+    } finally {
+      setDescargando(null);
+      setAnclaComprobantes(null);
+      setComprobantesAbiertos([]);
+    }
+  };
 
   const columns: GridColDef[] = [
     {
@@ -161,13 +176,17 @@ export const VencimientosGrilla = ({
           return null;
         }
         return (
-          <Tooltip
-            title={detalleComprobantes(comprobantes)}
-            placement="top-start"
-            slotProps={{ tooltip: { sx: { whiteSpace: 'pre-line' } } }}
+          <IconButton
+            size="small"
+            color="inherit"
+            aria-label={`Ver comprobantes de pago (${comprobantes.length})`}
+            onClick={(evento) => {
+              setComprobantesAbiertos(comprobantes);
+              setAnclaComprobantes(evento.currentTarget);
+            }}
           >
-            <AttachFileIcon color="primary" sx={{ cursor: 'help' }} />
-          </Tooltip>
+            <AttachFileIcon fontSize="small" />
+          </IconButton>
         );
       },
     },
@@ -215,6 +234,13 @@ export const VencimientosGrilla = ({
 
   return (
     <Box sx={{ width: '100%' }}>
+      <ComprobantesPopover
+        anchorEl={anclaComprobantes}
+        comprobantes={comprobantesAbiertos}
+        descargando={descargando}
+        onClose={() => setAnclaComprobantes(null)}
+        onDescargar={handleDescargarComprobante}
+      />
       <StyledDataGrid
         rows={rows}
         columns={columns}

@@ -28,13 +28,15 @@ export const Toolbar = ({ handleAddClick, handleCopyClick, vencimientosElegidos 
         <Button color="primary" startIcon={<AddIcon />} onClick={handleAddClick} variant="outlined" />
       </Tooltip>
       <Tooltip title="Copiar Vencimiento">
-        <Button
-          color="primary"
-          startIcon={<ContentCopyIcon />}
-          onClick={onCopyClicked}
-          disabled={!vencimientosElegidos?.length}
-          variant="outlined"
-        />
+        <span>
+          <Button
+            color="primary"
+            startIcon={<ContentCopyIcon />}
+            onClick={onCopyClicked}
+            disabled={!vencimientosElegidos?.length}
+            variant="outlined"
+          />
+        </span>
       </Tooltip>
       <Box>
         <span>Suma parcial:</span>
