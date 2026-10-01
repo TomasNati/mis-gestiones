@@ -229,6 +229,28 @@ const Vencimientos = () => {
     buscarVencimientos(buscarVencimientoPayload);
   };
 
+  const handleComprobanteEliminado = (comprobante: ComprobantePagoBusqueda) => {
+    setComprobantesPorVencimiento((previos) => {
+      const delVencimiento = previos[comprobante.vencimiento_id];
+      if (!delVencimiento) {
+        return previos;
+      }
+      const restantes = delVencimiento.filter(({ id }) => id !== comprobante.id);
+      const actualizados = { ...previos };
+      if (restantes.length) {
+        actualizados[comprobante.vencimiento_id] = restantes;
+      } else {
+        delete actualizados[comprobante.vencimiento_id];
+      }
+      return actualizados;
+    });
+    setConfigNotificacion({
+      open: true,
+      severity: 'success',
+      mensaje: `Comprobante ${comprobante.nombre} eliminado`,
+    });
+  };
+
   const handleBuscarVencimientos = async (payload: BuscarVencimientosPayload) => {
     setBuscarVencimientoPayload(payload);
     buscarVencimientos(payload);
@@ -315,9 +337,13 @@ const Vencimientos = () => {
             onClose={toggleOpenAgregarEditar}
             onGuardar={handleGuardarVencimiento}
             onNotificarError={notificarError}
+            onComprobanteEliminado={handleComprobanteEliminado}
             maxUploadBytes={maxUploadBytes}
             open={showAgregarEditarModal}
             vencimiento={vencimientoAEditar}
+            comprobantesCargados={
+              vencimientoAEditar?.id ? comprobantesPorVencimiento[vencimientoAEditar.id] || [] : []
+            }
             pagos={posiblesPagos}
           />
         ) : null}

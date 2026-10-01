@@ -28,17 +28,22 @@ The central REST API and the ecosystem's connection to external market data.
   vencimientos), investments (instrumentos, precios, inversiones), and market quotes
   (dólar, crypto, FCI mutual funds, US/AR tickers). Also the **only** component
   that talks to the `comprobantes-pago` storage repo: receipts are uploaded,
-  renamed and downloaded by the backend, never straight from a client.
+  downloaded and deleted by the backend, never straight from a client. Deleting
+  is a soft-delete of the row plus a commit that removes the blob; renaming is
+  not implemented yet (see `docs/comprobantes_pago/Plan.md`).
 - **Technologies:** Python 3.13, FastAPI + Uvicorn, SQLAlchemy 2.x ORM over
   PostgreSQL (  `psycopg2`), schemas `misgestiones` and `inversiones`. External
   integrations via `yfinance` (Yahoo Finance), CAFCI and crypto/exchange services.
 - **Key endpoint groups** (under `/api`): `finanzas`, `inversiones`, `cotizaciones`,
   `comprobantes`.
-- **Auth is uneven.** `comprobantes` is the only group behind a shared secret
-  (`X-API-Key` vs. `BACKEND_SHARED_SECRET`, checked in `api/security.py`); the
-  other three have none. Anything user-facing in `comprobantes` has to go through
-  the web app's server-side proxy, because the secret can't be shipped to a
-  browser.
+- **No auth at all.** None of the four groups sits behind a credential —
+  `GET /api/categorias` answers `200` unauthenticated, and some endpoints even
+  take `DELETE` unprotected. `comprobantes` used to be the exception (an
+  `X-API-Key` shared secret in `api/security.py`), but that was removed: the
+  secret could not be shipped to the browser, and the web app therefore has no
+  proxy for it. The only thing in front of this backend is the web app's own
+  Vercel basic auth, which the backend never sees; CORS is not auth. The GitHub
+  PAT stays server-side. `docs/comprobantes_pago/Plan.md` §8 tracks this.
 - **Notable:** CORS whitelists the admin and web-app origins. The README is an
   unmodified Vercel boilerplate template — the real behavior lives in the code.
 
@@ -101,7 +106,9 @@ exceeding quota.
   a single atomic commit; reads use the Contents API with
   `Accept: application/vnd.github.raw` (bytes directly, no base64).
 - **Path layout:** `subcategoria.comprobantes_path` (e.g. `edese`) +
-  `{año}/{mes}[-comentario].{ext}` from the vencimiento's date. Only the second
+  `{año}/{mes}[-comentario].{ext}` from the vencimiento's date, e.g.
+  `edese/2026/Septiembre-factura.pdf` (the month is its Spanish name, and the
+  client builds this string — the backend only validates it). Only the second
   half is stored in the database (`finanzas_comprobante_pago.subpath`), so moving
   a subcategoría moves its receipts.
 - **Access:** A fine-grained PAT with `Contents: Read and write` on this repo
@@ -147,7 +154,9 @@ Key relationships:
   database; there are no shared packages linking the repos.
 - **The storage repo is reachable only by the backend.** Receipts are binary
   blobs in git, so the file bytes never travel browser → GitHub: they go
-  browser → web-app proxy → backend → git. The database only stores the path.
+  browser → backend → git. The database only stores the path. The web app calls
+  the backend straight from the browser (there is no proxy for `comprobantes`,
+  unlike the `/api` functions the mobile app uses).
 
 ### Client → API summary
 

@@ -22,6 +22,7 @@ import {
   ComprobantePago,
   ComprobantePagoBusqueda,
   ComprobantePagoParaSubir,
+  ComprobanteEliminado,
   ComprobanteErrorAPI,
   ComprobanteDetalleValidacion,
   LimitesComprobantes,
@@ -232,6 +233,15 @@ export const descargarComprobantePago = async (comprobante: ComprobantePagoBusqu
     link.remove();
   } finally {
     URL.revokeObjectURL(url);
+  }
+};
+
+export const eliminarComprobantePago = async (comprobante: ComprobantePagoBusqueda): Promise<ComprobanteEliminado> => {
+  try {
+    const { data } = await comprobantesClient.delete<ComprobanteEliminado>(`/comprobantes/${comprobante.id}`);
+    return data;
+  } catch (error: unknown) {
+    throw errorComprobante(error, `no se pudo eliminar ${comprobante.nombre}`);
   }
 };
 

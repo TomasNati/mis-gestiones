@@ -3,8 +3,12 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  CircularProgress,
   IconButton,
   InputAdornment,
+  List,
+  ListItem,
+  ListItemText,
   TextField,
   Tooltip,
   Typography,
@@ -13,6 +17,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ChangeEvent } from 'react';
+import { ComprobantePagoBusqueda } from '@/lib/definitions';
 import { styles } from './AgregarEditarModal.styles';
 
 export const MAX_COMPROBANTES = 3;
@@ -156,6 +161,73 @@ export const ComprobantesSection = ({
             </Typography>
           ) : null}
         </Box>
+      </AccordionDetails>
+    </Accordion>
+  );
+};
+
+interface ComprobantesCargadosSectionProps {
+  comprobantes: ComprobantePagoBusqueda[];
+  onEliminar: (comprobante: ComprobantePagoBusqueda) => void;
+  eliminandoId?: string | null;
+}
+
+export const ComprobantesCargadosSection = ({
+  comprobantes,
+  onEliminar,
+  eliminandoId,
+}: ComprobantesCargadosSectionProps) => {
+  if (!comprobantes.length) {
+    return null;
+  }
+
+  return (
+    <Accordion
+      disableGutters
+      sx={styles.comprobantesSection}
+      slotProps={{ heading: { sx: { all: 'inherit', border: 0, px: 1 } } }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="comprobantes-cargados-content"
+        id="comprobantes-cargados-header"
+      >
+        <Typography variant="body2" color="text.primary">
+          Comprobantes cargados ({comprobantes.length})
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails id="comprobantes-cargados-content">
+        <List dense disablePadding>
+          {comprobantes.map((comprobante) => {
+            const eliminando = eliminandoId === comprobante.id;
+            return (
+              <ListItem
+                key={comprobante.id}
+                disableGutters
+                secondaryAction={
+                  <Tooltip title={eliminando ? 'Eliminando' : `Eliminar ${comprobante.nombre}`}>
+                    <span>
+                      <IconButton
+                        color="error"
+                        size="small"
+                        disabled={eliminando}
+                        onClick={() => onEliminar(comprobante)}
+                        aria-label={`Eliminar ${comprobante.nombre}`}
+                      >
+                        {eliminando ? <CircularProgress size={16} /> : <DeleteOutlineIcon fontSize="small" />}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                }
+              >
+                <ListItemText
+                  primary={comprobante.nombre}
+                  slotProps={{ primary: { sx: { wordBreak: 'break-all', paddingRight: 1 } } }}
+                />
+              </ListItem>
+            );
+          })}
+        </List>
       </AccordionDetails>
     </Accordion>
   );

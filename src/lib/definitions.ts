@@ -217,6 +217,14 @@ export type ComprobantePagoBusqueda = {
   activo: boolean;
 };
 
+export type ComprobanteEliminado = {
+  id: string;
+  path: string | null;
+  nombre: string;
+  subpath: string;
+  borrado: boolean;
+};
+
 export type ComprobantesPorVencimiento = {
   vencimiento_id: string;
   comprobantes: ComprobantePagoBusqueda[];

@@ -17,12 +17,21 @@ import { useMemo, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { MovimientoDeVencimiento, Subcategoria, VencimientoUI, ComprobantePagoParaSubir } from '@/lib/definitions';
+import {
+  ComprobantePagoBusqueda,
+  ComprobantePagoParaSubir,
+  MovimientoDeVencimiento,
+  Subcategoria,
+  VencimientoUI,
+} from '@/lib/definitions';
 import { formatDate, toUTC } from '@/lib/helpers';
+import { eliminarComprobantePago, mensajeErrorComprobante } from '@/lib/api';
 import { obtenerMovimientosParaVencimientosUI } from '@/components/vencimientos/vencimientosUtils';
 import { CrearPagoModal } from './CrearPagoModal';
+import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import {
   ComprobanteState,
+  ComprobantesCargadosSection,
   ComprobantesSection,
   crearComprobantesIniciales,
   nombreComprobanteArchivo,
@@ -110,7 +119,9 @@ interface AgregarEditarModalProps {
   onClose: () => void;
   onGuardar: (vencimiento: VencimientoUI, comprobantes: ComprobantePagoParaSubir[]) => void;
   onNotificarError: (mensaje: string) => void;
+  onComprobanteEliminado: (comprobante: ComprobantePagoBusqueda) => void;
   maxUploadBytes: number | null;
+  comprobantesCargados?: ComprobantePagoBusqueda[];
   vencimiento?: VencimientoUI;
 }
 
@@ -119,9 +130,11 @@ export const AgregarEditarModal = ({
   pagos = [],
   open,
   vencimiento,
+  comprobantesCargados = [],
   onClose,
   onGuardar,
   onNotificarError,
+  onComprobanteEliminado,
   maxUploadBytes,
 }: AgregarEditarModalProps) => {
   const [errors, setErrors] = useState<string[]>(validateForm(mapVencimientoToForm(tiposDeVencimiento, vencimiento)));
@@ -129,6 +142,8 @@ export const AgregarEditarModal = ({
   const [form, setForm] = useState<FormState>(mapVencimientoToForm(tiposDeVencimiento, vencimiento));
   const [showCrearPago, setShowCrearPago] = useState(false);
   const [comprobantes, setComprobantes] = useState<ComprobanteState[]>(crearComprobantesIniciales);
+  const [comprobanteAEliminar, setComprobanteAEliminar] = useState<ComprobantePagoBusqueda | null>(null);
+  const [eliminandoComprobanteId, setEliminandoComprobanteId] = useState<string | null>(null);
 
   const prefijo = prefijoAnioMes(form.fecha);
 
@@ -172,6 +187,29 @@ export const AgregarEditarModal = ({
 
   const handleEliminarArchivo = (indice: number) => {
     setComprobantes(comprobantes.map((item, i) => (i === indice ? { archivo: null, comentario: '' } : item)));
+  };
+
+  const handleEliminarComprobanteCargado = (comprobante: ComprobantePagoBusqueda) => {
+    setComprobanteAEliminar(comprobante);
+  };
+
+  const handleCancelarEliminar = () => setComprobanteAEliminar(null);
+
+  const handleConfirmarEliminar = async () => {
+    if (!comprobanteAEliminar || eliminandoComprobanteId) {
+      return;
+    }
+    const comprobante = comprobanteAEliminar;
+    setComprobanteAEliminar(null);
+    setEliminandoComprobanteId(comprobante.id);
+    try {
+      await eliminarComprobantePago(comprobante);
+      onComprobanteEliminado(comprobante);
+    } catch (error: unknown) {
+      onNotificarError(mensajeErrorComprobante(error, `no se pudo eliminar ${comprobante.nombre}`));
+    } finally {
+      setEliminandoComprobanteId(null);
+    }
   };
 
   const handlePagoChanged = (pago: MovimientoDeVencimiento | null) => {
@@ -305,6 +343,17 @@ export const AgregarEditarModal = ({
             onArchivoSeleccionado={handleArchivoSeleccionado}
             onComentarioChanged={handleComentarioChanged}
             onEliminarArchivo={handleEliminarArchivo}
+          />
+          <ComprobantesCargadosSection
+            comprobantes={comprobantesCargados}
+            onEliminar={handleEliminarComprobanteCargado}
+            eliminandoId={eliminandoComprobanteId}
+          />
+          <ConfirmDeleteModal
+            open={Boolean(comprobanteAEliminar)}
+            description={comprobanteAEliminar ? `el comprobante ${comprobanteAEliminar.nombre}` : ''}
+            handleDelete={handleConfirmarEliminar}
+            handleCancel={handleCancelarEliminar}
           />
           {showCrearPago && (
             <CrearPagoModal
