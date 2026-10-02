@@ -90,6 +90,7 @@ const FilaMovimientoPanel = ({
       sx={styles.filaPanel}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && !guardando) {
+          event.stopPropagation();
           onCancelar();
         }
       }}

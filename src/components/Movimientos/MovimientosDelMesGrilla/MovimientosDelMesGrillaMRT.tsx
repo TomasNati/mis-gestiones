@@ -16,8 +16,9 @@ import {
   type MRT_GroupingState,
   type MRT_Row,
   MRT_ToolbarAlertBanner,
+  MRT_TopToolbar,
 } from 'material-react-table';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -77,16 +78,19 @@ const MovimientosDelMesGrillaMRT = ({
   const [openAgregarGrupo, setOpenAgregarGrupo] = useState(false);
   const [categoriasMovimiento, setCategoriasMovimiento] = useState<CategoriaUIMovimiento[]>([]);
   const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [filasNuevas, setFilasNuevas] = useState<MovimientoFila[]>([]);
   const [filas, setFilas] = useState<MovimientoFila[]>(() =>
     movimientos.map((m) => ({ ...m, dia: new Date(m.fecha).getUTCDate() })),
   );
   const [prevMovimientos, setPrevMovimientos] = useState<MovimientoGastoGrilla[]>(movimientos);
+  const contadorFilaNueva = useRef(0);
 
   if (movimientos !== prevMovimientos) {
     setPrevMovimientos(movimientos);
     setFilas(movimientos.map((m) => ({ ...m, dia: new Date(m.fecha).getUTCDate() })));
     setExpanded(expandirDias(movimientos));
     setEditandoId(null);
+    setFilasNuevas([]);
   }
 
   useEffect(() => {
@@ -152,12 +156,8 @@ const MovimientosDelMesGrillaMRT = ({
     setEditandoId(row.id);
   };
 
-  const cerrarPanel = () => {
-    if (!editandoId) {
-      return;
-    }
-    const id = editandoId;
-    setEditandoId(null);
+  const cerrarPanel = (id: string) => {
+    setEditandoId((prev) => (prev === id ? null : prev));
     setExpanded((prev) => {
       if (typeof prev === 'boolean') {
         return prev;
@@ -166,12 +166,17 @@ const MovimientosDelMesGrillaMRT = ({
       delete next[id];
       return next;
     });
-    setFilas((prev) => prev.filter((fila) => !(fila.id === id && fila.isNew)));
+    setFilasNuevas((prev) => prev.filter((fila) => fila.id !== id));
+  };
+
+  const cerrarTodosLosPaneles = () => {
+    const ids = [...filasNuevas.map((fila) => fila.id), ...(editandoId ? [editandoId] : [])];
+    ids.forEach(cerrarPanel);
   };
 
   const handleGuardar = async (nuevoMovimiento: MovimientoGastoGrilla) => {
     const esNuevo = !!nuevoMovimiento.isNew;
-    const idTemporal = nuevoMovimiento.id;
+    const idPrevio = nuevoMovimiento.id;
     const movimientoGuardado = await onMovimientoActualizado(nuevoMovimiento);
     const filaGuardada = {
       ...movimientoGuardado,
@@ -179,20 +184,21 @@ const MovimientosDelMesGrillaMRT = ({
       dia: new Date(movimientoGuardado.fecha).getUTCDate(),
     } as MovimientoFila;
     setFilas((prev) =>
-      prev.map((fila) => (fila.id === (esNuevo ? idTemporal : filaGuardada.id) ? filaGuardada : fila)),
+      esNuevo ? [...prev, filaGuardada] : prev.map((fila) => (fila.id === filaGuardada.id ? filaGuardada : fila)),
     );
     setExpanded((prev) => {
       const next = typeof prev === 'boolean' ? {} : { ...prev };
       next[`dia:${filaGuardada.dia}`] = true;
       return next;
     });
-    cerrarPanel();
+    cerrarPanel(idPrevio);
   };
 
   const handleAgregar = () => {
     const hoy = new Date();
     const diaNuevo = hoy.getFullYear() === anio && hoy.getMonth() === mes ? hoy.getDate() : 1;
-    const idTemporal = `nuevo-${Date.now()}`;
+    contadorFilaNueva.current += 1;
+    const idTemporal = `nuevo-${Date.now()}-${contadorFilaNueva.current}`;
     const filaNueva = {
       id: idTemporal,
       isNew: true,
@@ -212,17 +218,12 @@ const MovimientosDelMesGrillaMRT = ({
       monto: 0,
       comentarios: '',
     } as MovimientoFila;
-    setFilas((prev) => [filaNueva, ...prev.filter((fila) => !(editandoId && fila.id === editandoId && fila.isNew))]);
+    setFilasNuevas((prev) => [filaNueva, ...prev]);
     setExpanded((prev) => {
       const next = typeof prev === 'boolean' ? {} : { ...prev };
-      if (editandoId) {
-        delete next[editandoId];
-      }
-      next[idTemporal] = true;
       next[`dia:${diaNuevo}`] = true;
       return next;
     });
-    setEditandoId(idTemporal);
   };
 
   const toggleExpandirDias = () => {
@@ -370,6 +371,26 @@ const MovimientosDelMesGrillaMRT = ({
     enableGrouping: true,
     groupedColumnMode: 'remove',
     positionToolbarAlertBanner: 'none',
+    renderTopToolbar: ({ table: tableInstance }) => (
+      <>
+        <MRT_TopToolbar table={tableInstance} />
+        {filasNuevas.length > 0 && (
+          <Box sx={styles.panelesAgregar}>
+            {filasNuevas.map((filaNueva) => (
+              <FilaMovimientoPanel
+                key={filaNueva.id}
+                fila={filaNueva}
+                categoriasMovimiento={categoriasMovimiento}
+                anio={anio}
+                mes={mes}
+                onGuardar={handleGuardar}
+                onCancelar={() => cerrarPanel(filaNueva.id)}
+              />
+            ))}
+          </Box>
+        )}
+      </>
+    ),
     renderToolbarAlertBannerContent: ({ groupedAlert, selectedAlert }) => (
       <>
         {groupedAlert}
@@ -464,7 +485,7 @@ const MovimientosDelMesGrillaMRT = ({
     enableExpandAll: false,
     onExpandedChange: setExpanded,
     enableRowActions: false,
-    renderDetailPanel: ({ row, table }) => {
+    renderDetailPanel: ({ row }) => {
       if (editandoId !== row.id) {
         return null;
       }
@@ -475,7 +496,7 @@ const MovimientosDelMesGrillaMRT = ({
           anio={anio}
           mes={mes}
           onGuardar={handleGuardar}
-          onCancelar={cerrarPanel}
+          onCancelar={() => cerrarPanel(row.id)}
         />
       );
     },
@@ -520,7 +541,7 @@ const MovimientosDelMesGrillaMRT = ({
       sx: styles.tablePaper,
       onKeyDown: (event) => {
         if (event.key === 'Escape') {
-          cerrarPanel();
+          cerrarTodosLosPaneles();
         }
       },
     },

@@ -7,6 +7,7 @@ interface MovimientosDelMesGrillaMRTStyles {
   tableBody: SxProps;
   tableBodyRow: SxProps;
   filaPanel: SxProps;
+  panelesAgregar: SxProps;
   filaPanelTitulo: SxProps;
   filaPanelCampos: SxProps;
   filaCampoDia: SxProps;
@@ -97,6 +98,12 @@ export const styles: MovimientosDelMesGrillaMRTStyles = {
     gap: '8px',
     p: '12px 16px',
     backgroundColor: 'var(--accent-soft)',
+    borderBottom: '1px solid var(--border-soft)',
+  },
+  panelesAgregar: {
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: colors.background,
   },
   filaPanelTitulo: {
     typography: 'caption',
