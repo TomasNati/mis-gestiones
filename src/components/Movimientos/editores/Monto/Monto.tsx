@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { TextField } from '@mui/material';
+import { SxProps } from '@mui/system';
 import Mexp from 'math-expression-evaluator';
 import { GridColDef, GridRenderCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { MontoTooltip } from './MontoTooltip';
@@ -12,9 +13,10 @@ interface NumberInputProps {
   valorInicial?: string;
   label?: string;
   size?: 'small' | 'medium';
+  sx?: SxProps;
 }
 
-const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInputProps) => {
+const NumberInput = ({ onBlur, valorInicial, label, size, disabled, sx }: NumberInputProps) => {
   const [inputValue, setInputValue] = useState<string>(valorInicial || '');
   const [formulaValue, setFormulaValue] = useState<string>(valorInicial || '');
   const [previousInputValue, setPreviousInputValue] = useState<string>(valorInicial || '');
@@ -68,6 +70,7 @@ const NumberInput = ({ onBlur, valorInicial, label, size, disabled }: NumberInpu
         label={label}
         size={size}
         disabled={disabled}
+        sx={sx}
       />
     </MontoTooltip>
   );

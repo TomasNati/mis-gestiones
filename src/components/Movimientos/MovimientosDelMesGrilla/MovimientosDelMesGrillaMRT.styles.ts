@@ -7,6 +7,12 @@ interface MovimientosDelMesGrillaMRTStyles {
   tableBody: SxProps;
   tableBodyRow: SxProps;
   filaPanel: SxProps;
+  filaPanelTitulo: SxProps;
+  filaPanelCampos: SxProps;
+  filaCampoDia: SxProps;
+  filaCampoMonto: SxProps;
+  filaCampoComentarios: SxProps;
+  filaBoton: SxProps;
   topToolbar: SxProps;
   bottomToolbar: SxProps;
   toolbar: SxProps;
@@ -87,11 +93,41 @@ export const styles: MovimientosDelMesGrillaMRTStyles = {
   },
   filaPanel: {
     display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: '12px',
+    flexDirection: 'column',
+    gap: '8px',
     p: '12px 16px',
     backgroundColor: 'var(--accent-soft)',
+  },
+  filaPanelTitulo: {
+    typography: 'caption',
+    color: 'text.secondary',
+  },
+  filaPanelCampos: {
+    display: 'flex',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  filaCampoDia: {
+    flex: '0 0 auto',
+    width: '75px',
+    '& .MuiInputBase-root': { width: '100%' },
+  },
+  filaCampoMonto: {
+    flex: '0 0 auto',
+    width: '110px',
+    '& .MuiInputBase-root': { width: '100%' },
+  },
+  filaCampoComentarios: {
+    flex: '0 0 400px',
+    minWidth: '140px',
+  },
+  filaBoton: {
+    flex: '0 0 auto',
+    minWidth: 0,
+    width: '40px',
+    height: '40px',
+    p: 0,
   },
   topToolbar: {
     backgroundColor: colors.background,

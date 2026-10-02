@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 import SaveIcon from '@mui/icons-material/Save';
@@ -93,95 +94,102 @@ const FilaMovimientoPanel = ({
         }
       }}
     >
-      <Box
-        component="div"
-        sx={{
-          width: '100%',
-          typography: 'caption',
-          color: 'text.secondary',
-          mb: -0.5,
-        }}
-      >
+      <Box component="div" sx={styles.filaPanelTitulo}>
         {esNuevo ? 'Agregando movimiento' : 'Editando movimiento'}
       </Box>
-      <Box ref={fechaRef}>
-        <Fecha
-          diasDelMes={diasDelMes}
-          initialValue={fila.dia}
-          onChange={setDia}
+      <Box sx={styles.filaPanelCampos}>
+        <Box ref={fechaRef} sx={styles.filaCampoDia}>
+          <Fecha
+            diasDelMes={diasDelMes}
+            initialValue={fila.dia}
+            onChange={setDia}
+            onTabPressed={() => {}}
+            label="Día"
+            size="small"
+          />
+        </Box>
+        <Concepto
+          categoriasMovimiento={categoriasMovimiento}
+          conceptoInicial={concepto}
+          onConceptoModificado={setConcepto}
           onTabPressed={() => {}}
-          label="Día"
+          label="Categoría y concepto"
           size="small"
         />
-      </Box>
-      <Concepto
-        categoriasMovimiento={categoriasMovimiento}
-        conceptoInicial={concepto}
-        onConceptoModificado={setConcepto}
-        onTabPressed={() => {}}
-        label="Categoría y concepto"
-        size="small"
-      />
-      <Box
-        onKeyDown={(event) => {
-          if (event.key === 'Tab') {
-            event.preventDefault();
-            montoRef.current?.querySelector<HTMLElement>('input, textarea, button')?.focus();
-          }
-        }}
-      >
-        <TipoDePagoEdicion
-          tipoDepagoInicial={fila.tipoDeGasto}
-          onTipoDePagoChange={setTipoDeGasto}
-          onTabPressed={() => {}}
-          borderStyle="solid"
-        />
-      </Box>
-      <Box
-        ref={montoRef}
-        onKeyDown={(event) => {
-          if (event.key === 'Tab') {
-            event.preventDefault();
-            comentariosRef.current?.querySelector<HTMLElement>('input, textarea, button')?.focus();
-          }
-        }}
-      >
-        <NumberInput valorInicial={fila.monto?.toString()} onBlur={setMonto} label="Monto" size="small" />
-      </Box>
-      <Box ref={guardarRef}>
-        <Button
-          size="small"
-          variant="contained"
-          color="primary"
-          disabled={!valido}
-          startIcon={guardando ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
-          onClick={handleGuardar}
+        <Box
+          onKeyDown={(event) => {
+            if (event.key === 'Tab') {
+              event.preventDefault();
+              montoRef.current?.querySelector<HTMLElement>('input, textarea, button')?.focus();
+            }
+          }}
         >
-          {esNuevo ? 'Agregar' : 'Guardar'}
-        </Button>
-      </Box>
-      <Button size="small" variant="outlined" startIcon={<CloseIcon />} onClick={onCancelar} disabled={guardando}>
-        Cancelar
-      </Button>
-      <Box
-        ref={comentariosRef}
-        onKeyDown={(event) => {
-          if (event.key === 'Tab') {
-            event.preventDefault();
-            guardarRef.current?.querySelector<HTMLElement>('input, textarea, button')?.focus();
-          }
-        }}
-        sx={{ width: '100%' }}
-      >
-        <TextField
-          label="Comentarios"
-          size="small"
-          multiline
-          minRows={2}
-          value={comentarios}
-          onChange={(event) => setComentarios(event.target.value)}
-          sx={{ width: '400px' }}
-        />
+          <TipoDePagoEdicion
+            tipoDepagoInicial={fila.tipoDeGasto}
+            onTipoDePagoChange={setTipoDeGasto}
+            onTabPressed={() => {}}
+            borderStyle="solid"
+          />
+        </Box>
+        <Box
+          ref={montoRef}
+          sx={styles.filaCampoMonto}
+          onKeyDown={(event) => {
+            if (event.key === 'Tab') {
+              event.preventDefault();
+              comentariosRef.current?.querySelector<HTMLElement>('input, textarea, button')?.focus();
+            }
+          }}
+        >
+          <NumberInput valorInicial={fila.monto?.toString()} onBlur={setMonto} label="Monto" size="small" />
+        </Box>
+        <Box
+          ref={comentariosRef}
+          sx={styles.filaCampoComentarios}
+          onKeyDown={(event) => {
+            if (event.key === 'Tab') {
+              event.preventDefault();
+              guardarRef.current?.querySelector<HTMLElement>('input, textarea, button')?.focus();
+            }
+          }}
+        >
+          <TextField
+            label="Comentarios"
+            size="small"
+            value={comentarios}
+            onChange={(event) => setComentarios(event.target.value)}
+            fullWidth
+          />
+        </Box>
+        <Tooltip title={esNuevo ? 'Agregar' : 'Guardar'}>
+          <span ref={guardarRef} style={{ display: 'inline-flex' }}>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              disabled={!valido}
+              aria-label={esNuevo ? 'Agregar' : 'Guardar'}
+              onClick={handleGuardar}
+              sx={styles.filaBoton}
+            >
+              {guardando ? <CircularProgress size={16} color="inherit" /> : <SaveIcon fontSize="small" />}
+            </Button>
+          </span>
+        </Tooltip>
+        <Tooltip title="Cancelar">
+          <span style={{ display: 'inline-flex' }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={onCancelar}
+              disabled={guardando}
+              aria-label="Cancelar"
+              sx={styles.filaBoton}
+            >
+              <CloseIcon fontSize="small" />
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
     </Box>
   );
