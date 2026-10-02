@@ -76,8 +76,8 @@
       <a class="page-card" href="finanzas-vencimientos.html">
         <span class="title"><i data-icon="clock"></i> Vencimientos</span>
         <span class="route">/finanzas/vencimientos</span>
-        <p>Filtros en una barra, estado como etiqueta en vez de fila pintada, separador "Hoy", modales de alta y copia.</p>
-        <span class="foot"><span class="pill success">pagado</span><span class="pill danger">vencido</span></span>
+        <p>Filtros en una barra, estado como etiqueta en vez de fila pintada, separador "Hoy", modales de alta y copia, comprobantes de pago (adjuntar, descargar, eliminar).</p>
+        <span class="foot"><span class="pill success">pagado</span><span class="pill danger">vencido</span><span class="pill">comprobantes</span></span>
       </a>
       <a class="page-card" href="finanzas-buscar.html">
         <span class="title"><i data-icon="search"></i> Buscar movimientos</span>
@@ -283,6 +283,7 @@
         <tr><td>Estadísticas</td><td><code>StatsCluster</code> solo en Movimientos</td><td>Generalizar: acepta N stats + un medidor; agregar estados ámbar/rojo/violeta.</td></tr>
         <tr><td>Etiquetas de estado</td><td>Filas pintadas (Vencimientos), texto coloreado (Presupuesto)</td><td>Componente <code>Pill</code>; las grillas dejan de pintar filas.</td></tr>
         <tr><td>Tablas</td><td>DataGrid (Presupuesto, Vencimientos), MRT (Movimientos, Buscar, Inversiones), Table (Tomi)</td><td>Unificar en MRT con un <code>muiTableProps</code> compartido que aplique esta anatomía; Tomi puede quedar en Table con las mismas clases.</td></tr>
+        <tr><td>Comprobantes (<code>.attach-btn</code>, <code>.popover</code>, <code>.file-row</code>, <code>.slot</code>)</td><td><code>ComprobantesPopover</code> con Table de MUI; <code>ComprobantesSection</code> y <code>ComprobantesCargadosSection</code> como Accordion con IconButton</td><td>Celda con clip + cantidad que abre un Popover con filas de archivo; en el modal, una sección plegable con lista de cargados y espacios de carga (punteado vacío, panel con prefijo/sufijo y "Se guarda como" cuando hay archivo). Duplicados en rojo con alerta, no solo texto.</td></tr>
         <tr><td>Gráficos</td><td>MUI X Charts con tres paletas distintas y tortas</td><td>Una paleta <code>--series-*</code>, barras en vez de tortas, un eje, leyenda + etiquetas directas escasas.</td></tr>
         <tr><td>Modales</td><td>Dialog de MUI con estilos por defecto</td><td>Tema global de <code>MuiDialog</code>: fondo overlay, borde, encabezado con subtítulo, pie con acciones a la derecha.</td></tr>
       </tbody>

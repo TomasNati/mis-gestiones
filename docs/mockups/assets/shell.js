@@ -66,6 +66,8 @@
     'sort': '<path d="M8 4v16M8 20l-3-3M8 20l3-3M16 20V4M16 4l3 3M16 4l-3 3"/>',
     'sort-asc': '<path d="M12 5v14M6 11l6-6 6 6"/>',
     hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+    paperclip: '<path d="m20 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/>',
+    loader: '<path d="M12 3a9 9 0 1 0 9 9"/>',
   };
 
   const NAV = [
@@ -156,6 +158,18 @@
 
   function wireBehaviors() {
     document.addEventListener('click', (e) => {
+      const popoverTrigger = e.target.closest('[data-popover]');
+      document.querySelectorAll('.popover.is-open').forEach((p) => {
+        const keep = p.contains(e.target) || (popoverTrigger && document.querySelector(popoverTrigger.getAttribute('data-popover')) === p);
+        if (!keep) {
+          p.classList.remove('is-open');
+          document.querySelectorAll('[data-popover="#' + p.id + '"]').forEach((t) => t.classList.remove('is-on'));
+        }
+      });
+      if (popoverTrigger) {
+        const pop = document.querySelector(popoverTrigger.getAttribute('data-popover'));
+        if (pop) popoverTrigger.classList.toggle('is-on', pop.classList.toggle('is-open'));
+      }
       const toggle = e.target.closest('[data-toggle]');
       if (toggle) {
         const target = document.querySelector(toggle.getAttribute('data-toggle'));
@@ -234,6 +248,8 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        document.querySelectorAll('.popover.is-open').forEach((p) => p.classList.remove('is-open'));
+        document.querySelectorAll('[data-popover].is-on').forEach((t) => t.classList.remove('is-on'));
         document.querySelectorAll('.modal-backdrop.is-open').forEach((m) => m.classList.remove('is-open'));
         document.body.classList.remove('has-modal');
       }

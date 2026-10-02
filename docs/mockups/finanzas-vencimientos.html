@@ -29,6 +29,17 @@
   .filters .field .tristate { white-space: nowrap; }
   .pago-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
   .switch-field { justify-content: flex-end; height: 100%; padding-bottom: 7px; }
+  .venc-table th.files { width: 120px; }
+  .files-section { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-muted); }
+  .files-toggle { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; text-align: left; }
+  .files-toggle .field-label { color: var(--text-primary); font-size: 13px; }
+  .files-toggle .hint { margin-left: auto; font-size: 11.5px; color: var(--text-tertiary); }
+  .files-toggle .caret { color: var(--text-tertiary); transition: transform 0.15s var(--ease); transform: rotate(-90deg); }
+  .files-toggle.is-on .caret { transform: none; }
+  .files-body { display: flex; flex-direction: column; gap: 8px; }
+  .files-sub { font-size: 11.5px; font-weight: 500; color: var(--text-tertiary); margin-top: 4px; }
+  .files-box { border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--bg-inset); }
+  .files-box .file-list { padding: 0; }
 </style>
 </head>
 <body data-page="finanzas-vencimientos">
@@ -122,6 +133,7 @@
         <th class="num amount">Monto</th>
         <th class="anual">Anual</th>
         <th class="pago">Pago</th>
+        <th class="files">Comprobantes</th>
         <th class="actions"></th>
       </tr>
     </thead>
@@ -134,7 +146,8 @@
         <td class="num"><span class="cur">$</span>103.370</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">01/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="popover-anchor"><button class="attach-btn" type="button" data-popover="#pop-personal" title="Ver comprobantes de Personal"><i data-icon="paperclip"></i>1</button><span class="popover" id="pop-personal" role="dialog" aria-label="Comprobantes de Personal"><span class="popover-header"><span><b>1 comprobante</b> · Personal</span><button class="btn xs ghost" type="button" data-modal-open="#editModal"><i data-icon="pencil" class="sm"></i> Gestionar</button></span><ul class="file-list"><li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre.pdf</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="Descargar 2026/Septiembre.pdf"><i data-icon="download" class="sm"></i></button></span></li></ul></span></span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="30100">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Aguas de Santiago"></label></td>
@@ -144,7 +157,8 @@
         <td class="num"><span class="cur">$</span>30.100</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">01/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="43000">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Aportes Claudia"></label></td>
@@ -154,7 +168,8 @@
         <td class="num"><span class="cur">$</span>43.000</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">01/09/2026</span><span class="cell-secondary inline">· $ 43.083</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="40000">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Contadora"></label></td>
@@ -164,7 +179,8 @@
         <td class="num"><span class="cur">$</span>40.000</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">01/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="popover-anchor"><button class="attach-btn" type="button" data-popover="#pop-contadora" title="Ver comprobantes de Contadora"><i data-icon="paperclip"></i>2</button><span class="popover" id="pop-contadora" role="dialog" aria-label="Comprobantes de Contadora"><span class="popover-header"><span><b>2 comprobantes</b> · Contadora</span><button class="btn xs ghost" type="button" data-modal-open="#editModal"><i data-icon="pencil" class="sm"></i> Gestionar</button></span><ul class="file-list"><li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-factura C 0003-00000412.pdf</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="Descargar 2026/Septiembre-factura C 0003-00000412.pdf"><i data-icon="download" class="sm"></i></button></span></li><li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-transferencia.png</span><span class="file-meta t-attention">Sin ruta de descarga</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="La subcategoría no tiene carpeta de comprobantes: no se puede resolver la ruta" disabled><i data-icon="download" class="sm"></i></button></span></li></ul></span></span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="91562">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Flow Personal"></label></td>
@@ -174,7 +190,8 @@
         <td class="num"><span class="cur">$</span>91.562</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">09/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="26595">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Dto. Tuc-Cór - SAT"></label></td>
@@ -184,7 +201,8 @@
         <td class="num"><span class="cur">$</span>26.595</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">09/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="3829">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar BTS Weverse"></label></td>
@@ -194,7 +212,8 @@
         <td class="num"><span class="cur">$</span>3.829</td>
         <td><span class="pill outline">Anual</span></td>
         <td class="nowrap"><span class="num">15/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="76265">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Auto"></label></td>
@@ -204,7 +223,8 @@
         <td class="num"><span class="cur">$</span>76.265</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">14/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="popover-anchor"><button class="attach-btn" type="button" data-popover="#pop-auto" title="Ver comprobantes de Auto"><i data-icon="paperclip"></i>3</button><span class="popover" id="pop-auto" role="dialog" aria-label="Comprobantes de Auto"><span class="popover-header"><span><b>3 comprobantes</b> · Auto</span><button class="btn xs ghost" type="button" data-modal-open="#editModal"><i data-icon="pencil" class="sm"></i> Gestionar</button></span><ul class="file-list"><li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-cuota 9.pdf</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="Descargar 2026/Septiembre-cuota 9.pdf"><i data-icon="download" class="sm"></i></button></span></li><li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-poliza.pdf</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="Descargando…" disabled><i data-icon="loader" class="sm spin"></i></button></span></li><li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-comprobante banco.jpg</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="Descargar 2026/Septiembre-comprobante banco.jpg"><i data-icon="download" class="sm"></i></button></span></li></ul></span></span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="44086">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Naturgy (Gasnor)"></label></td>
@@ -214,11 +234,12 @@
         <td class="num"><span class="cur">$</span>44.086</td>
         <td><span class="faint">—</span></td>
         <td class="faint">—</td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr class="today-row">
         <td class="check"></td>
-        <td colspan="7"><span class="day">Hoy</span><span class="day-meta">martes 22 de septiembre · 7 vencimientos por delante</span></td>
+        <td colspan="8"><span class="day">Hoy</span><span class="day-meta">martes 22 de septiembre · 7 vencimientos por delante</span></td>
       </tr>
       <tr data-amount="253279">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Edese"></label></td>
@@ -228,7 +249,8 @@
         <td class="num"><span class="cur">$</span>253.279</td>
         <td><span class="faint">—</span></td>
         <td class="nowrap"><span class="num">22/09/2026</span><button class="icon-btn xs pay-link" type="button" title="Ver movimiento"><i data-icon="external-link"></i></button></td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="popover-anchor"><button class="attach-btn" type="button" data-popover="#pop-edese" title="Ver comprobantes de Edese"><i data-icon="paperclip"></i>1</button><span class="popover" id="pop-edese" role="dialog" aria-label="Comprobantes de Edese"><span class="popover-header"><span><b>1 comprobante</b> · Edese</span><button class="btn xs ghost" type="button" data-modal-open="#editModal"><i data-icon="pencil" class="sm"></i> Gestionar</button></span><ul class="file-list"><li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre.pdf</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="Descargar 2026/Septiembre.pdf"><i data-icon="download" class="sm"></i></button></span></li></ul></span></span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="19975">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Bahía - ABSA"></label></td>
@@ -238,7 +260,8 @@
         <td class="num"><span class="cur">$</span>19.975</td>
         <td><span class="faint">—</span></td>
         <td class="faint">—</td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="240000">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Colegio"></label></td>
@@ -248,7 +271,8 @@
         <td class="num"><span class="cur">$</span>240.000</td>
         <td><span class="faint">—</span></td>
         <td class="faint">—</td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="55858">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Monotributo Nati"></label></td>
@@ -258,7 +282,8 @@
         <td class="num"><span class="cur">$</span>55.858</td>
         <td><span class="faint">—</span></td>
         <td class="faint">—</td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr class="is-selected" data-amount="56570">
         <td class="check"><label class="checkbox"><input type="checkbox" checked aria-label="Seleccionar Dto. Tuc-Cór - Edet"></label></td>
@@ -268,7 +293,8 @@
         <td class="num"><span class="cur">$</span>56.570</td>
         <td><span class="faint">—</span></td>
         <td class="faint">—</td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr class="is-selected" data-amount="5546">
         <td class="check"><label class="checkbox"><input type="checkbox" checked aria-label="Seleccionar Dto. Tuc-Cór - Naturgy"></label></td>
@@ -278,7 +304,8 @@
         <td class="num"><span class="cur">$</span>5.546</td>
         <td><span class="faint">—</span></td>
         <td class="faint">—</td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
       <tr data-amount="61965">
         <td class="check"><label class="checkbox"><input type="checkbox" aria-label="Seleccionar Bahía - Municipal"></label></td>
@@ -288,7 +315,8 @@
         <td class="num"><span class="cur">$</span>61.965</td>
         <td><span class="pill outline">Anual</span></td>
         <td class="faint">—</td>
-        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#vencModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
+        <td class="files"><span class="faint">—</span></td>
+        <td class="actions"><span class="row-actions"><button class="icon-btn xs" type="button" title="Editar" data-modal-open="#editModal"><i data-icon="pencil"></i></button><button class="icon-btn xs" type="button" title="Copiar al mes siguiente" data-modal-open="#copiarModal"><i data-icon="copy"></i></button><button class="icon-btn xs danger" type="button" title="Eliminar"><i data-icon="trash"></i></button></span></td>
       </tr>
     </tbody>
   </table>
@@ -307,6 +335,27 @@
       </span>
     </span>
   </div>
+
+  <section class="section mt-5">
+    <div class="section-title"><h2>Comprobantes · avisos</h2><span class="hint">toasts al adjuntar, descargar o eliminar</span></div>
+    <div class="flex wrap gap-3">
+      <div class="toast danger" role="status" style="position: static; box-shadow: none;">
+        <i data-icon="alert-circle"></i>
+        <span><span class="mono">escaneo-poliza.pdf</span> supera el tamaño máximo permitido (12,4 MB de 4,5 MB)</span>
+        <button class="icon-btn xs" type="button" title="Cerrar"><i data-icon="x" class="sm"></i></button>
+      </div>
+      <div class="toast danger" role="status" style="position: static; box-shadow: none;">
+        <i data-icon="alert-circle"></i>
+        <span>No se pudo eliminar <span class="mono">2026/Septiembre-poliza.pdf</span></span>
+        <button class="icon-btn xs" type="button" title="Cerrar"><i data-icon="x" class="sm"></i></button>
+      </div>
+      <div class="toast success" role="status" style="position: static; box-shadow: none;">
+        <i data-icon="check-circle"></i>
+        <span>Vencimiento guardado · 2 comprobantes subidos</span>
+        <button class="icon-btn xs" type="button" title="Cerrar"><i data-icon="x" class="sm"></i></button>
+      </div>
+    </div>
+  </section>
 
   <section class="section mt-5" style="padding-bottom: 32px;">
     <div class="section-title"><h2>Estado vacío</h2><span class="hint">período sin vencimientos</span></div>
@@ -347,11 +396,122 @@
         <button class="btn" type="button"><i data-icon="plus"></i> Crear movimiento de pago</button>
       </div>
       <label class="field"><span class="field-label">Comentarios</span><textarea class="textarea" placeholder="Nro. de cliente, período, cuota…"></textarea></label>
+      <div class="files-section">
+        <button class="files-toggle is-on" type="button" data-toggle="#addFiles" aria-controls="addFiles">
+          <i data-icon="chevron-down" class="caret sm"></i>
+          <span class="field-label">Comprobantes de pago</span>
+          <span class="badge">1/3</span>
+          <span class="hint">Se suben al guardar</span>
+        </button>
+        <div class="files-body collapsible is-open" id="addFiles">
+          <div class="slot">
+            <div class="file-row">
+              <span class="file-glyph"><i data-icon="file-text"></i></span>
+              <span><span class="file-name">edese-factura-oct.pdf</span><span class="file-meta">PDF · 284 KB</span></span>
+              <span class="file-actions"><button class="icon-btn xs danger" type="button" title="Quitar archivo"><i data-icon="x" class="sm"></i></button></span>
+            </div>
+            <span class="input sm mono"><span class="prefix">2026/Octubre-</span><input type="text" value="factura" placeholder="comentario (opcional)" aria-label="Comentario del comprobante 1"><span class="suffix">.pdf</span></span>
+            <span class="saved-as">Se guarda como <span class="num">2026/Octubre-factura.pdf</span></span>
+          </div>
+          <label class="slot-empty"><i data-icon="paperclip"></i> Adjuntar archivo <span class="hint">hasta 4,5 MB</span><input type="file"></label>
+          <label class="slot-empty"><i data-icon="paperclip"></i> Adjuntar archivo <span class="hint">hasta 4,5 MB</span><input type="file"></label>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <span class="left">Sin pago vinculado queda como pendiente</span>
       <button class="btn" type="button" data-modal-close>Cancelar</button>
       <button class="btn primary" type="button" data-modal-close><i data-icon="check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="editModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="editTitle">Editar vencimiento</h2>
+        <div class="sub"><span class="faint">Seguros ·</span> Auto · 15/09/2026</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row c2">
+        <label class="field"><span class="field-label">Fecha <span class="req">*</span></span><span class="input mono"><span class="prefix"><i data-icon="calendar"></i></span><input type="text" value="15/09/2026"></span></label>
+        <div class="field switch-field"><label class="switch"><input type="checkbox" checked><span>Fecha confirmada</span></label></div>
+      </div>
+      <label class="field"><span class="field-label">Tipo <span class="req">*</span></span><span class="select"><span><span class="faint">Seguros ·</span> Auto</span><i data-icon="chevron-down" class="caret"></i></span></label>
+      <div class="form-row c2">
+        <label class="field"><span class="field-label">Monto <span class="req">*</span></span><span class="input mono right"><span class="prefix">$</span><input type="text" value="76.265"></span></label>
+        <div class="field switch-field"><label class="switch"><input type="checkbox"><span>Anual</span></label></div>
+      </div>
+      <div class="pago-row">
+        <label class="field"><span class="field-label">Pago relacionado</span><span class="select"><span class="mono">14/09/2026 · $ 76.265</span><i data-icon="chevron-down" class="caret"></i></span></label>
+        <button class="btn" type="button"><i data-icon="plus"></i> Crear movimiento de pago</button>
+      </div>
+      <label class="field"><span class="field-label">Comentarios</span><textarea class="textarea">La Segunda · cuota 9 de 12</textarea></label>
+      <div class="files-section">
+        <button class="files-toggle is-on" type="button" data-toggle="#editFiles" aria-controls="editFiles">
+          <i data-icon="chevron-down" class="caret sm"></i>
+          <span class="field-label">Comprobantes de pago</span>
+          <span class="badge">3 cargados</span>
+          <span class="badge">2/3 nuevos</span>
+        </button>
+        <div class="files-body collapsible is-open" id="editFiles">
+          <div class="files-box">
+            <ul class="file-list">
+              <li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-cuota 9.pdf</span></span><span class="file-actions"><button class="icon-btn xs danger" type="button" title="Eliminar 2026/Septiembre-cuota 9.pdf" data-modal-open="#confirmDeleteModal"><i data-icon="trash" class="sm"></i></button></span></li>
+              <li class="file-row is-busy"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-poliza.pdf</span><span class="file-meta">Eliminando…</span></span><span class="file-actions"><button class="icon-btn xs" type="button" title="Eliminando" disabled><i data-icon="loader" class="sm spin"></i></button></span></li>
+              <li class="file-row"><span class="file-glyph"><i data-icon="file-text"></i></span><span><span class="file-name">2026/Septiembre-comprobante banco.jpg</span></span><span class="file-actions"><button class="icon-btn xs danger" type="button" title="Eliminar 2026/Septiembre-comprobante banco.jpg" data-modal-open="#confirmDeleteModal"><i data-icon="trash" class="sm"></i></button></span></li>
+            </ul>
+          </div>
+          <span class="files-sub">Agregar</span>
+          <div class="slot is-error">
+            <div class="file-row">
+              <span class="file-glyph"><i data-icon="file-text"></i></span>
+              <span><span class="file-name">IMG_20260914_1032.pdf</span><span class="file-meta">PDF · 1,2 MB</span></span>
+              <span class="file-actions"><button class="icon-btn xs danger" type="button" title="Quitar archivo"><i data-icon="x" class="sm"></i></button></span>
+            </div>
+            <span class="input sm mono is-error"><span class="prefix">2026/Septiembre-</span><input type="text" placeholder="comentario (opcional)" aria-label="Comentario del comprobante 1"><span class="suffix">.pdf</span></span>
+            <span class="saved-as">Se guarda como <span class="num">2026/Septiembre.pdf</span></span>
+          </div>
+          <div class="slot is-error">
+            <div class="file-row">
+              <span class="file-glyph"><i data-icon="file-text"></i></span>
+              <span><span class="file-name">recibo-la-segunda.pdf</span><span class="file-meta">PDF · 96 KB</span></span>
+              <span class="file-actions"><button class="icon-btn xs danger" type="button" title="Quitar archivo"><i data-icon="x" class="sm"></i></button></span>
+            </div>
+            <span class="input sm mono is-error"><span class="prefix">2026/Septiembre-</span><input type="text" placeholder="comentario (opcional)" aria-label="Comentario del comprobante 2"><span class="suffix">.pdf</span></span>
+            <span class="saved-as">Se guarda como <span class="num">2026/Septiembre.pdf</span></span>
+          </div>
+          <div class="alert danger"><i data-icon="alert-circle"></i><span>Dos comprobantes se guardarían como <b class="mono">2026/Septiembre.pdf</b>. Agregá un comentario para distinguirlos.</span></div>
+          <label class="slot-empty"><i data-icon="paperclip"></i> Adjuntar archivo <span class="hint">hasta 4,5 MB</span><input type="file"></label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="left">Los nuevos comprobantes se suben al guardar</span>
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn primary" type="button" disabled title="Resolvé los nombres repetidos"><i data-icon="check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="confirmDeleteModal">
+  <div class="modal narrow" role="dialog" aria-modal="true" aria-labelledby="confirmDeleteTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="confirmDeleteTitle">Eliminar comprobante</h2>
+        <div class="sub">Seguros · Auto · 15/09/2026</div>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close title="Cerrar"><i data-icon="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="muted">Se va a eliminar <b class="mono" style="color: var(--text-primary); font-weight: 500;">2026/Septiembre-cuota 9.pdf</b>. Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" type="button" data-modal-close>Cancelar</button>
+      <button class="btn danger" type="button" data-modal-close><i data-icon="trash"></i> Eliminar</button>
     </div>
   </div>
 </div>
