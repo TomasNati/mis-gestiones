@@ -4,11 +4,24 @@ interface AgregarEditarModalStyles {
   buttonBar: SxProps;
   datePicker: SxProps;
   comprobantesSection: SxProps;
+  loadingOverlay: SxProps;
 }
 
 export const styles: AgregarEditarModalStyles = {
   buttonBar: {
     padding: '8px',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    inset: 0,
+    zIndex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    bgcolor: 'rgba(0,0,0, 0.8)',
+    borderRadius: 1,
   },
   datePicker: {
     width: '160px',

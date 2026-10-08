@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -10,6 +11,7 @@ import {
   IconButton,
   TextField,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { styles } from './AgregarEditarModal.styles';
@@ -112,12 +114,23 @@ const validateForm = (form: FormState) => {
   return errorsFound;
 };
 
+export type FaseGuardado = 'guardando' | 'subiendo';
+
+const MENSAJE_FASE: Record<FaseGuardado, string> = {
+  guardando: 'Guardando cambios',
+  subiendo: 'Subiendo comprobantes',
+};
+
 interface AgregarEditarModalProps {
   tiposDeVencimiento: Subcategoria[];
   pagos?: MovimientoDeVencimiento[];
   open: boolean;
   onClose: () => void;
-  onGuardar: (vencimiento: VencimientoUI, comprobantes: ComprobantePagoParaSubir[]) => void;
+  onGuardar: (
+    vencimiento: VencimientoUI,
+    comprobantes: ComprobantePagoParaSubir[],
+    onProgreso: (fase: FaseGuardado) => void,
+  ) => Promise<void> | void;
   onNotificarError: (mensaje: string) => void;
   onComprobanteEliminado: (comprobante: ComprobantePagoBusqueda) => void;
   maxUploadBytes: number | null;
@@ -144,6 +157,7 @@ export const AgregarEditarModal = ({
   const [comprobantes, setComprobantes] = useState<ComprobanteState[]>(crearComprobantesIniciales);
   const [comprobanteAEliminar, setComprobanteAEliminar] = useState<ComprobantePagoBusqueda | null>(null);
   const [eliminandoComprobanteId, setEliminandoComprobanteId] = useState<string | null>(null);
+  const [faseGuardado, setFaseGuardado] = useState<FaseGuardado | null>(null);
 
   const prefijo = prefijoAnioMes(form.fecha);
 
@@ -239,38 +253,44 @@ export const AgregarEditarModal = ({
     setForm(newForm);
   };
 
-  const handleGuardar = () => {
-    if (!errors.length) {
-      const comprobantesParaSubir: ComprobantePagoParaSubir[] = comprobantes
-        .map((comprobante) => comprobante)
-        .filter((comprobante) => Boolean(comprobante.archivo))
-        .map((comprobante) => ({
-          archivo: comprobante.archivo as File,
-          subpath: nombreComprobanteArchivo(prefijo, comprobante),
-        }));
+  const handleGuardar = async () => {
+    if (errors.length || faseGuardado) {
+      return;
+    }
+    const comprobantesParaSubir: ComprobantePagoParaSubir[] = comprobantes
+      .map((comprobante) => comprobante)
+      .filter((comprobante) => Boolean(comprobante.archivo))
+      .map((comprobante) => ({
+        archivo: comprobante.archivo as File,
+        subpath: nombreComprobanteArchivo(prefijo, comprobante),
+      }));
 
-      const vencimiento: VencimientoUI = {
-        id: form.id,
-        fecha: toUTC(form.fecha?.toDate() || new Date()),
-        monto: Number(form.monto),
-        comentarios: form.comentarios,
-        esAnual: form.anual,
-        subcategoria: {
-          id: form.tipo?.id || '',
-          descripcion: '',
-          comprobantesPath: form.tipo?.comprobantesPath || null,
-        },
-        fechaConfirmada: form.fechaConfirmada,
-        pago: form.pagoId
-          ? {
-              id: form.pagoId,
-              fecha: new Date(),
-              monto: 0,
-              comentarios: '',
-            }
-          : undefined,
-      };
-      onGuardar(vencimiento, comprobantesParaSubir);
+    const vencimiento: VencimientoUI = {
+      id: form.id,
+      fecha: toUTC(form.fecha?.toDate() || new Date()),
+      monto: Number(form.monto),
+      comentarios: form.comentarios,
+      esAnual: form.anual,
+      subcategoria: {
+        id: form.tipo?.id || '',
+        descripcion: '',
+        comprobantesPath: form.tipo?.comprobantesPath || null,
+      },
+      fechaConfirmada: form.fechaConfirmada,
+      pago: form.pagoId
+        ? {
+            id: form.pagoId,
+            fecha: new Date(),
+            monto: 0,
+            comentarios: '',
+          }
+        : undefined,
+    };
+    setFaseGuardado('guardando');
+    try {
+      await onGuardar(vencimiento, comprobantesParaSubir, setFaseGuardado);
+    } finally {
+      setFaseGuardado(null);
     }
   };
 
@@ -283,6 +303,9 @@ export const AgregarEditarModal = ({
   const canCrearPago = form.tipo && form.monto && isNumber(form.monto) && Number(form.monto) > 0;
 
   const handleClose = (reason: string) => {
+    if (faseGuardado) {
+      return;
+    }
     if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
       onClose();
     }
@@ -290,127 +313,137 @@ export const AgregarEditarModal = ({
 
   return (
     <Dialog onClose={(_, reason) => handleClose(reason)} open={open}>
-      <DialogTitle>Agregar vencimiento</DialogTitle>
-      <DialogContent sx={{ width: 420 }}>
-        <Box display="flex" flexDirection="column" gap={1.5} maxWidth={350} paddingTop={'5px'}>
-          <DatePicker
-            label="Fecha"
-            value={dayjs.utc(form.fecha)}
-            onChange={(date) => handleChangeSimple('fecha', date)}
-            slotProps={{ textField: { fullWidth: true } }}
-            sx={styles.datePicker}
-            format="DD/MM/YYYY"
-          />
-          <Autocomplete
-            options={tiposDeVencimiento}
-            getOptionLabel={(option: Subcategoria) => option.nombre}
-            value={form.tipo}
-            renderInput={(params) => <TextField {...params} label="Tipo" />}
-            onChange={(_, value) => handleTipoChanged(value)}
-            getOptionKey={(option: Subcategoria) => option.id}
-            size="small"
-          />
-          <Box display="flex" gap={0.5} alignItems="center">
+      <Box position="relative">
+        <DialogTitle>Agregar vencimiento</DialogTitle>
+        <DialogContent sx={{ width: 420 }}>
+          <Box display="flex" flexDirection="column" gap={1.5} maxWidth={350} paddingTop={'5px'}>
+            <DatePicker
+              label="Fecha"
+              value={dayjs.utc(form.fecha)}
+              onChange={(date) => handleChangeSimple('fecha', date)}
+              slotProps={{ textField: { fullWidth: true } }}
+              sx={styles.datePicker}
+              format="DD/MM/YYYY"
+            />
             <Autocomplete
-              options={posiblesPagos}
-              getOptionLabel={(option: MovimientoDeVencimiento) =>
-                `${formatDate(option.fecha, false, { timeZone: 'UTC' })} - $${option.monto}`
-              }
-              value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
-              renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
-              onChange={(_, value) => handlePagoChanged(value)}
-              getOptionKey={(option: MovimientoDeVencimiento) => option.id}
+              options={tiposDeVencimiento}
+              getOptionLabel={(option: Subcategoria) => option.nombre}
+              value={form.tipo}
+              renderInput={(params) => <TextField {...params} label="Tipo" />}
+              onChange={(_, value) => handleTipoChanged(value)}
+              getOptionKey={(option: Subcategoria) => option.id}
               size="small"
-              sx={{ flex: 1 }}
             />
-            <Tooltip title={canCrearPago ? 'Crear movimiento de pago' : 'Completar tipo y monto primero'}>
-              <span>
-                <IconButton
-                  color="primary"
-                  onClick={() => setShowCrearPago(true)}
-                  disabled={!canCrearPago}
-                  size="small"
-                >
-                  <AddCircleOutlineIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
-          <ComprobantesSection
-            comprobantes={comprobantes}
-            prefijo={prefijo}
-            duplicados={duplicados}
-            onArchivoSeleccionado={handleArchivoSeleccionado}
-            onComentarioChanged={handleComentarioChanged}
-            onEliminarArchivo={handleEliminarArchivo}
-          />
-          <ComprobantesCargadosSection
-            comprobantes={comprobantesCargados}
-            onEliminar={handleEliminarComprobanteCargado}
-            eliminandoId={eliminandoComprobanteId}
-          />
-          <ConfirmDeleteModal
-            open={Boolean(comprobanteAEliminar)}
-            description={comprobanteAEliminar ? `el comprobante ${comprobanteAEliminar.nombre}` : ''}
-            handleDelete={handleConfirmarEliminar}
-            handleCancel={handleCancelarEliminar}
-          />
-          {showCrearPago && (
-            <CrearPagoModal
-              open={showCrearPago}
-              tipoNombre={form.tipo?.nombre || ''}
-              subcategoriaId={form.tipo?.id || ''}
-              fechaInicial={form.fecha}
-              montoInicial={form.monto}
-              comentarios={form.comentarios}
-              onClose={() => setShowCrearPago(false)}
-              onPagoCreado={handlePagoCreado}
-            />
-          )}
-          <TextField
-            label="Monto"
-            type="number"
-            value={form.monto}
-            onChange={(e) => handleChangeSimple('monto', e.target.value)}
-            fullWidth
-            size="small"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={form.anual} onChange={(e) => handleChangeSimple('anual', e.target.checked)} />}
-            label="Anual"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={form.fechaConfirmada}
-                onChange={(e) => handleChangeSimple('fechaConfirmada', e.target.checked)}
+            <Box display="flex" gap={0.5} alignItems="center">
+              <Autocomplete
+                options={posiblesPagos}
+                getOptionLabel={(option: MovimientoDeVencimiento) =>
+                  `${formatDate(option.fecha, false, { timeZone: 'UTC' })} - $${option.monto}`
+                }
+                value={posiblesPagos.find((pago) => pago.id === form.pagoId) || null}
+                renderInput={(params) => <TextField {...params} label="Pago relacionado" />}
+                onChange={(_, value) => handlePagoChanged(value)}
+                getOptionKey={(option: MovimientoDeVencimiento) => option.id}
+                size="small"
+                sx={{ flex: 1 }}
               />
-            }
-            label="Fecha Confirmada"
-          />
-          <TextField
-            label="Comentarios"
-            fullWidth
-            multiline
-            rows={3}
-            value={form.comentarios || ''}
-            onChange={(e) => handleChangeSimple('comentarios', e.target.value)}
-            variant="outlined"
-          />
+              <Tooltip title={canCrearPago ? 'Crear movimiento de pago' : 'Completar tipo y monto primero'}>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={() => setShowCrearPago(true)}
+                    disabled={!canCrearPago}
+                    size="small"
+                  >
+                    <AddCircleOutlineIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+            <ComprobantesSection
+              comprobantes={comprobantes}
+              prefijo={prefijo}
+              duplicados={duplicados}
+              onArchivoSeleccionado={handleArchivoSeleccionado}
+              onComentarioChanged={handleComentarioChanged}
+              onEliminarArchivo={handleEliminarArchivo}
+            />
+            <ComprobantesCargadosSection
+              comprobantes={comprobantesCargados}
+              onEliminar={handleEliminarComprobanteCargado}
+              eliminandoId={eliminandoComprobanteId}
+            />
+            <ConfirmDeleteModal
+              open={Boolean(comprobanteAEliminar)}
+              description={comprobanteAEliminar ? `el comprobante ${comprobanteAEliminar.nombre}` : ''}
+              handleDelete={handleConfirmarEliminar}
+              handleCancel={handleCancelarEliminar}
+            />
+            {showCrearPago && (
+              <CrearPagoModal
+                open={showCrearPago}
+                tipoNombre={form.tipo?.nombre || ''}
+                subcategoriaId={form.tipo?.id || ''}
+                fechaInicial={form.fecha}
+                montoInicial={form.monto}
+                comentarios={form.comentarios}
+                onClose={() => setShowCrearPago(false)}
+                onPagoCreado={handlePagoCreado}
+              />
+            )}
+            <TextField
+              label="Monto"
+              type="number"
+              value={form.monto}
+              onChange={(e) => handleChangeSimple('monto', e.target.value)}
+              fullWidth
+              size="small"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox checked={form.anual} onChange={(e) => handleChangeSimple('anual', e.target.checked)} />
+              }
+              label="Anual"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.fechaConfirmada}
+                  onChange={(e) => handleChangeSimple('fechaConfirmada', e.target.checked)}
+                />
+              }
+              label="Fecha Confirmada"
+            />
+            <TextField
+              label="Comentarios"
+              fullWidth
+              multiline
+              rows={3}
+              value={form.comentarios || ''}
+              onChange={(e) => handleChangeSimple('comentarios', e.target.value)}
+              variant="outlined"
+            />
+          </Box>
+        </DialogContent>
+        <Box display="flex" justifyContent="center" sx={styles.buttonBar} gap={2}>
+          <Button
+            onClick={handleGuardar}
+            color="primary"
+            variant="contained"
+            disabled={errors.length > 0 || duplicados.length > 0 || Boolean(faseGuardado)}
+          >
+            Guardar
+          </Button>
+          <Button onClick={() => handleClose('')} color="secondary" disabled={Boolean(faseGuardado)}>
+            Cancelar
+          </Button>
         </Box>
-      </DialogContent>
-      <Box display="flex" justifyContent="center" sx={styles.buttonBar} gap={2}>
-        <Button
-          onClick={handleGuardar}
-          color="primary"
-          variant="contained"
-          disabled={errors.length > 0 || duplicados.length > 0}
-        >
-          Guardar
-        </Button>
-        <Button onClick={() => handleClose('')} color="secondary">
-          Cancelar
-        </Button>
+        {faseGuardado ? (
+          <Box sx={styles.loadingOverlay} data-testid="loading-overlay">
+            <CircularProgress size={36} />
+            <Typography variant="subtitle2">{MENSAJE_FASE[faseGuardado]}</Typography>
+          </Box>
+        ) : null}
       </Box>
     </Dialog>
   );

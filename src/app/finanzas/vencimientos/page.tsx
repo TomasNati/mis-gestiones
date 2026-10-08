@@ -20,7 +20,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useEffect, useRef, useState } from 'react';
 import { FilterComponent, FILTERS_DEFAULT } from '@/components/vencimientos/Filtros/Filtros';
-import { AgregarEditarModal } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
+import { AgregarEditarModal, FaseGuardado } from '@/components/vencimientos/AgregarEditarModal/AgregarEditarModal';
 import { persistirVencimiento, eliminarVencimiento, copiarVencimientos } from '@/lib/orm/actions';
 import { Box } from '@mui/material';
 import { VencimientosGrilla } from '@/components/vencimientos/VencimientoGrilla/VencimientoGrilla';
@@ -94,7 +94,6 @@ const Vencimientos = () => {
     fetchTiposDeVencimientos();
     fetchVencimientos();
   }, [buscarVencimientoPayload]);
-
 
   useEffect(() => {
     const vencimientosConId = vencimientos.filter((vencimiento): vencimiento is VencimientoUI & { id: string } =>
@@ -187,7 +186,11 @@ const Vencimientos = () => {
     return [...erroresDescartados, ...erroresSubida];
   };
 
-  const handleGuardarVencimiento = async (vencimiento: VencimientoUI, comprobantes: ComprobantePagoParaSubir[]) => {
+  const handleGuardarVencimiento = async (
+    vencimiento: VencimientoUI,
+    comprobantes: ComprobantePagoParaSubir[],
+    onProgreso: (fase: FaseGuardado) => void,
+  ) => {
     const resultado = await persistirVencimiento(vencimiento);
 
     if (!resultado.exitoso) {
@@ -202,6 +205,9 @@ const Vencimientos = () => {
     const exitoVencimiento = vencimiento.id
       ? 'Vencimiento actualizado correctamente'
       : 'Vencimiento agregado correctamente';
+    if (comprobantes.length) {
+      onProgreso('subiendo');
+    }
     const errores = await subirComprobantes(resultado.id, vencimiento, comprobantes);
     const subidos = comprobantes.length - errores.length;
 
@@ -341,9 +347,7 @@ const Vencimientos = () => {
             maxUploadBytes={maxUploadBytes}
             open={showAgregarEditarModal}
             vencimiento={vencimientoAEditar}
-            comprobantesCargados={
-              vencimientoAEditar?.id ? comprobantesPorVencimiento[vencimientoAEditar.id] || [] : []
-            }
+            comprobantesCargados={vencimientoAEditar?.id ? comprobantesPorVencimiento[vencimientoAEditar.id] || [] : []}
             pagos={posiblesPagos}
           />
         ) : null}
