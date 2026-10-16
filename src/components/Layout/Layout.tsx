@@ -1,128 +1,172 @@
 'use client';
 
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, ListItemButton } from '@mui/material';
-import { Box } from '@mui/system';
-import SavingsIcon from '@mui/icons-material/Savings';
-import SettingsIcon from '@mui/icons-material/Settings';
-import DomainIcon from '@mui/icons-material/Domain';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
-import PaymentsIcon from '@mui/icons-material/Payments';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import ApiOutlinedIcon from '@mui/icons-material/ApiOutlined';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import SettingsIcon from '@mui/icons-material/Settings';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
+import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
+import { Box, Drawer, IconButton } from '@mui/material';
 import Link from 'next/link';
-import { useState, ReactNode, ElementType, HTMLAttributeAnchorTarget } from 'react';
+import { usePathname } from 'next/navigation';
+import { useState, type ElementType, type ReactNode } from 'react';
 import { styles } from './Layout.styles';
 
-const DRAWER_WIDTH = 200;
-const DRAWER_COLLAPSED_WIDTH = 85;
+const DRAWER_WIDTH = 232;
+const DRAWER_COLLAPSED_WIDTH = 56;
 
 interface LinkItem {
   text: string;
   href: string;
   icon: ElementType;
-  submenu?: LinkItem[] | null;
-  target?: HTMLAttributeAnchorTarget;
+  submenu?: LinkItem[];
 }
 
+/**
+ * Menú en el orden del mockup (`shell.js` → NAV). **Sin Importar**.
+ * `Resumen` apunta a `/finanzas` (página nueva, ver Fase 2 del plan).
+ */
 const LINKS: LinkItem[] = [
-  { text: 'Tomi', href: '/tomi', icon: FaceOutlinedIcon, submenu: null },
+  { text: 'Tomi', href: '/tomi', icon: FaceOutlinedIcon },
   {
     text: 'Finanzas',
     href: '/finanzas',
-    icon: SavingsIcon,
+    icon: AccountBalanceWalletOutlinedIcon,
     submenu: [
-      { text: 'Movimientos', href: '/finanzas/movimientosDelMes', icon: PaymentsIcon },
+      { text: 'Resumen', href: '/finanzas', icon: DashboardOutlinedIcon },
+      { text: 'Movimientos', href: '/finanzas/movimientosDelMes', icon: ReceiptLongOutlinedIcon },
       { text: 'Presupuesto', href: '/finanzas/presupuestoDelMes', icon: BarChartIcon },
       { text: 'Vencimientos', href: '/finanzas/vencimientos', icon: ScheduleIcon },
-      { text: 'Buscar Movimientos', href: '/finanzas/buscarMovimientos', icon: ManageSearchOutlinedIcon },
+      { text: 'Buscar', href: '/finanzas/buscarMovimientos', icon: ManageSearchOutlinedIcon },
     ],
   },
-  { text: 'Inversiones', href: '/inversiones', icon: ShowChartIcon, submenu: null },
-  { text: 'Importar', href: '/importar', icon: FileUploadIcon, submenu: null },
+  { text: 'Inversiones', href: '/inversiones', icon: ShowChartIcon },
 ];
 
-const PLACEHOLDER_LINKS: LinkItem[] = [
+/** `NAV_FOOTER` del mockup: Configuración → Categorías / API. */
+const FOOTER_LINKS: LinkItem[] = [
   {
-    text: 'Settings',
-    icon: SettingsIcon,
+    text: 'Configuración',
     href: '/settings',
+    icon: SettingsIcon,
     submenu: [
-      { text: 'Admin', href: '/settings/admin', icon: TuneOutlinedIcon },
-      { text: 'API Access', href: '/settings/api', icon: ApiOutlinedIcon },
+      { text: 'Categorías', href: '/settings/admin', icon: AccountTreeOutlinedIcon },
+      { text: 'API', href: '/settings/api', icon: ApiOutlinedIcon },
     ],
   },
 ];
 
-interface LinkItemComponentProps {
-  text: string;
-  href: string;
-  icon: ElementType;
-  submenu?: LinkItem[] | null;
-  target?: HTMLAttributeAnchorTarget;
-  toggleSubmenu: (href: string) => void;
-  collapsed?: boolean;
-  openSubmenu: string | null;
+interface LayoutProps {
+  children: ReactNode;
 }
 
-const LinkItemComponent = ({
-  text,
-  href,
-  icon: Icon,
-  submenu,
-  target,
-  toggleSubmenu,
-  collapsed,
-  openSubmenu,
-}: LinkItemComponentProps) => (
-  <>
-    <ListItem disablePadding>
-      <ListItemButton
-        component={submenu ? 'div' : Link} // Use 'div' if there's a submenu
-        href={submenu ? undefined : href}
-        target={target}
-        onClick={() => submenu && toggleSubmenu(href)}
-      >
-        <ListItemIcon>
-          <Icon />
-        </ListItemIcon>
-        {collapsed ? null : <ListItemText primary={text} />}
-      </ListItemButton>
-    </ListItem>
-    {submenu && openSubmenu === href && (
-      <List sx={styles.submenuList}>
-        {submenu.map(({ text: subText, href: subHref, icon: SubIcon, target: SubTarget }) => (
-          <ListItem key={subHref} disablePadding>
-            <ListItemButton component={Link} href={subHref} target={SubTarget}>
-              <ListItemIcon>
-                <SubIcon />
-              </ListItemIcon>
-              {collapsed ? null : <ListItemText primary={subText} />}
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    )}
-  </>
-);
+const isPathActive = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(`${href}/`);
 
-const Layout = ({ children }: { children: ReactNode }) => {
+/**
+ * De los hijos, el que mejor matchea el pathname actual (el href más largo).
+ * Permite que `Resumen` (`/finanzas`) no quede activo en `/finanzas/movimientosDelMes`.
+ */
+const activeChildHref = (pathname: string, item: LinkItem) => {
+  if (!item.submenu?.length) return undefined;
+  const matches = item.submenu.filter((child) => isPathActive(pathname, child.href));
+  if (!matches.length) return undefined;
+  return matches.sort((a, b) => b.href.length - a.href.length)[0].href;
+};
+
+const Layout = ({ children }: LayoutProps) => {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  // Override explícito por item (`true` abierto / `false` cerrado). Sin override,
+  // el submenú se auto-abre si hay un hijo activo. El override se limpia al
+  // cambiar de ruta para que al entrar a una sección se vea el árbol de nuevo.
+  const [submenuState, setSubmenuState] = useState<Record<string, boolean>>({});
+  const [lastPathname, setLastPathname] = useState(pathname);
 
-  const onCollapse = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const toggleSubmenu = (href: string) => {
-    setOpenSubmenu(openSubmenu === href ? null : href);
-  };
+  if (lastPathname !== pathname) {
+    setLastPathname(pathname);
+    setSubmenuState({});
+  }
 
   const drawerWidth = collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH;
+
+  const toggleSubmenu = (href: string, open: boolean) => {
+    setSubmenuState((current) => ({ ...current, [href]: !open }));
+  };
+
+  const renderItem = (item: LinkItem, depth: number, parentActiveChild?: string) => {
+    const hasSubmenu = !!item.submenu?.length;
+    const childHref = hasSubmenu ? activeChildHref(pathname, item) : undefined;
+
+    // Un padre con hijos nunca queda `is-active`: el activo lo lleva el hijo (como el mockup).
+    const isActive =
+      depth === 0 ? !hasSubmenu && isPathActive(pathname, item.href) : item.href === parentActiveChild;
+
+    const isParentActive = hasSubmenu && childHref !== undefined;
+    // Auto-abierto si hay un hijo activo; el click del usuario manda.
+    const open = submenuState[item.href] ?? isParentActive;
+
+    return (
+      <Box key={`${depth}-${item.href}-${item.text}`}>
+        <Box
+          component={Link}
+          href={item.href}
+          title={collapsed ? item.text : undefined}
+          aria-label={collapsed ? item.text : undefined}
+          aria-current={isActive ? 'page' : undefined}
+          aria-expanded={hasSubmenu ? open : undefined}
+          sx={{
+            ...styles.navItem,
+            ...(depth > 0 && styles.navItemSub),
+            ...(isActive && styles.navItemActive),
+            ...(depth > 0 && isActive && !collapsed && { '&::before': { left: '-13px' } }),
+            ...(isParentActive && styles.navItemParentActive),
+            // Overrides de colapsado al final para que ganen sobre los de arriba.
+            ...(collapsed && styles.navItemCollapsed),
+            ...(collapsed && depth > 0 && styles.navItemSubCollapsed),
+            ...(collapsed && depth === 0 && isActive && { '&::before': { left: '-8px' } }),
+          }}
+        >
+          <item.icon className="nav-icon" sx={styles.navIcon} />
+          {!collapsed && <Box component="span" sx={styles.navLabel}>{item.text}</Box>}
+          {hasSubmenu && (
+            <Box
+              component="span"
+              role="button"
+              tabIndex={0}
+              aria-label={open ? 'Contraer submenú' : 'Expandir submenú'}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleSubmenu(item.href, open);
+              }}
+              sx={{
+                ...styles.navCaret,
+                ...(open && styles.navCaretOpen),
+                // Colapsado: ícono + caret tienen que entrar en el riel de 56px.
+                ...(collapsed && { marginLeft: 0, width: 14, height: 14, fontSize: '14px' }),
+              }}
+            >
+              <ExpandMoreIcon fontSize="inherit" />
+            </Box>
+          )}
+        </Box>
+
+        {hasSubmenu && open && (
+          <Box sx={{ ...styles.navSub, ...(collapsed && styles.navSubCollapsed) }}>
+            {item.submenu!.map((child) => renderItem(child, depth + 1, childHref))}
+          </Box>
+        )}
+      </Box>
+    );
+  };
 
   return (
     <>
@@ -139,56 +183,31 @@ const Layout = ({ children }: { children: ReactNode }) => {
         anchor="left"
         elevation={0}
       >
-        <List>
-          <ListItem>
-            <ListItemButton onClick={onCollapse} sx={styles.logoButton}>
-              <ListItemIcon>
-                <DomainIcon />
-              </ListItemIcon>
-              {collapsed ? null : <ListItemText primary="Mis gestiones" />}
-            </ListItemButton>
-          </ListItem>
-        </List>
-        <Divider />
-        <List>
-          {LINKS.map(({ text, href, icon: Icon, submenu }) => (
-            <div key={href}>
-              <LinkItemComponent
-                text={text}
-                href={href}
-                icon={Icon}
-                submenu={submenu}
-                toggleSubmenu={toggleSubmenu}
-                openSubmenu={openSubmenu}
-                collapsed={collapsed}
-              />
-            </div>
-          ))}
-        </List>
-        <Divider sx={styles.spacerDivider} />
-        <List>
-          {PLACEHOLDER_LINKS.map(({ text, icon: Icon, href, submenu }) => (
-            <div key={href}>
-              <LinkItemComponent
-                text={text}
-                href={href}
-                icon={Icon}
-                submenu={submenu}
-                toggleSubmenu={toggleSubmenu}
-                openSubmenu={openSubmenu}
-                collapsed={collapsed}
-              />
-            </div>
-          ))}
-        </List>
+        <Box sx={{ ...styles.brand, ...(collapsed && { flexDirection: 'column', gap: '8px', padding: '4px 0 12px' }) }}>
+          <Box component={Link} href="/" title="Mis gestiones" sx={styles.brandLink}>
+            <Box sx={styles.brandMark}>M</Box>
+            {!collapsed && <Box sx={styles.brandName}>Mis gestiones</Box>}
+          </Box>
+          <IconButton
+            size="small"
+            onClick={() => setCollapsed((value) => !value)}
+            sx={styles.toggle}
+            title={collapsed ? 'Expandir barra lateral' : 'Contraer barra lateral'}
+          >
+            <ViewSidebarOutlinedIcon fontSize="small" />
+          </IconButton>
+        </Box>
+
+        <Box component="nav" sx={styles.nav}>
+          {LINKS.map((item) => renderItem(item, 0))}
+        </Box>
+
+        <Box component="nav" sx={styles.navFooter}>
+          {FOOTER_LINKS.map((item) => renderItem(item, 0))}
+        </Box>
       </Drawer>
-      <Box
-        component="main"
-        sx={{
-          ...styles.main,
-          ml: `${drawerWidth}px`,
-        }}
-      >
+
+      <Box component="main" sx={{ ...styles.main, ml: `${drawerWidth}px` }}>
         {children}
       </Box>
     </>

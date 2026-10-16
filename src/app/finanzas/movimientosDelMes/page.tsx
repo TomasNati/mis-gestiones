@@ -17,6 +17,7 @@ import { MovimientosDelMesGrillaMRT } from '@/components/Movimientos/Movimientos
 import { crearMovimientos, actualizarMovimiento } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
+// TODO(rediseño-tema, Fase 3 — Movimientos): reemplazar por '@/components/ui' (StatsCluster genérico).
 import { StatsCluster } from '@/components/Movimientos/StatsCluster';
 import { TipoDeGastoPorMes, CrecimientoDeGastosEnElMes } from '@/components/graficos/';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -225,6 +226,11 @@ const MovimientosDelMes = () => {
           </Divider>
 
           {/* Stats cluster */}
+          {/* TODO(rediseño-tema, Fase 3 — Movimientos): migrar al StatsCluster genérico
+              de '@/components/ui' y borrar el componente de 'components/Movimientos/StatsCluster'.
+              Equivalencia del mockup finanzas-movimientos.html:
+              Presupuesto / Ingresos / Egresos (danger) / Balance (accent) / Presupuesto usado /
+              Vencimientos pendientes (attention). */}
           <StatsCluster
             presupuesto={totalMensualEstimado || 0}
             gastado={movimientos.reduce((acc, mov) => acc + (mov.monto || 0), 0)}

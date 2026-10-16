@@ -38,56 +38,84 @@ Menú de los mockups (`shell.js` → `NAV` / `NAV_FOOTER`), de arriba hacia abaj
 
 Base sobre la que se apoyan todas las páginas. Se hace una sola vez, antes de tocar contenido.
 
-### 0.1 Tokens → `src/components/ThemeRegistry/theme-tokens.css`
+### 0.1 Tokens → `src/components/ThemeRegistry/theme-tokens.css` — ✅ **hecho**
 
-Ampliar el bloque `:root` (hoy 14 vars) con los de `assets/app.css`, **conservando los nombres existentes** y agregando los faltantes:
+Ampliar el bloque `:root` (tenía 14 vars) con los de `assets/app.css`, **conservando los nombres existentes** y agregando los faltantes (78 tokens, `color-scheme: dark`, agrupados por comentario):
 
-- [ ] Fondos: `--bg-inset: #010409`, `--bg-overlay: #1c2129`, `--bg-emphasis: #3d444d`; **ajustar** `--bg-elevated: #212830` (hoy `#3d444d` es el elevated y ahora es `--bg-emphasis`) y `--bg-row-hover: #1f252e` (hoy `#262c36`).
-- [ ] Bordes: `--border-muted: #262c36`.
-- [ ] Texto: `--text-on-emphasis: #ffffff`.
-- [ ] Acento extra: `--accent-emphasis`, `--accent-hover`, `--accent-ring`.
-- [ ] Semánticos (base + soft + border + emphasis): `--success`, `--attention`, `--severe`, `--danger`, `--done`, `--neutral-*`.
-- [ ] Series de gráficos: `--series-1..8`, `--series-muted`.
-- [ ] Tipos/espaciado/radio/sombras: `--font-display/body/mono`, `--fs-11..32`, `--space-1..6`, `--gutter`, `--radius*`, `--shadow-overlay`, `--shadow-focus`, `--sidebar-w` (232), `--sidebar-w-collapsed` (56), `--control-h` (32), `--control-h-sm`, `--row-h` (40), `--ease`.
-- [ ] Verificar que ningún valor actual usado en `globals.css`/componentes quede roto (buscar `var(--bg-elevated)` y `var(--bg-row-hover)`).
+- [x] Fondos: `--bg-inset: #010409`, `--bg-overlay: #1c2129`, `--bg-emphasis: #3d444d`; **ajustar** `--bg-elevated: #212830` (el `#3d444d` que era "elevated" ahora es `--bg-emphasis`) y `--bg-row-hover: #1f252e` (era `#262c36`).
+- [x] Bordes: `--border-muted: #262c36`.
+- [x] Texto: `--text-on-emphasis: #ffffff`.
+- [x] Acento extra: `--accent-emphasis`, `--accent-hover`, `--accent-ring`.
+- [x] Semánticos (base + soft + border + emphasis): `--success`, `--attention`, `--severe`, `--danger`, `--done`, `--neutral-*`.
+- [x] Series de gráficos: `--series-1..8`, `--series-muted`.
+- [x] Tipos/espaciado/radio/sombras: `--font-display/body/mono`, `--fs-11..32`, `--space-1..6`, `--gutter`, `--radius*`, `--shadow-overlay`, `--shadow-focus`, `--sidebar-w` (232), `--sidebar-w-collapsed` (56), `--control-h` (32), `--control-h-sm`, `--row-h` (40), `--ease`.
 
-### 0.2 Tema MUI → `src/components/ThemeRegistry/theme.ts`
+**Verificación y notas:**
+- [x] Script que cruza todos los `var(--x)` usados en `src/**` contra los definidos: **sin tokens faltantes** (los `--font-*` que ya usaba `globals.css` antes no estaban definidos; ahora sí).
+- [x] `npx tsc --noEmit` → exit 0.
+- [x] Se **eliminó `--bg-row-alt`** (definido pero sin ningún uso en `src/`).
+- Efecto inmediato de los dos cambios de valor (superficies que ya se ven afectadas):
+  - `--bg-elevated` (#3d444d → #212830): headers de `MuiDataGrid` (`theme.ts`), chips de MRT, fila de grupo de Movimientos, track de `MuiLinearProgress` y de `StatsCluster` — todos en el sentido del mockup (`.chip`, `.meter` usan `--bg-elevated`).
+  - `--bg-row-hover` (#262c36 → #1f252e): hover de filas MRT/DataGrid y del sidebar.
+  - Los headers de tabla quedarán en `--bg-page`/`--bg-panel` (como `.table thead th`) en las fases de cada página.
+- 64 de los tokens nuevos todavía no se consumen: los usan 0.3 (componentes), 0.4 (sidebar) y las fases de páginas.
 
-- [ ] Mapear semánticos a `palette.success / warning / error / info.secondary` con los valores nuevos (verde `#3fb950`, ámbar `#d29922`, rojo `#f85149`, violeta `#a371f7`).
-- [ ] Actualizar `background` (`default #0d1117`, `paper #151b23`) y `divider` → `var(--border-muted)`.
-- [ ] **`MuiDialog` global** (el mockup pide un único estilo de modal con sombra `--shadow-overlay`, header con subtítulo, footer con acciones a la derecha): paper `bg-overlay`, radius `--radius-lg`, `boxShadow: var(--shadow-overlay)`.
-- [ ] Revisar `MuiCssBaseline`: los overrides de `.MuiDataGrid-root` siguen siendo necesarios solo en tanto queden grillas con x-data-grid (Presupuesto/Vencimientos); no migrar acá.
-- [ ] Unificar botones: `textTransform: none`, `fontFamily: var(--font-display)`, alturas `--control-h`/`--control-h-sm` para `size="small"`.
-- [ ] Mapear `MuiChip` para que herede `.pill` (si se decide implementar el pill como Chip) o dejarlo para el componente `Pill`.
+### 0.2 Tema MUI → `src/components/ThemeRegistry/theme.ts` — ✅ **hecho**
 
-### 0.3 Componentes compartidos nuevos → `src/components/` (carpeta nueva p.ej. `src/components/ui/`)
+- [x] Mapear semánticos a `palette.success / warning / error / info` con los valores nuevos: `success #3fb950` (+ `dark #238636`), `warning #d29922` (+ `dark #9e6a03`), `error #f85149` (+ `dark #da3633`), `info #a371f7` (el violeta `--done` del sistema). Se agregó `contrastText: #FFFFFF` a cada uno.
+  - **Necesario** para `VencimientoGrilla.tsx`, que ya usaba `theme.palette.success/warning/error.{main,dark}`; antes caía en los defaults de MUI y ahora toma los colores del tema.
+- [x] Actualizar `background` (`default #0d1117`, `paper #151b23`) y `divider` → `var(--border-muted)`; se agregó `text: { primary, secondary, disabled }` con los tokens.
+- [x] **`MuiDialog` global**: paper `--bg-overlay`, borde `--border-soft`, radius `--radius-lg`, `boxShadow: var(--shadow-overlay)`, `backgroundImage: none`; inputs dentro del modal en `--bg-inset` (como `.modal .input`). Se estilaron `MuiDialogTitle` (padding 14/16, borde inferior, Space Grotesk 16/600), `MuiDialogContent` (16) y `MuiDialogActions` (12/16, borde superior, alineado a la derecha, gap 8) para replicar `.modal-header/body/footer`.
+- [x] `MuiCssBaseline`: se **conservan** los overrides de `.MuiDataGrid-*` y `MuiLinearProgress` (siguen haciendo falta mientras queden grillas con `@mui/x-data-grid`: Presupuesto y Vencimientos). No se migró nada acá.
+- [x] Unificar botones: `textTransform: none`, `fontFamily: Space Grotesk`, `fontSize: 13/500`, `height: var(--control-h)` (`--control-h-sm` + 12.5px en `size="small"`), `borderRadius: var(--radius)`, `padding: 0 12px` (10px en small) y `disableElevation` por defecto. `containedPrimary` pasó a `--accent-emphasis` con texto `--text-on-emphasis` y hover `--accent-hover` (como `.btn.primary`); `outlinedPrimary` usa borde `--border-soft`/hover `--border-strong`.
+- [x] **`MuiChip`: se deja para el componente `Pill` (0.3).** Decisión: el pill del mockup (`success/attention/danger/done/outline/accent`) lleva lógica de variantes; conviene resolverlo una sola vez en el componente y no forzar alturas/colores en todos los `Chip` existentes. Mientras tanto los chips ya toman `--bg-elevated` con el valor nuevo.
+- [x] Extras de consistencia: se reemplazaron hex hardcodeados por tokens (`--accent`, `--accent-emphasis`, `--text-tertiary`, `--border-soft`, `--bg-emphasis`, `--text-primary`, `--accent-soft`) en `MuiAlert`, `MuiSelect` y `MuiToggleButton` (selected pasa de `accent-soft` a `bg-emphasis`, como el `.segmented` del mockup). En el `Alert` de `severity="info"` se fijó texto/ícono en `--text-on-emphasis` porque el fondo es el acento sólido (antes el ícono tomaba el color de `palette.info` y quedaba azul sobre azul).
 
-Piezas que el mockup define una sola vez y reutiliza en todas las páginas (mapeo de `index.html`):
+**Verificación:** `npx tsc --noEmit` → exit 0; `npx eslint theme.ts` → sin errores. `git diff HEAD` confirma que no se perdió ningún override previo (solo agregados/cambios).
 
-- [ ] **`PageHeader`** — topbar con `breadcrumb` (raíz + `/` + actual) y `topbar-actions` a la derecha (botón primary). Sustituye los headers hechos a mano por página.
-- [ ] **`MonthStrip` / `TabStrip`** — la tira `.months` con `.month-tab` (meses o tabs), `.count`, `.spacer`, `strip-end` (chips/segmented/switch según página). Se comporta como tabs (mock: `data-tabs`). Unificar con `docs/mockups` month tabs y con el segmented de Settings.
-- [ ] **`StatsCluster`** — clúster generalizado de N stats (valor + label) con **meter** opcional y estados ámbar/rojo/violeta.
-- [ ] **`Pill`** — etiqueta de estado/tipo: variantes `success`, `attention`, `danger`, `done`, `outline`, `accent` (+ `method` para API), con ícono opcional. Reemplaza los `Chip`/`label` dispersos.
-- [ ] **`EmptyState`** — bloque `.empty` (ícono + h3 + p + acción).
-- [ ] **`SkeletonRows`** — estado de carga consistente (Buscar pide skeleton).
-- [ ] **Helper de tabla MRT** — `muiTableProps` compartido (densidad, bordes `--border-muted`, header `--bg-elevated`, fila hover `--bg-row-hover`, selección `--accent-soft`, mono alineado a derecha) para que Todas las grillas MRT luzcan igual. Referencia: el patrón ya usado en `BuscarMovimientosResultadosMRT` / `MovimientosDelMesGrillaMRT`.
-- [ ] **Paleta `--series-*`** para `@mui/x-charts` (constante compartida) — un solo eje, sin múltiples colores por serie.
+> Nota: los cambios de `MuiButton` (altura fija 32/28, `containedPrimary` más oscuro `#1f6feb`, sin elevación) y de `MuiDialog` se ven en TODA la app desde ya, antes de migrar cada página.
 
-### 0.4 Shell / Sidebar → `src/components/Layout/Layout.tsx` + `Layout.styles.ts`
+### 0.3 Componentes compartidos nuevos → `src/components/ui/` — ✅ **hecho**
 
-- [ ] Fondo del sidebar = `var(--bg-inset)` (mockup: sidebar separado por borde, no `--bg-panel`).
-- [ ] **Anchos**: `--sidebar-w: 232` / `--sidebar-w-collapsed: 56` (hoy `200`/`85`).
-- [ ] **Marca** con botón de colapso (brand-mark `M` + nombre; al colapsar solo el mark), como `shell.js`.
-- [ ] **Activo por pathname** con `usePathname()` (hoy no resalta el actual): clase `is-active` en el item exacto e `is-parent-active` cuando un hijo está activo.
-- [ ] **Submenú de Finanzas como riel**: el menú muestra Finanzas con su hija activa; el despliegue de Resumen/Movimientos/Presupuesto/Vencimientos/Buscar se resuelve según `shell.js` (nivel raíz + hijos). Definir si se expande en línea (como hoy) o como riel secundario — preferencia: mantener hijos visibles bajo el padre cuando un hijo está activo.
-- [ ] **Menú final** (`LINKS`), en orden de mockup y **sin Importar**:
+Piezas que el mockup define una sola vez y reutiliza en todas las páginas (mapeo de `index.html`). Todas exportadas desde `src/components/ui/index.ts` (barrel con un `index.ts` por carpeta, como el resto del repo). **Todavía no las consume ninguna página**: se adoptan en las Fases 1–9.
+
+- [x] **`PageHeader`** — `.topbar` + `.breadcrumb` (raíz + `/` + actual) + `.topbar-actions`. Props: `crumbs: {label, href?}[]` (sin `href` = actual, se pinta `strong`), `actions`, `subtitle`.
+- [x] **`MonthStrip`** — tira `.months`: `items: {key, label, year?, count?, current?}[]`, `activeKey` (string **o array**), `onSelect`, `variant: 'underline'|'multi'` (`.months--multi`), `leading` (botón de año), `nav` (`onPrev/onNext` + disabled + titles) y `end` (slot `.strip-end`). El `.count` sólo se muestra en el activo (como el mockup) y el punto `.is-current` sale de `current`.
+- [x] **`StatsCluster`** — creado en `src/components/ui/StatsCluster/`. API: `items: StatItem[]` con `label`, `value`, `tone` (`accent|danger|success|attention`), `delta` (`text`, `tone`, `icon`) y `meter` (`value` 0-100, `tone` `accent|warn|over|far-over`, `legend` `{left, pct}`); `wide` para `.stat--wide`. Portados `.stats/.stat/.stat--wide/.label/.value.tone/.delta/.meter/.meter-legend`.
+  - **Pendiente (Fase 3 — Movimientos):** migrar `src/components/Movimientos/StatsCluster/` a este genérico y borrarlo. Quedó un `TODO(rediseño-tema, Fase 3 — Movimientos)` en la importación y en el uso (`src/app/finanzas/movimientosDelMes/page.tsx`) y un `@deprecated` en el componente viejo.
+- [x] **`Pill`** — `variant: neutral|success|attention|severe|danger|done|accent` + `outline` (fondo transparente, conserva el tono), `method` (`.method`: mono, min-width 62 para métodos HTTP), `dot` e `icon` opcionales. Variantes verificadas contra el uso real en los mockups (108 `success`, 98 `outline`, 26 neutral, más `outline <tono>` con dot).
+- [x] **`EmptyState`** — `.empty` (ícono + h3 + p + acción).
+- [x] **`SkeletonRows`** — `rows`/`columns` con el shimmer de `.skeleton`. El `@keyframes shimmer` se agregó a `globals.css`.
+- [x] **Helper de tabla MRT** — `src/components/ui/table/mrtTable.ts`: `mrtTableProps({ surface })` (spread + override por página), `MRT_SURFACE_PAGE|PANEL|INSET`, `MRT_NUMERIC_CELL_SX` (mono tabular a la derecha) y `MRT_GROUP_ROW_SX`. **Corrección respecto al borrador:** el header NO va con `--bg-elevated` — el mockup usa el **fondo de la propia tabla** (`.table thead th { background: var(--bg-page) }` / `.panel .table thead th { background: var(--bg-panel) }`), borde inferior `--border-soft`, 11.5px `--text-tertiary`; las celdas llevan borde `--border-muted` y las filas `--row-h` / hover `--bg-row-hover` / selección `--accent-soft` + barra `inset` de 2px.
+- [x] **Paleta `--series-*`** — `src/components/ui/charts/series.ts`: `SERIES` (1..8), `SERIES_MUTED`, `seriesColor(i)` y `CHART_TONES` (bandas semánticas).
+
+### 0.4 Shell / Sidebar → `src/components/Layout/Layout.tsx` + `Layout.styles.ts` — ✅ **hecho**
+
+- [x] Fondo del sidebar = **`var(--bg-page)`** con `border-right: 1px solid var(--border-soft)`. *Corrección:* el borrador decía `--bg-inset`; el mockup (`.sidebar`) usa `--bg-page` con borde. Se aplicó el mockup.
+- [x] **Anchos**: `DRAWER_WIDTH` 232 / `DRAWER_COLLAPSED_WIDTH` 56 (antes 200/85).
+- [x] **Marca**: `.brand-mark` `M` (26×26, radius, `--accent-emphasis`, Space Grotesk 700) + "Mis gestiones" + botón de colapso (panel-left). Al colapsar la marca pasa a columna (mark + toggle) y se oculta el nombre.
+- [x] **Activo por pathname** (`usePathname()`): el hijo activo lleva `is-active` (fondo `--accent-soft` + barra de 3px a la izquierda, `--accent`); el padre con hijo activo lleva sólo `is-parent-active` (texto en `--text-primary`) — igual que `shell.js`, donde un padre nunca es `is-active`.
+- [x] **Desempate del hijo activo**: se elige el hijo con el `href` más largo que matchee, así `Resumen` (`/finanzas`) no queda activo en `/finanzas/movimientosDelMes`.
+- [x] **Submenú en línea** (no riel): arranca abierto si hay un hijo activo; el caret (chevron) lo togglea con `preventDefault` para no navegar. `.nav-sub` con riel vertical de 1px (`--border-muted`).
+- [x] **Menú final** (`LINKS`), en orden de mockup y **sin Importar**:
   - Tomi → `/tomi`
-  - Finanzas → `/finanzas` con hijos: **Resumen** `/finanzas`, Movimientos, Presupuesto, Vencimientos, Buscar
+  - Finanzas → `/finanzas` con hijos: **Resumen** `/finanzas`, Movimientos, Presupuesto, Vencimientos, **Buscar** (label acortado, antes "Buscar Movimientos")
   - Inversiones → `/inversiones`
-  - ~~Importar~~ **eliminar** (item + `FileUploadIcon` import + rutas — ver Fase 10).
-  - Footer: Configuración → Categorías `/settings/admin`, API `/settings/api` (renombrar labels desde "Admin/API Access").
-- [ ] Íconos: reemplazar MUI icons por la correspondencia de `ICONS` (`shell.js`) donde aporte, o mantener MUI equivalentes (`smile`, `wallet`, `receipt`, `chart-bar`, `clock`, `search`, `chart-line`, `settings`, `folder-tree`, `plug`).
-- [ ] Quitar `Divider` sobrantes; usar `--border-muted`.
+  - ~~Importar~~ **eliminado del menú** (item + `FileUploadIcon`). La ruta `/importar` sigue existiendo; se limpia en Fase 10.
+  - Footer: **Configuración** → **Categorías** `/settings/admin`, **API** `/settings/api` (labels renombrados desde "Admin"/"API Access").
+- [x] Íconos MUI equivalentes a `ICONS` de `shell.js`: `smile`→`FaceOutlined`, `wallet`→`AccountBalanceWalletOutlined`, `layout`→`DashboardOutlined`, `receipt`→`ReceiptLongOutlined`, `chart-bar`→`BarChart`, `clock`→`Schedule`, `search`→`ManageSearchOutlined`, `chart-line`→`ShowChart`, `settings`→`Settings`, `folder-tree`→`AccountTreeOutlined`, `plug`→`ApiOutlined`.
+- [x] `Divider` sobrantes eliminados; separadores con borde `--border-muted` (`.nav-footer` con `margin-top:auto` + borde superior).
+- [x] **Colapsado**: items centrados sin padding ni etiqueta. **Desvío deliberado del mockup:** en colapsado se **mantiene el caret** en los items con submenú y los hijos se pintan como íconos centrados (`navItemSubCollapsed` / `navSubCollapsed`), así el submenú queda accesible sin expandir la barra. El único indicador de sección activa pasa a ser el **hijo activo** (fondo `--accent-soft` + ícono acento): como el submenú se auto-abre, no se duplica el resaltado en el padre. Los items colapsados llevan `title` + `aria-label` porque no se ve la etiqueta. (El mock, en cambio, hace `display:none` del `.nav-sub` al colapsar.)
+- [ ] **Pendiente:** el bloque de usuario del mockup (`.sidebar-user`, avatar "A" / "Andrés") **no se implementó** — es chrome de mockup, no datos reales de la app. Definir si se agrega (Fase 10).
+- [ ] **Pendiente:** `styles.main` conserva `p: 3` (padding 24px) a propósito para no dejar sin aire las páginas todavía no migradas; **quitarlo cuando cada página aporte su propio `--gutter`** (`.topbar` / `.section` del mockup). Quedó un `TODO(rediseño-tema)` en `Layout.styles.ts`.
+
+### 0.2b Correcciones detectadas durante 0.3/0.4 (no estaban en el plan)
+
+- [x] **`palette.divider` no acepta `var()`**: MUI pasa los valores de paleta por `alpha()`/`decomposeColor()` (`Divider` rompía en runtime: *"MUI: Unsupported `var(--border-muted)` color"*). Se cambió a `#262C36` (literal, = `--border-muted`) con un comentario. Los `var()` sí son válidos dentro de `styleOverrides` (CSS crudo).
+- [x] **`--font-display/body/mono` no deben redefinirse en `:root`**: las define **next/font** en `<html>` (`src/app/layout.tsx`). Mi 0.1 las había agregado a `theme-tokens.css` con la misma especificidad → riesgo de pisarlas y perder el self-hosting. Se quitaron y se dejó un comentario.
+- [x] **Tipografía MUI**: `typography.fontFamily` y las variantes usaban el **nombre literal** (`'IBM Plex Sans'`, `'Space Grotesk'`), que no coincide con la familia generada por next/font → el texto MUI caía al fallback del sistema. Ahora usan `var(--font-body)` / `var(--font-display)` (también en `MuiButton` y `MuiDialogTitle`).
+  - **Queda pendiente** (se arregla en la fase de cada página): `sx` con nombre literal en `Layout` (ya corregido), `components/Movimientos/StatsCluster/StatsCluster.styles.ts`, `comun/SeleccionadorPeriodo/SeleccionadorPeriodo.styles.ts`, `MovimientosDelMesGrillaMRT.tsx` y `app/finanzas/movimientosDelMes/page.tsx`.
+
 
 **Verificación Fase 0:** `tsc --noEmit` ✓, lint ✓, y que la app compile viendo cualquier página con los tokens nuevos y el sidebar rediseñado.
 
@@ -110,7 +138,7 @@ Mockup: `docs/mockups/tomi.html`. Archivos actuales: `src/components/tomi/*` (`B
 - [ ] Reemplazar la tabla por `<Table>` nativa con las clases del mockup (el mockup **mantiene Table simple**, no MRT): fila de día con número en Space Grotesk, barra de sueño y acciones hover — **sin columna Total**.
 - [ ] Modal `EditarDiaModal` → estilo `MuiDialog` global (header + subtítulo + footer).
 - [ ] Gráficos: `SuenioTomi` → 4 bandas de color (`--danger` / `--attention` / `--accent` / `--success` en `colorMap.thresholds` de `SuenioTomi.tsx`, hoy `#df5e5e`/`orange`/`#199db3`/`#58ff58bf`) + leyenda de 4 bandas; `SuenioAnualTomi` con `--series-*`; un solo eje.
-- [ ] Stats: 4 stats, sin meter de progreso ni delta vs. mes anterior.
+- [ ] Stats: 4 stats, sin meter de progreso ni delta vs. mes anterior. Usar el `StatsCluster` de `@/components/ui` (ya creado en 0.3).
 - [ ] Verificar tabs/sección de días y estados (pill) según mockup.
 
 ---
@@ -122,7 +150,7 @@ Mockup: `docs/mockups/finanzas-dashboard.html`. **Hoy no existe** (`src/app/fina
 - [ ] Crear `src/app/finanzas/page.tsx` (dashboard Resumen).
 - [ ] `PageHeader` "Finanzas / Resumen" + acción principal.
 - [ ] `MonthStrip` de meses.
-- [ ] `StatsCluster` con N stats + meter (estados ámbar/rojo/violeta).
+- [ ] `StatsCluster` con N stats + meter (estados ámbar/rojo/violeta) — **usar el de `@/components/ui`** (ya creado en 0.3).
 - [ ] Bloques del mockup: resumen de movimientos/presupuesto/vencimientos y gráficos con `--series-*` (un solo eje).
 - [ ] Conectar a los datos existentes (queries de movimientos/presupuesto/vencimientos).
 
@@ -138,6 +166,7 @@ Mockup: `docs/mockups/finanzas-movimientos.html` (referencia, con mejoras). **Tr
   - Quitar `@mui/x-data-grid` de `GrillaToolbar` (la dependencia se mantiene por Presupuesto/Vencimientos).
   - Eliminar `MovimientosDelMesGrilla.tsx` viejo si quedó sin uso.
 - [ ] Aplicar `PageHeader` + `MonthStrip` + `StatsCluster` del mockup (mejoras sobre la referencia actual).
+- [ ] **Migrar el `StatsCluster` viejo** (`src/components/Movimientos/StatsCluster/`) al genérico de `@/components/ui` y borrar el viejo (quitando los `TODO(rediseño-tema, Fase 3 — Movimientos)` de `src/app/finanzas/movimientosDelMes/page.tsx` en la importación y en el uso). Stats del mockup: Presupuesto / Ingresos / Egresos (`danger`) / Balance (`accent`) / Presupuesto usado / Vencimientos pendientes (`attention`).
 - [ ] Migrar toolbar/estados al frame nuevo; usar `Pill` para tipo de pago/estado y `TextWithCopy` con mono alineado a derecha.
 - [ ] Adoptar el helper `muiTableProps` compartido (Fase 0.3) para que sea idéntico al resto.
 - [ ] Revisar grupos por día + subtotales, selección + suma parcial, export, refrescar.
