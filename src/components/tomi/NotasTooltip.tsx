@@ -1,29 +1,48 @@
 'use client';
 
-import { Tooltip, Box, SxProps } from '@mui/material';
+import { Tooltip, Box } from '@mui/material';
 import { AgendaTomiNota } from '@/lib/definitions';
-import theme from '@/components/ThemeRegistry/theme';
 
+/** Color de serie por tipo de nota (mismo mapeo que la leyenda del mockup). */
 const colorMapNotas: Record<string, string> = {
-  General: '#1976d2',
-  Orina: '#f9a825',
-  'Cambio de medicación': '#e53935',
-  Crisis: '#6a1b9a',
-  Malhumor: '#ef6c00',
+  General: 'var(--series-1)',
+  Orina: 'var(--series-4)',
+  'Cambio de medicación': 'var(--series-8)',
+  Crisis: 'var(--series-7)',
+  Malhumor: 'var(--series-2)',
 };
 
-const tipoNotaStyles = (tipo: string): SxProps => {
-  const color = colorMapNotas[tipo] || '#888';
-  return {
-    bgcolor: color,
-    color: '#fff',
-    borderRadius: '3px',
-    px: 0.5,
-    fontSize: '0.75rem',
-    fontWeight: 700,
-    lineHeight: '1.2',
-  }
-};
+const colorDeNota = (tipo: string) => colorMapNotas[tipo] || 'var(--text-tertiary)';
+
+const estilos = {
+  badge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    height: '18px',
+    padding: '0 6px',
+    borderRadius: 'var(--radius-sm)',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '10.5px',
+    fontWeight: 600,
+    letterSpacing: '0.04em',
+    border: '1px solid var(--neutral-border)',
+    backgroundColor: 'var(--neutral-soft)',
+    color: 'var(--text-secondary)',
+  },
+  dot: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+  },
+} as const;
+
+const NotaBadge = ({ tipo }: { tipo: string }) => (
+  <Box component="span" sx={estilos.badge}>
+    <Box component="span" sx={{ ...estilos.dot, backgroundColor: colorDeNota(tipo) }} />
+    {tipo.slice(0, 2).toUpperCase()}
+  </Box>
+);
 
 interface NotasTooltipProps {
   notas: AgendaTomiNota[];
@@ -36,36 +55,19 @@ export const NotasTooltip = ({ notas }: NotasTooltipProps) => {
     <Tooltip
       title={
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {notas.map((nota) => {
-            const prefijo = nota.tipo.slice(0, 2).toUpperCase();
-            return (
-              <Box key={nota.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
-                <Box sx={tipoNotaStyles(nota.tipo)}>{prefijo}</Box>
-                <span>{nota.comentarios}</span>
-              </Box>
-            );
-          })}
+          {notas.map((nota) => (
+            <Box key={nota.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+              <NotaBadge tipo={nota.tipo} />
+              <span>{nota.comentarios}</span>
+            </Box>
+          ))}
         </Box>
       }
     >
-      <Box
-        sx={{
-          display: 'flex',
-          gap: '2px',
-          '&:hover': {
-            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
-          },
-          width: 'fit-content'
-        }}
-      >
-        {tiposUnicos.map((tipo) => {
-          const prefijo = tipo.slice(0, 2).toUpperCase();
-          return (
-            <Box key={tipo} sx={tipoNotaStyles(tipo)}>
-              {prefijo}
-            </Box>
-          );
-        })}
+      <Box sx={{ display: 'flex', gap: '4px', width: 'fit-content' }}>
+        {tiposUnicos.map((tipo) => (
+          <NotaBadge key={tipo} tipo={tipo} />
+        ))}
       </Box>
     </Tooltip>
   );

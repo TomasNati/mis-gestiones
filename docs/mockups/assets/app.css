@@ -501,8 +501,10 @@ textarea.textarea { display: block; }
 .table td.num .cur { color: var(--text-tertiary); margin-right: 3px; }
 .table td.check, .table th.check { width: 36px; padding-right: 0; }
 .table td.actions, .table th.actions { width: 1%; white-space: nowrap; text-align: right; }
-.table .row-actions { display: inline-flex; gap: 2px; opacity: 0; transition: opacity 0.12s var(--ease); }
-.table tbody tr:hover .row-actions, .table tbody tr.is-selected .row-actions, .table tbody tr:focus-within .row-actions { opacity: 1; }
+.table .row-actions { display: inline-flex; gap: 2px; }
+.table .row-actions .icon-btn { opacity: 0; transition: opacity 0.12s var(--ease); }
+.table tbody tr:hover .row-actions .icon-btn, .table tbody tr.is-selected .row-actions .icon-btn { opacity: 1; }
+.table .row-actions .icon-btn:focus-visible { opacity: 1; }
 .table .cell-primary { color: var(--text-primary); }
 .table .cell-secondary { display: block; color: var(--text-tertiary); font-size: 12px; margin-top: 1px; }
 .table .cell-secondary.inline { display: inline; margin-left: 6px; }

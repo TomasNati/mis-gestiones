@@ -1,40 +1,32 @@
 'use client';
 
-import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { obtenerAgendaTomiDias, obtenerTiposNota } from '@/lib/orm/data';
-import {
-  Button,
-  Divider,
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from '@mui/material';
-import { obtenerDiaYDiaDeLaSemana, generateUUID } from '@/lib/helpers';
-import BarraSuenio from '@/components/tomi/BarraSuenio';
+import { Button } from '@mui/material';
+import { generateUUID } from '@/lib/helpers';
 import { useEffect, useState } from 'react';
 import { AgendaTomiDia, TipoNota, months } from '@/lib/definitions';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
-import EditIcon from '@mui/icons-material/Edit';
 import { EditarDiaModal } from '@/components/tomi/EditarDiaModal';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { actualizarAgendaTomiDia } from '@/lib/orm/actions';
 import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificacion';
-import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
-import { NotasTooltip } from '@/components/tomi/NotasTooltip';
+import { TablaDiasSuenio } from '@/components/tomi/TablaDiasSuenio';
+import { PageHeader } from '@/components/ui';
 
 const anio = new Date().getFullYear();
 const mes = months[new Date().getMonth()];
 const fechaDiaActual = new Date(Date.UTC(anio, months.indexOf(mes), new Date().getDate()));
 const fecha30DiasAtras = new Date(Date.UTC(anio, months.indexOf(mes), new Date().getDate() - 30));
+
+/**
+ * Tope de ancho de la columna de contenido, pedido en el mockup (Fase 1, "prueba").
+ * Ver `docs/new-theme/plan-rediseno-tema.md`.
+ */
+const CONTENT_MAX_WIDTH = 1000;
 
 const Suenio = () => {
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
@@ -104,15 +96,6 @@ const Suenio = () => {
     obtenerTiposNota().then(setTiposNota);
   }, []);
 
-  const obtenerEstadoSuenioDiaAnterior = (index: number) => {
-    if (index === 0) {
-      return 'Despierto';
-    }
-    const diaAnterior = dias[index - 1];
-
-    return diaAnterior.eventos[diaAnterior.eventos.length - 1]?.tipo;
-  };
-
   const onOpenEditarDia = (dia: AgendaTomiDia) => {
     setDiaAEditar(dia);
     setOpenEditarDia(true);
@@ -149,7 +132,7 @@ const Suenio = () => {
     setOpenEditarDia(false);
   };
 
-  const onDividerClicked = () => {
+  const onToggleGraficos = () => {
     setMostrandoGrilla(!mostrandoGrilla);
   };
 
@@ -157,30 +140,46 @@ const Suenio = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Container>
-        {diaAEditar ? (
-          <EditarDiaModal
-            open={openEditarDia}
-            onClose={handleEditarDiaClose}
-            diaAEditar={diaAEditar}
-            onActualizarDia={onActualizarDia}
-            tiposNota={tiposNota}
-          />
-        ) : null}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="body1" gutterBottom>
-            Dashboard de Agenda de Tomi
-          </Typography>
-          <SeleccionadorPeriodo anio={anio} mes={mes} mesesExclusivos setMesYAnio={oneMesYAnioChanged} />
-        </Box>
-        <Box>
+      {diaAEditar ? (
+        <EditarDiaModal
+          open={openEditarDia}
+          onClose={handleEditarDiaClose}
+          diaAEditar={diaAEditar}
+          onActualizarDia={onActualizarDia}
+          tiposNota={tiposNota}
+        />
+      ) : null}
+      {/*
+        TODO(rediseño-tema, Fase 10): `styles.main` (Layout) todavía trae `p: 3`
+        para no dejar sin aire las páginas no migradas. Este `m: -3` lo cancela
+        acá para que la página use el `--gutter` del mockup (28px, bordes a todo
+        el ancho). Al quitar el padding de `main`, borrar también este margen.
+      */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', m: -3, maxWidth: CONTENT_MAX_WIDTH }}>
+        <PageHeader
+          crumbs={[{ label: 'Tomi', href: '/tomi' }, { label: 'Agenda de sueño' }]}
+          actions={
+            <Button
+              variant="text"
+              startIcon={<BarChartOutlinedIcon />}
+              aria-pressed={mostrandoGrafico}
+              onClick={onToggleGraficos}
+              sx={{
+                color: mostrandoGrafico ? 'var(--accent)' : 'var(--text-secondary)',
+                background: mostrandoGrafico ? 'var(--accent-soft)' : 'transparent',
+                '&:hover': {
+                  background: mostrandoGrafico ? 'var(--accent-soft)' : 'var(--bg-row-hover)',
+                },
+              }}
+            >
+              Gráficos
+            </Button>
+          }
+        />
+
+        <SeleccionadorPeriodo anio={anio} mes={mes} mesesExclusivos setMesYAnio={oneMesYAnioChanged} />
+
+        <Box sx={{ px: 'var(--gutter)' }}>
           <Box
             sx={{
               height: mostrandoGrafico ? '100%' : 0,
@@ -194,49 +193,10 @@ const Suenio = () => {
             <SuenioTomi rangoFechas={rangoFechas} diasIniciales={diasAGraficar} />
             <SuenioAnualTomi fechaHasta={rangoFechas.hasta} />
           </Box>
-          <Divider>
-            <IconButton onClick={onDividerClicked}>{mostrandoGrilla ? <ExpandMore /> : <ExpandLess />}</IconButton>
-          </Divider>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell width={140}>Fecha</TableCell>
-                  <TableCell width={50}></TableCell>
-                  <TableCell>Eventos</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {dias.map((dia, index) => (
-                  <TableRow key={dia.id} sx={{ borderBottom: '1px solid rgba(81, 81, 81, 1)' }}>
-                    <TableCell
-                      sx={{
-                        padding: '12px 5px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '3px',
-                      }}
-                    >
-                      <Box>{obtenerDiaYDiaDeLaSemana(dia.fecha)}</Box>
-                      {dia.notas && dia.notas.length > 0 && <NotasTooltip notas={dia.notas} />}
-                    </TableCell>
-                    <TableCell width={50} sx={{ padding: '11px 0px' }}>
-                      <Button
-                        sx={{ minWidth: '0px', padding: '5px', '& span': { marginLeft: '3px', marginRight: '0px' } }}
-                        startIcon={<EditIcon />}
-                        onClick={() => onOpenEditarDia(dia)}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ paddingBottom: '0px', borderBottom: 'none' }}>
-                      <BarraSuenio data={dia.eventos} estadoSuenioPrevio={obtenerEstadoSuenioDiaAnterior(index)} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
         </Box>
-      </Container>
+
+        <TablaDiasSuenio dias={dias} onOpenEditarDia={onOpenEditarDia} />
+      </Box>
       <Notificacion configuracionProp={configNotificacion} />
     </LocalizationProvider>
   );

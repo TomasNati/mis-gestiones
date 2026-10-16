@@ -1,91 +1,120 @@
-import React from 'react';
-import { LinearProgress, Box, Typography } from '@mui/material';
+import React, { Fragment } from 'react';
+import { Box } from '@mui/material';
 import { EventoSuenio, TipoEventoSuenio } from '@/lib/definitions';
 import { timeStringToMinutes, minutesToTimeString } from '@/lib/helpers';
 
-interface ResultSegment {
+const DIA_EN_MINUTOS = 24 * 60;
+const POSICIONES_TICK = [25, 50, 75];
+
+/**
+ * Duración mínima (en minutos) para escribir la duración dentro del tramo.
+ * Los tramos cortos (p. ej. una siesta) no la llevan, como en el mockup.
+ */
+const DURACION_MINIMA_LABEL = 120;
+
+interface Tramo {
   tipo: TipoEventoSuenio;
-  start: number;
-  end: number;
-  hora: string;
+  inicio: number;
+  fin: number;
 }
 
-const transformSegments = (segments: EventoSuenio[], estadoSuenioPrevio: TipoEventoSuenio): ResultSegment[] => {
-  if (segments.length === 0) return [];
+/**
+ * Convierte los eventos (cambios de estado) en tramos continuos.
+ * El primer tramo arranca con el estado con el que venía el día anterior.
+ */
+const transformSegments = (segmentos: EventoSuenio[], estadoSuenioPrevio: TipoEventoSuenio): Tramo[] => {
+  if (segmentos.length === 0) return [];
 
-  let start = 0;
-  const result: ResultSegment[] = [];
+  let inicio = 0;
+  const resultado: Tramo[] = [];
 
-  segments.forEach((segment, index) => {
-    const end = timeStringToMinutes(segment.hora);
-    result.push({
-      tipo: index === 0 ? estadoSuenioPrevio : segments[index - 1].tipo,
-      start,
-      end,
-      hora: segment.hora.slice(0, 5),
+  segmentos.forEach((segmento, index) => {
+    const fin = timeStringToMinutes(segmento.hora);
+    resultado.push({
+      tipo: index === 0 ? estadoSuenioPrevio : segmentos[index - 1].tipo,
+      inicio,
+      fin,
     });
-    start = end;
+    inicio = fin;
   });
 
-  // Add the last segment
-  result.push({
-    tipo: segments[segments.length - 1].tipo,
-    start,
-    end: timeStringToMinutes('23:59:59') + 1,
-    hora: segments[segments.length - 1].hora.slice(0, 5),
+  // Tramo final: del último evento al final del día.
+  resultado.push({
+    tipo: segmentos[segmentos.length - 1].tipo,
+    inicio,
+    fin: DIA_EN_MINUTOS,
   });
 
-  return result;
+  return resultado;
 };
 
-const LinearProgressWithLabel = ({ tipo, start, end, hora }: ResultSegment) => {
-  const showLabel = end < 1440;
+const aPorcentaje = (minutos: number) => (minutos / DIA_EN_MINUTOS) * 100;
 
-  let durationLabel = null;
-  if (tipo === 'Dormido') {
-    const durationMinutes = end - start;
-    durationLabel = minutesToTimeString(durationMinutes);
-  }
-
-  return (
-    <Box position="relative" display="flex" alignItems="center" flexDirection="column">
-      <Box width="100%" mr={1}>
-        <LinearProgress
-          variant="determinate"
-          value={100}
-          sx={{
-            height: '22px',
-            borderRadius: start === 0 ? '5px 0 0 5px' : end === 1440 ? '0 5px 5px 0' : '0',
-            '& .MuiLinearProgress-bar': {
-              backgroundColor: tipo === 'Despierto' ? '#4caf50' : '#28749a',
-            },
-          }}
-        />
-      </Box>
-      {showLabel ? (
-        <Box position="absolute" right="-10px" top="-20px">
-          <Typography variant="caption" color="textSecondary">
-            {hora}
-          </Typography>
-        </Box>
-      ) : null}
-      {durationLabel ? (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <Typography variant="caption" color="textPrimary">
-            {durationLabel}
-          </Typography>
-        </Box>
-      ) : null}
-    </Box>
-  );
+const minutosAHora = (minutos: number) => {
+  const horas = Math.floor(minutos / 60);
+  const mins = minutos % 60;
+  return `${String(horas).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 };
+
+const estilos = {
+  timeline: {
+    position: 'relative',
+    height: '22px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--bg-elevated)',
+    overflow: 'visible',
+  },
+  timelineVacio: {
+    position: 'relative',
+    height: '22px',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    border: '1px dashed var(--border-soft)',
+    overflow: 'visible',
+  },
+  tick: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: '1px',
+    backgroundColor: 'var(--border-soft)',
+  },
+  segment: {
+    position: 'absolute',
+    top: 0,
+    height: '100%',
+    borderRadius: '3px',
+    backgroundColor: 'var(--series-1)',
+  },
+  duration: {
+    position: 'absolute',
+    inset: 0,
+    display: 'grid',
+    placeItems: 'center',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '11px',
+    color: '#fff',
+    overflow: 'hidden',
+    padding: '0 4px',
+  },
+  mark: {
+    position: 'absolute',
+    top: '-15px',
+    transform: 'translateX(-50%)',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '10.5px',
+    color: 'var(--text-tertiary)',
+    whiteSpace: 'nowrap',
+  },
+  emptyLabel: {
+    position: 'absolute',
+    left: '10px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    fontSize: '11.5px',
+    color: 'var(--text-tertiary)',
+  },
+} as const;
 
 type Props = {
   data: EventoSuenio[];
@@ -93,14 +122,47 @@ type Props = {
 };
 
 const BarraSuenio: React.FC<Props> = ({ data, estadoSuenioPrevio }) => {
-  const segmentos = transformSegments(data, estadoSuenioPrevio);
+  const tramosDormidos = transformSegments(data, estadoSuenioPrevio).filter((tramo) => tramo.tipo === 'Dormido');
+  const estaVacio = tramosDormidos.length === 0;
 
   return (
-    <Box sx={{ display: 'flex', width: '100%', height: '30px' }}>
-      {segmentos.map((segment, index) => (
-        <Box key={index} width={`${((segment.end - segment.start) / 1440) * 100}%`}>
-          <LinearProgressWithLabel {...segment} />
+    <Box sx={estaVacio ? estilos.timelineVacio : estilos.timeline}>
+      {POSICIONES_TICK.map((posicion) => (
+        <Box key={posicion} sx={{ ...estilos.tick, left: `${posicion}%`, opacity: estaVacio ? 0.35 : 0.6 }} />
+      ))}
+
+      {estaVacio && (
+        <Box component="span" sx={estilos.emptyLabel}>
+          Sin registro
         </Box>
+      )}
+
+      {tramosDormidos.map((tramo) => {
+        const duracion = tramo.fin - tramo.inicio;
+        return (
+          <Box
+            key={`tramo-${tramo.inicio}`}
+            title={`Dormido ${minutosAHora(tramo.inicio)} → ${minutosAHora(tramo.fin)}`}
+            sx={{ ...estilos.segment, left: `${aPorcentaje(tramo.inicio)}%`, width: `${aPorcentaje(duracion)}%` }}
+          >
+            {duracion >= DURACION_MINIMA_LABEL && (
+              <Box component="span" sx={estilos.duration}>
+                {minutesToTimeString(duracion)}
+              </Box>
+            )}
+          </Box>
+        );
+      })}
+
+      {tramosDormidos.map((tramo) => (
+        <Fragment key={`marcas-${tramo.inicio}`}>
+          <Box component="span" sx={{ ...estilos.mark, left: `${aPorcentaje(tramo.inicio)}%` }}>
+            {minutosAHora(tramo.inicio)}
+          </Box>
+          <Box component="span" sx={{ ...estilos.mark, left: `${aPorcentaje(tramo.fin)}%` }}>
+            {minutosAHora(tramo.fin)}
+          </Box>
+        </Fragment>
       ))}
     </Box>
   );
