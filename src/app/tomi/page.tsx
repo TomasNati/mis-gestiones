@@ -5,7 +5,7 @@ import { obtenerAgendaTomiDias, obtenerTiposNota } from '@/lib/orm/data';
 import { Button } from '@mui/material';
 import { generateUUID } from '@/lib/helpers';
 import { useEffect, useState } from 'react';
-import { AgendaTomiDia, TipoNota, months } from '@/lib/definitions';
+import { AgendaTomiDia, TipoEventoSuenio, TipoNota, months } from '@/lib/definitions';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import { EditarDiaModal } from '@/components/tomi/EditarDiaModal';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -138,6 +138,12 @@ const Suenio = () => {
 
   const mostrandoGrafico = !mostrandoGrilla;
 
+  const indiceDiaAEditar = diaAEditar ? dias.findIndex((d) => d.id === diaAEditar.id) : -1;
+  const estadoSuenioPrevio: TipoEventoSuenio =
+    indiceDiaAEditar > 0
+      ? dias[indiceDiaAEditar - 1].eventos[dias[indiceDiaAEditar - 1].eventos.length - 1]?.tipo ?? 'Despierto'
+      : 'Despierto';
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       {diaAEditar ? (
@@ -147,6 +153,7 @@ const Suenio = () => {
           diaAEditar={diaAEditar}
           onActualizarDia={onActualizarDia}
           tiposNota={tiposNota}
+          estadoSuenioPrevio={estadoSuenioPrevio}
         />
       ) : null}
       {/*

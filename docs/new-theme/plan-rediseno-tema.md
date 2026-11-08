@@ -156,7 +156,15 @@ Mockup: `docs/mockups/tomi.html`. Archivos actuales: `src/components/tomi/*` (`B
   - **Badges de notas** (`NotasTooltip.tsx`): pastilla neutra (`--neutral-soft` + `--neutral-border`) con punto de color de la serie por tipo (General `--series-1`, Orina `--series-4`, Cambio de medicación `--series-8`, Crisis `--series-7`, Malhumor `--series-2`, = leyenda del mockup); antes rectángulos de color con hex hardcodeado.
   - **Tope de 1000px llevado a la app**: `CONTENT_MAX_WIDTH = 1000` (const local) como `maxWidth` del frame `Box` en `page.tsx`. Sigue la "prueba" del mockup y **sigue pendiente de confirmar** (¿incluye topbar/stats/charts? ¿centrado?).
   - Verificado: `npx tsc --noEmit` exit 0 y `npx eslint` exit 0 sobre los 4 archivos.
-- [ ] Modal `EditarDiaModal` → estilo `MuiDialog` global (header + subtítulo + footer).
+- [x] Modal `EditarDiaModal` → estilo `MuiDialog` global (header + subtítulo + footer).
+  - `DialogTitle` con título (día) + subtítulo "Eventos de sueño y notas del día" + botón cerrar; `DialogActions` con hint "Los eventos se ordenan por hora al guardar", **Cancelar** y **Guardar** (con check).
+  - Bloques **Eventos** y **Notas** con `.block-title` + hint (horas dormidas calculadas desde los eventos, "N nota(s)"), separados por `hr` (`--border-muted`).
+  - `DormidoDespiertoPicker` reescrito: segmented Dormido/Despierto (luna/sol) en vez de `Switch`, hora en mono (`TimeField`, `--bg-inset`), basura danger-hover y hint "se durmió / se despertó".
+  - Fila de nota: `select` con punto de color por tipo (`colorDeNota` exportado desde `NotasTooltip`) + `textarea` + basura; botones ghost "Agregar evento/nota".
+  - `estadoSuenioPrevio` se pasa desde `page.tsx` (último estado del día anterior) para el cálculo de horas dormidas.
+  - **Tipografía del bloque Notas a 13px** (select, opciones del menú y textarea; `min-height: 56px`), igual que `.select.sm` / `.note-row .textarea` del mockup. Antes heredaba 16px de MUI.
+  - **`SelectProps` deprecado** (MUI v6) → `slotProps={{ select: { renderValue } }}`.
+  - **Estructura:** componente movido a `src/components/tomi/EditarDiaModal/` (`EditarDiaModal.tsx` + `EditarDiaModal.styles.ts` + `index.ts`). El `.styles.ts` concentra `styles` y `notaOpcionSx(activa)`; el `.tsx` queda solo con comportamiento/JSX (mismo patrón que `components/ui/*`).
 - [ ] Gráficos: `SuenioTomi` → 4 bandas de color (`--danger` / `--attention` / `--accent` / `--success` en `colorMap.thresholds` de `SuenioTomi.tsx`, hoy `#df5e5e`/`orange`/`#199db3`/`#58ff58bf`) + leyenda de 4 bandas; `SuenioAnualTomi` con `--series-*`; un solo eje.
 - [ ] Stats: 4 stats, sin meter de progreso ni delta vs. mes anterior. Usar el `StatsCluster` de `@/components/ui` (ya creado en 0.3).
 - [ ] Verificar tabs/sección de días y estados (pill) según mockup.

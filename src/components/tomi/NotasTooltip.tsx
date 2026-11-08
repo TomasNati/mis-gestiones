@@ -12,7 +12,7 @@ const colorMapNotas: Record<string, string> = {
   Malhumor: 'var(--series-2)',
 };
 
-const colorDeNota = (tipo: string) => colorMapNotas[tipo] || 'var(--text-tertiary)';
+export const colorDeNota = (tipo: string) => colorMapNotas[tipo] || 'var(--text-tertiary)';
 
 const estilos = {
   badge: {

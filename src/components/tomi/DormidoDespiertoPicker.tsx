@@ -1,65 +1,91 @@
-import React, { useState } from 'react';
-import { Box, Switch, IconButton, styled } from '@mui/material';
+import React from 'react';
+import { Box, IconButton, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import BedtimeOutlinedIcon from '@mui/icons-material/BedtimeOutlined';
+import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
 import dayjs, { Dayjs } from 'dayjs';
-import { EventoSuenio } from '@/lib/definitions';
+import { EventoSuenio, TipoEventoSuenio } from '@/lib/definitions';
 
-const DormidoDespiertoSwitchButtom = styled(Switch)(({ theme }) => ({
-  width: 62,
-  height: 34,
-  padding: 7,
-  '& .MuiSwitch-switchBase': {
-    margin: 1,
-    padding: 0,
-    transform: 'translateX(6px)',
-    '&.Mui-checked': {
-      color: '#fff',
-      transform: 'translateX(22px)',
-      '& .MuiSwitch-thumb:before': {
-        backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-          '#fff',
-        )}" d="M9.305 1.667V3.75h1.389V1.667h-1.39zm-4.707 1.95l-.982.982L5.09 6.072l.982-.982-1.473-1.473zm10.802 0L13.927 5.09l.982.982 1.473-1.473-.982-.982zM10 5.139a4.872 4.872 0 00-4.862 4.86A4.872 4.872 0 0010 14.862 4.872 4.872 0 0014.86 10 4.872 4.872 0 0010 5.139zm0 1.389A3.462 3.462 0 0113.471 10a3.462 3.462 0 01-3.473 3.472A3.462 3.462 0 016.527 10 3.462 3.462 0 0110 6.528zM1.665 9.305v1.39h2.083v-1.39H1.666zm14.583 0v1.39h2.084v-1.39h-2.084zM5.09 13.928L3.616 15.4l.982.982 1.473-1.473-.982-.982zm9.82 0l-.982.982 1.473 1.473.982-.982-1.473-1.473zM9.305 16.25v2.083h1.389V16.25h-1.39z"/></svg>')`,
-      },
-      '& + .MuiSwitch-track': {
-        opacity: 1,
-        backgroundColor: '#aab4be',
-        ...theme.applyStyles('dark', {
-          backgroundColor: '#8796A5',
-        }),
-      },
+/** Texto de ayuda por tipo de evento, como en el mockup. */
+const hintPorTipo: Record<TipoEventoSuenio, string> = {
+  Dormido: 'se durmió',
+  Despierto: 'se despertó',
+};
+
+const estilos = {
+  fila: {
+    display: 'grid',
+    gridTemplateColumns: 'auto 96px auto 1fr',
+    gap: '8px',
+    alignItems: 'center',
+  },
+  segmented: {
+    height: 'var(--control-h-sm)',
+    padding: '2px',
+    backgroundColor: 'var(--bg-inset)',
+    border: '1px solid var(--border-soft)',
+    borderRadius: 'var(--radius)',
+    '&.MuiToggleButtonGroup-root': { gap: 0 },
+    '& .MuiToggleButtonGroup-grouped': {
+      border: 0,
+      margin: 0,
+      borderRadius: '4px',
     },
-  }, //
-  '& .MuiSwitch-thumb': {
-    backgroundColor: '#001e3c',
-    width: 32,
-    height: 32,
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      width: '100%',
+    '& .MuiToggleButton-root': {
+      border: 0,
+      borderRadius: '4px',
+      padding: '0 8px',
+      gap: '6px',
       height: '100%',
-      left: 0,
-      top: 0,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'center',
-      backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-        '#fff',
-      )}" d="M4.2 2.5l-.7 1.8-1.8.7 1.8.7.7 1.8.6-1.8L6.7 5l-1.9-.7-.6-1.8zm15 8.3a6.7 6.7 0 11-6.6-6.6 5.8 5.8 0 006.6 6.6z"/></svg>')`,
+      fontSize: '12px',
+      fontWeight: 500,
+      lineHeight: 1,
+      color: 'var(--text-secondary)',
+      '&:hover': { color: 'var(--text-primary)', backgroundColor: 'transparent' },
+      '&.Mui-selected': {
+        backgroundColor: 'var(--bg-emphasis)',
+        color: 'var(--text-primary)',
+        '&:hover': { backgroundColor: 'var(--bg-emphasis)' },
+      },
     },
-    ...theme.applyStyles('dark', {
-      backgroundColor: theme.palette.primary.main,
-    }),
   },
-  '& .MuiSwitch-track': {
-    opacity: 1,
-    backgroundColor: '#aab4be',
-    borderRadius: 20 / 2,
-    ...theme.applyStyles('dark', {
-      backgroundColor: '#8796A5',
-    }),
+  hora: {
+    width: '96px',
+    '& .MuiOutlinedInput-root': {
+      height: 'var(--control-h-sm)',
+      borderRadius: 'var(--radius)',
+      backgroundColor: 'var(--bg-inset)',
+    },
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--border-soft)' },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--border-strong)' },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'var(--accent-emphasis)',
+      borderWidth: '1px',
+    },
+    '& .MuiInputBase-input': {
+      height: 'var(--control-h-sm)',
+      padding: '0 8px',
+      textAlign: 'center',
+      fontFamily: 'var(--font-mono)',
+      fontVariantNumeric: 'tabular-nums',
+      fontSize: '13px',
+    },
+    '& .MuiSvgIcon-root': { fontSize: '16px' },
   },
-}));
+  borrar: {
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    borderRadius: 'var(--radius)',
+    color: 'var(--text-tertiary)',
+    '&:hover': { color: 'var(--danger)', backgroundColor: 'var(--danger-soft)' },
+  },
+  hint: {
+    fontSize: '12px',
+    color: 'var(--text-tertiary)',
+  },
+} as const;
 
 interface DormidoDespiertoPickerProps {
   evento: EventoSuenio;
@@ -70,47 +96,54 @@ interface DormidoDespiertoPickerProps {
 const DormidoDespiertoPicker = ({ evento, onEventoChange, onDelete }: DormidoDespiertoPickerProps) => {
   const onHoraChanged = (newValue: Dayjs | null) => {
     if (newValue) {
-      const eventoUpdated = {
-        ...evento,
-        hora: newValue.format('HH:mm'),
-      };
-      onEventoChange(eventoUpdated);
+      onEventoChange({ ...evento, hora: newValue.format('HH:mm') });
     }
   };
 
-  const onDormidoDespierdoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const eventoUpdated: EventoSuenio = {
-      ...evento,
-      tipo: event.target.checked ? 'Despierto' : 'Dormido',
-    };
-    onEventoChange(eventoUpdated);
+  const onTipoChange = (_: React.MouseEvent<HTMLElement>, tipo: TipoEventoSuenio | null) => {
+    if (tipo) {
+      onEventoChange({ ...evento, tipo });
+    }
   };
 
   return (
-    <Box display="flex" alignItems="center">
-      <DormidoDespiertoSwitchButtom
-        checked={evento.tipo == 'Despierto'}
-        onChange={onDormidoDespierdoChange}
+    <Box sx={estilos.fila}>
+      <ToggleButtonGroup
+        exclusive
         size="small"
-      />
+        value={evento.tipo}
+        onChange={onTipoChange}
+        aria-label="Estado del evento"
+        sx={estilos.segmented}
+      >
+        <ToggleButton value="Dormido">
+          <BedtimeOutlinedIcon sx={{ fontSize: '14px' }} /> Dormido
+        </ToggleButton>
+        <ToggleButton value="Despierto">
+          <WbSunnyOutlinedIcon sx={{ fontSize: '14px' }} /> Despierto
+        </ToggleButton>
+      </ToggleButtonGroup>
+
       <TimeField
-        sx={{
-          width: '60px',
-          '& .MuiInputBase-input.MuiOutlinedInput-input': {
-            padding: '2px 0px 2px 4px',
-            width: '60px',
-          },
-          '& fieldset': {
-            width: '55px',
-          },
-        }}
+        size="small"
         value={dayjs(evento.hora, 'HH:mm')}
         format="HH:mm"
         onChange={onHoraChanged}
+        sx={estilos.hora}
       />
-      <IconButton onClick={() => onDelete(evento)} color="secondary">
-        <DeleteIcon />
+
+      <IconButton
+        onClick={() => onDelete(evento)}
+        title="Quitar evento"
+        aria-label="Quitar evento"
+        sx={estilos.borrar}
+      >
+        <DeleteIcon sx={{ fontSize: '16px' }} />
       </IconButton>
+
+      <Box component="span" sx={estilos.hint}>
+        {hintPorTipo[evento.tipo]}
+      </Box>
     </Box>
   );
 };
