@@ -141,6 +141,9 @@ Mockup: `docs/mockups/tomi.html`. Archivos actuales: `src/components/tomi/*` (`B
   - **Pendiente de confirmar:** si el tope debe incluir el topbar/stats/charts (hoy sí, están en el mismo contenedor) o solo meses+tabla; y si va alineado a la izquierda (hoy) o centrado.
   - **A llevar a la app** en Fase 1 (junto con el reemplazo de la tabla) o antes si se pide.
 
+**Decisiones del 3.er repaso del mockup (aplicadas en `docs/mockups/tomi.html`):**
+- [x] **Sin "Noche más corta"** en la tira de stats: se eliminó el bloque `.stat` (valor + delta con día y badge). Quedan **3 métricas**: Sueño nocturno promedio · Se duerme, en promedio · Notas del mes. Pedido del usuario.
+
 **Cambios a código:**
 - [x] Aplicar `PageHeader` (breadcrumb Tomi) y el frame general.
   - Breadcrumb `Tomi / Agenda de sueño`; se eliminó el título "Dashboard de Agenda de Tomi" y el `<Container>`.
@@ -166,7 +169,11 @@ Mockup: `docs/mockups/tomi.html`. Archivos actuales: `src/components/tomi/*` (`B
   - **`SelectProps` deprecado** (MUI v6) → `slotProps={{ select: { renderValue } }}`.
   - **Estructura:** componente movido a `src/components/tomi/EditarDiaModal/` (`EditarDiaModal.tsx` + `EditarDiaModal.styles.ts` + `index.ts`). El `.styles.ts` concentra `styles` y `notaOpcionSx(activa)`; el `.tsx` queda solo con comportamiento/JSX (mismo patrón que `components/ui/*`).
 - [ ] Gráficos: `SuenioTomi` → 4 bandas de color (`--danger` / `--attention` / `--accent` / `--success` en `colorMap.thresholds` de `SuenioTomi.tsx`, hoy `#df5e5e`/`orange`/`#199db3`/`#58ff58bf`) + leyenda de 4 bandas; `SuenioAnualTomi` con `--series-*`; un solo eje.
-- [ ] Stats: 4 stats, sin meter de progreso ni delta vs. mes anterior. Usar el `StatsCluster` de `@/components/ui` (ya creado en 0.3).
+- [x] **Stats (3 métricas)**: `StatsCluster` de `@/components/ui` insertado entre la tira de meses y los gráficos, calculado sobre el **mes seleccionado** (`dias`) con el helper nuevo `src/components/tomi/estadisticasSuenio.ts`:
+  - **Sueño nocturno promedio**: promedio de `obtenerMinutosDeSuenio` sobre días con sueño > 0, formateado `9 h 28 m`, `tone="accent"`.
+  - **Se duerme, en promedio**: promedio del primer evento `Dormido` por día (promedio circular: horas `< 12:00` se corren +24 h para no romper 23:xx/00:xx); delta "se despierta a las HH:MM" con el promedio del último `Despierto`.
+  - **Notas del mes**: total de notas + `NotaBadge` por tipo con `×n` (se exportó `NotaBadge` desde `NotasTooltip.tsx` y se le agregó `count`).
+  - Sin meter ni delta vs. mes anterior; sin datos → `—` en promedios y `0` en notas.
 - [ ] Verificar tabs/sección de días y estados (pill) según mockup.
 
 ---

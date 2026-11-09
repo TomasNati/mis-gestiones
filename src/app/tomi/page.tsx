@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import { obtenerAgendaTomiDias, obtenerTiposNota } from '@/lib/orm/data';
 import { Button } from '@mui/material';
 import { generateUUID } from '@/lib/helpers';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AgendaTomiDia, TipoEventoSuenio, TipoNota, months } from '@/lib/definitions';
 import { SeleccionadorPeriodo } from '@/components/comun/SeleccionadorPeriodo';
 import { EditarDiaModal } from '@/components/tomi/EditarDiaModal';
@@ -15,7 +15,10 @@ import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificaci
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
 import { TablaDiasSuenio } from '@/components/tomi/TablaDiasSuenio';
-import { PageHeader } from '@/components/ui';
+import { NotaBadge } from '@/components/tomi/NotasTooltip';
+import { calcularStatsSuenio, formatDuracion, formatHora } from '@/components/tomi/estadisticasSuenio';
+import { PageHeader, StatsCluster } from '@/components/ui';
+import type { StatItem } from '@/components/ui';
 
 const anio = new Date().getFullYear();
 const mes = months[new Date().getMonth()];
@@ -144,6 +147,40 @@ const Suenio = () => {
       ? dias[indiceDiaAEditar - 1].eventos[dias[indiceDiaAEditar - 1].eventos.length - 1]?.tipo ?? 'Despierto'
       : 'Despierto';
 
+  const stats = useMemo(() => calcularStatsSuenio(dias), [dias]);
+
+  const statsItems: StatItem[] = [
+    {
+      label: 'Sueño nocturno promedio',
+      value: formatDuracion(stats.promedioMinutos),
+      tone: 'accent',
+    },
+    {
+      label: 'Se duerme, en promedio',
+      value: formatHora(stats.horaDormirPromedio),
+      delta:
+        stats.horaDespertarPromedio !== null
+          ? { text: `se despierta a las ${formatHora(stats.horaDespertarPromedio)}` }
+          : undefined,
+    },
+    {
+      label: 'Notas del mes',
+      value: stats.totalNotas,
+      delta:
+        stats.notasPorTipo.length > 0
+          ? {
+              text: (
+                <Box sx={{ display: 'inline-flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {stats.notasPorTipo.map(({ tipo, count }) => (
+                    <NotaBadge key={tipo} tipo={tipo} count={count} />
+                  ))}
+                </Box>
+              ),
+            }
+          : undefined,
+    },
+  ];
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       {diaAEditar ? (
@@ -185,6 +222,8 @@ const Suenio = () => {
         />
 
         <SeleccionadorPeriodo anio={anio} mes={mes} mesesExclusivos setMesYAnio={oneMesYAnioChanged} />
+
+        <StatsCluster items={statsItems} />
 
         <Box sx={{ px: 'var(--gutter)' }}>
           <Box

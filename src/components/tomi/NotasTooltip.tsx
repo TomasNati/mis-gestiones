@@ -35,12 +35,22 @@ const estilos = {
     height: '6px',
     borderRadius: '50%',
   },
+  count: {
+    color: 'var(--text-tertiary)',
+    fontWeight: 500,
+    marginLeft: '1px',
+  },
 } as const;
 
-const NotaBadge = ({ tipo }: { tipo: string }) => (
+export const NotaBadge = ({ tipo, count }: { tipo: string; count?: number }) => (
   <Box component="span" sx={estilos.badge}>
     <Box component="span" sx={{ ...estilos.dot, backgroundColor: colorDeNota(tipo) }} />
     {tipo.slice(0, 2).toUpperCase()}
+    {count !== undefined && (
+      <Box component="span" sx={estilos.count}>
+        ×{count}
+      </Box>
+    )}
   </Box>
 );
 
