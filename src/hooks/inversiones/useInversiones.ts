@@ -84,6 +84,8 @@ interface UseInversionesParams {
 
 interface UseInversionesResult {
   precioPorInstrumento: Map<string, PrecioInstrumento>;
+  /** Total en la moneda de visualización; `null` si falta la cotización del dólar. */
+  totalValor: number | null;
   totalDisplay: string;
   datosPorBroker: DatoGrafico[];
   datosPorRenta: DatoGrafico[];
@@ -200,14 +202,18 @@ export const useInversiones = ({
     }));
   }, [inversiones, precioPorInstrumento, moneda, ventaDolar, cotizacionesDolar, rowSelection]);
 
+  const totalValor = useMemo(() => {
+    if (!ventaDolar) return null;
+    return Math.round(inversionesConValor.reduce((acc, { valor }) => acc + valor, 0));
+  }, [inversionesConValor, ventaDolar]);
+
   const totalDisplay = useMemo(() => {
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
     const simbolo = enPesos ? '$' : 'US$';
-    if (!ventaDolar) return `${simbolo} -`;
+    if (totalValor == null) return `${simbolo} -`;
 
-    const valor = Math.round(inversionesConValor.reduce((acc, { valor }) => acc + valor, 0));
-    return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
-  }, [inversionesConValor, moneda, ventaDolar]);
+    return `${simbolo} ${transformNumberToCurrenty(totalValor) ?? '-'}`;
+  }, [totalValor, moneda]);
 
   const datosPorBroker = useMemo(
     () =>
@@ -231,5 +237,5 @@ export const useInversiones = ({
     [inversionesConValor],
   );
 
-  return { precioPorInstrumento, totalDisplay, datosPorBroker, datosPorRenta };
-};;
+  return { precioPorInstrumento, totalValor, totalDisplay, datosPorBroker, datosPorRenta };
+};

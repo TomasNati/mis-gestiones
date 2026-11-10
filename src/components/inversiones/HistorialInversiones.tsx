@@ -1,13 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  InputAdornment,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { Dayjs } from 'dayjs';
 import { obtenerHistorialInversiones } from '@/lib/api';
 import type { HistorialInversionesPayload, InstrumentoMoneda, TipoDolar } from '@/lib/definitions';
+import type { ValorInversion } from '@/lib/definitions';
 import { INSTRUMENTO_MONEDA, TIPO_DOLAR, TIPO_DOLAR_LABEL } from '@/lib/definitions';
 import { HistorialInversionesGrafico } from '@/components/inversiones/HistorialInversionesGrafico';
-import type { ValorInversion } from '@/lib/definitions';
+import { ChartPanel } from '@/components/ui';
+import { styles } from './HistorialInversiones.styles';
+import { dateFieldSx } from './dateField.styles';
 
 export const RANGO_HISTORIAL = {
   TRES_MESES: '3_MESES',
@@ -17,15 +29,6 @@ export const RANGO_HISTORIAL = {
 } as const;
 
 export type RangoHistorial = (typeof RANGO_HISTORIAL)[keyof typeof RANGO_HISTORIAL];
-
-export const RANGO_HISTORIAL_LABEL: Record<RangoHistorial, string> = {
-  [RANGO_HISTORIAL.TRES_MESES]: '3 meses',
-  [RANGO_HISTORIAL.SEIS_MESES]: '6 meses',
-  [RANGO_HISTORIAL.UN_ANIO]: '1 año',
-  [RANGO_HISTORIAL.OTRO]: 'Otro',
-};
-
-const RANGOS = Object.values(RANGO_HISTORIAL);
 
 const RANGO_INICIAL = RANGO_HISTORIAL.TRES_MESES;
 
@@ -43,8 +46,10 @@ const desdePreset = (rango: RangoHistorial, hasta: Dayjs): Dayjs | null => {
   return meses == null ? null : hasta.subtract(meses, 'month');
 };
 
-const RANGO_SX = { inlineSize: 130 };
-const FECHA_SX = { inlineSize: 150 };
+const crearSolicitud = (desde: Dayjs, hasta: Dayjs): HistorialInversionesPayload => ({
+  desde: desde.toISOString(),
+  hasta: hasta.toISOString(),
+});
 
 const monedaDelValor = (moneda: InstrumentoMoneda, tipoDolar: TipoDolar): keyof ValorInversion => {
   if (moneda === INSTRUMENTO_MONEDA.PESO) return 'peso';
@@ -63,7 +68,10 @@ export const HistorialInversiones = ({ maxFecha, moneda, tipoDolar }: HistorialI
   const [rango, setRango] = useState<RangoHistorial>(RANGO_INICIAL);
   const [desde, setDesde] = useState<Dayjs | null>(() => desdePreset(RANGO_INICIAL, maxFecha));
   const [hasta, setHasta] = useState<Dayjs | null>(maxFecha);
-  const [solicitado, setSolicitado] = useState<HistorialInversionesPayload | null>(null);
+  const [solicitado, setSolicitado] = useState<HistorialInversionesPayload | null>(() => {
+    const inicio = desdePreset(RANGO_INICIAL, maxFecha);
+    return inicio ? crearSolicitud(inicio, maxFecha) : null;
+  });
 
   const historicoQuery = useQuery({
     queryKey: ['inversionesHistorico', solicitado],
@@ -71,29 +79,24 @@ export const HistorialInversiones = ({ maxFecha, moneda, tipoDolar }: HistorialI
     enabled: solicitado != null,
   });
 
-  useEffect(() => {
-    if (historicoQuery.data) {
-      console.log(historicoQuery.data);
-    }
-  }, [historicoQuery.data]);
-
   const rangoEsPersonalizado = rango === RANGO_HISTORIAL.OTRO;
 
-  const handleRangoChange = (event: SelectChangeEvent<RangoHistorial>) => {
-    const nuevoRango = event.target.value as RangoHistorial;
+  const handleRangoChange = (_event: MouseEvent<HTMLElement>, nuevoRango: RangoHistorial | null) => {
+    if (!nuevoRango) return;
     setRango(nuevoRango);
 
-    const nuevoDesde = desdePreset(nuevoRango, maxFecha);
-    if (nuevoDesde) {
-      setDesde(nuevoDesde);
-      setHasta(maxFecha);
-    }
+    // Los presets buscan al instante; "Otro" espera a que se confirme el rango.
+    if (nuevoRango === RANGO_HISTORIAL.OTRO) return;
+
+    const inicio = desdePreset(nuevoRango, maxFecha);
+    if (!inicio) return;
+    setDesde(inicio);
+    setHasta(maxFecha);
+    setSolicitado(crearSolicitud(inicio, maxFecha));
   };
 
-  const handleMostrarClick = () => {
-    if (desde && hasta) {
-      setSolicitado({ desde: desde.toISOString(), hasta: hasta.toISOString() });
-    }
+  const handleAplicar = () => {
+    if (desde && hasta) setSolicitado(crearSolicitud(desde, hasta));
   };
 
   const monedaValor = monedaDelValor(moneda, tipoDolar);
@@ -101,50 +104,100 @@ export const HistorialInversiones = ({ maxFecha, moneda, tipoDolar }: HistorialI
   const unidad = moneda === INSTRUMENTO_MONEDA.PESO ? 'Peso' : `Dólar ${TIPO_DOLAR_LABEL[tipoDolar]}`;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-        Historial:
-      </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
-        <FormControl size="small" sx={RANGO_SX}>
-          <InputLabel id="rango-historial-label">Rango</InputLabel>
-          <Select labelId="rango-historial-label" label="Rango" value={rango} onChange={handleRangoChange}>
-            {RANGOS.map((valor) => (
-              <MenuItem key={valor} value={valor}>
-                {RANGO_HISTORIAL_LABEL[valor]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <DatePicker
-          label="Desde"
-          value={desde}
-          onChange={(nuevaFecha) => setDesde(nuevaFecha)}
-          maxDate={hasta ?? maxFecha}
-          disabled={!rangoEsPersonalizado}
-          slotProps={{ textField: { size: 'small', sx: FECHA_SX } }}
-        />
-        <DatePicker
-          label="Hasta"
-          value={hasta}
-          onChange={(nuevaFecha) => setHasta(nuevaFecha)}
-          minDate={desde ?? undefined}
-          maxDate={maxFecha}
-          disabled={!rangoEsPersonalizado}
-          slotProps={{ textField: { size: 'small', sx: FECHA_SX } }}
-        />
-        <Button variant="contained" size="small" onClick={handleMostrarClick}>
-          Mostrar
-        </Button>
-      </Box>
-      {historicoQuery.data && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, inlineSize: '100%' }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Evolución por broker - {unidad}
-          </Typography>
-          <HistorialInversionesGrafico data={historicoQuery.data} moneda={monedaValor} simbolo={simbolo} />
+    <ChartPanel
+      title="Evolución por broker"
+      hint={unidad}
+      aside={
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={rango}
+          onChange={handleRangoChange}
+          aria-label="Rango del historial"
+          sx={styles.segmented}
+        >
+          <ToggleButton value={RANGO_HISTORIAL.TRES_MESES}>3 m</ToggleButton>
+          <ToggleButton value={RANGO_HISTORIAL.SEIS_MESES}>6 m</ToggleButton>
+          <ToggleButton value={RANGO_HISTORIAL.UN_ANIO}>1 a</ToggleButton>
+          <ToggleButton value={RANGO_HISTORIAL.OTRO}>
+            <CalendarMonthOutlinedIcon sx={{ fontSize: 14 }} />
+            Otro
+          </ToggleButton>
+        </ToggleButtonGroup>
+      }
+    >
+      {rangoEsPersonalizado && (
+        <Box sx={styles.rangoPersonalizado}>
+          <DatePicker
+            label="Desde"
+            value={desde}
+            onChange={(nuevaFecha) => setDesde(nuevaFecha)}
+            maxDate={hasta ?? maxFecha}
+            format="DD/MM/YYYY"
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: dateFieldSx,
+                inputProps: { 'aria-label': 'Desde' },
+                InputProps: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarMonthOutlinedIcon sx={{ fontSize: 16 }} />
+                    </InputAdornment>
+                  ),
+                },
+              },
+            }}
+          />
+          <DatePicker
+            label="Hasta"
+            value={hasta}
+            onChange={(nuevaFecha) => setHasta(nuevaFecha)}
+            minDate={desde ?? undefined}
+            maxDate={maxFecha}
+            format="DD/MM/YYYY"
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: dateFieldSx,
+                inputProps: { 'aria-label': 'Hasta' },
+                InputProps: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarMonthOutlinedIcon sx={{ fontSize: 16 }} />
+                    </InputAdornment>
+                  ),
+                },
+              },
+            }}
+          />
+          <Button variant="contained" size="small" onClick={handleAplicar} disabled={!desde || !hasta}>
+            Aplicar
+          </Button>
         </Box>
       )}
-    </Box>
+
+      <Box sx={styles.grafico}>
+        {historicoQuery.isPending ? (
+          <Box sx={styles.placeholder}>
+            <CircularProgress size={22} />
+          </Box>
+        ) : historicoQuery.isError ? (
+          <Box sx={styles.placeholder}>
+            <Typography variant="body2" color="text.secondary">
+              No se pudo cargar el historial.
+            </Typography>
+          </Box>
+        ) : historicoQuery.data ? (
+          <HistorialInversionesGrafico data={historicoQuery.data} moneda={monedaValor} simbolo={simbolo} />
+        ) : (
+          <Box sx={styles.placeholder}>
+            <Typography variant="body2" color="text.secondary">
+              Sin datos para mostrar.
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </ChartPanel>
   );
 };

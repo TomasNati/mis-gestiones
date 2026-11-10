@@ -38,19 +38,42 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { type Dayjs } from 'dayjs';
-import { Alert, Box, CircularProgress, Divider, IconButton } from '@mui/material';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import ExpandLess from '@mui/icons-material/ExpandLess';
+import { Box, CircularProgress } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import { EditarInversion } from '@/components/inversiones/EditarInversion';
 import { HistorialInversiones } from '@/components/inversiones/HistorialInversiones';
+import { InversionesAlerts } from '@/components/inversiones/InversionesAlerts';
 import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
-import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar';
-import { InversionesPorCategoria } from '@/components/graficos/';
+import { InversionesCurrencyBar, InversionesTopbarActions } from '@/components/inversiones/InversionesToolbar';
+import type { TasasDolar } from '@/components/inversiones/InversionesToolbar';
 import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
+import { PageHeader, SERIES, StatsCluster } from '@/components/ui';
+import type { StatItem, StatStack } from '@/components/ui';
 
 const FORMATO_DIA = 'YYYY-MM-DD';
+
+/**
+ * Tope de ancho de la columna de contenido (Fase 1). Ver
+ * `docs/new-theme/plan-rediseno-tema.md`.
+ */
+const CONTENT_MAX_WIDTH = 1250;
+
+/** Etiquetas legibles y colores del mockup para la composición por tipo de renta. */
+const RENTA_LABEL: Record<string, string> = {
+  VARIABLE: 'Variable',
+  FIJA: 'Fija',
+  MIXTA: 'Mixta',
+};
+
+const RENTA_COLOR: Record<string, string> = {
+  VARIABLE: SERIES[0],
+  FIJA: SERIES[2],
+  MIXTA: SERIES[3],
+};
+
+/** Monto en la moneda activa (`$ 47.533.540`). */
+const formatearMonto = (valor: number, simbolo: string) => `${simbolo} ${transformNumberToCurrenty(valor, 0) ?? '-'}`;
 
 const TIPOS_DOLAR_HISTORICO = ['oficial', 'blue', 'bolsa', 'contadoconliqui'] as const;
 
@@ -76,7 +99,7 @@ const InversionesPage = () => {
   const [moneda, setMoneda] = useState<InstrumentoMoneda>(INSTRUMENTO_MONEDA.PESO);
   const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
-  const [mostrandoGraficos, setMostrandoGraficos] = useState(false);
+  const [mostrandoGraficos, setMostrandoGraficos] = useState(true);
   const [sobreescribir, setSobreescribir] = useState(false);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
@@ -153,6 +176,25 @@ const InversionesPage = () => {
     return construirCotizacionesDolar(cotizacionesDolarQuery.data) ?? null;
   }, [viendoHistorial, dolarHistoricoQuery.data, cotizacionesDolarQuery.data]);
 
+  // Tasas para mostrar en la barra: no dependen de que estén las cuatro
+  // cotizaciones (el objeto completo solo se usa para convertir instrumentos).
+  const tasasDolar = useMemo<TasasDolar>(() => {
+    if (viendoHistorial) {
+      const dolar = dolarHistoricoQuery.data;
+      return {
+        oficial: dolar?.oficial ?? null,
+        bolsa: dolar?.bolsa ?? null,
+        contadoconliqui: dolar?.contadoconliqui ?? null,
+      };
+    }
+    const porTipo = new Map((cotizacionesDolarQuery.data ?? []).map((c) => [c.tipo, c.venta]));
+    return {
+      oficial: porTipo.get(TIPO_DOLAR.OFICIAL) ?? null,
+      bolsa: porTipo.get(TIPO_DOLAR.BOLSA) ?? null,
+      contadoconliqui: porTipo.get(TIPO_DOLAR.CCL) ?? null,
+    };
+  }, [viendoHistorial, dolarHistoricoQuery.data, cotizacionesDolarQuery.data]);
+
   const instrumentosSinPrecio = useMemo(() => {
     if (!viendoHistorial || preciosDelDiaQuery.isLoading || !preciosHistoricos) return [];
     const nombres = (inversionesQuery.data ?? [])
@@ -210,7 +252,7 @@ const InversionesPage = () => {
     setCreateDialogOpen(false);
   };
 
-  const { precioPorInstrumento, totalDisplay, datosPorBroker, datosPorRenta } = useInversiones({
+  const { precioPorInstrumento, totalValor, datosPorBroker, datosPorRenta } = useInversiones({
     instrumentos: instrumentosQuery.data,
     inversiones: inversionesQuery.data,
     moneda,
@@ -221,6 +263,68 @@ const InversionesPage = () => {
   });
 
   const simboloMoneda = moneda === INSTRUMENTO_MONEDA.PESO ? '$' : 'US$';
+
+  const ultimoEstado = useMemo(() => {
+    const fechas = (fechasHistorialQuery.data ?? [])
+      .map((f) => f.slice(0, 10))
+      .filter(Boolean)
+      .sort();
+    return fechas.length > 0 ? dayjs(fechas[fechas.length - 1]).format('DD/MM/YYYY') : null;
+  }, [fechasHistorialQuery.data]);
+
+  const rentaStack = useMemo<StatStack | undefined>(() => {
+    if (datosPorRenta.length === 0) return undefined;
+    const total = datosPorRenta.reduce((acc, dato) => acc + dato.value, 0);
+    const pct = (valor: number) => (total > 0 ? Math.round((valor / total) * 1000) / 10 : 0);
+    const etiqueta = (label: string) => RENTA_LABEL[label.trim().toUpperCase()] ?? label;
+    return {
+      ariaLabel: datosPorRenta.map((dato) => `${etiqueta(dato.label)} ${pct(dato.value)} %`).join(', '),
+      segments: datosPorRenta.map((dato, index) => ({
+        value: dato.value,
+        color: RENTA_COLOR[dato.label.trim().toUpperCase()] ?? SERIES[index % SERIES.length],
+        label: etiqueta(dato.label),
+        detail: formatearMonto(dato.value, simboloMoneda),
+      })),
+    };
+  }, [datosPorRenta, simboloMoneda]);
+
+  const brokerStack = useMemo<StatStack | undefined>(() => {
+    if (datosPorBroker.length === 0) return undefined;
+    const total = datosPorBroker.reduce((acc, dato) => acc + dato.value, 0);
+    const pct = (valor: number) => (total > 0 ? Math.round((valor / total) * 1000) / 10 : 0);
+    return {
+      ariaLabel: datosPorBroker.map((dato) => `${dato.label} ${pct(dato.value)} %`).join(', '),
+      segments: datosPorBroker.map((dato, index) => ({
+        value: dato.value,
+        color: SERIES[index % SERIES.length],
+        label: dato.label,
+        detail: formatearMonto(dato.value, simboloMoneda),
+      })),
+    };
+  }, [datosPorBroker, simboloMoneda]);
+
+  const totalCartera =
+    totalValor == null ? `${simboloMoneda} —` : `${simboloMoneda} ${transformNumberToCurrenty(totalValor, 0) ?? '-'}`;
+
+  const statsItems: StatItem[] = [
+    {
+      label: 'Total cartera',
+      value: totalCartera,
+      tone: 'accent',
+    },
+    {
+      label: 'Composición por renta',
+      wide: true,
+      value: rentaStack ? undefined : '—',
+      stack: rentaStack,
+    },
+    {
+      label: 'Composición por broker',
+      wide: true,
+      value: brokerStack ? undefined : '—',
+      stack: brokerStack,
+    },
+  ];
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
@@ -466,26 +570,6 @@ const InversionesPage = () => {
       cancel: 'Cancelar',
       save: 'Guardar',
     },
-    renderTopToolbarCustomActions: () => (
-      <InversionesToolbar
-        moneda={moneda}
-        tipoDolar={tipoDolar}
-        total={totalDisplay}
-        dolarVenta={ventaDolar}
-        guardandoEstado={guardarEstadoMutation.isPending}
-        sobreescribir={sobreescribir}
-        fecha={fecha}
-        maxFecha={hoy}
-        viendoHistorial={viendoHistorial}
-        esFechaHabilitada={esFechaHabilitada}
-        onFechaChange={handleFechaChanged}
-        onNuevaInversion={() => setCreateDialogOpen(true)}
-        onGuardarEstado={handleGuardarEstado}
-        onSobreescribirChange={handleSobreescribirChanged}
-        onMonedaChange={handleMonedaChanged}
-        onTipoDolarChange={handleTipoDolarChanged}
-      />
-    ),
     muiTablePaperProps: {
       sx: { display: 'flex', flexDirection: 'column', inlineSize: '100%', overflow: 'auto', flex: 1 },
     },
@@ -497,21 +581,60 @@ const InversionesPage = () => {
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, blockSize: '100%', overflow: 'hidden' }}>
-      <Box>
-        <h2>Inversiones</h2>
-      </Box>
-      {inversionesQuery.isError && <p>Hubo un error al cargar las inversiones.</p>}
-      {sinCotizacionDelDia && (
-        <Alert severity="error" sx={{ flexShrink: 0 }}>
-          No hay cotización del dólar guardada para el {diaSeleccionado}: no se pueden calcular precios ni totales.
-        </Alert>
-      )}
-      {instrumentosSinPrecio.length > 0 && (
-        <Alert severity="warning" sx={{ flexShrink: 0 }}>
-          Sin precio guardado para el {diaSeleccionado}: {instrumentosSinPrecio.join(', ')}
-        </Alert>
-      )}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        // TODO(rediseño-tema, Fase 10): `styles.main` (Layout) todavía trae `p: 3`.
+        // Este margen lo cancela y el alto extra cubre ese padding para que el
+        // frame vaya de borde a borde (`.page` del mockup). Al quitar el padding
+        // de `main`, borrar el margen y volver a `blockSize: '100%'`.
+        m: -3,
+        blockSize: 'calc(100% + 48px)',
+        maxWidth: CONTENT_MAX_WIDTH,
+        overflow: 'hidden',
+      }}
+    >
+      <PageHeader
+        crumbs={[{ label: 'Inversiones' }]}
+        actions={
+          <InversionesTopbarActions
+            fecha={fecha}
+            maxFecha={hoy}
+            viendoHistorial={viendoHistorial}
+            guardandoEstado={guardarEstadoMutation.isPending}
+            sobreescribir={sobreescribir}
+            mostrandoGraficos={mostrandoGraficos}
+            esFechaHabilitada={esFechaHabilitada}
+            onFechaChange={handleFechaChanged}
+            onNuevaInversion={() => setCreateDialogOpen(true)}
+            onGuardarEstado={handleGuardarEstado}
+            onSobreescribirChange={handleSobreescribirChanged}
+            onToggleGraficos={() => setMostrandoGraficos((v) => !v)}
+          />
+        }
+      />
+
+      <InversionesAlerts
+        errorCarga={inversionesQuery.isError}
+        sinCotizacionDelDia={sinCotizacionDelDia}
+        diaSeleccionado={fecha.format('DD/MM/YYYY')}
+        instrumentosSinPrecio={instrumentosSinPrecio}
+        viendoHistorial={viendoHistorial}
+        onVolverAHoy={() => handleFechaChanged(hoy)}
+      />
+
+      <InversionesCurrencyBar
+        moneda={moneda}
+        tipoDolar={tipoDolar}
+        tasas={tasasDolar}
+        ultimoEstado={ultimoEstado}
+        onMonedaChange={handleMonedaChanged}
+        onTipoDolarChange={handleTipoDolarChanged}
+      />
+
+      <StatsCluster items={statsItems} />
+
       <Box
         sx={{
           display: mostrandoGraficos ? 'flex' : 'none',
@@ -520,27 +643,16 @@ const InversionesPage = () => {
           alignItems: 'flex-start',
           flexWrap: 'wrap',
           gap: 3,
+          p: mostrandoGraficos ? '16px var(--gutter) 20px' : 0,
+          borderBottom: mostrandoGraficos ? '1px solid var(--border-soft)' : 0,
           overflow: 'auto',
         }}
       >
         <Box sx={COLUMNA_HISTORIAL}>
           <HistorialInversiones maxFecha={hoy} moneda={moneda} tipoDolar={tipoDolar} />
         </Box>
-        <Box sx={COLUMNA_SUPERIOR}>
-          <InversionesPorCategoria titulo="Total por broker" data={datosPorBroker} simbolo={simboloMoneda} />
-        </Box>
-        <Box sx={COLUMNA_SUPERIOR}>
-          <InversionesPorCategoria titulo="Total por tipo de renta" data={datosPorRenta} simbolo={simboloMoneda} />
-        </Box>
       </Box>
-      <Divider sx={{ flexShrink: 0 }}>
-        <IconButton
-          onClick={() => setMostrandoGraficos((v) => !v)}
-          aria-label={mostrandoGraficos ? 'Ocultar gráficos' : 'Mostrar gráficos'}
-        >
-          {mostrandoGraficos ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      </Divider>
+
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <MaterialReactTable table={table} />
       </Box>

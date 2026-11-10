@@ -21,6 +21,14 @@ interface StatsClusterStyles {
   meterFarOver: Record<string, unknown>;
   meterLegend: Record<string, unknown>;
   meterLegendPct: Record<string, unknown>;
+  stack: Record<string, unknown>;
+  stackSegment: Record<string, unknown>;
+  stackSegmentFirst: Record<string, unknown>;
+  stackSegmentLast: Record<string, unknown>;
+  stackLegend: Record<string, unknown>;
+  stackLegendItem: Record<string, unknown>;
+  stackSwatch: Record<string, unknown>;
+  stackPct: Record<string, unknown>;
 }
 
 /** Tira de stats del mockup (`.stats` / `.stat`): `.meter` opcional y estados ámbar/rojo/violeta. */
@@ -115,5 +123,41 @@ export const styles: StatsClusterStyles = {
   meterLegendPct: {
     fontFamily: 'var(--font-mono)',
     color: 'var(--accent)',
+  },
+  // `.stack100`: barra de 8px con bandas y leyenda debajo.
+  stack: {
+    display: 'flex',
+    gap: '2px',
+    height: '8px',
+    borderRadius: '3px',
+    overflow: 'hidden',
+  },
+  stackSegment: {
+    display: 'block',
+    height: '100%',
+  },
+  stackSegmentFirst: { borderRadius: '3px 0 0 3px' },
+  stackSegmentLast: { borderRadius: '0 3px 3px 0' },
+  stackLegend: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px 12px',
+    fontSize: '11.5px',
+    color: 'var(--text-secondary)',
+  },
+  stackLegendItem: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+  },
+  stackSwatch: {
+    width: 10,
+    height: 10,
+    borderRadius: '2px',
+    flexShrink: 0,
+  },
+  stackPct: {
+    fontFamily: 'var(--font-mono)',
+    color: 'var(--text-primary)',
   },
 };

@@ -10,6 +10,8 @@ export type {
   StatItem,
   StatDelta,
   StatMeter,
+  StatStack,
+  StatStackSegment,
   StatValueTone,
   StatDeltaTone,
   StatMeterTone,
