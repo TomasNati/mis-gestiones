@@ -1,0 +1,1 @@
+export { EditarDiaModal } from './EditarDiaModal';

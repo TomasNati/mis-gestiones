@@ -4,6 +4,11 @@ import { Box, Typography } from '@mui/material';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 import { styles } from './StatsCluster.styles';
 
+/**
+ * @deprecated (rediseño-tema) Componente específico de Movimientos. Usar el genérico
+ * `StatsCluster` de `@/components/ui` (soporta N stats, delta y meter con leyenda).
+ * Borrar cuando se migre la página en la Fase 3 — Movimientos.
+ */
 interface StatsClusterProps {
   presupuesto: number;
   gastado: number;

@@ -34,6 +34,16 @@ a {
   text-decoration: none;
 }
 
+/* ── Loading shimmer (`SkeletonRows`, `.skeleton` del mockup) ── */
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
 /* ── Scrollbar theming ── */
 ::-webkit-scrollbar {
   width: 8px;

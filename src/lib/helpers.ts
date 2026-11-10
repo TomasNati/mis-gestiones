@@ -72,6 +72,9 @@ export const obtenerDiasEnElMes = (fecha: Date) => {
   return diasEnElMes;
 };
 
+/** Abreviatura del mes (`ene`, `feb`, …) a partir del índice (0 = enero). */
+export const nombreMesCorto = (indice: number): string => months[indice].slice(0, 3).toLowerCase();
+
 export const formatDate = (
   date: Date,
   showHour: boolean = false,
