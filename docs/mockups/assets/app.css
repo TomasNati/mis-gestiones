@@ -687,6 +687,9 @@ textarea.textarea { display: block; }
 .viz-tooltip .title { color: var(--text-primary); font-weight: 500; margin-bottom: 4px; }
 .viz-tooltip .row { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .viz-tooltip .row .num { color: var(--text-primary); }
+.viz-tooltip .row .label { display: inline-flex; align-items: center; gap: 6px; }
+.viz-tooltip .row .swatch { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 auto; }
+.viz-tooltip[hidden] { display: none; }
 .sparkline { display: inline-block; vertical-align: middle; }
 .sparkline path { fill: none; stroke: var(--series-muted); stroke-width: 1.5; }
 .sparkline path.current { stroke: var(--accent); }

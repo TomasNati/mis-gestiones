@@ -26,10 +26,10 @@ const fechaDiaActual = new Date(Date.UTC(anio, months.indexOf(mes), new Date().g
 const fecha30DiasAtras = new Date(Date.UTC(anio, months.indexOf(mes), new Date().getDate() - 30));
 
 /**
- * Tope de ancho de la columna de contenido, pedido en el mockup (Fase 1, "prueba").
- * Ver `docs/new-theme/plan-rediseno-tema.md`.
+ * Tope de ancho de la columna de contenido (Fase 1). Ver
+ * `docs/new-theme/plan-rediseno-tema.md`.
  */
-const CONTENT_MAX_WIDTH = 1000;
+const CONTENT_MAX_WIDTH = 1250;
 
 const Suenio = () => {
   const [mostrandoGrilla, setMostrandoGrilla] = useState(true);
@@ -199,7 +199,17 @@ const Suenio = () => {
         acá para que la página use el `--gutter` del mockup (28px, bordes a todo
         el ancho). Al quitar el padding de `main`, borrar también este margen.
       */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', m: -3, maxWidth: CONTENT_MAX_WIDTH }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          m: -3,
+          maxWidth: CONTENT_MAX_WIDTH,
+          // Contenedor de consulta: los gráficos se apilan según el ancho real
+          // de la columna (no del viewport, que cambia con el sidebar).
+          containerType: 'inline-size',
+        }}
+      >
         <PageHeader
           crumbs={[{ label: 'Tomi', href: '/tomi' }, { label: 'Agenda de sueño' }]}
           actions={
@@ -225,20 +235,26 @@ const Suenio = () => {
 
         <StatsCluster items={statsItems} />
 
-        <Box sx={{ px: 'var(--gutter)' }}>
-          <Box
-            sx={{
-              height: mostrandoGrafico ? '100%' : 0,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-evenly',
-              alignItems: 'center',
-              overflow: 'hidden',
-            }}
-          >
-            <SuenioTomi rangoFechas={rangoFechas} diasIniciales={diasAGraficar} />
-            <SuenioAnualTomi fechaHasta={rangoFechas.hasta} />
-          </Box>
+        <Box
+          sx={{
+            // Fila 1.7 : 1 (≈740 / 435 a 1250px). El segundo gráfico tiene un
+            // mínimo de 435px; si la columna no alcanza para ambos, pasa a una
+            // sola columna y el segundo baja debajo del primero.
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) 435px',
+            gap: '16px',
+            p: mostrandoGrafico ? '16px var(--gutter) 20px' : 0,
+            height: mostrandoGrafico ? 'auto' : 0,
+            borderBottom: mostrandoGrafico ? '1px solid var(--border-soft)' : 'none',
+            overflow: 'hidden',
+            // 927px = 435 (mínimo del segundo) + 420 (mínimo del primero) + 16 (gap) + 56 (padding lateral).
+            '@container (max-width: 926px)': {
+              gridTemplateColumns: 'minmax(0, 1fr)',
+            },
+          }}
+        >
+          <SuenioTomi rangoFechas={rangoFechas} diasIniciales={diasAGraficar} />
+          <SuenioAnualTomi fechaHasta={rangoFechas.hasta} />
         </Box>
 
         <TablaDiasSuenio dias={dias} onOpenEditarDia={onOpenEditarDia} />

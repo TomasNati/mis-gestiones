@@ -8,9 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/app.css">
 <style>
-  /* Prueba: columna de contenido limitada a 1000px en vez del 100% del ancho. */
-  .page { max-width: 1000px; }
-  .charts { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 16px; padding: 16px var(--gutter) 20px; border-bottom: 1px solid var(--border-soft); }
+  /* Columna de contenido limitada a 1250px en vez del 100% del ancho. */
+  .page { max-width: 1250px; container-type: inline-size; }
+  .charts { display: grid; grid-template-columns: minmax(0, 1fr) 435px; gap: 16px; padding: 16px var(--gutter) 20px; border-bottom: 1px solid var(--border-soft); }
+  /* Menos de 927px: el segundo gráfico (mín. 435) baja debajo del primero. */
+  @container (max-width: 926px) { .charts { grid-template-columns: minmax(0, 1fr); } }
   .stat .delta .note-badge .x { color: var(--text-tertiary); font-weight: 500; margin-left: 1px; }
   .note-legend { display: inline-flex; align-items: center; gap: 12px; }
   .note-legend .item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
@@ -376,7 +378,7 @@
   daily.forEach((v, i) => {
     if (v == null) { s += '<rect x="' + (x(i) - bw / 2) + '" y="' + (y(0) - 2) + '" width="' + bw + '" height="2" fill="var(--border-soft)"/>'; return; }
     const fill = v < 6 ? 'var(--danger)' : v < 8 ? 'var(--attention)' : v < 10 ? 'var(--accent)' : 'var(--success)';
-    s += '<rect x="' + (x(i) - bw / 2) + '" y="' + y(v) + '" width="' + bw + '" height="' + (y(0) - y(v)) + '" fill="' + fill + '" rx="2"><title>' + dias[i].d + ' ' + dias[i].mes + ' · ' + fmt(v) + '</title></rect>';
+    s += '<rect x="' + (x(i) - bw / 2) + '" y="' + y(v) + '" width="' + bw + '" height="' + (y(0) - y(v)) + '" fill="' + fill + '" rx="2" data-dia="' + dias[i].d + ' ' + dias[i].mes + '" data-valor="' + fmt(v) + '" data-color="' + fill + '"></rect>';
     if (i === n - 1) s += '<text class="end-label num-t" x="' + (W - m.r) + '" y="' + (y(v) - 7) + '" text-anchor="end">última carga</text>';
   });
   s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y(8) + '" y2="' + y(8) + '" stroke="var(--text-tertiary)" stroke-width="1" stroke-dasharray="3 3"/>';
@@ -388,6 +390,33 @@
   s += '<text class="num-t" style="font-size: 10.5px" x="' + x(18.5) + '" y="' + (H - 8) + '" text-anchor="middle">sep</text>';
   s += '</svg>';
   document.getElementById('dailyChart').innerHTML = s;
+
+  // Tooltip propio (`.viz-tooltip`, estilo del tema) en reemplazo del <title> nativo.
+  const viz = document.getElementById('dailyChart');
+  const tip = document.createElement('div');
+  tip.className = 'viz-tooltip';
+  tip.hidden = true;
+  viz.appendChild(tip);
+  const colocar = (rect) => {
+    const r = rect.getBoundingClientRect();
+    const c = viz.getBoundingClientRect();
+    const t = tip.getBoundingClientRect();
+    const left = Math.max(4, Math.min(r.left - c.left + r.width / 2 - t.width / 2, c.width - t.width - 4));
+    const arriba = r.top - c.top - t.height - 8;
+    tip.style.left = left + 'px';
+    tip.style.top = (arriba < 4 ? r.top - c.top + 8 : arriba) + 'px';
+  };
+  viz.querySelectorAll('rect[data-dia]').forEach((rect) => {
+    rect.addEventListener('mouseenter', () => {
+      tip.innerHTML =
+        '<div class="title">' + rect.dataset.dia + '</div>' +
+        '<div class="row"><span class="label"><span class="swatch" style="background: ' + rect.dataset.color + '"></span>Horas de sueño</span>' +
+        '<span class="num">' + rect.dataset.valor + '</span></div>';
+      tip.hidden = false;
+      colocar(rect);
+    });
+    rect.addEventListener('mouseleave', () => { tip.hidden = true; });
+  });
 })();
 (function () {
   const months = [["oct",8.6],["nov",8.4],["dic",8.5],["ene",8.8],["feb",8.7],["mar",8.7],["abr",8.6],["may",9.2],["jun",10],["jul",9.2],["ago",9.6],["sep",9.47]];
@@ -403,7 +432,7 @@
   s += '</g>';
   months.forEach(([lbl, v], i) => {
     const cur = i === n - 1;
-    s += '<rect x="' + (x(i) - bw / 2) + '" y="' + y(v) + '" width="' + bw + '" height="' + (y(0) - y(v)) + '" fill="' + (cur ? 'var(--accent)' : 'var(--series-muted)') + '" rx="2"><title>' + lbl + ' · ' + String(v).replace('.', ',') + ' h</title></rect>';
+    s += '<rect x="' + (x(i) - bw / 2) + '" y="' + y(v) + '" width="' + bw + '" height="' + (y(0) - y(v)) + '" fill="' + (cur ? 'var(--accent)' : 'var(--series-muted)') + '" rx="2"></rect>';
     s += '<text x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle"' + (cur ? ' style="fill: var(--text-primary)"' : '') + '>' + lbl + '</text>';
     if (cur) s += '<text class="end-label strong num-t" x="' + (x(i) + bw / 2) + '" y="' + (y(v) - 6) + '" text-anchor="end">' + v.toFixed(1).replace('.', ',') + ' h</text>';
   });

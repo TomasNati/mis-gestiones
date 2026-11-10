@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import type {} from '@mui/x-charts/themeAugmentation';
 
 /**
  * Tema MUI del sistema de diseño GitHub dark.
@@ -210,6 +211,20 @@ const theme = createTheme({
         // La flecha se pinta con `currentColor`.
         arrow: {
           color: 'var(--bg-overlay)',
+        },
+      },
+    },
+    // Tooltips de gráficos (MUI X Charts): misma superficie que `MuiTooltip`.
+    MuiChartsTooltip: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: 'var(--bg-overlay)',
+          color: 'var(--text-secondary)',
+          border: '1px solid var(--border-soft)',
+          borderRadius: 'var(--radius)',
+          boxShadow: 'var(--shadow-overlay)',
+          fontFamily: 'var(--font-body)',
+          fontSize: 'var(--fs-12)',
         },
       },
     },

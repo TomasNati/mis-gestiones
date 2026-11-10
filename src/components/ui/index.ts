@@ -30,6 +30,9 @@ export type { EmptyStateProps } from './EmptyState';
 export { SkeletonRows } from './SkeletonRows';
 export type { SkeletonRowsProps } from './SkeletonRows';
 
+export { ChartPanel } from './ChartPanel';
+export type { ChartPanelProps } from './ChartPanel';
+
 export {
   mrtTableProps,
   MRT_NUMERIC_CELL_SX,
