@@ -190,6 +190,29 @@ const theme = createTheme({
         },
       },
     },
+    // Tooltips: superficie de overlay con borde y sombra (junto a los modales es el
+    // único lugar del sistema que admite sombra). Ref: `.viz-tooltip` en
+    // docs/mockups/assets/app.css.
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          padding: '8px 10px',
+          maxWidth: 320,
+          backgroundColor: 'var(--bg-overlay)',
+          color: 'var(--text-secondary)',
+          border: '1px solid var(--border-soft)',
+          borderRadius: 'var(--radius)',
+          boxShadow: 'var(--shadow-overlay)',
+          fontFamily: 'var(--font-body)',
+          fontSize: 'var(--fs-12)',
+          lineHeight: 1.45,
+        },
+        // La flecha se pinta con `currentColor`.
+        arrow: {
+          color: 'var(--bg-overlay)',
+        },
+      },
+    },
     MuiToggleButtonGroup: {
       styleOverrides: {
         root: {

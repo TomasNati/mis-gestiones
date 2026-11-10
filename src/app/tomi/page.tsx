@@ -15,7 +15,7 @@ import { ConfiguracionNotificacion, Notificacion } from '@/components/Notificaci
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import { SuenioTomi, SuenioAnualTomi } from '@/components/graficos';
 import { TablaDiasSuenio } from '@/components/tomi/TablaDiasSuenio';
-import { NotaBadge } from '@/components/tomi/NotasTooltip';
+import { NotaBadge, NotasDelMesTooltip } from '@/components/tomi/NotasTooltip';
 import { calcularStatsSuenio, formatDuracion, formatHora } from '@/components/tomi/estadisticasSuenio';
 import { PageHeader, StatsCluster } from '@/components/ui';
 import type { StatItem } from '@/components/ui';
@@ -170,11 +170,11 @@ const Suenio = () => {
         stats.notasPorTipo.length > 0
           ? {
               text: (
-                <Box sx={{ display: 'inline-flex', flexWrap: 'wrap', gap: '4px' }}>
+                <NotasDelMesTooltip notas={stats.notas}>
                   {stats.notasPorTipo.map(({ tipo, count }) => (
                     <NotaBadge key={tipo} tipo={tipo} count={count} />
                   ))}
-                </Box>
+                </NotasDelMesTooltip>
               ),
             }
           : undefined,

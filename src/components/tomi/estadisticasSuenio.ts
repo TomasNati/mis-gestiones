@@ -12,12 +12,24 @@ export interface NotaPorTipo {
   count: number;
 }
 
+/** Nota con el día del mes, para el tooltip único de la tira de stats. */
+export interface NotaDelMes {
+  id: string;
+  tipo: string;
+  comentarios: string;
+  /** Día del mes (1-31). */
+  dia: number;
+  /** Nombre del día de la semana (`lunes`, `martes`, …). */
+  diaSemana: string;
+}
+
 export interface StatsSuenio {
   promedioMinutos: number | null;
   horaDormirPromedio: number | null;
   horaDespertarPromedio: number | null;
   totalNotas: number;
   notasPorTipo: NotaPorTipo[];
+  notas: NotaDelMes[];
 }
 
 const promedio = (valores: number[]): number | null =>
@@ -55,9 +67,20 @@ export const calcularStatsSuenio = (dias: AgendaTomiDia[]): StatsSuenio => {
     .filter((minutos): minutos is number => minutos !== null);
   const horaDespertarPromedio = promedio(minutosDespertar);
 
-  const notas = dias.flatMap((dia) => dia.notas ?? []);
+  const notasDelMes: NotaDelMes[] = dias
+    .flatMap((dia) =>
+      (dia.notas ?? []).map((nota) => ({
+        id: nota.id,
+        tipo: nota.tipo,
+        comentarios: nota.comentarios ?? '',
+        dia: dia.fecha.getUTCDate(),
+        diaSemana: dia.fecha.toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'UTC' }),
+      })),
+    )
+    .sort((a, b) => a.dia - b.dia);
+
   const conteoPorTipo = new Map<string, number>();
-  notas.forEach((nota) => conteoPorTipo.set(nota.tipo, (conteoPorTipo.get(nota.tipo) ?? 0) + 1));
+  notasDelMes.forEach((nota) => conteoPorTipo.set(nota.tipo, (conteoPorTipo.get(nota.tipo) ?? 0) + 1));
 
   const notasPorTipo = Array.from(conteoPorTipo.entries())
     .map(([tipo, count]) => ({ tipo, count }))
@@ -73,8 +96,9 @@ export const calcularStatsSuenio = (dias: AgendaTomiDia[]): StatsSuenio => {
     promedioMinutos,
     horaDormirPromedio,
     horaDespertarPromedio,
-    totalNotas: notas.length,
+    totalNotas: notasDelMes.length,
     notasPorTipo,
+    notas: notasDelMes,
   };
 };
 
