@@ -89,6 +89,7 @@ interface UseInversionesResult {
   totalDisplay: string;
   datosPorBroker: DatoGrafico[];
   datosPorRenta: DatoGrafico[];
+  datosPorTipoInstrumento: DatoGrafico[];
 }
 
 export const useInversiones = ({
@@ -237,5 +238,23 @@ export const useInversiones = ({
     [inversionesConValor],
   );
 
-  return { precioPorInstrumento, totalValor, totalDisplay, datosPorBroker, datosPorRenta };
+  const datosPorTipoInstrumento = useMemo(
+    () =>
+      agruparPorCategoria(
+        inversionesConValor.map(({ inversion, valor }) => ({
+          categoria: inversion.instrumento.tipo || 'Sin tipo',
+          valor,
+        })),
+      ),
+    [inversionesConValor],
+  );
+
+  return {
+    precioPorInstrumento,
+    totalValor,
+    totalDisplay,
+    datosPorBroker,
+    datosPorRenta,
+    datosPorTipoInstrumento,
+  };
 };

@@ -1,15 +1,7 @@
 import { useState, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  InputAdornment,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material';
+import { Box, Button, CircularProgress, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { Dayjs } from 'dayjs';
 import { obtenerHistorialInversiones } from '@/lib/api';
@@ -105,7 +97,7 @@ export const HistorialInversiones = ({ maxFecha, moneda, tipoDolar }: HistorialI
 
   return (
     <ChartPanel
-      title="Evolución por broker"
+      title="Evolución del total"
       hint={unidad}
       aside={
         <ToggleButtonGroup
@@ -134,18 +126,13 @@ export const HistorialInversiones = ({ maxFecha, moneda, tipoDolar }: HistorialI
             onChange={(nuevaFecha) => setDesde(nuevaFecha)}
             maxDate={hasta ?? maxFecha}
             format="DD/MM/YYYY"
+            slots={{ openPickerIcon: CalendarMonthOutlinedIcon }}
             slotProps={{
+              openPickerIcon: { sx: { fontSize: 16 } },
               textField: {
                 size: 'small',
                 sx: dateFieldSx,
                 inputProps: { 'aria-label': 'Desde' },
-                InputProps: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarMonthOutlinedIcon sx={{ fontSize: 16 }} />
-                    </InputAdornment>
-                  ),
-                },
               },
             }}
           />
@@ -156,18 +143,13 @@ export const HistorialInversiones = ({ maxFecha, moneda, tipoDolar }: HistorialI
             minDate={desde ?? undefined}
             maxDate={maxFecha}
             format="DD/MM/YYYY"
+            slots={{ openPickerIcon: CalendarMonthOutlinedIcon }}
             slotProps={{
+              openPickerIcon: { sx: { fontSize: 16 } },
               textField: {
                 size: 'small',
                 sx: dateFieldSx,
                 inputProps: { 'aria-label': 'Hasta' },
-                InputProps: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarMonthOutlinedIcon sx={{ fontSize: 16 }} />
-                    </InputAdornment>
-                  ),
-                },
               },
             }}
           />

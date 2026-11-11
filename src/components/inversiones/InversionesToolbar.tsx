@@ -2,7 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import { Box, Button, FormControlLabel, InputAdornment, Switch, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Button, FormControlLabel, Switch, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { ChangeEvent, MouseEvent } from 'react';
 import type { Dayjs } from 'dayjs';
@@ -50,20 +50,15 @@ export const InversionesTopbarActions = ({
       maxDate={maxFecha}
       shouldDisableDate={(dia) => !esFechaHabilitada(dia)}
       format="DD/MM/YYYY"
+      slots={{ openPickerIcon: CalendarMonthOutlinedIcon }}
       slotProps={{
+        openPickerIcon: { sx: { fontSize: 16 } },
         textField: {
           size: 'small',
           sx: styles.dateField,
           inputProps: {
             'aria-label': 'Fecha del estado',
             title: 'Elegir una fecha pasada abre el estado guardado en modo lectura',
-          },
-          InputProps: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <CalendarMonthOutlinedIcon sx={{ fontSize: 16 }} />
-              </InputAdornment>
-            ),
           },
         },
       }}

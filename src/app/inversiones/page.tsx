@@ -40,6 +40,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { type Dayjs } from 'dayjs';
 import { Box, CircularProgress } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
+import { ComposicionInversiones } from '@/components/inversiones/ComposicionInversiones';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import { EditarInversion } from '@/components/inversiones/EditarInversion';
 import { HistorialInversiones } from '@/components/inversiones/HistorialInversiones';
@@ -76,11 +77,6 @@ const RENTA_COLOR: Record<string, string> = {
 const formatearMonto = (valor: number, simbolo: string) => `${simbolo} ${transformNumberToCurrenty(valor, 0) ?? '-'}`;
 
 const TIPOS_DOLAR_HISTORICO = ['oficial', 'blue', 'bolsa', 'contadoconliqui'] as const;
-
-// The top section splits into three equal columns, collapsing to fewer when the
-// viewport can't fit 300px per column.
-const COLUMNA_SUPERIOR = { flex: '1 1 300px', display: 'flex', justifyContent: 'center' } as const;
-const COLUMNA_HISTORIAL = { ...COLUMNA_SUPERIOR, justifyContent: 'flex-start' } as const;
 
 const construirCotizacionesDolar = (cotizaciones: CotizacionDolar[] | undefined): DolarCotizaciones | undefined => {
   const ventas = new Map((cotizaciones ?? []).filter((c) => c.venta > 0).map((c) => [c.tipo, c.venta]));
@@ -252,7 +248,7 @@ const InversionesPage = () => {
     setCreateDialogOpen(false);
   };
 
-  const { precioPorInstrumento, totalValor, datosPorBroker, datosPorRenta } = useInversiones({
+  const { precioPorInstrumento, totalValor, datosPorBroker, datosPorRenta, datosPorTipoInstrumento } = useInversiones({
     instrumentos: instrumentosQuery.data,
     inversiones: inversionesQuery.data,
     moneda,
@@ -586,13 +582,10 @@ const InversionesPage = () => {
         display: 'flex',
         flexDirection: 'column',
         // TODO(rediseño-tema, Fase 10): `styles.main` (Layout) todavía trae `p: 3`.
-        // Este margen lo cancela y el alto extra cubre ese padding para que el
-        // frame vaya de borde a borde (`.page` del mockup). Al quitar el padding
-        // de `main`, borrar el margen y volver a `blockSize: '100%'`.
+        // Este margen lo cancela para que el frame vaya de borde a borde
+        // (`.page` del mockup). Al quitar el padding de `main`, borrar el margen.
         m: -3,
-        blockSize: 'calc(100% + 48px)',
         maxWidth: CONTENT_MAX_WIDTH,
-        overflow: 'hidden',
       }}
     >
       <PageHeader
@@ -637,23 +630,31 @@ const InversionesPage = () => {
 
       <Box
         sx={{
-          display: mostrandoGraficos ? 'flex' : 'none',
+          display: mostrandoGraficos ? 'block' : 'none',
           flexShrink: 0,
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: 3,
           p: mostrandoGraficos ? '16px var(--gutter) 20px' : 0,
           borderBottom: mostrandoGraficos ? '1px solid var(--border-soft)' : 0,
           overflow: 'auto',
+          containerType: 'inline-size',
         }}
       >
-        <Box sx={COLUMNA_HISTORIAL}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1.35fr) minmax(0, 1fr)',
+            alignItems: 'stretch',
+            gap: '16px',
+            '@container (max-width: 1060px)': {
+              gridTemplateColumns: 'minmax(0, 1fr)',
+            },
+          }}
+        >
           <HistorialInversiones maxFecha={hoy} moneda={moneda} tipoDolar={tipoDolar} />
+          <ComposicionInversiones datos={datosPorTipoInstrumento} totalValor={totalValor} simbolo={simboloMoneda} />
         </Box>
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+      <Box sx={{ display: 'flex' }}>
         <MaterialReactTable table={table} />
       </Box>
       <CrearEditarInversion
