@@ -29,10 +29,11 @@ export const MRT_NUMERIC_CELL_SX: SxProps = {
   whiteSpace: 'nowrap',
 };
 
-/** Fila de grupo/día (`.row-group`): fondo de panel y tipografía secundaria. */
+/** Fila de grupo/día (`.row-group`): fondo de panel y hover de fila. */
 export const MRT_GROUP_ROW_SX: SxProps = {
   backgroundColor: 'var(--bg-panel)',
-  '&:hover': { backgroundColor: 'var(--bg-panel)' },
+  cursor: 'pointer',
+  '&:hover': { backgroundColor: 'var(--bg-row-hover)' },
 };
 
 interface MrtSurfaceOptions {
@@ -56,17 +57,11 @@ const scrollbar = (track: string): SxProps => ({
 });
 
 /**
- * Devuelve los props base de MRT. Pensado para esparcirse y luego sobreescribir
- * lo particular de cada página (toolbar, columnas, `muiTableBodyRowProps`, etc.).
+ * Solo estilos de MRT (superficie, cabecera, filas, toolbar). Útil cuando una
+ * página necesita conservar sus propias opciones funcionales (paginación,
+ * filtros, agrupación…) pero quiere el mismo look que `.table` del mockup.
  */
-export const mrtTableProps = ({ surface = MRT_SURFACE_PANEL }: MrtSurfaceOptions = {}) => ({
-  enableColumnActions: false,
-  enableColumnFilters: false,
-  enableDensityToggle: false,
-  enableFullScreenToggle: false,
-  enableHiding: false,
-  enableStickyHeader: true,
-
+export const mrtTableStyleProps = ({ surface = MRT_SURFACE_PANEL }: MrtSurfaceOptions = {}) => ({
   muiTableProps: {
     size: 'small' as const,
     sx: {
@@ -111,20 +106,38 @@ export const mrtTableProps = ({ surface = MRT_SURFACE_PANEL }: MrtSurfaceOptions
       backgroundColor: surface,
       '& .MuiTableRow-root': {
         height: 'var(--row-h)',
-        backgroundColor: surface,
+        backgroundColor: `${surface} !important`,
         transition: 'background 0.1s var(--ease)',
-        '&:hover': { backgroundColor: 'var(--bg-row-hover)' },
+        '&:hover': { backgroundColor: 'var(--bg-row-hover) !important' },
         '&.Mui-selected': {
-          backgroundColor: 'var(--accent-soft)',
+          backgroundColor: 'var(--accent-soft) !important',
           boxShadow: 'inset 2px 0 0 var(--accent)',
-          '&:hover': { backgroundColor: 'var(--accent-soft)' },
+          '&:hover': { backgroundColor: 'var(--accent-soft) !important' },
         },
+      },
+      // Fila de grupo (`.row-group`). Necesita más especificidad que la regla
+      // base de arriba; las páginas marcan la fila con `className: 'mrt-group-row'`.
+      '& .MuiTableRow-root.mrt-group-row': {
+        height: '34px',
+        backgroundColor: 'var(--bg-panel) !important',
+        cursor: 'pointer',
+        '&:hover': { backgroundColor: 'var(--bg-row-hover) !important' },
+        '& .MuiTableCell-root': { paddingTop: '6px', paddingBottom: '6px' },
       },
       '& .MuiTableCell-root': {
         fontSize: '13.5px',
         color: 'var(--text-primary)',
         borderBottom: '1px solid var(--border-muted)',
       },
+      // Acciones de fila (`.table .row-actions .icon-btn`): visibles solo al
+      // hover, con la fila seleccionada o al enfocar con teclado.
+      '& .row-actions .MuiIconButton-root': {
+        opacity: 0,
+        transition: 'opacity 0.12s var(--ease)',
+      },
+      '& .MuiTableRow-root:hover .row-actions .MuiIconButton-root': { opacity: 1 },
+      '& .MuiTableRow-root.Mui-selected .row-actions .MuiIconButton-root': { opacity: 1 },
+      '& .row-actions .MuiIconButton-root:focus-visible': { opacity: 1 },
     } as SxProps,
   },
 
@@ -143,4 +156,18 @@ export const mrtTableProps = ({ surface = MRT_SURFACE_PANEL }: MrtSurfaceOptions
       borderTop: '1px solid var(--border-soft)',
     } as SxProps,
   },
+});
+
+/**
+ * Devuelve los props base de MRT. Pensado para esparcirse y luego sobreescribir
+ * lo particular de cada página (toolbar, columnas, `muiTableBodyRowProps`, etc.).
+ */
+export const mrtTableProps = ({ surface = MRT_SURFACE_PANEL }: MrtSurfaceOptions = {}) => ({
+  enableColumnActions: false,
+  enableColumnFilters: false,
+  enableDensityToggle: false,
+  enableFullScreenToggle: false,
+  enableHiding: false,
+  enableStickyHeader: true,
+  ...mrtTableStyleProps({ surface }),
 });

@@ -6,7 +6,6 @@ import {
   GuardarEstadoInversionesPayload,
   Inversion,
   InversionCreatePayload,
-  INSTRUMENTO_INVERSION_TIPO,
   INSTRUMENTO_MONEDA,
   InstrumentoMoneda,
   TIPO_DOLAR,
@@ -44,12 +43,22 @@ import { ComposicionInversiones } from '@/components/inversiones/ComposicionInve
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import { EditarInversion } from '@/components/inversiones/EditarInversion';
 import { HistorialInversiones } from '@/components/inversiones/HistorialInversiones';
+import { styles } from '@/components/inversiones/InversionesGrid.styles';
 import { InversionesAlerts } from '@/components/inversiones/InversionesAlerts';
 import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
 import { InversionesCurrencyBar, InversionesTopbarActions } from '@/components/inversiones/InversionesToolbar';
 import type { TasasDolar } from '@/components/inversiones/InversionesToolbar';
 import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
-import { PageHeader, SERIES, StatsCluster } from '@/components/ui';
+import {
+  MRT_GROUP_ROW_SX,
+  MRT_NUMERIC_CELL_SX,
+  MRT_SURFACE_PAGE,
+  mrtTableStyleProps,
+  PageHeader,
+  Pill,
+  SERIES,
+  StatsCluster,
+} from '@/components/ui';
 import type { StatItem, StatStack } from '@/components/ui';
 
 const FORMATO_DIA = 'YYYY-MM-DD';
@@ -325,56 +334,103 @@ const InversionesPage = () => {
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
     () => [
       {
-        accessorFn: (row) => {
-          if (row.instrumento.tipo === INSTRUMENTO_INVERSION_TIPO.CEDEAR) {
-            return <span title={row.instrumento.nombre}>{row.instrumento.codigo}</span>;
-          }
-          return row.instrumento.nombre;
-        },
+        accessorFn: (row) => row.instrumento.codigo ?? row.instrumento.nombre,
         id: 'instrumento',
         header: 'Instrumento',
-        size: 200,
+        size: 220,
+        Cell: ({ row }) => {
+          const { instrumento } = row.original;
+          const principal = instrumento.codigo ?? instrumento.nombre;
+          const secundario = instrumento.codigo ? `${instrumento.nombre} · ${instrumento.tipo}` : instrumento.tipo;
+          return (
+            <Box>
+              <Box component="span" title={instrumento.nombre} sx={styles.instrumentoPrincipal}>
+                {principal}
+              </Box>
+              <Box component="span" sx={styles.instrumentoSecundario}>
+                {secundario}
+              </Box>
+            </Box>
+          );
+        },
       },
       {
         accessorFn: (row) => row.instrumento.tipo,
         id: 'tipo',
         header: 'Tipo',
-        size: 100,
+        size: 110,
+        Cell: ({ cell }) => <Pill outline>{cell.getValue<string>()}</Pill>,
       },
       {
         accessorKey: 'cantidad',
         header: 'Cantidad',
-        size: 150,
+        size: 120,
+        aggregationFn: 'sum',
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
+        AggregatedCell: ({ cell }) => <Box sx={MRT_NUMERIC_CELL_SX}>{cell.getValue<number>()}</Box>,
       },
       {
         accessorFn: (row) => row.instrumento.clase_renta,
         id: 'renta',
         header: 'Tipo de Renta',
-        size: 130,
+        size: 110,
       },
       {
         accessorKey: 'broker',
         header: 'Broker',
         size: 130,
+        GroupedCell: ({ row }) => (
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+            <Box component="span" sx={styles.grupoTitulo}>
+              {String(row.groupingValue)}
+            </Box>
+            <Box component="span" sx={styles.grupoMeta}>
+              {row.subRows?.length ?? 0} {(row.subRows?.length ?? 0) === 1 ? 'inversión' : 'inversiones'}
+            </Box>
+          </Box>
+        ),
       },
       {
         id: 'precio',
         header: 'Precio',
         size: 130,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
         Cell: ({ row }) => {
           if (sinCotizacionDelDia) return '-';
           const p = precioPorInstrumento.get(row.original.instrumento.id);
           if (p?.loading) return <CircularProgress size={16} />;
-          return p ? `${p.simbolo} ${p.precio}` : '-';
+          if (!p) return '-';
+          return (
+            <Box component="span">
+              <Box component="span" sx={styles.moneda}>
+                {p.simbolo}
+              </Box>
+              {p.precio}
+            </Box>
+          );
         },
       },
       {
         id: 'total',
         header: 'Total',
-        size: 130,
-        muiTableBodyCellProps: {
-          align: 'right',
+        size: 150,
+        accessorFn: (row) => {
+          if (sinCotizacionDelDia || !ventaDolar) return 0;
+          return Math.round(
+            calcularValorInversion({
+              inversion: row,
+              precioPorInstrumento,
+              moneda,
+              ventaDolar,
+              cotizacionesDolar,
+            }),
+          );
         },
+        aggregationFn: 'sum',
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
         Cell: ({ row }) => {
           if (sinCotizacionDelDia || !ventaDolar) return '-';
           const p = precioPorInstrumento.get(row.original.instrumento.id);
@@ -389,8 +445,27 @@ const InversionesPage = () => {
                 cotizacionesDolar,
               }),
             ),
+            0,
           );
-          return `${simboloMoneda} ${total?.replace(',00', '')}`;
+          return (
+            <Box component="span">
+              <Box component="span" sx={styles.moneda}>
+                {simboloMoneda}
+              </Box>
+              {total}
+            </Box>
+          );
+        },
+        AggregatedCell: ({ cell }) => {
+          if (sinCotizacionDelDia || !ventaDolar) return '-';
+          return (
+            <Box sx={styles.subtotal}>
+              subtotal{' '}
+              <Box component="span" sx={styles.subtotalValor}>
+                {simboloMoneda} {transformNumberToCurrenty(cell.getValue<number>(), 0)}
+              </Box>
+            </Box>
+          );
         },
       },
     ],
@@ -526,24 +601,39 @@ const InversionesPage = () => {
   const isSaving = createMutation.isPending || deleteMutation.isPending || updateMutation.isPending;
 
   const table = useMaterialReactTable({
+    ...mrtTableStyleProps({ surface: MRT_SURFACE_PAGE }),
     columns,
     data: inversionesQuery.data ?? [],
     getRowId: (row) => row.id,
     onRowSelectionChange: setRowSelection,
     enableRowActions: !viendoHistorial,
+    // Acciones a la derecha, como el mockup (MRT las pone a la izquierda por defecto).
+    positionActionsColumn: 'last',
     displayColumnDefOptions: {
       'mrt-row-actions': {
-        size: 100,
+        header: '',
+        size: 80,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
+      },
+      'mrt-row-expand': {
+        header: '',
+        size: 48,
       },
     },
     enableSorting: true,
     enableColumnFilters: true,
     enablePagination: true,
-    enableRowSelection: true,
+    enableRowSelection: (row) => !row.getIsGrouped(),
+    enableGrouping: true,
+    enableExpandAll: false,
+    groupedColumnMode: 'reorder',
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
     initialState: {
       pagination: { pageSize: 50, pageIndex: 0 },
+      grouping: ['broker'],
+      expanded: true,
     },
     muiPaginationProps: {
       rowsPerPageOptions: [10, 25, 50, 100],
@@ -553,10 +643,19 @@ const InversionesPage = () => {
       isSaving,
       rowSelection,
     },
-    muiTableProps: {
-      size: 'small',
+    muiTableBodyRowProps: ({ row }) => {
+      if (row.getIsGrouped()) {
+        return {
+          className: 'mrt-group-row',
+          onClick: (event) => {
+            if ((event.target as HTMLElement).closest('button, input, a')) return;
+            row.toggleExpanded();
+          },
+          sx: MRT_GROUP_ROW_SX,
+        };
+      }
+      return {};
     },
-    layoutMode: 'grid-no-grow',
     renderRowActions: ({ row, table }) => (
       <InversionesRowActions row={row} table={table} onDelete={openDeleteConfirmModal} />
     ),
@@ -565,9 +664,6 @@ const InversionesPage = () => {
     localization: {
       cancel: 'Cancelar',
       save: 'Guardar',
-    },
-    muiTablePaperProps: {
-      sx: { display: 'flex', flexDirection: 'column', inlineSize: '100%', overflow: 'auto', flex: 1 },
     },
     muiCircularProgressProps: {
       color: 'secondary',
