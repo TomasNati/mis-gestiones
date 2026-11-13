@@ -27,10 +27,7 @@
   .stat--wide .label { margin-bottom: 0; }
   .charts { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; padding: 16px var(--gutter) 20px; border-bottom: 1px solid var(--border-soft); }
   .charts .panel-body .legend { margin-top: 10px; }
-  .comp-block + .comp-block { margin-top: 18px; }
-  .comp-block .field-label { margin-bottom: 8px; }
-  .comp-block .legend { margin-top: 8px; }
-  .comp-title { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin: 20px 0 6px; }
+  .comp-title { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin: 0 0 6px; }
   .hbar .track { height: 14px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; display: block; }
   .hbar .track > i { display: block; height: 100%; background: var(--accent); border-radius: 0 3px 3px 0; }
   .type-table td.bar { width: 45%; }
@@ -38,6 +35,20 @@
   .type-table td:last-child, .type-table th:last-child { padding-right: 0; }
   .renta { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.03em; color: var(--text-tertiary); }
   .filter-input { width: 260px; }
+  .groupby { min-width: 95px; position: relative; }
+  .groupby-label { position: absolute; top: -7px; left: 7px; padding: 0 4px; background: var(--bg-page); font-size: 10.5px; line-height: 1; color: var(--text-tertiary); }
+  .bulk-actions[data-bulk-actions] { padding-right: 12px; }
+  .filters-bar { min-height: 48px; padding-top: 8px; padding-bottom: 8px; }
+  .filters-popover { min-width: 320px; max-width: 360px; left: 0; right: auto; }
+  .filter-group { padding: 8px 12px; }
+  .filter-group + .filter-group { border-top: 1px solid var(--border-muted); }
+  .filter-group-title { font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; }
+  .filter-options { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .filter-options .checkbox { font-size: 12.5px; }
+  .filter-trigger .caret { color: var(--text-tertiary); }
+  .filter-trigger .badge { margin-left: 2px; }
+  .badge[hidden] { display: none; }
+  .filter-chips:empty { display: none; }
   .tb-divider { width: 1px; height: 20px; background: var(--border-muted); margin: 0 4px; }
   .btn.danger.filled { background: var(--danger-emphasis); border-color: var(--danger-emphasis); color: #fff; }
   .btn.danger.filled .icon { color: #fff; }
@@ -87,32 +98,21 @@
       <div class="value accent">$ 81.955.264</div>
       <div class="delta t-success"><i data-icon="arrow-up-right"></i> +2,4 % vs. 19/09</div>
     </div>
-    <div class="stat">
-      <div class="label">En dólares (oficial)</div>
-      <div class="value">US$ 57.715</div>
-      <div class="delta">a <span class="num">$ 1.420</span> por dólar</div>
-    </div>
-    <div class="stat">
-      <div class="label">Renta variable</div>
-      <div class="value">58 %</div>
-      <div class="delta"><span class="num">$ 47.533.540</span></div>
-    </div>
-    <div class="stat">
-      <div class="label">Renta fija</div>
-      <div class="value">25 %</div>
-      <div class="delta"><span class="num">$ 20.489.900</span></div>
-    </div>
-    <div class="stat">
-      <div class="label">Mixta</div>
-      <div class="value">17 %</div>
-      <div class="delta"><span class="num">$ 13.931.824</span></div>
+    <div class="stat stat--wide">
+      <div class="label">Composición por renta</div>
+      <div class="stack100" role="img" aria-label="Variable 58 %, Fija 25 %, Mixta 17 %"><i style="width: 58%; background: var(--series-1)"></i><i style="width: 25%; background: var(--series-3)"></i><i style="width: 17%; background: var(--series-4)"></i></div>
+      <div class="legend">
+        <span class="item"><span class="swatch" style="background: var(--series-1)"></span>Variable <span class="pct">58 % ($ 47.533.540)</span></span>
+        <span class="item"><span class="swatch" style="background: var(--series-3)"></span>Fija <span class="pct">25 % ($ 20.489.900)</span></span>
+        <span class="item"><span class="swatch" style="background: var(--series-4)"></span>Mixta <span class="pct">17 % ($ 13.931.824)</span></span>
+      </div>
     </div>
     <div class="stat stat--wide">
       <div class="label">Composición por broker</div>
       <div class="stack100" role="img" aria-label="PPI 65,5 %, Balanz 34,5 %"><i style="width: 65.5%; background: var(--series-1)"></i><i style="width: 34.5%; background: var(--series-2)"></i></div>
       <div class="legend">
-        <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI <span class="pct">65,5 %</span></span>
-        <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz <span class="pct">34,5 %</span></span>
+        <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI <span class="pct">65,5 % ($ 53.680.969)</span></span>
+        <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz <span class="pct">34,5 % ($ 28.274.295)</span></span>
       </div>
     </div>
   </section>
@@ -121,7 +121,7 @@
     <div class="charts">
       <div class="panel">
         <div class="panel-header">
-          <h3>Evolución por broker <span class="hint">cierre semanal</span></h3>
+          <h3>Evolución del total <span class="hint">cierre semanal</span></h3>
           <div class="segmented sm" role="group" aria-label="Rango">
             <button type="button" class="is-active">3 m</button>
             <button type="button">6 m</button>
@@ -130,11 +130,9 @@
           </div>
         </div>
         <div class="panel-body">
-          <div class="viz" id="brokerChart"></div>
-          <div class="legend">
-            <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI</span>
-            <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz</span>
-          </div>
+          <div class="viz" id="totalChart"></div>
+          <div class="comp-title" style="margin-top: 14px">Variación vs. período anterior</div>
+          <div class="viz" id="deltaChart"></div>
         </div>
       </div>
 
@@ -144,23 +142,6 @@
           <span class="hint num">$ 81.955.264</span>
         </div>
         <div class="panel-body">
-          <div class="comp-block">
-            <div class="field-label">Por broker</div>
-            <div class="stack100"><i style="width: 65.5%; background: var(--series-1)"></i><i style="width: 34.5%; background: var(--series-2)"></i></div>
-            <div class="legend">
-              <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI <span class="value">$ 53,7 M · 65,5 %</span></span>
-              <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz <span class="value">$ 28,3 M · 34,5 %</span></span>
-            </div>
-          </div>
-          <div class="comp-block">
-            <div class="field-label">Por tipo de renta</div>
-            <div class="stack100"><i style="width: 25%; background: var(--series-3)"></i><i style="width: 58%; background: var(--series-1)"></i><i style="width: 17%; background: var(--series-4)"></i></div>
-            <div class="legend">
-              <span class="item"><span class="swatch" style="background: var(--series-3)"></span>Fija <span class="value">25 %</span></span>
-              <span class="item"><span class="swatch" style="background: var(--series-1)"></span>Variable <span class="value">58 %</span></span>
-              <span class="item"><span class="swatch" style="background: var(--series-4)"></span>Mixta <span class="value">17 %</span></span>
-            </div>
-          </div>
           <div class="comp-title">Por tipo de instrumento</div>
           <table class="table dense type-table">
             <tbody>
@@ -177,19 +158,62 @@
     </div>
   </section>
 
-  <div class="toolbar">
-    <span class="bulk-actions is-visible" data-bulk-actions>
-      <span><b data-selection-count>1</b> seleccionada · <span class="num" data-selection-sum>$ 12.518.800</span></span>
-      <button class="btn xs ghost danger" type="button"><i data-icon="trash"></i> Eliminar</button>
+  <div class="toolbar group-toolbar">
+    <span class="select sm inline groupby" title="Agrupar por">
+      <span class="groupby-label">Agrupar por</span>
+      <span>Broker</span>
+      <i data-icon="chevron-down" class="caret"></i>
     </span>
-    <label class="input sm filter-input"><span class="prefix"><i data-icon="filter"></i></span><input type="text" placeholder="Filtrar instrumento o broker…"></label>
-    <div class="segmented sm" role="group" aria-label="Tipo de renta">
-      <button type="button" class="is-active">Todos</button>
-      <button type="button">Renta fija</button>
-      <button type="button">Renta variable</button>
-    </div>
+    <span class="bulk-actions is-visible" data-bulk-actions title="Total de las filas seleccionadas. No altera la cartera ni los gráficos, que siempre usan todas las inversiones.">
+      <span><b data-selection-count>1</b> seleccionada · <span class="num" data-selection-sum>$ 12.518.800</span></span>
+    </span>
     <span class="spacer"></span>
     <span class="summary">14 inversiones · 2 brokers</span>
+  </div>
+
+  <div class="toolbar filters-bar">
+    <div class="popover-anchor">
+      <button class="btn sm filter-trigger" type="button" data-popover="#filtrosPopover" aria-haspopup="dialog" aria-expanded="false">
+        <i data-icon="filter"></i> Filtros
+        <span class="badge accent" data-filter-count hidden>0</span>
+        <i data-icon="chevron-down" class="caret"></i>
+      </button>
+      <div class="popover filters-popover" id="filtrosPopover" role="dialog" aria-label="Filtros">
+        <div class="popover-header">
+          <span><b>Filtros</b> · seleccioná uno o varios</span>
+          <button class="btn xs ghost" type="button" data-filter-clear>Limpiar</button>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Tipo</div>
+          <div class="filter-options">
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="CEDEAR"> CEDEAR</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="FCI"> FCI</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="BONO"> BONO</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="ON"> ON</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="CRIPTO"> CRIPTO</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="ACCIÓN"> ACCIÓN</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Tipo de renta</div>
+          <div class="filter-options">
+            <label class="checkbox"><input type="checkbox" data-facet="renta" value="VARIABLE"> VARIABLE</label>
+            <label class="checkbox"><input type="checkbox" data-facet="renta" value="FIJA"> FIJA</label>
+            <label class="checkbox"><input type="checkbox" data-facet="renta" value="MIXTA"> MIXTA</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Broker</div>
+          <div class="filter-options">
+            <label class="checkbox"><input type="checkbox" data-facet="broker" value="PPI"> PPI</label>
+            <label class="checkbox"><input type="checkbox" data-facet="broker" value="Balanz"> Balanz</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chips filter-chips" data-filter-chips></div>
+    <span class="spacer"></span>
+    <label class="input sm filter-input"><span class="prefix"><i data-icon="search"></i></span><input type="text" data-filter-search placeholder="Filtrar instrumento o código…" aria-label="Filtrar por nombre o código de instrumento"></label>
   </div>
 
   <div class="table-wrap">
@@ -464,36 +488,207 @@
 <script src="assets/shell.js"></script>
 <script>
 (function () {
-  const W = 620, H = 330, m = { t: 22, r: 16, b: 24, l: 40 };
+  const pop = document.getElementById('filtrosPopover');
+  const trigger = document.querySelector('[data-popover="#filtrosPopover"]');
+  const chips = document.querySelector('[data-filter-chips]');
+  const count = document.querySelector('[data-filter-count]');
+  const search = document.querySelector('[data-filter-search]');
+  const table = document.getElementById('invTable');
+  if (!pop || !trigger || !chips || !count || !table) return;
+
+  const FACET_LABEL = { tipo: 'Tipo', renta: 'Renta', broker: 'Broker' };
+  const inputs = () => Array.from(pop.querySelectorAll('input[data-facet]'));
+  const detailRows = () => Array.from(table.querySelectorAll('tbody tr:not(.row-group)'));
+  const groupRows = () => Array.from(table.querySelectorAll('tbody tr.row-group'));
+  const granTotal = detailRows().reduce((acc, row) => acc + Number(row.dataset.amount || 0), 0);
+
+  const fmtMonto = (valor) => '$ ' + Math.round(valor).toLocaleString('es-AR');
+  const fmtPct = (valor) =>
+    granTotal > 0 ? ((valor / granTotal) * 100).toFixed(1).replace('.', ',') + ' %' : '—';
+
+  function seleccionados() {
+    return inputs()
+      .filter((input) => input.checked)
+      .map((input) => ({ facet: input.dataset.facet, value: input.value }));
+  }
+
+  function brokerDe(row) {
+    let anterior = row.previousElementSibling;
+    while (anterior && !anterior.classList.contains('row-group')) anterior = anterior.previousElementSibling;
+    return (anterior?.querySelector('.day')?.textContent || '').trim();
+  }
+
+  function aplicarFiltros() {
+    const activos = { tipo: [], renta: [], broker: [] };
+    seleccionados().forEach(({ facet, value }) => {
+      if (activos[facet]) activos[facet].push(value);
+    });
+    const busqueda = (search?.value || '').trim().toLowerCase();
+
+    detailRows().forEach((row) => {
+      const tipo = (row.querySelector('.pill')?.textContent || '').trim();
+      const renta = (row.querySelector('.renta')?.textContent || '').trim();
+      const broker = brokerDe(row);
+      const celdaInstrumento = row.querySelector('td[title]');
+      const nombre = (
+        (celdaInstrumento?.getAttribute('title') || '') + ' ' + (row.querySelector('.cell-primary')?.textContent || '')
+      ).toLowerCase();
+      const coincide =
+        (!activos.tipo.length || activos.tipo.includes(tipo)) &&
+        (!activos.renta.length || activos.renta.includes(renta)) &&
+        (!activos.broker.length || activos.broker.includes(broker)) &&
+        (!busqueda || nombre.includes(busqueda));
+      row.hidden = !coincide;
+      const pct = row.querySelector('td.num.faint');
+      if (pct) pct.textContent = fmtPct(Number(row.dataset.amount || 0));
+    });
+
+    groupRows().forEach((group) => {
+      let siguiente = group.nextElementSibling;
+      let visibles = 0;
+      let subtotal = 0;
+      while (siguiente && !siguiente.classList.contains('row-group')) {
+        if (!siguiente.hidden) {
+          visibles += 1;
+          subtotal += Number(siguiente.dataset.amount || 0);
+        }
+        siguiente = siguiente.nextElementSibling;
+      }
+      group.hidden = visibles === 0;
+      const meta = group.querySelector('.day-meta');
+      if (meta) meta.textContent = visibles + (visibles === 1 ? ' inversión' : ' inversiones');
+      const subtotalEl = group.querySelector('.subtotal b');
+      if (subtotalEl) subtotalEl.textContent = fmtMonto(subtotal);
+      const pct = group.querySelector('td.num.faint');
+      if (pct) pct.textContent = fmtPct(subtotal);
+    });
+
+    const visibles = detailRows().filter((row) => !row.hidden);
+    const brokers = new Set(visibles.map(brokerDe).filter(Boolean));
+    const summary = document.querySelector('.group-toolbar .summary');
+    if (summary) {
+      summary.textContent =
+        visibles.length + (visibles.length === 1 ? ' inversión' : ' inversiones') +
+        ' · ' + brokers.size + (brokers.size === 1 ? ' broker' : ' brokers');
+    }
+  }
+
+  function render() {
+    const items = seleccionados();
+    chips.innerHTML = '';
+    items.forEach(({ facet, value }) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML =
+        '<span class="faint">' + (FACET_LABEL[facet] || facet) + '</span> ' + value +
+        ' <button class="icon-btn xs" type="button" data-filter-remove="' + facet + '|' + value +
+        '" title="Quitar filtro"><i data-icon="x"></i></button>';
+      chips.appendChild(chip);
+    });
+    window.MG.hydrateIcons(chips);
+    count.textContent = String(items.length);
+    count.hidden = items.length === 0;
+    aplicarFiltros();
+  }
+
+  pop.addEventListener('change', (event) => {
+    if (event.target.matches('input[data-facet]')) render();
+  });
+
+  pop.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-filter-clear]')) return;
+    inputs().forEach((input) => { input.checked = false; });
+    if (search) search.value = '';
+    render();
+  });
+
+  chips.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-filter-remove]');
+    if (!remove) return;
+    // Evita que shell.js cierre el popover al quitar un chip.
+    event.stopPropagation();
+    const [facet, value] = remove.getAttribute('data-filter-remove').split('|');
+    const input = pop.querySelector('input[data-facet="' + facet + '"][value="' + value + '"]');
+    if (input) input.checked = false;
+    render();
+  });
+
+  search?.addEventListener('input', aplicarFiltros);
+
+  // aria-expanded sigue el toggle que maneja shell.js.
+  new MutationObserver(() => {
+    trigger.setAttribute('aria-expanded', String(pop.classList.contains('is-open')));
+  }).observe(pop, { attributes: true, attributeFilter: ['class'] });
+
+  render();
+})();
+</script>
+<script>
+(function () {
+  const W = 620;
   const weeks = ['07/07', '14/07', '21/07', '28/07', '04/08', '11/08', '18/08', '25/08', '01/09', '08/09', '15/09', '22/09'];
   const ppi = [45.1, 45.8, 46.4, 46.0, 47.3, 48.9, 49.6, 50.2, 51.4, 52.0, 52.6, 53.7];
   const balanz = [22.4, 22.9, 23.1, 23.6, 24.2, 24.8, 25.3, 25.9, 26.6, 27.2, 27.7, 28.3];
-  const max = 90;
-  const iw = W - m.l - m.r, ih = H - m.t - m.b;
-  const step = iw / weeks.length;
-  const bw = Math.min(24, step - 12);
-  const y = (v) => m.t + (1 - v / max) * ih;
-  const hh = (v) => (v / max) * ih;
-  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Valor de la cartera por broker, cierre semanal de julio a septiembre">';
-  s += '<g class="grid">';
-  [0, 25, 50, 75].forEach((v) => {
-    s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>';
-    s += '<text class="num-t" x="' + (m.l - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + (v ? v + ' M' : '0') + '</text>';
+  const total = ppi.map((v, i) => v + balanz[i]);
+  const fmt = (v) => v.toFixed(1).replace('.', ',');
+
+  // Total: línea con el eje ajustado al rango real.
+  const H1 = 200, m1 = { t: 12, r: 20, b: 4, l: 60 };
+  const iw1 = W - m1.l - m1.r, ih1 = H1 - m1.t - m1.b;
+  const minT = Math.min(...total), maxT = Math.max(...total);
+  const padT = (maxT - minT) * 0.1 || 1;
+  const yMinT = Math.max(0, minT - padT), yMaxT = maxT + padT;
+  const x1 = (i) => m1.l + (iw1 / (weeks.length - 1)) * i;
+  const y1 = (v) => m1.t + (1 - (v - yMinT) / (yMaxT - yMinT)) * ih1;
+  let s1 = '<svg viewBox="0 0 ' + W + ' ' + H1 + '" role="img" aria-label="Total de la cartera, cierre semanal de julio a septiembre">';
+  s1 += '<g class="grid">';
+  [0, 1, 2, 3, 4].forEach((t) => {
+    const v = yMinT + ((yMaxT - yMinT) * t) / 4;
+    s1 += '<line x1="' + m1.l + '" x2="' + (W - m1.r) + '" y1="' + y1(v) + '" y2="' + y1(v) + '"/>';
+    s1 += '<text class="num-t" x="' + (m1.l - 8) + '" y="' + (y1(v) + 4) + '" text-anchor="end">' + fmt(v) + ' M</text>';
   });
-  s += '</g>';
-  weeks.forEach((w, i) => {
-    const cx = m.l + step * i + step / 2, x = cx - bw / 2;
-    const h1 = hh(ppi[i]), h2 = hh(balanz[i]);
-    s += '<rect x="' + x + '" y="' + (y(0) - h1) + '" width="' + bw + '" height="' + h1 + '" fill="var(--series-1)" rx="2"><title>' + w + ' · PPI $ ' + ppi[i].toFixed(1).replace('.', ',') + ' M</title></rect>';
-    s += '<rect x="' + x + '" y="' + (y(0) - h1 - h2) + '" width="' + bw + '" height="' + (h2 - 2) + '" fill="var(--series-2)" rx="2"><title>' + w + ' · Balanz $ ' + balanz[i].toFixed(1).replace('.', ',') + ' M</title></rect>';
-    if (i % 2 === 1) s += '<text class="num-t" x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + w + '</text>';
-    if (i === weeks.length - 1) {
-      const tot = (ppi[i] + balanz[i]).toFixed(1).replace('.', ',');
-      s += '<text class="end-label strong num-t" x="' + cx + '" y="' + (y(0) - h1 - h2 - 8) + '" text-anchor="middle">$ ' + tot + ' M</text>';
-    }
+  s1 += '</g>';
+  s1 += '<polyline points="' + total.map((v, i) => x1(i) + ',' + y1(v)).join(' ') + '" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  total.forEach((v, i) => {
+    s1 += '<circle cx="' + x1(i) + '" cy="' + y1(v) + '" r="2.5" fill="var(--series-1)"><title>' + weeks[i] + ' · Total $ ' + fmt(v) + ' M</title></circle>';
   });
-  s += '</svg>';
-  document.getElementById('brokerChart').innerHTML = s;
+  s1 += '<text class="end-label strong num-t" x="' + x1(weeks.length - 1) + '" y="' + (y1(total[total.length - 1]) - 8) + '" text-anchor="middle">$ ' + fmt(total[total.length - 1]) + ' M</text>';
+  s1 += '</svg>';
+  document.getElementById('totalChart').innerHTML = s1;
+
+  // Variación: barras verdes/rojas contra el período anterior.
+  const H2 = 150, m2 = { t: 8, r: 20, b: 24, l: 60 };
+  const iw2 = W - m2.l - m2.r, ih2 = H2 - m2.t - m2.b;
+  const deltas = total.map((v, i) => (i === 0 ? null : v - total[i - 1]));
+  const validos = deltas.filter((d) => d != null);
+  const minD = Math.min(0, ...validos), maxD = Math.max(0, ...validos);
+  const padD = (maxD - minD) * 0.15 || 1;
+  const yMinD = minD - (minD < 0 ? padD : 0), yMaxD = maxD + (maxD > 0 ? padD : 0);
+  const step2 = iw2 / weeks.length;
+  const bw = Math.min(22, step2 - 12);
+  const cx2 = (i) => m2.l + step2 * i + step2 / 2;
+  const y2 = (v) => m2.t + (1 - (v - yMinD) / (yMaxD - yMinD)) * ih2;
+  let s2 = '<svg viewBox="0 0 ' + W + ' ' + H2 + '" role="img" aria-label="Variación del total contra el período anterior">';
+  s2 += '<g class="grid">';
+  [0, 1, 2, 3, 4].forEach((t) => {
+    const v = yMinD + ((yMaxD - yMinD) * t) / 4;
+    s2 += '<line x1="' + m2.l + '" x2="' + (W - m2.r) + '" y1="' + y2(v) + '" y2="' + y2(v) + '"/>';
+    s2 += '<text class="num-t" x="' + (m2.l - 8) + '" y="' + (y2(v) + 4) + '" text-anchor="end">' + (v > 0 ? '+' : '') + fmt(v) + ' M</text>';
+  });
+  s2 += '</g>';
+  s2 += '<line x1="' + m2.l + '" x2="' + (W - m2.r) + '" y1="' + y2(0) + '" y2="' + y2(0) + '" stroke="var(--border-soft)"/>';
+  deltas.forEach((d, i) => {
+    if (d == null) return;
+    const x = cx2(i) - bw / 2;
+    const y = Math.min(y2(0), y2(d));
+    const h = Math.abs(y2(d) - y2(0));
+    const color = d >= 0 ? 'var(--success)' : 'var(--danger)';
+    const label = (d >= 0 ? '+' : '−') + '$ ' + fmt(Math.abs(d)) + ' M';
+    s2 += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + h + '" fill="' + color + '" rx="2"><title>' + weeks[i] + ' · ' + label + '</title></rect>';
+    if (i % 2 === 1 || i === weeks.length - 1) s2 += '<text class="num-t" x="' + cx2(i) + '" y="' + (H2 - 6) + '" text-anchor="middle">' + weeks[i] + '</text>';
+  });
+  s2 += '</svg>';
+  document.getElementById('deltaChart').innerHTML = s2;
 })();
 </script>
 </body>

@@ -10,6 +10,8 @@ export type {
   StatItem,
   StatDelta,
   StatMeter,
+  StatStack,
+  StatStackSegment,
   StatValueTone,
   StatDeltaTone,
   StatMeterTone,
@@ -35,6 +37,7 @@ export type { ChartPanelProps } from './ChartPanel';
 
 export {
   mrtTableProps,
+  mrtTableStyleProps,
   MRT_NUMERIC_CELL_SX,
   MRT_GROUP_ROW_SX,
   MRT_SURFACE_PAGE,

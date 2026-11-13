@@ -5,6 +5,7 @@
 **Objetivo:** reemplazar el estilo actual por el sistema de diseño de los mockups, **respetando el orden del menú, de arriba hacia abajo**, e **ignorando Importar** (se eliminará la opción del menú y sus páginas no entran en este plan).
 
 **Reglas del sistema (resumen, detalle en `docs/mockups/index.html`):**
+
 - Un solo acento (`--accent: #4493f8`, `--accent-emphasis: #1f6feb`); los semánticos (verde/ámbar/rojo/violeta) solo para **estado** y siempre junto a texto o ícono.
 - Filas **nunca** pintadas enteras: el estado va en etiquetas (`.pill`).
 - Números en IBM Plex Mono tabular; títulos y números de día en Space Grotesk; cuerpo en IBM Plex Sans.
@@ -22,7 +23,7 @@ Menú de los mockups (`shell.js` → `NAV` / `NAV_FOOTER`), de arriba hacia abaj
 1. ~~Fundamentos (prerequisito, fuera del menú)~~ → **Fase 0**
 2. **Tomi** → `/tomi`
 3. **Finanzas** (submenú):
-   - Resumen → `/finanzas` *(nuevo)*
+   - Resumen → `/finanzas` _(nuevo)_
    - Movimientos → `/finanzas/movimientosDelMes`
    - Presupuesto → `/finanzas/presupuestoDelMes`
    - Vencimientos → `/finanzas/vencimientos`
@@ -51,6 +52,7 @@ Ampliar el bloque `:root` (tenía 14 vars) con los de `assets/app.css`, **conser
 - [x] Tipos/espaciado/radio/sombras: `--font-display/body/mono`, `--fs-11..32`, `--space-1..6`, `--gutter`, `--radius*`, `--shadow-overlay`, `--shadow-focus`, `--sidebar-w` (232), `--sidebar-w-collapsed` (56), `--control-h` (32), `--control-h-sm`, `--row-h` (40), `--ease`.
 
 **Verificación y notas:**
+
 - [x] Script que cruza todos los `var(--x)` usados en `src/**` contra los definidos: **sin tokens faltantes** (los `--font-*` que ya usaba `globals.css` antes no estaban definidos; ahora sí).
 - [x] `npx tsc --noEmit` → exit 0.
 - [x] Se **eliminó `--bg-row-alt`** (definido pero sin ningún uso en `src/`).
@@ -94,7 +96,7 @@ Piezas que el mockup define una sola vez y reutiliza en todas las páginas (mape
 
 ### 0.4 Shell / Sidebar → `src/components/Layout/Layout.tsx` + `Layout.styles.ts` — ✅ **hecho**
 
-- [x] Fondo del sidebar = **`var(--bg-page)`** con `border-right: 1px solid var(--border-soft)`. *Corrección:* el borrador decía `--bg-inset`; el mockup (`.sidebar`) usa `--bg-page` con borde. Se aplicó el mockup.
+- [x] Fondo del sidebar = **`var(--bg-page)`** con `border-right: 1px solid var(--border-soft)`. _Corrección:_ el borrador decía `--bg-inset`; el mockup (`.sidebar`) usa `--bg-page` con borde. Se aplicó el mockup.
 - [x] **Anchos**: `DRAWER_WIDTH` 232 / `DRAWER_COLLAPSED_WIDTH` 56 (antes 200/85).
 - [x] **Marca**: `.brand-mark` `M` (26×26, radius, `--accent-emphasis`, Space Grotesk 700) + "Mis gestiones" + botón de colapso (panel-left). Al colapsar la marca pasa a columna (mark + toggle) y se oculta el nombre.
 - [x] **Activo por pathname** (`usePathname()`): el hijo activo lleva `is-active` (fondo `--accent-soft` + barra de 3px a la izquierda, `--accent`); el padre con hijo activo lleva sólo `is-parent-active` (texto en `--text-primary`) — igual que `shell.js`, donde un padre nunca es `is-active`.
@@ -114,11 +116,10 @@ Piezas que el mockup define una sola vez y reutiliza en todas las páginas (mape
 
 ### 0.2b Correcciones detectadas durante 0.3/0.4 (no estaban en el plan)
 
-- [x] **`palette.divider` no acepta `var()`**: MUI pasa los valores de paleta por `alpha()`/`decomposeColor()` (`Divider` rompía en runtime: *"MUI: Unsupported `var(--border-muted)` color"*). Se cambió a `#262C36` (literal, = `--border-muted`) con un comentario. Los `var()` sí son válidos dentro de `styleOverrides` (CSS crudo).
+- [x] **`palette.divider` no acepta `var()`**: MUI pasa los valores de paleta por `alpha()`/`decomposeColor()` (`Divider` rompía en runtime: _"MUI: Unsupported `var(--border-muted)` color"_). Se cambió a `#262C36` (literal, = `--border-muted`) con un comentario. Los `var()` sí son válidos dentro de `styleOverrides` (CSS crudo).
 - [x] **`--font-display/body/mono` no deben redefinirse en `:root`**: las define **next/font** en `<html>` (`src/app/layout.tsx`). Mi 0.1 las había agregado a `theme-tokens.css` con la misma especificidad → riesgo de pisarlas y perder el self-hosting. Se quitaron y se dejó un comentario.
 - [x] **Tipografía MUI**: `typography.fontFamily` y las variantes usaban el **nombre literal** (`'IBM Plex Sans'`, `'Space Grotesk'`), que no coincide con la familia generada por next/font → el texto MUI caía al fallback del sistema. Ahora usan `var(--font-body)` / `var(--font-display)` (también en `MuiButton` y `MuiDialogTitle`).
   - **Queda pendiente** (se arregla en la fase de cada página): `sx` con nombre literal en `Layout` (ya corregido), `components/Movimientos/StatsCluster/StatsCluster.styles.ts`, `comun/SeleccionadorPeriodo/SeleccionadorPeriodo.styles.ts`, `MovimientosDelMesGrillaMRT.tsx` y `app/finanzas/movimientosDelMes/page.tsx`.
-
 
 **Verificación Fase 0:** `tsc --noEmit` ✓, lint ✓, y que la app compile viendo cualquier página con los tokens nuevos y el sidebar rediseñado.
 
@@ -129,25 +130,29 @@ Piezas que el mockup define una sola vez y reutiliza en todas las páginas (mape
 Mockup: `docs/mockups/tomi.html`. Archivos actuales: `src/components/tomi/*` (`BarraSuenio.tsx`, `EditarDiaModal.tsx`, …) y `src/components/graficos/SuenioTomi.tsx`, `SuenioAnualTomi.tsx`.
 
 **Decisiones sobre el mockup (aplicadas en `docs/mockups/tomi.html`):**
+
 - [x] **Sin barra de progreso** en la fila de stats: se eliminó el `stat--wide` con meter "22 de 30 días registrados / 73 %". La fila queda con 4 stats.
 - [x] **"Sueño nocturno promedio" sin comparación con el mes anterior**: se eliminó el delta `−8 m vs. agosto` (queda solo label + valor).
 - [x] **Gráfico "Horas de sueño por día" = últimos 30 días**, con la última barra en el último día cargado (22 sep): ventana móvil 24 ago → 22 sep, separador punteado entre meses, eje con día de mes + fila de meses (`ago`/`sep`), etiqueta "última carga" sobre la última barra y hint `últimos 30 días · hasta el 22 sep`. **El comportamiento real ya es así** (`src/app/tomi/page.tsx`: `desde = hoy − 30`, `hasta = hoy`; `SuenioTomi.tsx` plotea ese rango) — solo se ajustó el mockup.
-- [x] **Grilla de días del mes sin columna `Total`**: se eliminó la columna (header + 30 celdas). *Nota:* con eso se perdió el desglose "8 h 50 m + siesta 1 h 20 m" del día 10 (el tooltip del segmento de siesta en el timeline lo conserva).
-- [x] **Gráfico diario con 4 categorías de color según horas dormidas** (no dos): `< 6 h` → `--danger`, `6–8 h` → `--attention`, `8–10 h` → `--accent`, `≥ 10 h` → `--success` (semáforo + leyenda con texto, según la regla "semánticos solo para estado y siempre junto a texto"). La leyenda ahora lista las 4 bandas en lugar de "Horas de sueño / Menos de 6 h". Con los datos actuales hay al menos un ejemplo de cada banda (4 h 45 m → rojo, 7 h 40 m → ámbar, 16 barras azules, 12 verdes). *Equivalente real en código:* el `colorMap` piecewise de `SuenioTomi.tsx` (umbrales 6/8/10 h) — migrarlo a estos tokens.
+- [x] **Grilla de días del mes sin columna `Total`**: se eliminó la columna (header + 30 celdas). _Nota:_ con eso se perdió el desglose "8 h 50 m + siesta 1 h 20 m" del día 10 (el tooltip del segmento de siesta en el timeline lo conserva).
+- [x] **Gráfico diario con 4 categorías de color según horas dormidas** (no dos): `< 6 h` → `--danger`, `6–8 h` → `--attention`, `8–10 h` → `--accent`, `≥ 10 h` → `--success` (semáforo + leyenda con texto, según la regla "semánticos solo para estado y siempre junto a texto"). La leyenda ahora lista las 4 bandas en lugar de "Horas de sueño / Menos de 6 h". Con los datos actuales hay al menos un ejemplo de cada banda (4 h 45 m → rojo, 7 h 40 m → ámbar, 16 barras azules, 12 verdes). _Equivalente real en código:_ el `colorMap` piecewise de `SuenioTomi.tsx` (umbrales 6/8/10 h) — migrarlo a estos tokens.
 - [x] **Sin resaltar "hoy" en la grilla**: se quitó la clase `is-today` de la fila 22, sus 4 reglas CSS (fondo `--accent-soft`, barra `inset` de 2 px, texto de día en acento) y el sufijo `· hoy` (la celda vuelve a solo "martes").
 
 **Decisiones del 2.º repaso del mockup (aplicadas en `docs/mockups/tomi.html`):**
-- [x] **Topbar sin Exportar ni Agregar nota**: quedó solo **Gráficos**. (En código nunca se agregaron: no hay export de Tomi y "Agregar nota" no tiene flujo global.) *El "Agregar nota" del **modal** de día se mantiene: agrega una nota al día, no es el del topbar.*
+
+- [x] **Topbar sin Exportar ni Agregar nota**: quedó solo **Gráficos**. (En código nunca se agregaron: no hay export de Tomi y "Agregar nota" no tiene flujo global.) _El "Agregar nota" del **modal** de día se mantiene: agrega una nota al día, no es el del topbar._
 - [x] **Sin botón "Registrar"** en los días sin registro (se quitó de las 8 filas `is-empty` + el CSS muerto `.register`). Queda solo la etiqueta `Sin registro`.
-- [x] **Lápiz de edición a la izquierda**: la columna `actions` pasó de ser la última a estar **entre `Día` y el timeline** (`Día · actions · tl-col`), coincidiendo con la app (que ya lo tiene ahí). *Mockup only por ahora.*
+- [x] **Lápiz de edición a la izquierda**: la columna `actions` pasó de ser la última a estar **entre `Día` y el timeline** (`Día · actions · tl-col`), coincidiendo con la app (que ya lo tiene ahí). _Mockup only por ahora._
 - [x] **Columna de contenido a 1250px**: `.page` (contenedor que tiene la tira de meses y la grilla de días) ahora es `max-width: 1250px` (antes una prueba de 1000px) en vez de 100% del ancho. Alineada a la izquierda (junto al sidebar).
   - **Pendiente de confirmar:** si el tope debe incluir el topbar/stats/charts (hoy sí, están en el mismo contenedor) o solo meses+tabla; y si va alineado a la izquierda (hoy) o centrado.
   - **A llevar a la app** en Fase 1 (junto con el reemplazo de la tabla) o antes si se pide.
 
 **Decisiones del 3.er repaso del mockup (aplicadas en `docs/mockups/tomi.html`):**
+
 - [x] **Sin "Noche más corta"** en la tira de stats: se eliminó el bloque `.stat` (valor + delta con día y badge). Quedan **3 métricas**: Sueño nocturno promedio · Se duerme, en promedio · Notas del mes. Pedido del usuario.
 
 **Cambios a código:**
+
 - [x] Aplicar `PageHeader` (breadcrumb Tomi) y el frame general.
   - Breadcrumb `Tomi / Agenda de sueño`; se eliminó el título "Dashboard de Agenda de Tomi" y el `<Container>`.
   - **Frame:** `Box` flex-column con `m: -3` para cancelar el `p: 3` de `styles.main` (ver Fase 0) y que la página use `--gutter` con bordes a todo el ancho. `TODO(rediseño-tema, Fase 10)` en `src/app/tomi/page.tsx`: borrar el `m: -3` cuando se quite el padding de `main`.
@@ -156,12 +161,12 @@ Mockup: `docs/mockups/tomi.html`. Archivos actuales: `src/components/tomi/*` (`B
   - **Exportar / Agregar nota del topbar: descartados.** Se quitaron del mockup (2.º repaso) y no se agregaron a la app: no existe export de Tomi y "Agregar nota" no tiene flujo global (el modal se abre por día). El "Agregar nota" del **modal** de día se mantiene.
 - [x] **Grilla de días: `<Table>` nativa con las clases del mockup** (no MRT) → nuevo componente `src/components/tomi/TablaDiasSuenio.tsx`; `src/app/tomi/page.tsx` sólo lo usa. Columnas `Día` · `actions` · timeline, **sin columna `Total`**.
   - Número de día en `--font-display` (Space Grotesk) + día de semana en `--text-tertiary`; bordes de fila tokenizados (`--border-muted`, antes `rgba(81,81,81,1)`), alto `--row-h`, hover `--bg-row-hover`, filas de fin de semana con `rgba(255,255,255,.015)`.
-  - **Lápiz a la izquierda, sólo al hover**: columna `actions` entre `Día` y el timeline, `opacity: 0` y se revela con `tr:hover` o `:focus-visible` (teclado). *Corrección:* con `tr:focus-within` (como el mockup) el lápiz quedaba pegado tras el click hasta clickear otra fila (el botón conserva el foco); se pasó a `:focus-visible` + `blur()` al clickear, en la app **y en el mockup**. *Nota:* en táctil (sin hover) el lápiz no aparece — si molesta, agregar fallback `@media (hover: none)`.
+  - **Lápiz a la izquierda, sólo al hover**: columna `actions` entre `Día` y el timeline, `opacity: 0` y se revela con `tr:hover` o `:focus-visible` (teclado). _Corrección:_ con `tr:focus-within` (como el mockup) el lápiz quedaba pegado tras el click hasta clickear otra fila (el botón conserva el foco); se pasó a `:focus-visible` + `blur()` al clickear, en la app **y en el mockup**. _Nota:_ en táctil (sin hover) el lápiz no aparece — si molesta, agregar fallback `@media (hover: none)`.
   - Días sin registro: timeline punteado con `Sin registro` (sin botón Registrar). Se quitó el `<TableContainer component={Paper}>` (el mockup no usa tarjeta).
   - **Timeline reescrito** (`BarraSuenio.tsx`): fondo `--bg-elevated` = despierto, tramos `--series-1` = dormido, ticks al 25/50/75 %, marcas horarias (`HH:MM`) arriba, duración centrada (mono) sólo si el tramo ≥ 2 h (los tramos cortos, como la siesta de 80 min, no la llevan — igual que el mockup); `title` "Dormido HH:MM → HH:MM". Antes eran `LinearProgress`.
   - **Badges de notas** (`NotasTooltip.tsx`): pastilla neutra (`--neutral-soft` + `--neutral-border`) con punto de color de la serie por tipo (General `--series-1`, Orina `--series-4`, Cambio de medicación `--series-8`, Crisis `--series-7`, Malhumor `--series-2`, = leyenda del mockup); antes rectángulos de color con hex hardcodeado.
-     - **Tooltip de notas**: una nota por bloque, con badge + nombre completo del tipo (`--text-tertiary`, 11px) arriba y el comentario (`--text-secondary`, `pre-wrap` + `overflow-wrap`) abajo; tope de 300px y `cursor: help` en el disparador. La superficie sale del `MuiTooltip` global (0.2).
-     - **Tooltip único de la tira de stats** (`NotasDelMesTooltip`): un solo popup que envuelve todos los badges de tipos y lista las notas del mes con texto (`stats.notas`, ordenadas por día) con badge + tipo + día de la semana y número (ej. `lunes 7`). Las notas que **sólo tienen el tipo** no se listan (ni acá ni en el tooltip de cada día), por eso el tooltip puede mostrar menos notas que el contador; si ninguna tiene texto, no se muestra tooltip. Regla en `textoDeNota()`.
+    - **Tooltip de notas**: una nota por bloque, con badge + nombre completo del tipo (`--text-tertiary`, 11px) arriba y el comentario (`--text-secondary`, `pre-wrap` + `overflow-wrap`) abajo; tope de 300px y `cursor: help` en el disparador. La superficie sale del `MuiTooltip` global (0.2).
+    - **Tooltip único de la tira de stats** (`NotasDelMesTooltip`): un solo popup que envuelve todos los badges de tipos y lista las notas del mes con texto (`stats.notas`, ordenadas por día) con badge + tipo + día de la semana y número (ej. `lunes 7`). Las notas que **sólo tienen el tipo** no se listan (ni acá ni en el tooltip de cada día), por eso el tooltip puede mostrar menos notas que el contador; si ninguna tiene texto, no se muestra tooltip. Regla en `textoDeNota()`.
   - **Tope de 1250px llevado a la app**: `CONTENT_MAX_WIDTH = 1250` (const local) como `maxWidth` del frame `Box` en `page.tsx`. Sigue pendiente de confirmar si incluye topbar/stats/charts (hoy sí) y si va centrado (hoy a la izquierda).
   - Verificado: `npx tsc --noEmit` exit 0 y `npx eslint` exit 0 sobre los 4 archivos.
 - [x] Modal `EditarDiaModal` → estilo `MuiDialog` global (header + subtítulo + footer).
@@ -189,7 +194,7 @@ Mockup: `docs/mockups/tomi.html`. Archivos actuales: `src/components/tomi/*` (`B
 
 ---
 
-## Fase 2 — Finanzas · Resumen → `/finanzas` *(página nueva)*
+## Fase 2 — Finanzas · Resumen → `/finanzas` _(página nueva)_
 
 Mockup: `docs/mockups/finanzas-dashboard.html`. **Hoy no existe** (`src/app/finanzas/` no tiene `page.tsx`; el enlace `/finanzas` del sidebar no resuelve).
 
@@ -256,12 +261,27 @@ Mockup: `docs/mockups/finanzas-buscar.html`. Archivos: `src/components/Movimient
 
 ## Fase 7 — Inversiones → `/inversiones`
 
-Mockup: `docs/mockups/inversiones.html`. Archivos: `src/components/inversiones/` (`CrearEditarInversion.tsx`, `InversionesToolbar.tsx`, `HistorialInversiones.tsx`, …).
+Mockup: `docs/mockups/inversiones.html`. Archivos: `src/components/inversiones/` (`CrearEditarInversion.tsx`, `InversionesToolbar.tsx`, `InversionesFiltros.tsx`, `InversionesFiltros.styles.ts`, `HistorialInversiones.tsx`, …).
 
-- [ ] `PageHeader` + tira/tabs + `StatsCluster`.
-- [ ] Unificar la grilla de historial en **MRT** con el helper compartido (si aplica según mockup).
+- [x] **Tres primeras barras (hasta que comienzan los gráficos)**:
+  - `PageHeader` con miga "Inversiones" y las acciones del `.topbar`: `DatePicker` (misma lógica de fechas habilitadas y máximo hoy), **Guardar estado**, switch **Sobreescribir**, separador, **Gráficos** (toggle que reemplaza al viejo `Divider` + `IconButton`) y **Nueva inversión**.
+  - `.alerts`: componente `InversionesAlerts` con los avisos de error de carga, estado histórico (con "Volver a hoy"), falta de cotización del día e instrumentos sin precio. Mismos datos y condiciones que antes, con tokens de estado del tema.
+  - `.toolbar.currency-bar`: segmented **Peso/Dólar** y **Oficial/Bolsa/CCL** (salen del toolbar de MRT), resumen de cotizaciones (oficial/bolsa/CCL) y "Último estado guardado" (fecha más reciente de `fechasHistorialInversiones`).
+  - `.stats` con `StatsCluster`: **Total cartera** (moneda activa) y dos barras apiladas 100 % con leyenda: **Composición por renta** y **Composición por broker**. Cada ítem de la leyenda muestra su porcentaje y el monto en pesos entre paréntesis (`58 % ($ 47.533.540)`). Se quitó la caja **En dólares (oficial)** por redundante (el total ya se ve en dólares con el toggle y la cotización está en la barra de moneda). Se agregó `stack`/`detail` a `StatItem`/`StatsCluster` (barra `.stack100`, colores `--series-*`) y `value` pasó a ser opcional.
+  - El frame de la página usa `maxWidth: 1250` y `m: -3` para ir de borde a borde; la barra y la tabla se completaron en el ítem de toolbars.
+  - Datos: `useInversiones` expone `totalValor` (numérico, `null` sin cotización), `totalDisplay`, `cantidadSeleccionada` y `totalSeleccionado`; las tasas para mostrar se derivan de la consulta aunque falte alguna de las cuatro cotizaciones.
+- [x] Gráficos: se dejó **solo el de historial** dentro de `ChartPanel` (encabezado y borde del mockup) con segmented **3 m / 6 m / 1 a / Otro** en vez del dropdown. Los presets buscan al instante; "Otro" muestra los `DatePicker` Desde/Hasta + **Aplicar**. Se quitaron los pie de broker/renta. La sección queda visible por defecto. El panel "Evolución del total" apila **dos gráficos**: arriba la **línea del total** de la cartera y abajo las **barras de ganancia/pérdida contra el período anterior** (verde/rojo, sin desagregar por broker).
+- [x] Segundo gráfico **Composición**: panel con barras horizontales **por tipo de instrumento** (`%` + monto compacto), al lado del historial. Se quitaron del mockup los bloques "Por broker" y "Por tipo de renta" (esa composición sigue en la tira de stats). Nuevo `ComposicionInversiones` + `datosPorTipoInstrumento` en `useInversiones`.
+- [x] **Toolbars de la tabla** (dos filas propias; toolbar interna de MRT desactivada con `enableTopToolbar: false`):
+  - Fila 1 (`.toolbar.group-toolbar`): **Agrupar por** (Broker / Tipo / Tipo de renta / Sin agrupar, `minWidth: 90`) controlado desde React (`state.grouping` + `onGroupingChange`) y **chip de selección** con cantidad y total (`N seleccionada(s) · $ monto`), sin acción de borrado.
+  - Fila 2 (`.toolbar.filters-bar`, nuevo `InversionesFiltros`): **Filtros** en popover multiselect para **Tipo / Tipo de renta / Broker** (OR dentro de cada faceta, AND entre facetas), chips removibles, badge con la cantidad, “Limpiar” y buscador que filtra por **nombre o código** de instrumento (sin distinguir mayúsculas ni acentos).
+  - Los filtros y la búsqueda afectan **solo a las filas** de la grilla; el pie muestra `N de M` y hay estado vacío (“No hay inversiones que coincidan con los filtros”). Al cambiar de fecha se resetean filtros y selección.
+  - `useInversiones` calcula totales/composiciones y gráficos sobre **toda la cartera**; la selección solo alimenta el chip (`cantidadSeleccionada` / `totalSeleccionado`).
+  - Mockup `inversiones.html` actualizado: dos toolbars, filtros/búsqueda funcionales que recalculan grupos/subtotales/porcentajes/resumen, chip sin “Eliminar” y ancho de “Agrupar por” reducido.
+- [ ] Verificación visual con backend real: dos filas de toolbar, popover/chips, búsqueda, paginación/selección y estado vacío.
+- [ ] Decidir si se recuperan los íconos internos de MRT (columnas/densidad/pantalla completa) en la toolbar propia; hoy quedan ocultos porque el mockup no los muestra.
 - [ ] Modal `CrearEditarInversion` → `MuiDialog` global.
-- [ ] Pills de estado de inversión; gráficos con `--series-*`.
+- [ ] Pills de estado de inversión.
 
 ---
 
@@ -310,3 +330,4 @@ Mockup: `docs/mockups/settings.html` (tab API, `#api`). Archivo actual: `src/app
 - **Settings pasa de iframe a UI nativa** → implica asegurar que existan endpoints/CUD para categorías y que la info de API sea estática (la del mockup).
 - **Resumen (`/finanzas`) es página nueva**: no existe hoy; hay que crearla y decidir qué datos reales mostrar.
 - **Colaboración:** `docs/new-theme/` guarda los planes previos; este archivo convive con `movimientos-refactor-mrt.md`.
+- **Invariante de Inversiones:** la selección de filas no altera stats ni gráficos (siempre se calculan sobre toda la cartera); solo alimenta el chip del toolbar. Los filtros y la búsqueda afectan únicamente a las filas de la grilla. Mantener esa separación al tocar `useInversiones`.

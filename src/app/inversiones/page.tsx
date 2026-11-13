@@ -6,7 +6,6 @@ import {
   GuardarEstadoInversionesPayload,
   Inversion,
   InversionCreatePayload,
-  INSTRUMENTO_INVERSION_TIPO,
   INSTRUMENTO_MONEDA,
   InstrumentoMoneda,
   TIPO_DOLAR,
@@ -29,35 +28,142 @@ import { transformNumberToCurrenty } from '@/lib/helpers';
 import { calcularValorInversion, useInversiones } from '@/hooks/inversiones/useInversiones';
 import {
   MaterialReactTable,
+  MRT_ExpandButton,
   MRT_Row,
   type MRT_ColumnDef,
   type MRT_RowSelectionState,
+  type MRT_TableInstance,
   type MRT_TableOptions,
   useMaterialReactTable,
 } from 'material-react-table';
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { type Dayjs } from 'dayjs';
-import { Alert, Box, CircularProgress, Divider, IconButton } from '@mui/material';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import ExpandLess from '@mui/icons-material/ExpandLess';
+import { Box, Checkbox, CircularProgress, MenuItem, TextField } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
+import { ComposicionInversiones } from '@/components/inversiones/ComposicionInversiones';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import { EditarInversion } from '@/components/inversiones/EditarInversion';
 import { HistorialInversiones } from '@/components/inversiones/HistorialInversiones';
+import {
+  FILTROS_INVERSIONES_DEFAULT,
+  InversionesFiltros,
+} from '@/components/inversiones/InversionesFiltros';
+import type { FiltrosInversiones } from '@/components/inversiones/InversionesFiltros';
+import { styles } from '@/components/inversiones/InversionesGrid.styles';
+import { InversionesAlerts } from '@/components/inversiones/InversionesAlerts';
 import { InversionesRowActions } from '@/components/inversiones/InversionesRowActions';
-import { InversionesToolbar } from '@/components/inversiones/InversionesToolbar';
-import { InversionesPorCategoria } from '@/components/graficos/';
+import { InversionesCurrencyBar, InversionesTopbarActions } from '@/components/inversiones/InversionesToolbar';
+import type { TasasDolar } from '@/components/inversiones/InversionesToolbar';
 import { Notificacion, ConfiguracionNotificacion } from '@/components/Notificacion';
+import {
+  MRT_GROUP_ROW_SX,
+  MRT_NUMERIC_CELL_SX,
+  MRT_SURFACE_PAGE,
+  mrtTableStyleProps,
+  PageHeader,
+  Pill,
+  SERIES,
+  StatsCluster,
+} from '@/components/ui';
+import type { StatItem, StatStack } from '@/components/ui';
 
 const FORMATO_DIA = 'YYYY-MM-DD';
 
+/** Normaliza para buscar sin distinguir mayúsculas ni acentos. */
+const normalizarTexto = (valor: string) =>
+  valor
+    .toLocaleLowerCase('es')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+/**
+ * Tope de ancho de la columna de contenido (Fase 1). Ver
+ * `docs/new-theme/plan-rediseno-tema.md`.
+ */
+const CONTENT_MAX_WIDTH = 1250;
+
+/** Etiquetas legibles y colores del mockup para la composición por tipo de renta. */
+const RENTA_LABEL: Record<string, string> = {
+  VARIABLE: 'Variable',
+  FIJA: 'Fija',
+  MIXTA: 'Mixta',
+};
+
+const RENTA_COLOR: Record<string, string> = {
+  VARIABLE: SERIES[0],
+  FIJA: SERIES[2],
+  MIXTA: SERIES[3],
+};
+
+/** Monto en la moneda activa (`$ 47.533.540`). */
+const formatearMonto = (valor: number, simbolo: string) => `${simbolo} ${transformNumberToCurrenty(valor, 0) ?? '-'}`;
+
 const TIPOS_DOLAR_HISTORICO = ['oficial', 'blue', 'bolsa', 'contadoconliqui'] as const;
 
-// The top section splits into three equal columns, collapsing to fewer when the
-// viewport can't fit 300px per column.
-const COLUMNA_SUPERIOR = { flex: '1 1 300px', display: 'flex', justifyContent: 'center' } as const;
-const COLUMNA_HISTORIAL = { ...COLUMNA_SUPERIOR, justifyContent: 'flex-start' } as const;
+/** Opciones del selector de agrupamiento de la grilla. Broker queda por defecto. */
+const AGRUPAMIENTOS = [
+  { value: 'broker', label: 'Broker' },
+  { value: 'tipo', label: 'Tipo' },
+  { value: 'renta', label: 'Tipo de renta' },
+] as const;
+
+/**
+ * Cabecera de grupo de la grilla. Se renderiza dentro de la columna de expandir,
+ * que tiene ancho 0: el contenido se posiciona de forma absoluta desde el borde
+ * izquierdo (así las filas de detalle no quedan indentadas).
+ */
+const GrupoHeader = ({ row, table }: { row: MRT_Row<Inversion>; table: MRT_TableInstance<Inversion> }) => {
+  if (!row.getIsGrouped()) return null;
+
+  const columnaSeleccion = table.getColumn('mrt-row-select');
+  const anchoSeleccion = columnaSeleccion?.getIsVisible() ? columnaSeleccion.getSize() : 0;
+  const valor = String(row.groupingValue ?? '');
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        whiteSpace: 'nowrap',
+        zIndex: 1,
+      }}
+    >
+      <Box
+        sx={{
+          width: anchoSeleccion,
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Checkbox
+          className="mrt-group-select-all"
+          size="small"
+          checked={row.getIsAllSubRowsSelected()}
+          indeterminate={row.getIsSomeSelected()}
+          onChange={(event) => row.toggleSelected(event.target.checked)}
+          onClick={(event) => event.stopPropagation()}
+          slotProps={{ input: { 'aria-label': 'Seleccionar todo el grupo' } }}
+          sx={{ p: '4px' }}
+        />
+      </Box>
+      <MRT_ExpandButton row={row} table={table} size="small" />
+      {row.groupingColumnId === 'tipo' ? (
+        <Pill outline>{valor}</Pill>
+      ) : (
+        <Box component="span" sx={styles.grupoTitulo}>
+          {valor}
+        </Box>
+      )}
+    </Box>
+  );
+};
 
 const construirCotizacionesDolar = (cotizaciones: CotizacionDolar[] | undefined): DolarCotizaciones | undefined => {
   const ventas = new Map((cotizaciones ?? []).filter((c) => c.venta > 0).map((c) => [c.tipo, c.venta]));
@@ -76,7 +182,11 @@ const InversionesPage = () => {
   const [moneda, setMoneda] = useState<InstrumentoMoneda>(INSTRUMENTO_MONEDA.PESO);
   const [tipoDolar, setTipoDolar] = useState<TipoDolar>(TIPO_DOLAR.OFICIAL);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
-  const [mostrandoGraficos, setMostrandoGraficos] = useState(false);
+  // Controlado desde acá porque el selector de agrupamiento vive fuera de MRT
+  // (toolbar propia): sin esto el valor mostrado no seguiría al estado interno.
+  const [agrupamiento, setAgrupamiento] = useState<string>('broker');
+  const [filtros, setFiltros] = useState<FiltrosInversiones>(() => ({ ...FILTROS_INVERSIONES_DEFAULT }));
+  const [mostrandoGraficos, setMostrandoGraficos] = useState(true);
   const [sobreescribir, setSobreescribir] = useState(false);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
     open: false,
@@ -153,6 +263,25 @@ const InversionesPage = () => {
     return construirCotizacionesDolar(cotizacionesDolarQuery.data) ?? null;
   }, [viendoHistorial, dolarHistoricoQuery.data, cotizacionesDolarQuery.data]);
 
+  // Tasas para mostrar en la barra: no dependen de que estén las cuatro
+  // cotizaciones (el objeto completo solo se usa para convertir instrumentos).
+  const tasasDolar = useMemo<TasasDolar>(() => {
+    if (viendoHistorial) {
+      const dolar = dolarHistoricoQuery.data;
+      return {
+        oficial: dolar?.oficial ?? null,
+        bolsa: dolar?.bolsa ?? null,
+        contadoconliqui: dolar?.contadoconliqui ?? null,
+      };
+    }
+    const porTipo = new Map((cotizacionesDolarQuery.data ?? []).map((c) => [c.tipo, c.venta]));
+    return {
+      oficial: porTipo.get(TIPO_DOLAR.OFICIAL) ?? null,
+      bolsa: porTipo.get(TIPO_DOLAR.BOLSA) ?? null,
+      contadoconliqui: porTipo.get(TIPO_DOLAR.CCL) ?? null,
+    };
+  }, [viendoHistorial, dolarHistoricoQuery.data, cotizacionesDolarQuery.data]);
+
   const instrumentosSinPrecio = useMemo(() => {
     if (!viendoHistorial || preciosDelDiaQuery.isLoading || !preciosHistoricos) return [];
     const nombres = (inversionesQuery.data ?? [])
@@ -210,7 +339,15 @@ const InversionesPage = () => {
     setCreateDialogOpen(false);
   };
 
-  const { precioPorInstrumento, totalDisplay, datosPorBroker, datosPorRenta } = useInversiones({
+  const {
+    precioPorInstrumento,
+    totalValor,
+    cantidadSeleccionada,
+    totalSeleccionado,
+    datosPorBroker,
+    datosPorRenta,
+    datosPorTipoInstrumento,
+  } = useInversiones({
     instrumentos: instrumentosQuery.data,
     inversiones: inversionesQuery.data,
     moneda,
@@ -222,35 +359,112 @@ const InversionesPage = () => {
 
   const simboloMoneda = moneda === INSTRUMENTO_MONEDA.PESO ? '$' : 'US$';
 
-  const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
-    () => [
+  const ultimoEstado = useMemo(() => {
+    const fechas = (fechasHistorialQuery.data ?? [])
+      .map((f) => f.slice(0, 10))
+      .filter(Boolean)
+      .sort();
+    return fechas.length > 0 ? dayjs(fechas[fechas.length - 1]).format('DD/MM/YYYY') : null;
+  }, [fechasHistorialQuery.data]);
+
+  const rentaStack = useMemo<StatStack | undefined>(() => {
+    if (datosPorRenta.length === 0) return undefined;
+    const total = datosPorRenta.reduce((acc, dato) => acc + dato.value, 0);
+    const pct = (valor: number) => (total > 0 ? Math.round((valor / total) * 1000) / 10 : 0);
+    const etiqueta = (label: string) => RENTA_LABEL[label.trim().toUpperCase()] ?? label;
+    return {
+      ariaLabel: datosPorRenta.map((dato) => `${etiqueta(dato.label)} ${pct(dato.value)} %`).join(', '),
+      segments: datosPorRenta.map((dato, index) => ({
+        value: dato.value,
+        color: RENTA_COLOR[dato.label.trim().toUpperCase()] ?? SERIES[index % SERIES.length],
+        label: etiqueta(dato.label),
+        detail: formatearMonto(dato.value, simboloMoneda),
+      })),
+    };
+  }, [datosPorRenta, simboloMoneda]);
+
+  const brokerStack = useMemo<StatStack | undefined>(() => {
+    if (datosPorBroker.length === 0) return undefined;
+    const total = datosPorBroker.reduce((acc, dato) => acc + dato.value, 0);
+    const pct = (valor: number) => (total > 0 ? Math.round((valor / total) * 1000) / 10 : 0);
+    return {
+      ariaLabel: datosPorBroker.map((dato) => `${dato.label} ${pct(dato.value)} %`).join(', '),
+      segments: datosPorBroker.map((dato, index) => ({
+        value: dato.value,
+        color: SERIES[index % SERIES.length],
+        label: dato.label,
+        detail: formatearMonto(dato.value, simboloMoneda),
+      })),
+    };
+  }, [datosPorBroker, simboloMoneda]);
+
+  const totalCartera =
+    totalValor == null ? `${simboloMoneda} —` : `${simboloMoneda} ${transformNumberToCurrenty(totalValor, 0) ?? '-'}`;
+
+  const statsItems: StatItem[] = [
+    {
+      label: 'Total cartera',
+      value: totalCartera,
+      tone: 'accent',
+    },
+    {
+      label: 'Composición por renta',
+      wide: true,
+      value: rentaStack ? undefined : '—',
+      stack: rentaStack,
+    },
+    {
+      label: 'Composición por broker',
+      wide: true,
+      value: brokerStack ? undefined : '—',
+      stack: brokerStack,
+    },
+  ];
+
+  const columns = useMemo<MRT_ColumnDef<Inversion>[]>(() => {
+    const columnas: MRT_ColumnDef<Inversion>[] = [
       {
-        accessorFn: (row) => {
-          if (row.instrumento.tipo === INSTRUMENTO_INVERSION_TIPO.CEDEAR) {
-            return <span title={row.instrumento.nombre}>{row.instrumento.codigo}</span>;
-          }
-          return row.instrumento.nombre;
-        },
+        accessorFn: (row) => row.instrumento.codigo ?? row.instrumento.nombre,
         id: 'instrumento',
         header: 'Instrumento',
-        size: 200,
+        size: 220,
+        enableGrouping: false,
+        Cell: ({ row }) => {
+          const { instrumento } = row.original;
+          const principal = instrumento.codigo ?? instrumento.nombre;
+          const secundario = instrumento.codigo ? `${instrumento.nombre} · ${instrumento.tipo}` : instrumento.tipo;
+          return (
+            <Box>
+              <Box component="span" title={instrumento.nombre} sx={styles.instrumentoPrincipal}>
+                {principal}
+              </Box>
+              <Box component="span" sx={styles.instrumentoSecundario}>
+                {secundario}
+              </Box>
+            </Box>
+          );
+        },
       },
       {
         accessorFn: (row) => row.instrumento.tipo,
         id: 'tipo',
         header: 'Tipo',
-        size: 100,
+        size: 110,
+        Cell: ({ cell }) => <Pill outline>{cell.getValue<string>()}</Pill>,
       },
       {
         accessorKey: 'cantidad',
         header: 'Cantidad',
-        size: 150,
+        size: 120,
+        enableGrouping: false,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
       },
       {
         accessorFn: (row) => row.instrumento.clase_renta,
         id: 'renta',
         header: 'Tipo de Renta',
-        size: 130,
+        size: 110,
       },
       {
         accessorKey: 'broker',
@@ -261,20 +475,44 @@ const InversionesPage = () => {
         id: 'precio',
         header: 'Precio',
         size: 130,
+        enableGrouping: false,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
         Cell: ({ row }) => {
           if (sinCotizacionDelDia) return '-';
           const p = precioPorInstrumento.get(row.original.instrumento.id);
           if (p?.loading) return <CircularProgress size={16} />;
-          return p ? `${p.simbolo} ${p.precio}` : '-';
+          if (!p) return '-';
+          return (
+            <Box component="span">
+              <Box component="span" sx={styles.moneda}>
+                {p.simbolo}
+              </Box>
+              {p.precio}
+            </Box>
+          );
         },
       },
       {
         id: 'total',
         header: 'Total',
-        size: 130,
-        muiTableBodyCellProps: {
-          align: 'right',
+        size: 150,
+        enableGrouping: false,
+        accessorFn: (row) => {
+          if (sinCotizacionDelDia || !ventaDolar) return 0;
+          return Math.round(
+            calcularValorInversion({
+              inversion: row,
+              precioPorInstrumento,
+              moneda,
+              ventaDolar,
+              cotizacionesDolar,
+            }),
+          );
         },
+        aggregationFn: 'sum',
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
         Cell: ({ row }) => {
           if (sinCotizacionDelDia || !ventaDolar) return '-';
           const p = precioPorInstrumento.get(row.original.instrumento.id);
@@ -289,13 +527,40 @@ const InversionesPage = () => {
                 cotizacionesDolar,
               }),
             ),
+            0,
           );
-          return `${simboloMoneda} ${total?.replace(',00', '')}`;
+          return (
+            <Box component="span">
+              <Box component="span" sx={styles.moneda}>
+                {simboloMoneda}
+              </Box>
+              {total}
+            </Box>
+          );
+        },
+        AggregatedCell: ({ cell }) => {
+          if (sinCotizacionDelDia || !ventaDolar) return '-';
+          return (
+            <Box sx={styles.subtotal}>
+              subtotal{' '}
+              <Box component="span" sx={styles.subtotalValor}>
+                {simboloMoneda} {transformNumberToCurrenty(cell.getValue<number>(), 0)}
+              </Box>
+            </Box>
+          );
         },
       },
-    ],
-    [precioPorInstrumento, sinCotizacionDelDia, moneda, ventaDolar, simboloMoneda, cotizacionesDolar],
-  );
+    ];
+
+    return columnas;
+  }, [
+    precioPorInstrumento,
+    sinCotizacionDelDia,
+    moneda,
+    ventaDolar,
+    simboloMoneda,
+    cotizacionesDolar,
+  ]);
 
   const openDeleteConfirmModal = (row: MRT_Row<Inversion>) => {
     setDeleteRow(row);
@@ -351,6 +616,7 @@ const InversionesPage = () => {
     // Las copias del historial tienen ids distintos a los de las inversiones vigentes,
     // así que una selección previa no aplica al nuevo conjunto de filas.
     setRowSelection({});
+    setFiltros({ ...FILTROS_INVERSIONES_DEFAULT });
   };
 
   const handleGuardarEstado = () => {
@@ -417,6 +683,43 @@ const InversionesPage = () => {
 
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
+  const cantidadInversiones = inversionesQuery.data?.length ?? 0;
+
+  const opcionesFiltros = useMemo(() => {
+    const unicos = (valores: (string | null | undefined)[]) =>
+      Array.from(new Set(valores.filter((valor): valor is string => Boolean(valor)))).sort((a, b) =>
+        a.localeCompare(b, 'es'),
+      );
+    const inversiones = inversionesQuery.data ?? [];
+    return {
+      tipo: unicos(inversiones.map((inversion) => inversion.instrumento.tipo)),
+      renta: unicos(inversiones.map((inversion) => inversion.instrumento.clase_renta)),
+      broker: unicos(inversiones.map((inversion) => inversion.broker)),
+    };
+  }, [inversionesQuery.data]);
+
+  // Los filtros afectan solo a las filas de la grilla. Los totales, composiciones
+  // y gráficos se calculan en `useInversiones` sobre la cartera completa.
+  const inversionesFiltradas = useMemo(() => {
+    const busqueda = normalizarTexto(filtros.busqueda.trim());
+    return (inversionesQuery.data ?? []).filter((inversion) => {
+      if (filtros.tipo.length > 0 && !filtros.tipo.includes(inversion.instrumento.tipo)) return false;
+      if (filtros.renta.length > 0 && !filtros.renta.includes(inversion.instrumento.clase_renta)) return false;
+      if (filtros.broker.length > 0 && !filtros.broker.includes(inversion.broker)) return false;
+      if (!busqueda) return true;
+      return (
+        normalizarTexto(inversion.instrumento.nombre).includes(busqueda) ||
+        normalizarTexto(inversion.instrumento.codigo ?? '').includes(busqueda)
+      );
+    });
+  }, [inversionesQuery.data, filtros]);
+
+  const cantidadInversionesFiltradas = inversionesFiltradas.length;
+  const hayFiltros =
+    filtros.tipo.length > 0 ||
+    filtros.renta.length > 0 ||
+    filtros.broker.length > 0 ||
+    filtros.busqueda.trim().length > 0;
   const isLoading =
     inversionesQuery.isLoading ||
     instrumentosQuery.isLoading ||
@@ -426,37 +729,97 @@ const InversionesPage = () => {
   const isSaving = createMutation.isPending || deleteMutation.isPending || updateMutation.isPending;
 
   const table = useMaterialReactTable({
+    ...mrtTableStyleProps({ surface: MRT_SURFACE_PAGE }),
     columns,
-    data: inversionesQuery.data ?? [],
+    data: inversionesFiltradas,
     getRowId: (row) => row.id,
     onRowSelectionChange: setRowSelection,
     enableRowActions: !viendoHistorial,
+    // Acciones a la derecha, como el mockup (MRT las pone a la izquierda por defecto).
+    positionActionsColumn: 'last',
     displayColumnDefOptions: {
       'mrt-row-actions': {
-        size: 100,
+        header: '',
+        size: 80,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
+      },
+      'mrt-row-expand': {
+        header: '',
+        size: 0,
+        minSize: 0,
+        Cell: ({ row, table }) => <GrupoHeader row={row} table={table} />,
+        muiTableHeadCellProps: { sx: { width: 0, minWidth: 0, p: 0 } },
+        muiTableBodyCellProps: { sx: { width: 0, minWidth: 0, p: 0, overflow: 'visible', zIndex: 2 } },
       },
     },
     enableSorting: true,
     enableColumnFilters: true,
     enablePagination: true,
-    enableRowSelection: true,
+    // La toolbar propia (agrupar por + filtros) reemplaza la de MRT.
+    enableTopToolbar: false,
+    enableRowSelection: (row) => !row.getIsGrouped(),
+    enableGrouping: true,
+    enableExpandAll: false,
+    groupedColumnMode: 'remove',
+    renderEmptyRowsFallback: () => (
+      <Box sx={styles.emptyRows}>No hay inversiones que coincidan con los filtros.</Box>
+    ),
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
+    renderBottomToolbarCustomActions: () => (
+      <Box component="span" sx={styles.bottomToolbarSummary}>
+        {cantidadInversionesFiltradas} {cantidadInversionesFiltradas === 1 ? 'inversión' : 'inversiones'}
+        {hayFiltros && cantidadInversionesFiltradas !== cantidadInversiones
+          ? ` de ${cantidadInversiones}`
+          : ''}{' '}
+        · precios al{' '}
+        <Box component="span" sx={styles.bottomToolbarNum}>
+          {diaSeleccionado}
+        </Box>
+      </Box>
+    ),
+    muiBottomToolbarProps: { sx: styles.bottomToolbar },
     initialState: {
       pagination: { pageSize: 50, pageIndex: 0 },
+      expanded: true,
+    },
+    onGroupingChange: (updater) => {
+      const anterior = agrupamiento ? [agrupamiento] : [];
+      const siguiente = typeof updater === 'function' ? updater(anterior) : updater;
+      setAgrupamiento(siguiente[0] ?? '');
     },
     muiPaginationProps: {
       rowsPerPageOptions: [10, 25, 50, 100],
+      showFirstButton: false,
+      showLastButton: false,
+      SelectProps: {
+        sx: styles.pageSizeSelect,
+        MenuProps: {
+          disableScrollLock: true,
+          sx: styles.pageSizeMenu,
+        },
+      },
     },
     state: {
       isLoading,
       isSaving,
       rowSelection,
+      grouping: agrupamiento ? [agrupamiento] : [],
     },
-    muiTableProps: {
-      size: 'small',
+    muiTableBodyRowProps: ({ row }) => {
+      if (row.getIsGrouped()) {
+        return {
+          className: 'mrt-group-row',
+          onClick: (event) => {
+            if ((event.target as HTMLElement).closest('button, input, a')) return;
+            row.toggleExpanded();
+          },
+          sx: MRT_GROUP_ROW_SX,
+        };
+      }
+      return {};
     },
-    layoutMode: 'grid-no-grow',
     renderRowActions: ({ row, table }) => (
       <InversionesRowActions row={row} table={table} onDelete={openDeleteConfirmModal} />
     ),
@@ -465,29 +828,7 @@ const InversionesPage = () => {
     localization: {
       cancel: 'Cancelar',
       save: 'Guardar',
-    },
-    renderTopToolbarCustomActions: () => (
-      <InversionesToolbar
-        moneda={moneda}
-        tipoDolar={tipoDolar}
-        total={totalDisplay}
-        dolarVenta={ventaDolar}
-        guardandoEstado={guardarEstadoMutation.isPending}
-        sobreescribir={sobreescribir}
-        fecha={fecha}
-        maxFecha={hoy}
-        viendoHistorial={viendoHistorial}
-        esFechaHabilitada={esFechaHabilitada}
-        onFechaChange={handleFechaChanged}
-        onNuevaInversion={() => setCreateDialogOpen(true)}
-        onGuardarEstado={handleGuardarEstado}
-        onSobreescribirChange={handleSobreescribirChanged}
-        onMonedaChange={handleMonedaChanged}
-        onTipoDolarChange={handleTipoDolarChanged}
-      />
-    ),
-    muiTablePaperProps: {
-      sx: { display: 'flex', flexDirection: 'column', inlineSize: '100%', overflow: 'auto', flex: 1 },
+      rowsPerPage: 'Por página',
     },
     muiCircularProgressProps: {
       color: 'secondary',
@@ -497,51 +838,124 @@ const InversionesPage = () => {
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, blockSize: '100%', overflow: 'hidden' }}>
-      <Box>
-        <h2>Inversiones</h2>
-      </Box>
-      {inversionesQuery.isError && <p>Hubo un error al cargar las inversiones.</p>}
-      {sinCotizacionDelDia && (
-        <Alert severity="error" sx={{ flexShrink: 0 }}>
-          No hay cotización del dólar guardada para el {diaSeleccionado}: no se pueden calcular precios ni totales.
-        </Alert>
-      )}
-      {instrumentosSinPrecio.length > 0 && (
-        <Alert severity="warning" sx={{ flexShrink: 0 }}>
-          Sin precio guardado para el {diaSeleccionado}: {instrumentosSinPrecio.join(', ')}
-        </Alert>
-      )}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        // TODO(rediseño-tema, Fase 10): `styles.main` (Layout) todavía trae `p: 3`.
+        // Este margen lo cancela para que el frame vaya de borde a borde
+        // (`.page` del mockup). Al quitar el padding de `main`, borrar el margen.
+        m: -3,
+        maxWidth: CONTENT_MAX_WIDTH,
+      }}
+    >
+      <PageHeader
+        crumbs={[{ label: 'Inversiones' }]}
+        actions={
+          <InversionesTopbarActions
+            fecha={fecha}
+            maxFecha={hoy}
+            viendoHistorial={viendoHistorial}
+            guardandoEstado={guardarEstadoMutation.isPending}
+            sobreescribir={sobreescribir}
+            mostrandoGraficos={mostrandoGraficos}
+            esFechaHabilitada={esFechaHabilitada}
+            onFechaChange={handleFechaChanged}
+            onNuevaInversion={() => setCreateDialogOpen(true)}
+            onGuardarEstado={handleGuardarEstado}
+            onSobreescribirChange={handleSobreescribirChanged}
+            onToggleGraficos={() => setMostrandoGraficos((v) => !v)}
+          />
+        }
+      />
+
+      <InversionesAlerts
+        errorCarga={inversionesQuery.isError}
+        sinCotizacionDelDia={sinCotizacionDelDia}
+        diaSeleccionado={fecha.format('DD/MM/YYYY')}
+        instrumentosSinPrecio={instrumentosSinPrecio}
+        viendoHistorial={viendoHistorial}
+        onVolverAHoy={() => handleFechaChanged(hoy)}
+      />
+
+      <InversionesCurrencyBar
+        moneda={moneda}
+        tipoDolar={tipoDolar}
+        tasas={tasasDolar}
+        ultimoEstado={ultimoEstado}
+        onMonedaChange={handleMonedaChanged}
+        onTipoDolarChange={handleTipoDolarChanged}
+      />
+
+      <StatsCluster items={statsItems} />
+
       <Box
         sx={{
-          display: mostrandoGraficos ? 'flex' : 'none',
+          display: mostrandoGraficos ? 'block' : 'none',
           flexShrink: 0,
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: 3,
+          p: mostrandoGraficos ? '16px var(--gutter) 20px' : 0,
+          borderBottom: mostrandoGraficos ? '1px solid var(--border-soft)' : 0,
           overflow: 'auto',
+          containerType: 'inline-size',
         }}
       >
-        <Box sx={COLUMNA_HISTORIAL}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1.35fr) minmax(0, 1fr)',
+            alignItems: 'stretch',
+            gap: '16px',
+            '@container (max-width: 1060px)': {
+              gridTemplateColumns: 'minmax(0, 1fr)',
+            },
+          }}
+        >
           <HistorialInversiones maxFecha={hoy} moneda={moneda} tipoDolar={tipoDolar} />
-        </Box>
-        <Box sx={COLUMNA_SUPERIOR}>
-          <InversionesPorCategoria titulo="Total por broker" data={datosPorBroker} simbolo={simboloMoneda} />
-        </Box>
-        <Box sx={COLUMNA_SUPERIOR}>
-          <InversionesPorCategoria titulo="Total por tipo de renta" data={datosPorRenta} simbolo={simboloMoneda} />
+          <ComposicionInversiones datos={datosPorTipoInstrumento} totalValor={totalValor} simbolo={simboloMoneda} />
         </Box>
       </Box>
-      <Divider sx={{ flexShrink: 0 }}>
-        <IconButton
-          onClick={() => setMostrandoGraficos((v) => !v)}
-          aria-label={mostrandoGraficos ? 'Ocultar gráficos' : 'Mostrar gráficos'}
+
+      <Box sx={styles.gridToolbar}>
+        <TextField
+          select
+          size="small"
+          label="Agrupar por"
+          value={agrupamiento}
+          onChange={(event) => setAgrupamiento(event.target.value)}
+          sx={styles.groupByField}
         >
-          {mostrandoGraficos ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      </Divider>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+          {AGRUPAMIENTOS.map((opcion) => (
+            <MenuItem key={opcion.value} value={opcion.value} sx={styles.groupByMenuItem}>
+              {opcion.label}
+            </MenuItem>
+          ))}
+          <MenuItem value="" sx={styles.groupByMenuItem}>
+            Sin agrupar
+          </MenuItem>
+        </TextField>
+        {cantidadSeleccionada > 0 && (
+          <Box component="span" sx={styles.selectionChip}>
+            <Box component="strong" sx={styles.selectionChipCount}>
+              {cantidadSeleccionada}
+            </Box>
+            {`${cantidadSeleccionada === 1 ? 'seleccionada' : 'seleccionadas'} ·`}
+            <Box component="span" sx={styles.selectionChipSum}>
+              {totalSeleccionado == null
+                ? '—'
+                : `${simboloMoneda} ${transformNumberToCurrenty(totalSeleccionado, 0) ?? '-'}`}
+            </Box>
+          </Box>
+        )}
+      </Box>
+
+      <InversionesFiltros filtros={filtros} opciones={opcionesFiltros} onFiltrosChange={setFiltros} />
+
+      <Box
+        sx={{
+          display: 'flex',
+          '& .mrt-group-row .MuiCheckbox-root:not(.mrt-group-select-all)': { display: 'none' },
+        }}
+      >
         <MaterialReactTable table={table} />
       </Box>
       <CrearEditarInversion

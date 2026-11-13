@@ -84,9 +84,16 @@ interface UseInversionesParams {
 
 interface UseInversionesResult {
   precioPorInstrumento: Map<string, PrecioInstrumento>;
+  /** Total de la cartera completa; `null` si falta la cotización del dólar. */
+  totalValor: number | null;
   totalDisplay: string;
+  /** Cantidad de filas seleccionadas en la grilla. */
+  cantidadSeleccionada: number;
+  /** Total de las filas seleccionadas; `null` si no hay selección o falta la cotización. */
+  totalSeleccionado: number | null;
   datosPorBroker: DatoGrafico[];
   datosPorRenta: DatoGrafico[];
+  datosPorTipoInstrumento: DatoGrafico[];
 }
 
 export const useInversiones = ({
@@ -177,18 +184,14 @@ export const useInversiones = ({
     return map;
   }, [instrumentos, preciosPorInstrumento, precioFetchFailed, preciosHistoricos]);
 
-  // Valor de cada inversión en la moneda de visualización, considerando sólo las
-  // filas seleccionadas (o todas si no hay selección). Es la base compartida del
-  // total y de los datos de los gráficos, para que la conversión de moneda viva
-  // en un único lugar.
+  // Valor de cada inversión en la moneda de visualización. Se calcula siempre
+  // sobre TODAS las inversiones de la página: la tira de stats (total y
+  // composiciones) y los gráficos no dependen de la selección. El total de lo
+  // seleccionado se muestra aparte, como chip del toolbar (`totalSeleccionado`).
   const inversionesConValor = useMemo(() => {
     if (!ventaDolar) return [] as { inversion: Inversion; valor: number }[];
 
-    const items = inversiones ?? [];
-    const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
-    const inversionesATotalizar = selectedIds.length > 0 ? items.filter((inv) => rowSelection[inv.id]) : items;
-
-    return inversionesATotalizar.map((inv) => ({
+    return (inversiones ?? []).map((inv) => ({
       inversion: inv,
       valor: calcularValorInversion({
         inversion: inv,
@@ -198,16 +201,35 @@ export const useInversiones = ({
         cotizacionesDolar,
       }),
     }));
-  }, [inversiones, precioPorInstrumento, moneda, ventaDolar, cotizacionesDolar, rowSelection]);
+  }, [inversiones, precioPorInstrumento, moneda, ventaDolar, cotizacionesDolar]);
+
+  const totalValor = useMemo(() => {
+    if (!ventaDolar) return null;
+    return Math.round(inversionesConValor.reduce((acc, { valor }) => acc + valor, 0));
+  }, [inversionesConValor, ventaDolar]);
 
   const totalDisplay = useMemo(() => {
     const enPesos = moneda === INSTRUMENTO_MONEDA.PESO;
     const simbolo = enPesos ? '$' : 'US$';
-    if (!ventaDolar) return `${simbolo} -`;
+    if (totalValor == null) return `${simbolo} -`;
 
-    const valor = Math.round(inversionesConValor.reduce((acc, { valor }) => acc + valor, 0));
-    return `${simbolo} ${transformNumberToCurrenty(valor) ?? '-'}`;
-  }, [inversionesConValor, moneda, ventaDolar]);
+    return `${simbolo} ${transformNumberToCurrenty(totalValor) ?? '-'}`;
+  }, [totalValor, moneda]);
+
+  // Selección de la grilla (checkboxes). Sólo alimenta el chip del toolbar:
+  // no altera ni el total de la cartera ni las composiciones.
+  const cantidadSeleccionada = useMemo(
+    () => Object.keys(rowSelection).filter((id) => rowSelection[id]).length,
+    [rowSelection],
+  );
+
+  const totalSeleccionado = useMemo(() => {
+    if (!ventaDolar || cantidadSeleccionada === 0) return null;
+    const total = inversionesConValor
+      .filter(({ inversion }) => rowSelection[inversion.id])
+      .reduce((acc, { valor }) => acc + valor, 0);
+    return Math.round(total);
+  }, [inversionesConValor, rowSelection, ventaDolar, cantidadSeleccionada]);
 
   const datosPorBroker = useMemo(
     () =>
@@ -231,5 +253,25 @@ export const useInversiones = ({
     [inversionesConValor],
   );
 
-  return { precioPorInstrumento, totalDisplay, datosPorBroker, datosPorRenta };
-};;
+  const datosPorTipoInstrumento = useMemo(
+    () =>
+      agruparPorCategoria(
+        inversionesConValor.map(({ inversion, valor }) => ({
+          categoria: inversion.instrumento.tipo || 'Sin tipo',
+          valor,
+        })),
+      ),
+    [inversionesConValor],
+  );
+
+  return {
+    precioPorInstrumento,
+    totalValor,
+    totalDisplay,
+    cantidadSeleccionada,
+    totalSeleccionado,
+    datosPorBroker,
+    datosPorRenta,
+    datosPorTipoInstrumento,
+  };
+};
