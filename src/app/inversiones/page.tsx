@@ -39,7 +39,7 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { type Dayjs } from 'dayjs';
-import { Box, CircularProgress, MenuItem, TextField } from '@mui/material';
+import { Box, Checkbox, CircularProgress, MenuItem, TextField } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { ComposicionInversiones } from '@/components/inversiones/ComposicionInversiones';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
@@ -104,6 +104,8 @@ const AGRUPAMIENTOS = [
 const GrupoHeader = ({ row, table }: { row: MRT_Row<Inversion>; table: MRT_TableInstance<Inversion> }) => {
   if (!row.getIsGrouped()) return null;
 
+  const columnaSeleccion = table.getColumn('mrt-row-select');
+  const anchoSeleccion = columnaSeleccion?.getIsVisible() ? columnaSeleccion.getSize() : 0;
   const valor = String(row.groupingValue ?? '');
   return (
     <Box
@@ -119,6 +121,26 @@ const GrupoHeader = ({ row, table }: { row: MRT_Row<Inversion>; table: MRT_Table
         zIndex: 1,
       }}
     >
+      <Box
+        sx={{
+          width: anchoSeleccion,
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Checkbox
+          className="mrt-group-select-all"
+          size="small"
+          checked={row.getIsAllSubRowsSelected()}
+          indeterminate={row.getIsSomeSelected()}
+          onChange={(event) => row.toggleSelected(event.target.checked)}
+          onClick={(event) => event.stopPropagation()}
+          slotProps={{ input: { 'aria-label': 'Seleccionar todo el grupo' } }}
+          sx={{ p: '4px' }}
+        />
+      </Box>
       <MRT_ExpandButton row={row} table={table} size="small" />
       {row.groupingColumnId === 'tipo' ? (
         <Pill outline>{valor}</Pill>
@@ -842,7 +864,12 @@ const InversionesPage = () => {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', '& .mrt-group-row .MuiCheckbox-root': { display: 'none' } }}>
+      <Box
+        sx={{
+          display: 'flex',
+          '& .mrt-group-row .MuiCheckbox-root:not(.mrt-group-select-all)': { display: 'none' },
+        }}
+      >
         <MaterialReactTable table={table} />
       </Box>
       <CrearEditarInversion
