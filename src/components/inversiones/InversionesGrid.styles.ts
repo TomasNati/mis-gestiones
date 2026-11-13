@@ -8,8 +8,13 @@ interface InversionesGridStyles {
   grupoMeta: SxProps;
   subtotal: SxProps;
   subtotalValor: SxProps;
+  gridToolbar: SxProps;
   groupByField: SxProps;
   groupByMenuItem: SxProps;
+  emptyRows: SxProps;
+  selectionChip: SxProps;
+  selectionChipCount: SxProps;
+  selectionChipSum: SxProps;
   bottomToolbar: SxProps;
   bottomToolbarSummary: SxProps;
   bottomToolbarNum: SxProps;
@@ -58,8 +63,18 @@ export const styles: InversionesGridStyles = {
     color: 'var(--text-primary)',
     fontWeight: 500,
   },
+  /** Primera toolbar de la grilla (`.toolbar`): agrupar por + chip de selección. */
+  gridToolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    flexWrap: 'wrap',
+    minHeight: '56px',
+    padding: '12px var(--gutter)',
+    borderBottom: '1px solid var(--border-soft)',
+  },
   groupByField: {
-    minWidth: 180,
+    minWidth: 90,
     '& .MuiOutlinedInput-root': {
       height: 'var(--control-h-sm)',
       backgroundColor: 'var(--bg-inset)',
@@ -92,6 +107,41 @@ export const styles: InversionesGridStyles = {
     fontSize: '13px',
     color: 'var(--text-secondary)',
     '&.Mui-selected': { color: 'var(--text-primary)' },
+  },
+  emptyRows: {
+    padding: '24px 12px',
+    textAlign: 'center',
+    fontFamily: 'var(--font-body)',
+    fontSize: '13px',
+    color: 'var(--text-tertiary)',
+  },
+  /**
+   * Chip de selección (`.bulk-actions` del mockup): muestra el total de las
+   * filas tildadas. No altera la tira de stats ni los gráficos, que siempre
+   * se calculan sobre toda la cartera.
+   */
+  selectionChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    height: 'var(--control-h-sm)',
+    padding: '0 12px',
+    border: '1px solid var(--border-soft)',
+    backgroundColor: 'var(--accent-soft)',
+    borderRadius: 'var(--radius)',
+    fontFamily: 'var(--font-body)',
+    fontSize: '13px',
+    color: 'var(--text-secondary)',
+    whiteSpace: 'nowrap',
+  },
+  selectionChipCount: {
+    fontWeight: 500,
+    color: 'var(--text-primary)',
+  },
+  selectionChipSum: {
+    fontFamily: 'var(--font-mono)',
+    fontVariantNumeric: 'tabular-nums',
+    color: 'var(--text-primary)',
   },
   bottomToolbar: {
     minHeight: 'unset',

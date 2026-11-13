@@ -35,6 +35,20 @@
   .type-table td:last-child, .type-table th:last-child { padding-right: 0; }
   .renta { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.03em; color: var(--text-tertiary); }
   .filter-input { width: 260px; }
+  .groupby { min-width: 95px; position: relative; }
+  .groupby-label { position: absolute; top: -7px; left: 7px; padding: 0 4px; background: var(--bg-page); font-size: 10.5px; line-height: 1; color: var(--text-tertiary); }
+  .bulk-actions[data-bulk-actions] { padding-right: 12px; }
+  .filters-bar { min-height: 48px; padding-top: 8px; padding-bottom: 8px; }
+  .filters-popover { min-width: 320px; max-width: 360px; left: 0; right: auto; }
+  .filter-group { padding: 8px 12px; }
+  .filter-group + .filter-group { border-top: 1px solid var(--border-muted); }
+  .filter-group-title { font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; }
+  .filter-options { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .filter-options .checkbox { font-size: 12.5px; }
+  .filter-trigger .caret { color: var(--text-tertiary); }
+  .filter-trigger .badge { margin-left: 2px; }
+  .badge[hidden] { display: none; }
+  .filter-chips:empty { display: none; }
   .tb-divider { width: 1px; height: 20px; background: var(--border-muted); margin: 0 4px; }
   .btn.danger.filled { background: var(--danger-emphasis); border-color: var(--danger-emphasis); color: #fff; }
   .btn.danger.filled .icon { color: #fff; }
@@ -144,19 +158,62 @@
     </div>
   </section>
 
-  <div class="toolbar">
-    <span class="bulk-actions is-visible" data-bulk-actions>
-      <span><b data-selection-count>1</b> seleccionada · <span class="num" data-selection-sum>$ 12.518.800</span></span>
-      <button class="btn xs ghost danger" type="button"><i data-icon="trash"></i> Eliminar</button>
+  <div class="toolbar group-toolbar">
+    <span class="select sm inline groupby" title="Agrupar por">
+      <span class="groupby-label">Agrupar por</span>
+      <span>Broker</span>
+      <i data-icon="chevron-down" class="caret"></i>
     </span>
-    <label class="input sm filter-input"><span class="prefix"><i data-icon="filter"></i></span><input type="text" placeholder="Filtrar instrumento o broker…"></label>
-    <div class="segmented sm" role="group" aria-label="Tipo de renta">
-      <button type="button" class="is-active">Todos</button>
-      <button type="button">Renta fija</button>
-      <button type="button">Renta variable</button>
-    </div>
+    <span class="bulk-actions is-visible" data-bulk-actions title="Total de las filas seleccionadas. No altera la cartera ni los gráficos, que siempre usan todas las inversiones.">
+      <span><b data-selection-count>1</b> seleccionada · <span class="num" data-selection-sum>$ 12.518.800</span></span>
+    </span>
     <span class="spacer"></span>
     <span class="summary">14 inversiones · 2 brokers</span>
+  </div>
+
+  <div class="toolbar filters-bar">
+    <div class="popover-anchor">
+      <button class="btn sm filter-trigger" type="button" data-popover="#filtrosPopover" aria-haspopup="dialog" aria-expanded="false">
+        <i data-icon="filter"></i> Filtros
+        <span class="badge accent" data-filter-count hidden>0</span>
+        <i data-icon="chevron-down" class="caret"></i>
+      </button>
+      <div class="popover filters-popover" id="filtrosPopover" role="dialog" aria-label="Filtros">
+        <div class="popover-header">
+          <span><b>Filtros</b> · seleccioná uno o varios</span>
+          <button class="btn xs ghost" type="button" data-filter-clear>Limpiar</button>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Tipo</div>
+          <div class="filter-options">
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="CEDEAR"> CEDEAR</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="FCI"> FCI</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="BONO"> BONO</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="ON"> ON</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="CRIPTO"> CRIPTO</label>
+            <label class="checkbox"><input type="checkbox" data-facet="tipo" value="ACCIÓN"> ACCIÓN</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Tipo de renta</div>
+          <div class="filter-options">
+            <label class="checkbox"><input type="checkbox" data-facet="renta" value="VARIABLE"> VARIABLE</label>
+            <label class="checkbox"><input type="checkbox" data-facet="renta" value="FIJA"> FIJA</label>
+            <label class="checkbox"><input type="checkbox" data-facet="renta" value="MIXTA"> MIXTA</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Broker</div>
+          <div class="filter-options">
+            <label class="checkbox"><input type="checkbox" data-facet="broker" value="PPI"> PPI</label>
+            <label class="checkbox"><input type="checkbox" data-facet="broker" value="Balanz"> Balanz</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chips filter-chips" data-filter-chips></div>
+    <span class="spacer"></span>
+    <label class="input sm filter-input"><span class="prefix"><i data-icon="search"></i></span><input type="text" data-filter-search placeholder="Filtrar instrumento o código…" aria-label="Filtrar por nombre o código de instrumento"></label>
   </div>
 
   <div class="table-wrap">
@@ -429,6 +486,143 @@
 </div>
 
 <script src="assets/shell.js"></script>
+<script>
+(function () {
+  const pop = document.getElementById('filtrosPopover');
+  const trigger = document.querySelector('[data-popover="#filtrosPopover"]');
+  const chips = document.querySelector('[data-filter-chips]');
+  const count = document.querySelector('[data-filter-count]');
+  const search = document.querySelector('[data-filter-search]');
+  const table = document.getElementById('invTable');
+  if (!pop || !trigger || !chips || !count || !table) return;
+
+  const FACET_LABEL = { tipo: 'Tipo', renta: 'Renta', broker: 'Broker' };
+  const inputs = () => Array.from(pop.querySelectorAll('input[data-facet]'));
+  const detailRows = () => Array.from(table.querySelectorAll('tbody tr:not(.row-group)'));
+  const groupRows = () => Array.from(table.querySelectorAll('tbody tr.row-group'));
+  const granTotal = detailRows().reduce((acc, row) => acc + Number(row.dataset.amount || 0), 0);
+
+  const fmtMonto = (valor) => '$ ' + Math.round(valor).toLocaleString('es-AR');
+  const fmtPct = (valor) =>
+    granTotal > 0 ? ((valor / granTotal) * 100).toFixed(1).replace('.', ',') + ' %' : '—';
+
+  function seleccionados() {
+    return inputs()
+      .filter((input) => input.checked)
+      .map((input) => ({ facet: input.dataset.facet, value: input.value }));
+  }
+
+  function brokerDe(row) {
+    let anterior = row.previousElementSibling;
+    while (anterior && !anterior.classList.contains('row-group')) anterior = anterior.previousElementSibling;
+    return (anterior?.querySelector('.day')?.textContent || '').trim();
+  }
+
+  function aplicarFiltros() {
+    const activos = { tipo: [], renta: [], broker: [] };
+    seleccionados().forEach(({ facet, value }) => {
+      if (activos[facet]) activos[facet].push(value);
+    });
+    const busqueda = (search?.value || '').trim().toLowerCase();
+
+    detailRows().forEach((row) => {
+      const tipo = (row.querySelector('.pill')?.textContent || '').trim();
+      const renta = (row.querySelector('.renta')?.textContent || '').trim();
+      const broker = brokerDe(row);
+      const celdaInstrumento = row.querySelector('td[title]');
+      const nombre = (
+        (celdaInstrumento?.getAttribute('title') || '') + ' ' + (row.querySelector('.cell-primary')?.textContent || '')
+      ).toLowerCase();
+      const coincide =
+        (!activos.tipo.length || activos.tipo.includes(tipo)) &&
+        (!activos.renta.length || activos.renta.includes(renta)) &&
+        (!activos.broker.length || activos.broker.includes(broker)) &&
+        (!busqueda || nombre.includes(busqueda));
+      row.hidden = !coincide;
+      const pct = row.querySelector('td.num.faint');
+      if (pct) pct.textContent = fmtPct(Number(row.dataset.amount || 0));
+    });
+
+    groupRows().forEach((group) => {
+      let siguiente = group.nextElementSibling;
+      let visibles = 0;
+      let subtotal = 0;
+      while (siguiente && !siguiente.classList.contains('row-group')) {
+        if (!siguiente.hidden) {
+          visibles += 1;
+          subtotal += Number(siguiente.dataset.amount || 0);
+        }
+        siguiente = siguiente.nextElementSibling;
+      }
+      group.hidden = visibles === 0;
+      const meta = group.querySelector('.day-meta');
+      if (meta) meta.textContent = visibles + (visibles === 1 ? ' inversión' : ' inversiones');
+      const subtotalEl = group.querySelector('.subtotal b');
+      if (subtotalEl) subtotalEl.textContent = fmtMonto(subtotal);
+      const pct = group.querySelector('td.num.faint');
+      if (pct) pct.textContent = fmtPct(subtotal);
+    });
+
+    const visibles = detailRows().filter((row) => !row.hidden);
+    const brokers = new Set(visibles.map(brokerDe).filter(Boolean));
+    const summary = document.querySelector('.group-toolbar .summary');
+    if (summary) {
+      summary.textContent =
+        visibles.length + (visibles.length === 1 ? ' inversión' : ' inversiones') +
+        ' · ' + brokers.size + (brokers.size === 1 ? ' broker' : ' brokers');
+    }
+  }
+
+  function render() {
+    const items = seleccionados();
+    chips.innerHTML = '';
+    items.forEach(({ facet, value }) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML =
+        '<span class="faint">' + (FACET_LABEL[facet] || facet) + '</span> ' + value +
+        ' <button class="icon-btn xs" type="button" data-filter-remove="' + facet + '|' + value +
+        '" title="Quitar filtro"><i data-icon="x"></i></button>';
+      chips.appendChild(chip);
+    });
+    window.MG.hydrateIcons(chips);
+    count.textContent = String(items.length);
+    count.hidden = items.length === 0;
+    aplicarFiltros();
+  }
+
+  pop.addEventListener('change', (event) => {
+    if (event.target.matches('input[data-facet]')) render();
+  });
+
+  pop.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-filter-clear]')) return;
+    inputs().forEach((input) => { input.checked = false; });
+    if (search) search.value = '';
+    render();
+  });
+
+  chips.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-filter-remove]');
+    if (!remove) return;
+    // Evita que shell.js cierre el popover al quitar un chip.
+    event.stopPropagation();
+    const [facet, value] = remove.getAttribute('data-filter-remove').split('|');
+    const input = pop.querySelector('input[data-facet="' + facet + '"][value="' + value + '"]');
+    if (input) input.checked = false;
+    render();
+  });
+
+  search?.addEventListener('input', aplicarFiltros);
+
+  // aria-expanded sigue el toggle que maneja shell.js.
+  new MutationObserver(() => {
+    trigger.setAttribute('aria-expanded', String(pop.classList.contains('is-open')));
+  }).observe(pop, { attributes: true, attributeFilter: ['class'] });
+
+  render();
+})();
+</script>
 <script>
 (function () {
   const W = 620;

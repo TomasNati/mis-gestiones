@@ -261,18 +261,25 @@ Mockup: `docs/mockups/finanzas-buscar.html`. Archivos: `src/components/Movimient
 
 ## Fase 7 — Inversiones → `/inversiones`
 
-Mockup: `docs/mockups/inversiones.html`. Archivos: `src/components/inversiones/` (`CrearEditarInversion.tsx`, `InversionesToolbar.tsx`, `HistorialInversiones.tsx`, …).
+Mockup: `docs/mockups/inversiones.html`. Archivos: `src/components/inversiones/` (`CrearEditarInversion.tsx`, `InversionesToolbar.tsx`, `InversionesFiltros.tsx`, `InversionesFiltros.styles.ts`, `HistorialInversiones.tsx`, …).
 
 - [x] **Tres primeras barras (hasta que comienzan los gráficos)**:
   - `PageHeader` con miga "Inversiones" y las acciones del `.topbar`: `DatePicker` (misma lógica de fechas habilitadas y máximo hoy), **Guardar estado**, switch **Sobreescribir**, separador, **Gráficos** (toggle que reemplaza al viejo `Divider` + `IconButton`) y **Nueva inversión**.
   - `.alerts`: componente `InversionesAlerts` con los avisos de error de carga, estado histórico (con "Volver a hoy"), falta de cotización del día e instrumentos sin precio. Mismos datos y condiciones que antes, con tokens de estado del tema.
   - `.toolbar.currency-bar`: segmented **Peso/Dólar** y **Oficial/Bolsa/CCL** (salen del toolbar de MRT), resumen de cotizaciones (oficial/bolsa/CCL) y "Último estado guardado" (fecha más reciente de `fechasHistorialInversiones`).
   - `.stats` con `StatsCluster`: **Total cartera** (moneda activa) y dos barras apiladas 100 % con leyenda: **Composición por renta** y **Composición por broker**. Cada ítem de la leyenda muestra su porcentaje y el monto en pesos entre paréntesis (`58 % ($ 47.533.540)`). Se quitó la caja **En dólares (oficial)** por redundante (el total ya se ve en dólares con el toggle y la cotización está en la barra de moneda). Se agregó `stack`/`detail` a `StatItem`/`StatsCluster` (barra `.stack100`, colores `--series-*`) y `value` pasó a ser opcional.
-  - El frame de la página usa `maxWidth: 1250` y `m: -3` para ir de borde a borde; la barra/tabla quedan para la próxima pasada.
-  - Datos: `useInversiones` ahora expone `totalValor` (numérico, `null` sin cotización) además de `totalDisplay`; las tasas para mostrar se derivan de la consulta aunque falte alguna de las cuatro cotizaciones.
+  - El frame de la página usa `maxWidth: 1250` y `m: -3` para ir de borde a borde; la barra y la tabla se completaron en el ítem de toolbars.
+  - Datos: `useInversiones` expone `totalValor` (numérico, `null` sin cotización), `totalDisplay`, `cantidadSeleccionada` y `totalSeleccionado`; las tasas para mostrar se derivan de la consulta aunque falte alguna de las cuatro cotizaciones.
 - [x] Gráficos: se dejó **solo el de historial** dentro de `ChartPanel` (encabezado y borde del mockup) con segmented **3 m / 6 m / 1 a / Otro** en vez del dropdown. Los presets buscan al instante; "Otro" muestra los `DatePicker` Desde/Hasta + **Aplicar**. Se quitaron los pie de broker/renta. La sección queda visible por defecto. El panel "Evolución del total" apila **dos gráficos**: arriba la **línea del total** de la cartera y abajo las **barras de ganancia/pérdida contra el período anterior** (verde/rojo, sin desagregar por broker).
 - [x] Segundo gráfico **Composición**: panel con barras horizontales **por tipo de instrumento** (`%` + monto compacto), al lado del historial. Se quitaron del mockup los bloques "Por broker" y "Por tipo de renta" (esa composición sigue en la tira de stats). Nuevo `ComposicionInversiones` + `datosPorTipoInstrumento` en `useInversiones`.
-- [ ] Toolbar de la tabla (bulk actions, filtro, segmented de renta) y unificar la grilla de historial en **MRT** con el helper compartido (si aplica según mockup).
+- [x] **Toolbars de la tabla** (dos filas propias; toolbar interna de MRT desactivada con `enableTopToolbar: false`):
+  - Fila 1 (`.toolbar.group-toolbar`): **Agrupar por** (Broker / Tipo / Tipo de renta / Sin agrupar, `minWidth: 90`) controlado desde React (`state.grouping` + `onGroupingChange`) y **chip de selección** con cantidad y total (`N seleccionada(s) · $ monto`), sin acción de borrado.
+  - Fila 2 (`.toolbar.filters-bar`, nuevo `InversionesFiltros`): **Filtros** en popover multiselect para **Tipo / Tipo de renta / Broker** (OR dentro de cada faceta, AND entre facetas), chips removibles, badge con la cantidad, “Limpiar” y buscador que filtra por **nombre o código** de instrumento (sin distinguir mayúsculas ni acentos).
+  - Los filtros y la búsqueda afectan **solo a las filas** de la grilla; el pie muestra `N de M` y hay estado vacío (“No hay inversiones que coincidan con los filtros”). Al cambiar de fecha se resetean filtros y selección.
+  - `useInversiones` calcula totales/composiciones y gráficos sobre **toda la cartera**; la selección solo alimenta el chip (`cantidadSeleccionada` / `totalSeleccionado`).
+  - Mockup `inversiones.html` actualizado: dos toolbars, filtros/búsqueda funcionales que recalculan grupos/subtotales/porcentajes/resumen, chip sin “Eliminar” y ancho de “Agrupar por” reducido.
+- [ ] Verificación visual con backend real: dos filas de toolbar, popover/chips, búsqueda, paginación/selección y estado vacío.
+- [ ] Decidir si se recuperan los íconos internos de MRT (columnas/densidad/pantalla completa) en la toolbar propia; hoy quedan ocultos porque el mockup no los muestra.
 - [ ] Modal `CrearEditarInversion` → `MuiDialog` global.
 - [ ] Pills de estado de inversión.
 
@@ -323,3 +330,4 @@ Mockup: `docs/mockups/settings.html` (tab API, `#api`). Archivo actual: `src/app
 - **Settings pasa de iframe a UI nativa** → implica asegurar que existan endpoints/CUD para categorías y que la info de API sea estática (la del mockup).
 - **Resumen (`/finanzas`) es página nueva**: no existe hoy; hay que crearla y decidir qué datos reales mostrar.
 - **Colaboración:** `docs/new-theme/` guarda los planes previos; este archivo convive con `movimientos-refactor-mrt.md`.
+- **Invariante de Inversiones:** la selección de filas no altera stats ni gráficos (siempre se calculan sobre toda la cartera); solo alimenta el chip del toolbar. Los filtros y la búsqueda afectan únicamente a las filas de la grilla. Mantener esa separación al tocar `useInversiones`.
