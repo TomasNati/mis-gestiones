@@ -28,16 +28,18 @@ import { transformNumberToCurrenty } from '@/lib/helpers';
 import { calcularValorInversion, useInversiones } from '@/hooks/inversiones/useInversiones';
 import {
   MaterialReactTable,
+  MRT_ExpandButton,
   MRT_Row,
   type MRT_ColumnDef,
   type MRT_RowSelectionState,
+  type MRT_TableInstance,
   type MRT_TableOptions,
   useMaterialReactTable,
 } from 'material-react-table';
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { type Dayjs } from 'dayjs';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, MenuItem, TextField } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { ComposicionInversiones } from '@/components/inversiones/ComposicionInversiones';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
@@ -86,6 +88,48 @@ const RENTA_COLOR: Record<string, string> = {
 const formatearMonto = (valor: number, simbolo: string) => `${simbolo} ${transformNumberToCurrenty(valor, 0) ?? '-'}`;
 
 const TIPOS_DOLAR_HISTORICO = ['oficial', 'blue', 'bolsa', 'contadoconliqui'] as const;
+
+/** Opciones del selector de agrupamiento de la grilla. Broker queda por defecto. */
+const AGRUPAMIENTOS = [
+  { value: 'broker', label: 'Broker' },
+  { value: 'tipo', label: 'Tipo' },
+  { value: 'renta', label: 'Tipo de renta' },
+] as const;
+
+/**
+ * Cabecera de grupo de la grilla. Se renderiza dentro de la columna de expandir,
+ * que tiene ancho 0: el contenido se posiciona de forma absoluta desde el borde
+ * izquierdo (así las filas de detalle no quedan indentadas).
+ */
+const GrupoHeader = ({ row, table }: { row: MRT_Row<Inversion>; table: MRT_TableInstance<Inversion> }) => {
+  if (!row.getIsGrouped()) return null;
+
+  const valor = String(row.groupingValue ?? '');
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        whiteSpace: 'nowrap',
+        zIndex: 1,
+      }}
+    >
+      <MRT_ExpandButton row={row} table={table} size="small" />
+      {row.groupingColumnId === 'tipo' ? (
+        <Pill outline>{valor}</Pill>
+      ) : (
+        <Box component="span" sx={styles.grupoTitulo}>
+          {valor}
+        </Box>
+      )}
+    </Box>
+  );
+};
 
 const construirCotizacionesDolar = (cotizaciones: CotizacionDolar[] | undefined): DolarCotizaciones | undefined => {
   const ventas = new Map((cotizaciones ?? []).filter((c) => c.venta > 0).map((c) => [c.tipo, c.venta]));
@@ -331,13 +375,14 @@ const InversionesPage = () => {
     },
   ];
 
-  const columns = useMemo<MRT_ColumnDef<Inversion>[]>(
-    () => [
+  const columns = useMemo<MRT_ColumnDef<Inversion>[]>(() => {
+    const columnas: MRT_ColumnDef<Inversion>[] = [
       {
         accessorFn: (row) => row.instrumento.codigo ?? row.instrumento.nombre,
         id: 'instrumento',
         header: 'Instrumento',
         size: 220,
+        enableGrouping: false,
         Cell: ({ row }) => {
           const { instrumento } = row.original;
           const principal = instrumento.codigo ?? instrumento.nombre;
@@ -365,10 +410,9 @@ const InversionesPage = () => {
         accessorKey: 'cantidad',
         header: 'Cantidad',
         size: 120,
-        aggregationFn: 'sum',
+        enableGrouping: false,
         muiTableHeadCellProps: { align: 'right' },
         muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
-        AggregatedCell: ({ cell }) => <Box sx={MRT_NUMERIC_CELL_SX}>{cell.getValue<number>()}</Box>,
       },
       {
         accessorFn: (row) => row.instrumento.clase_renta,
@@ -380,21 +424,12 @@ const InversionesPage = () => {
         accessorKey: 'broker',
         header: 'Broker',
         size: 130,
-        GroupedCell: ({ row }) => (
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <Box component="span" sx={styles.grupoTitulo}>
-              {String(row.groupingValue)}
-            </Box>
-            <Box component="span" sx={styles.grupoMeta}>
-              {row.subRows?.length ?? 0} {(row.subRows?.length ?? 0) === 1 ? 'inversión' : 'inversiones'}
-            </Box>
-          </Box>
-        ),
       },
       {
         id: 'precio',
         header: 'Precio',
         size: 130,
+        enableGrouping: false,
         muiTableHeadCellProps: { align: 'right' },
         muiTableBodyCellProps: { align: 'right', sx: MRT_NUMERIC_CELL_SX },
         Cell: ({ row }) => {
@@ -416,6 +451,7 @@ const InversionesPage = () => {
         id: 'total',
         header: 'Total',
         size: 150,
+        enableGrouping: false,
         accessorFn: (row) => {
           if (sinCotizacionDelDia || !ventaDolar) return 0;
           return Math.round(
@@ -468,9 +504,17 @@ const InversionesPage = () => {
           );
         },
       },
-    ],
-    [precioPorInstrumento, sinCotizacionDelDia, moneda, ventaDolar, simboloMoneda, cotizacionesDolar],
-  );
+    ];
+
+    return columnas;
+  }, [
+    precioPorInstrumento,
+    sinCotizacionDelDia,
+    moneda,
+    ventaDolar,
+    simboloMoneda,
+    cotizacionesDolar,
+  ]);
 
   const openDeleteConfirmModal = (row: MRT_Row<Inversion>) => {
     setDeleteRow(row);
@@ -592,6 +636,7 @@ const InversionesPage = () => {
 
   const instrumentos = instrumentosQuery.data ?? [];
   const brokers = metaQuery.data?.brokers ?? [];
+  const cantidadInversiones = inversionesQuery.data?.length ?? 0;
   const isLoading =
     inversionesQuery.isLoading ||
     instrumentosQuery.isLoading ||
@@ -618,7 +663,11 @@ const InversionesPage = () => {
       },
       'mrt-row-expand': {
         header: '',
-        size: 48,
+        size: 0,
+        minSize: 0,
+        Cell: ({ row, table }) => <GrupoHeader row={row} table={table} />,
+        muiTableHeadCellProps: { sx: { width: 0, minWidth: 0, p: 0 } },
+        muiTableBodyCellProps: { sx: { width: 0, minWidth: 0, p: 0, overflow: 'visible', zIndex: 2 } },
       },
     },
     enableSorting: true,
@@ -627,9 +676,42 @@ const InversionesPage = () => {
     enableRowSelection: (row) => !row.getIsGrouped(),
     enableGrouping: true,
     enableExpandAll: false,
-    groupedColumnMode: 'reorder',
+    groupedColumnMode: 'remove',
+    renderTopToolbarCustomActions: ({ table }) => {
+      const agrupamiento = table.getState().grouping[0] ?? '';
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', pl: '8px' }}>
+          <TextField
+            select
+            size="small"
+            label="Agrupar por"
+            value={agrupamiento}
+            onChange={(event) => table.setGrouping(event.target.value ? [event.target.value] : [])}
+            sx={styles.groupByField}
+          >
+            {AGRUPAMIENTOS.map((opcion) => (
+              <MenuItem key={opcion.value} value={opcion.value} sx={styles.groupByMenuItem}>
+                {opcion.label}
+              </MenuItem>
+            ))}
+            <MenuItem value="" sx={styles.groupByMenuItem}>
+              Sin agrupar
+            </MenuItem>
+          </TextField>
+        </Box>
+      );
+    },
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
+    renderBottomToolbarCustomActions: () => (
+      <Box component="span" sx={styles.bottomToolbarSummary}>
+        {cantidadInversiones} {cantidadInversiones === 1 ? 'inversión' : 'inversiones'} · precios al{' '}
+        <Box component="span" sx={styles.bottomToolbarNum}>
+          {diaSeleccionado}
+        </Box>
+      </Box>
+    ),
+    muiBottomToolbarProps: { sx: styles.bottomToolbar },
     initialState: {
       pagination: { pageSize: 50, pageIndex: 0 },
       grouping: ['broker'],
@@ -637,6 +719,15 @@ const InversionesPage = () => {
     },
     muiPaginationProps: {
       rowsPerPageOptions: [10, 25, 50, 100],
+      showFirstButton: false,
+      showLastButton: false,
+      SelectProps: {
+        sx: styles.pageSizeSelect,
+        MenuProps: {
+          disableScrollLock: true,
+          sx: styles.pageSizeMenu,
+        },
+      },
     },
     state: {
       isLoading,
@@ -664,6 +755,7 @@ const InversionesPage = () => {
     localization: {
       cancel: 'Cancelar',
       save: 'Guardar',
+      rowsPerPage: 'Por página',
     },
     muiCircularProgressProps: {
       color: 'secondary',
@@ -750,7 +842,7 @@ const InversionesPage = () => {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex', '& .mrt-group-row .MuiCheckbox-root': { display: 'none' } }}>
         <MaterialReactTable table={table} />
       </Box>
       <CrearEditarInversion
