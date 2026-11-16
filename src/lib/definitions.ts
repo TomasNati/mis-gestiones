@@ -1555,6 +1555,14 @@ export interface HistorialInversionesResponse {
 export interface HistorialInversionesPayload {
   desde: string;
   hasta: string;
+  /** Tipos de instrumento exactos a incluir. */
+  tipo?: string[];
+  /** Tipos de renta exactos a incluir. */
+  clase_renta?: string[];
+  /** Brokers exactos a incluir. */
+  broker?: string[];
+  /** Texto contenido en el nombre o código del instrumento. */
+  busqueda?: string;
 }
 
 export interface InversionMeta {
