@@ -887,8 +887,6 @@ const InversionesPage = () => {
         onTipoDolarChange={handleTipoDolarChanged}
       />
 
-      <StatsCluster items={statsItems} />
-
       <Box
         sx={{
           display: mostrandoGraficos ? 'block' : 'none',
@@ -914,6 +912,8 @@ const InversionesPage = () => {
           <ComposicionInversiones datos={datosPorTipoInstrumento} totalValor={totalValor} simbolo={simboloMoneda} />
         </Box>
       </Box>
+
+      <StatsCluster items={statsItems} />
 
       <Box sx={styles.gridToolbar}>
         <TextField
