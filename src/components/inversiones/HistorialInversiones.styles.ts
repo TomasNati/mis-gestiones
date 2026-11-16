@@ -1,6 +1,9 @@
 interface HistorialInversionesStyles {
   segmented: Record<string, unknown>;
+  separadorHeader: Record<string, unknown>;
   rangoPersonalizado: Record<string, unknown>;
+  filtrosAplicados: Record<string, unknown>;
+  filtrosAplicadosTitulo: Record<string, unknown>;
   grafico: Record<string, unknown>;
   placeholder: Record<string, unknown>;
 }
@@ -36,12 +39,25 @@ export const styles: HistorialInversionesStyles = {
       },
     },
   },
+  separadorHeader: {
+    width: '1px',
+    height: '18px',
+    backgroundColor: 'var(--border-soft)',
+  },
   rangoPersonalizado: {
     display: 'flex',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '8px',
     marginBottom: '12px',
+  },
+  filtrosAplicados: {
+    alignSelf: 'flex-start',
+    marginBottom: '4px',
+  },
+  filtrosAplicadosTitulo: {
+    fontWeight: 600,
+    color: 'var(--text-secondary)',
   },
   grafico: {
     display: 'flex',

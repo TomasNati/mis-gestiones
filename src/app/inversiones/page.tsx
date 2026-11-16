@@ -908,7 +908,7 @@ const InversionesPage = () => {
             },
           }}
         >
-          <HistorialInversiones maxFecha={hoy} moneda={moneda} tipoDolar={tipoDolar} />
+          <HistorialInversiones maxFecha={hoy} moneda={moneda} tipoDolar={tipoDolar} filtros={filtros} />
           <ComposicionInversiones datos={datosPorTipoInstrumento} totalValor={totalValor} simbolo={simboloMoneda} />
         </Box>
       </Box>
