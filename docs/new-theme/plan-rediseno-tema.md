@@ -280,7 +280,7 @@ Mockup: `docs/mockups/inversiones.html`. Archivos: `src/components/inversiones/`
   - Mockup `inversiones.html` actualizado: dos toolbars, filtros/búsqueda funcionales que recalculan grupos/subtotales/porcentajes/resumen, chip sin “Eliminar” y ancho de “Agrupar por” reducido.
 - [ ] Verificación visual con backend real: dos filas de toolbar, popover/chips, búsqueda, paginación/selección y estado vacío.
 - [ ] Decidir si se recuperan los íconos internos de MRT (columnas/densidad/pantalla completa) en la toolbar propia; hoy quedan ocultos porque el mockup no los muestra.
-- [ ] Modal `CrearEditarInversion` → `MuiDialog` global.
+- [x] Modal `CrearEditarInversion` → `MuiDialog` global: header "Nueva inversión" + subtítulo de cotización + cerrar; etiquetas `.field-label` con requerido, ayuda bajo el instrumento, fila `.form-row.c2` (Cantidad mono a la derecha + Broker) y footer Cancelar (outlined) / Crear (contained con check). Opciones del autocomplete con ticker en mono y tipo atenuado; listas desplegables con la superficie de popover del tema (`--bg-overlay`, borde, radio y sombra) e ítems de 13px. Estilos en `CrearEditarInversion.styles.ts`. Sigue pendiente el detalle de `EditarInversion` (panel de MRT).
 - [ ] Pills de estado de inversión.
 
 ---
