@@ -1,6 +1,6 @@
 # Cambios para Inversiones
 
-> **Estado:** base de datos, backend y admin listos. Queda pendiente el frontend. El detalle por paso está en `estado.md`.
+> **Estado:** plan implementado por completo (BD, backend, admin y frontend). Falta la verificación en ambiente corriendo. El detalle por paso está en `estado.md`.
 
 ## Objetivos
 
@@ -31,8 +31,10 @@ Crear script para la nueva columna. Es obligatoria. Inicializar con el valor act
 
 **Estado:** listo. La grilla incluye la columna "Nombre corto" (mantiene "Código") y el modal permite cargarlo y enviarlo al backend.
 
-### d. mis-gestiones
+### d. mis-gestiones ✅
 
 1. Modificar la pantalla de Inversiones para mostrar `instrumento.nombreCorto` donde se mostraba `instrumento.codigo`. La búsqueda de precios tiene que continuar usando el código; este cambio es solo visual.
 2. En los filtros de la grilla, poder filtrar por tipo de moneda.
 3. Cuando se aplican los filtros al gráfico *Evolución del total*, pasar también el tipo de moneda.
+
+**Estado:** listo. La grilla y los diálogos muestran `nombreCorto` (los precios siguen buscándose con `codigo`); la nueva faceta "Moneda" filtra la grilla y se envía al histórico del gráfico.

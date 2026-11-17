@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-11-17
 **Repositorios involucrados:** `mis-gestiones`, `mis-gestiones-backend`, `mis-gestiones-admin`
-**Estado general:** La base de datos está actualizada (columna `nombre_corto` `NOT NULL`), y el backend y el admin ya implementan el nuevo campo. El backend también soporta el filtro por moneda. Queda pendiente el frontend (`mis-gestiones`).
+**Estado general:** Todos los pasos del plan están implementados: base de datos actualizada (columna `nombre_corto` `NOT NULL`), backend, admin y frontend. Falta únicamente la verificación en ambiente corriendo (integración con la BD y prueba manual de UI).
 
 ## Resumen
 
@@ -14,9 +14,9 @@
 | b.3 | Filtro opcional por moneda en `/api/inversiones/inversiones-historico` | backend | ✅ Implementado |
 | c.1 | Grilla de instrumentos muestra el nombre corto | admin | ✅ Implementado |
 | c.2 | Modal de creación/edición maneja el nuevo campo | admin | ✅ Implementado |
-| d.1 | Pantalla de Inversiones muestra `nombreCorto` en lugar de `codigo` | mis-gestiones | ⬜ Pendiente |
-| d.2 | Filtro de grilla por tipo de moneda | mis-gestiones | ⬜ Pendiente |
-| d.3 | Filtro de moneda enviado al gráfico *Evolución del total* | mis-gestiones | ⬜ Pendiente |
+| d.1 | Pantalla de Inversiones muestra `nombreCorto` en lugar de `codigo` | mis-gestiones | ✅ Implementado |
+| d.2 | Filtro de grilla por tipo de moneda | mis-gestiones | ✅ Implementado |
+| d.3 | Filtro de moneda enviado al gráfico *Evolución del total* | mis-gestiones | ✅ Implementado |
 
 ## Detalle
 
@@ -48,15 +48,26 @@ Cambios aplicados:
 - `src/dialogs/InstrumentoCreateEditDialog.tsx`: campo "Nombre corto" en el modal de creación/edición.
 - Validado con `yarn build` (tsc + vite). `yarn lint` sigue con 4 errores preexistentes (`any` en `api.ts` / `Instrumentos.tsx` y `e` sin usar en el modal), no introducidos por estos cambios.
 
-### d. mis-gestiones ⬜
+### d. mis-gestiones ✅
 
-- `src/lib/definitions.ts`: interfaz `Instrumento` (agregar `nombreCorto`).
-- `src/app/inversiones/page.tsx`: reemplazar `instrumento.codigo` por `instrumento.nombreCorto` en la columna y en la búsqueda visual (líneas ~427, ~434-435 y ~712). La búsqueda de precios debe seguir usando `codigo`.
-- `src/components/inversiones/InversionesFiltros.tsx` y `InversionesToolbar.tsx`: filtro por tipo de moneda.
-- `src/components/inversiones/HistorialInversiones.tsx` y `HistorialInversionesGrafico.tsx`: propagar la moneda al gráfico *Evolución del total*.
+Cambios aplicados:
+
+- `src/lib/definitions.ts`: `nombreCorto` en `Instrumento` y `moneda` en `HistorialInversionesPayload`.
+- `src/app/inversiones/page.tsx`: la columna Instrumento muestra `nombreCorto`; la grilla filtra por moneda y el selector de opciones incluye las monedas presentes.
+- `src/components/inversiones/CrearEditarInversion.tsx` y `EditarInversion.tsx`: etiquetas visibles con `nombreCorto`. El selector mantiene la búsqueda por código/ticker mediante `filterOptions`.
+- `src/components/inversiones/InversionesFiltros.tsx`: nueva faceta "Moneda" (opciones, chips y valores por defecto).
+- `src/components/inversiones/HistorialInversiones.tsx`: envía `moneda` al endpoint del histórico y la incluye en el resumen de filtros aplicados.
+- Validado con `yarn build` (Next.js + TypeScript) y `yarn lint`, ambos sin errores.
+
+### Fix de error de runtime en la barra de filtros
+
+Se corrigió un `Maximum update depth exceeded` que aparecía al usar por primera vez la barra de filtros (el popover *Filtros* y el cuadro de búsqueda). El problema no venía de la faceta "Moneda" sino de la incorporación previa de esa barra:
+
+- `InversionesFiltros.tsx`: el `Popover` usa `disableEnforceFocus`. El *focus trap* de MUI Modal entra en conflicto con el manejo de foco de Material React Table cuando ambos conviven en la misma página (caso reportado por MUI) y provocaba un ciclo de cambios de foco/estado.
+- `page.tsx`: se memoiza el array `state.grouping` (`agrupamientoState`) con `useMemo`. Antes se creaba un array nuevo en cada render; como MRT lo usa como dependencia de efectos internos, cualquier actualización (como cambiar un filtro) podía derivar en un ciclo `setState → render → array nuevo → setState`.
 
 ## Notas
 
-- Cambio solo visual en el frontend: `codigo` sigue siendo la clave para buscar precios.
+- Cambio solo visual en el frontend: `codigo` sigue siendo la clave para buscar precios (`src/lib/inversiones/precios.ts` no se modificó). El filtro de texto de la grilla también sigue buscando por nombre/código.
 - `instrumento.moneda` ya existe en backend (`structure.py`, `enums.py`), así que el filtro no requiere otro cambio de esquema.
 - Este documento se actualiza a medida que se avance en cada paso.

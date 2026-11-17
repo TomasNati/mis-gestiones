@@ -48,6 +48,7 @@ const crearSolicitud = (desde: Dayjs, hasta: Dayjs, filtros: FiltrosInversiones)
     tipo: filtros.tipo.length > 0 ? filtros.tipo : undefined,
     clase_renta: filtros.renta.length > 0 ? filtros.renta : undefined,
     broker: filtros.broker.length > 0 ? filtros.broker : undefined,
+    moneda: filtros.moneda.length > 0 ? filtros.moneda : undefined,
     busqueda: busqueda || undefined,
   };
 };
@@ -57,6 +58,7 @@ const resumenFiltros = (filtros: FiltrosInversiones): string => {
   const partes: string[] = [];
   if (filtros.tipo.length > 0) partes.push(`Tipo: ${filtros.tipo.join(', ')}`);
   if (filtros.renta.length > 0) partes.push(`Tipo de renta: ${filtros.renta.join(', ')}`);
+  if (filtros.moneda.length > 0) partes.push(`Moneda: ${filtros.moneda.join(', ')}`);
   if (filtros.broker.length > 0) partes.push(`Broker: ${filtros.broker.join(', ')}`);
   const busqueda = filtros.busqueda.trim();
   if (busqueda) partes.push(`Instrumento o código: "${busqueda}"`);
