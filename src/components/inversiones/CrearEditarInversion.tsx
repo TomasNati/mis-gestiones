@@ -3,6 +3,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  createFilterOptions,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,9 +25,13 @@ interface CrearEditarInversionProps {
   handleCreate: (nuevoInstrumento: InversionCreatePayload) => void;
 }
 
-/** Etiqueta del mockup: `AAPL · Apple Inc. · CEDEAR` (el ticker en mono). */
 const etiquetaInstrumento = (instrumento: Instrumento): string =>
-  [instrumento.codigo, instrumento.nombre, instrumento.tipo].filter(Boolean).join(' · ');
+  [instrumento.nombreCorto, instrumento.nombre, instrumento.tipo].filter(Boolean).join(' · ');
+
+const filtrarInstrumentos = createFilterOptions<Instrumento>({
+  stringify: (instrumento) =>
+    [instrumento.codigo, instrumento.nombreCorto, instrumento.nombre].filter(Boolean).join(' '),
+});
 
 export const CrearEditarInversion = ({
   createDialogOpen,
@@ -74,7 +79,10 @@ export const CrearEditarInversion = ({
       <DialogContent sx={styles.contenido}>
         <Box sx={styles.campo}>
           <Box component="label" htmlFor="inversion-instrumento" sx={styles.etiqueta}>
-            Instrumento <Box component="span" sx={styles.requerido}>*</Box>
+            Instrumento{' '}
+            <Box component="span" sx={styles.requerido}>
+              *
+            </Box>
           </Box>
           <Autocomplete
             id="inversion-instrumento"
@@ -82,28 +90,36 @@ export const CrearEditarInversion = ({
             value={selectedInstrumento}
             onChange={(_, value) => setSelectedInstrumento(value)}
             getOptionLabel={etiquetaInstrumento}
+            filterOptions={filtrarInstrumentos}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             autoHighlight
             noOptionsText="Sin instrumentos"
             slotProps={{ paper: { sx: styles.popper } }}
             renderOption={(props, option) => (
               <Box component="li" {...props} sx={styles.opcion}>
-                {option.codigo && <Box component="span" sx={styles.opcionCodigo}>{option.codigo}</Box>}
+                {option.nombreCorto && (
+                  <Box component="span" sx={styles.opcionCodigo}>
+                    {option.nombreCorto}
+                  </Box>
+                )}
                 <Box component="span">{option.nombre}</Box>
-                <Box component="span" sx={styles.opcionTipo}>{option.tipo}</Box>
+                <Box component="span" sx={styles.opcionTipo}>
+                  {option.tipo}
+                </Box>
               </Box>
             )}
-            renderInput={(params) => (
-              <TextField {...params} placeholder="Buscar…" sx={styles.input} />
-            )}
+            renderInput={(params) => <TextField {...params} placeholder="Buscar…" sx={styles.input} />}
           />
-          <Box sx={styles.ayuda}>Buscá por ticker o nombre</Box>
+          <Box sx={styles.ayuda}>Buscá por nombre corto, ticker o nombre</Box>
         </Box>
 
         <Box sx={styles.fila}>
           <Box sx={styles.campo}>
             <Box component="label" htmlFor="inversion-cantidad" sx={styles.etiqueta}>
-              Cantidad <Box component="span" sx={styles.requerido}>*</Box>
+              Cantidad{' '}
+              <Box component="span" sx={styles.requerido}>
+                *
+              </Box>
             </Box>
             <TextField
               id="inversion-cantidad"
@@ -118,7 +134,10 @@ export const CrearEditarInversion = ({
 
           <Box sx={styles.campo}>
             <Box component="label" htmlFor="inversion-broker" sx={styles.etiqueta}>
-              Broker <Box component="span" sx={styles.requerido}>*</Box>
+              Broker{' '}
+              <Box component="span" sx={styles.requerido}>
+                *
+              </Box>
             </Box>
             <Autocomplete
               id="inversion-broker"
@@ -145,12 +164,7 @@ export const CrearEditarInversion = ({
         <Button onClick={handleCloseCreateDialog} variant="outlined" sx={styles.botonSecundario}>
           Cancelar
         </Button>
-        <Button
-          variant="contained"
-          onClick={onCreate}
-          startIcon={<CheckIcon />}
-          disabled={!puedeCrear || isPending}
-        >
+        <Button variant="contained" onClick={onCreate} startIcon={<CheckIcon />} disabled={!puedeCrear || isPending}>
           {isPending ? 'Creando…' : 'Crear'}
         </Button>
       </DialogActions>

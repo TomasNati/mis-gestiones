@@ -424,15 +424,17 @@ const InversionesPage = () => {
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(() => {
     const columnas: MRT_ColumnDef<Inversion>[] = [
       {
-        accessorFn: (row) => row.instrumento.codigo ?? row.instrumento.nombre,
+        accessorFn: (row) => row.instrumento.nombreCorto ?? row.instrumento.nombre,
         id: 'instrumento',
         header: 'Instrumento',
         size: 220,
         enableGrouping: false,
         Cell: ({ row }) => {
           const { instrumento } = row.original;
-          const principal = instrumento.codigo ?? instrumento.nombre;
-          const secundario = instrumento.codigo ? `${instrumento.nombre} · ${instrumento.tipo}` : instrumento.tipo;
+          const principal = instrumento.nombreCorto ?? instrumento.nombre;
+          const secundario = instrumento.nombreCorto
+            ? `${instrumento.nombre} · ${instrumento.tipo}`
+            : instrumento.tipo;
           return (
             <Box>
               <Box component="span" title={instrumento.nombre} sx={styles.instrumentoPrincipal}>
@@ -694,6 +696,7 @@ const InversionesPage = () => {
     return {
       tipo: unicos(inversiones.map((inversion) => inversion.instrumento.tipo)),
       renta: unicos(inversiones.map((inversion) => inversion.instrumento.clase_renta)),
+      moneda: unicos(inversiones.map((inversion) => inversion.instrumento.moneda)),
       broker: unicos(inversiones.map((inversion) => inversion.broker)),
     };
   }, [inversionesQuery.data]);
@@ -705,6 +708,7 @@ const InversionesPage = () => {
     return (inversionesQuery.data ?? []).filter((inversion) => {
       if (filtros.tipo.length > 0 && !filtros.tipo.includes(inversion.instrumento.tipo)) return false;
       if (filtros.renta.length > 0 && !filtros.renta.includes(inversion.instrumento.clase_renta)) return false;
+      if (filtros.moneda.length > 0 && !filtros.moneda.includes(inversion.instrumento.moneda)) return false;
       if (filtros.broker.length > 0 && !filtros.broker.includes(inversion.broker)) return false;
       if (!busqueda) return true;
       return (
@@ -718,6 +722,7 @@ const InversionesPage = () => {
   const hayFiltros =
     filtros.tipo.length > 0 ||
     filtros.renta.length > 0 ||
+    filtros.moneda.length > 0 ||
     filtros.broker.length > 0 ||
     filtros.busqueda.trim().length > 0;
   const isLoading =
@@ -727,6 +732,12 @@ const InversionesPage = () => {
     dolarHistoricoQuery.isLoading ||
     preciosDelDiaQuery.isLoading;
   const isSaving = createMutation.isPending || deleteMutation.isPending || updateMutation.isPending;
+
+  // MRT/React Table trae `state.grouping` como dependencia de efectos internos.
+  // Si pasamos un array nuevo en cada render, cualquier update (por ejemplo,
+  // cambiar un filtro) dispara un ciclo de setState → render → nuevo array →
+  // setState. Memoizarlo mantiene la identidad estable entre renders.
+  const agrupamientoState = useMemo(() => (agrupamiento ? [agrupamiento] : []), [agrupamiento]);
 
   const table = useMaterialReactTable({
     ...mrtTableStyleProps({ surface: MRT_SURFACE_PAGE }),
@@ -785,8 +796,7 @@ const InversionesPage = () => {
       expanded: true,
     },
     onGroupingChange: (updater) => {
-      const anterior = agrupamiento ? [agrupamiento] : [];
-      const siguiente = typeof updater === 'function' ? updater(anterior) : updater;
+      const siguiente = typeof updater === 'function' ? updater(agrupamientoState) : updater;
       setAgrupamiento(siguiente[0] ?? '');
     },
     muiPaginationProps: {
@@ -805,7 +815,7 @@ const InversionesPage = () => {
       isLoading,
       isSaving,
       rowSelection,
-      grouping: agrupamiento ? [agrupamiento] : [],
+      grouping: agrupamientoState,
     },
     muiTableBodyRowProps: ({ row }) => {
       if (row.getIsGrouped()) {

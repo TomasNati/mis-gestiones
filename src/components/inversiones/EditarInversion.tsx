@@ -26,8 +26,8 @@ export const EditarInversion = ({ row, table }: EditarInversionProps) => {
   const { instrumento } = inversion;
   const cantidadCell = row.getAllCells().find((cell) => cell.column.id === 'cantidad');
 
-  const nombreInstrumento = instrumento.codigo
-    ? `${instrumento.nombre} (${instrumento.codigo})`
+  const nombreInstrumento = instrumento.nombreCorto
+    ? `${instrumento.nombre} (${instrumento.nombreCorto})`
     : instrumento.nombre;
 
   return (

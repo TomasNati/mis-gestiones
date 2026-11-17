@@ -18,11 +18,12 @@ import {
 } from '@mui/material';
 import { styles } from './InversionesFiltros.styles';
 
-export type FacetaInversiones = 'tipo' | 'renta' | 'broker';
+export type FacetaInversiones = 'tipo' | 'renta' | 'moneda' | 'broker';
 
 export interface FiltrosInversiones {
   tipo: string[];
   renta: string[];
+  moneda: string[];
   broker: string[];
   /** Texto libre: filtra por nombre o código de instrumento. */
   busqueda: string;
@@ -31,12 +32,14 @@ export interface FiltrosInversiones {
 export interface OpcionesFiltrosInversiones {
   tipo: string[];
   renta: string[];
+  moneda: string[];
   broker: string[];
 }
 
 export const FILTROS_INVERSIONES_DEFAULT: FiltrosInversiones = {
   tipo: [],
   renta: [],
+  moneda: [],
   broker: [],
   busqueda: '',
 };
@@ -44,6 +47,7 @@ export const FILTROS_INVERSIONES_DEFAULT: FiltrosInversiones = {
 const FACETAS: { key: FacetaInversiones; label: string }[] = [
   { key: 'tipo', label: 'Tipo' },
   { key: 'renta', label: 'Tipo de renta' },
+  { key: 'moneda', label: 'Moneda' },
   { key: 'broker', label: 'Broker' },
 ];
 
@@ -55,7 +59,7 @@ interface InversionesFiltrosProps {
 
 /**
  * Segunda toolbar de Inversiones (`.toolbar.filters-bar`): multiselect de tipo,
- * tipo de renta y broker, chips de filtros activos y búsqueda por nombre/código
+ * tipo de renta, moneda y broker, chips de filtros activos y búsqueda por nombre/código
  * de instrumento. Los filtros afectan solo a la grilla; la tira de stats y los
  * gráficos siguen usando toda la cartera.
  */
@@ -108,6 +112,10 @@ export const InversionesFiltros = ({ filtros, opciones, onFiltrosChange }: Inver
         open={anchorEl !== null}
         anchorEl={anchorEl}
         onClose={() => setAnchorEl(null)}
+        // MUI Modal's focus trap can loop when a Popover lives on the same page
+        // as Material React Table (both fight for focus). The filters popover
+        // only contains checkboxes/buttons, so trapping focus isn't required.
+        disableEnforceFocus
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         slotProps={{ paper: { sx: styles.popover } }}

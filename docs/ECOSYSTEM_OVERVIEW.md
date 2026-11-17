@@ -280,6 +280,7 @@ erDiagram
         id uuid PK
         nombre varchar
         codigo varchar "nullable"
+        nombre_corto varchar
         tipo varchar
         clase_renta varchar
         moneda varchar

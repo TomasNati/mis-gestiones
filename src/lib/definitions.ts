@@ -1464,6 +1464,7 @@ export interface Instrumento {
   id: string;
   nombre: string;
   codigo: string | null;
+  nombreCorto: string;
   tipo: string;
   clase_renta: string;
   moneda: string;
@@ -1561,6 +1562,8 @@ export interface HistorialInversionesPayload {
   clase_renta?: string[];
   /** Brokers exactos a incluir. */
   broker?: string[];
+  /** Monedas exactas del instrumento a incluir. */
+  moneda?: string[];
   /** Texto contenido en el nombre o código del instrumento. */
   busqueda?: string;
 }
