@@ -33,3 +33,8 @@ Mockups HTML estáticos para llevar el estilo de `finanzas/movimientosDelMes` al
 - Profundidad por bordes y dos tonos de fondo; sombra solo en modales.
 - Las filas nunca se pintan enteras: el estado va en una etiqueta (`.pill`).
 - La paleta de series para gráficos (`--series-1` … `--series-8`) está validada para daltonismo y contraste sobre `#0d1117`.
+
+## Propuestas (aún sin implementar)
+
+- `inversiones.html` → grupo **Evolución**: junta "Evolución del total" y "Evolución de precios" bajo un mismo rango de fechas (3 m / 6 m / 1 a / Otro con Desde/Hasta) y un botón "Aplicar filtros actuales" al pie. En precios hay una línea por instrumento marcado; las secciones del filtro se generan solo con los tipos/instrumentos devueltos por el fetch del histórico (el switch "Demo: 6 / 2 instrumentos" lo demuestra). El total cartera muestra la variación % contra el primer Total del período recuperado.
+- `inversiones.html` → grupo **Composición**: reúne "Por tipo de instrumento", "Por renta" y "Por broker" en un mismo panel, las tres con el mismo formato de tabla con barra, porcentaje y monto. "Total cartera" pasó a la barra de "Agrupar por", junto al total de inversiones seleccionadas.

@@ -39,16 +39,16 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { type Dayjs } from 'dayjs';
+import NorthEastIcon from '@mui/icons-material/NorthEast';
+import SouthEastIcon from '@mui/icons-material/SouthEast';
 import { Box, Checkbox, CircularProgress, MenuItem, TextField } from '@mui/material';
 import { ConfirmDeleteModal } from '@/components/comun/ConfirmDeleteModal';
 import { ComposicionInversiones } from '@/components/inversiones/ComposicionInversiones';
 import { CrearEditarInversion } from '@/components/inversiones/CrearEditarInversion';
 import { EditarInversion } from '@/components/inversiones/EditarInversion';
-import { HistorialInversiones } from '@/components/inversiones/HistorialInversiones';
-import {
-  FILTROS_INVERSIONES_DEFAULT,
-  InversionesFiltros,
-} from '@/components/inversiones/InversionesFiltros';
+import { EvolucionInversiones } from '@/components/inversiones/EvolucionInversiones';
+import type { ResumenHistorialInversiones } from '@/components/inversiones/EvolucionInversiones';
+import { FILTROS_INVERSIONES_DEFAULT, InversionesFiltros } from '@/components/inversiones/InversionesFiltros';
 import type { FiltrosInversiones } from '@/components/inversiones/InversionesFiltros';
 import { styles } from '@/components/inversiones/InversionesGrid.styles';
 import { InversionesAlerts } from '@/components/inversiones/InversionesAlerts';
@@ -63,10 +63,8 @@ import {
   mrtTableStyleProps,
   PageHeader,
   Pill,
-  SERIES,
-  StatsCluster,
 } from '@/components/ui';
-import type { StatItem, StatStack } from '@/components/ui';
+import { formatearVariacion } from '@/lib/inversiones/historial';
 
 const FORMATO_DIA = 'YYYY-MM-DD';
 
@@ -82,22 +80,6 @@ const normalizarTexto = (valor: string) =>
  * `docs/new-theme/plan-rediseno-tema.md`.
  */
 const CONTENT_MAX_WIDTH = 1250;
-
-/** Etiquetas legibles y colores del mockup para la composición por tipo de renta. */
-const RENTA_LABEL: Record<string, string> = {
-  VARIABLE: 'Variable',
-  FIJA: 'Fija',
-  MIXTA: 'Mixta',
-};
-
-const RENTA_COLOR: Record<string, string> = {
-  VARIABLE: SERIES[0],
-  FIJA: SERIES[2],
-  MIXTA: SERIES[3],
-};
-
-/** Monto en la moneda activa (`$ 47.533.540`). */
-const formatearMonto = (valor: number, simbolo: string) => `${simbolo} ${transformNumberToCurrenty(valor, 0) ?? '-'}`;
 
 const TIPOS_DOLAR_HISTORICO = ['oficial', 'blue', 'bolsa', 'contadoconliqui'] as const;
 
@@ -186,6 +168,7 @@ const InversionesPage = () => {
   // (toolbar propia): sin esto el valor mostrado no seguiría al estado interno.
   const [agrupamiento, setAgrupamiento] = useState<string>('broker');
   const [filtros, setFiltros] = useState<FiltrosInversiones>(() => ({ ...FILTROS_INVERSIONES_DEFAULT }));
+  const [resumenHistorial, setResumenHistorial] = useState<ResumenHistorialInversiones | null>(null);
   const [mostrandoGraficos, setMostrandoGraficos] = useState(true);
   const [sobreescribir, setSobreescribir] = useState(false);
   const [configNotificacion, setConfigNotificacion] = useState<ConfiguracionNotificacion>({
@@ -367,59 +350,16 @@ const InversionesPage = () => {
     return fechas.length > 0 ? dayjs(fechas[fechas.length - 1]).format('DD/MM/YYYY') : null;
   }, [fechasHistorialQuery.data]);
 
-  const rentaStack = useMemo<StatStack | undefined>(() => {
-    if (datosPorRenta.length === 0) return undefined;
-    const total = datosPorRenta.reduce((acc, dato) => acc + dato.value, 0);
-    const pct = (valor: number) => (total > 0 ? Math.round((valor / total) * 1000) / 10 : 0);
-    const etiqueta = (label: string) => RENTA_LABEL[label.trim().toUpperCase()] ?? label;
-    return {
-      ariaLabel: datosPorRenta.map((dato) => `${etiqueta(dato.label)} ${pct(dato.value)} %`).join(', '),
-      segments: datosPorRenta.map((dato, index) => ({
-        value: dato.value,
-        color: RENTA_COLOR[dato.label.trim().toUpperCase()] ?? SERIES[index % SERIES.length],
-        label: etiqueta(dato.label),
-        detail: formatearMonto(dato.value, simboloMoneda),
-      })),
-    };
-  }, [datosPorRenta, simboloMoneda]);
-
-  const brokerStack = useMemo<StatStack | undefined>(() => {
-    if (datosPorBroker.length === 0) return undefined;
-    const total = datosPorBroker.reduce((acc, dato) => acc + dato.value, 0);
-    const pct = (valor: number) => (total > 0 ? Math.round((valor / total) * 1000) / 10 : 0);
-    return {
-      ariaLabel: datosPorBroker.map((dato) => `${dato.label} ${pct(dato.value)} %`).join(', '),
-      segments: datosPorBroker.map((dato, index) => ({
-        value: dato.value,
-        color: SERIES[index % SERIES.length],
-        label: dato.label,
-        detail: formatearMonto(dato.value, simboloMoneda),
-      })),
-    };
-  }, [datosPorBroker, simboloMoneda]);
-
   const totalCartera =
     totalValor == null ? `${simboloMoneda} —` : `${simboloMoneda} ${transformNumberToCurrenty(totalValor, 0) ?? '-'}`;
 
-  const statsItems: StatItem[] = [
-    {
-      label: 'Total cartera',
-      value: totalCartera,
-      tone: 'accent',
-    },
-    {
-      label: 'Composición por renta',
-      wide: true,
-      value: rentaStack ? undefined : '—',
-      stack: rentaStack,
-    },
-    {
-      label: 'Composición por broker',
-      wide: true,
-      value: brokerStack ? undefined : '—',
-      stack: brokerStack,
-    },
-  ];
+  const variacionCartera = useMemo(() => {
+    if (!resumenHistorial || resumenHistorial.totalInicial === 0) return null;
+    // El total actual es la referencia; si todavía no cargó la cotización,
+    // usamos el último Total del histórico para no perder el delta del mockup.
+    const totalActual = totalValor ?? resumenHistorial.totalFinal;
+    return (totalActual / resumenHistorial.totalInicial - 1) * 100;
+  }, [resumenHistorial, totalValor]);
 
   const columns = useMemo<MRT_ColumnDef<Inversion>[]>(() => {
     const columnas: MRT_ColumnDef<Inversion>[] = [
@@ -432,9 +372,7 @@ const InversionesPage = () => {
         Cell: ({ row }) => {
           const { instrumento } = row.original;
           const principal = instrumento.nombreCorto ?? instrumento.nombre;
-          const secundario = instrumento.nombreCorto
-            ? `${instrumento.nombre} · ${instrumento.tipo}`
-            : instrumento.tipo;
+          const secundario = instrumento.nombreCorto ? `${instrumento.nombre} · ${instrumento.tipo}` : instrumento.tipo;
           return (
             <Box>
               <Box component="span" title={instrumento.nombre} sx={styles.instrumentoPrincipal}>
@@ -555,14 +493,7 @@ const InversionesPage = () => {
     ];
 
     return columnas;
-  }, [
-    precioPorInstrumento,
-    sinCotizacionDelDia,
-    moneda,
-    ventaDolar,
-    simboloMoneda,
-    cotizacionesDolar,
-  ]);
+  }, [precioPorInstrumento, sinCotizacionDelDia, moneda, ventaDolar, simboloMoneda, cotizacionesDolar]);
 
   const openDeleteConfirmModal = (row: MRT_Row<Inversion>) => {
     setDeleteRow(row);
@@ -773,18 +704,14 @@ const InversionesPage = () => {
     enableGrouping: true,
     enableExpandAll: false,
     groupedColumnMode: 'remove',
-    renderEmptyRowsFallback: () => (
-      <Box sx={styles.emptyRows}>No hay inversiones que coincidan con los filtros.</Box>
-    ),
+    renderEmptyRowsFallback: () => <Box sx={styles.emptyRows}>No hay inversiones que coincidan con los filtros.</Box>,
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
     renderBottomToolbarCustomActions: () => (
       <Box component="span" sx={styles.bottomToolbarSummary}>
         {cantidadInversionesFiltradas} {cantidadInversionesFiltradas === 1 ? 'inversión' : 'inversiones'}
-        {hayFiltros && cantidadInversionesFiltradas !== cantidadInversiones
-          ? ` de ${cantidadInversiones}`
-          : ''}{' '}
-        · precios al{' '}
+        {hayFiltros && cantidadInversionesFiltradas !== cantidadInversiones ? ` de ${cantidadInversiones}` : ''} ·
+        precios al{' '}
         <Box component="span" sx={styles.bottomToolbarNum}>
           {diaSeleccionado}
         </Box>
@@ -918,14 +845,45 @@ const InversionesPage = () => {
             },
           }}
         >
-          <HistorialInversiones maxFecha={hoy} moneda={moneda} tipoDolar={tipoDolar} filtros={filtros} />
-          <ComposicionInversiones datos={datosPorTipoInstrumento} totalValor={totalValor} simbolo={simboloMoneda} />
+          <EvolucionInversiones
+            maxFecha={hoy}
+            moneda={moneda}
+            tipoDolar={tipoDolar}
+            filtros={filtros}
+            onResumenHistorial={setResumenHistorial}
+          />
+          <ComposicionInversiones
+            datosPorTipo={datosPorTipoInstrumento}
+            datosPorRenta={datosPorRenta}
+            datosPorBroker={datosPorBroker}
+            totalValor={totalValor}
+            simbolo={simboloMoneda}
+          />
         </Box>
       </Box>
 
-      <StatsCluster items={statsItems} />
-
       <Box sx={styles.gridToolbar}>
+        <Box sx={styles.totalCarteraInline} title="Variación contra el primer Total del histórico consultado">
+          <Box component="span" sx={styles.totalCarteraLabel}>
+            Total cartera
+          </Box>
+          <Box component="span" sx={styles.totalCarteraValue}>
+            {totalCartera}
+          </Box>
+          {resumenHistorial && variacionCartera != null && (
+            <Box
+              component="span"
+              sx={variacionCartera >= 0 ? styles.totalCarteraDeltaUp : styles.totalCarteraDeltaDown}
+            >
+              {variacionCartera >= 0 ? (
+                <NorthEastIcon sx={{ fontSize: 14 }} />
+              ) : (
+                <SouthEastIcon sx={{ fontSize: 14 }} />
+              )}
+              {`${formatearVariacion(variacionCartera)} vs. primer Total del histórico (${resumenHistorial.fechaInicial})`}
+            </Box>
+          )}
+        </Box>
         <TextField
           select
           size="small"

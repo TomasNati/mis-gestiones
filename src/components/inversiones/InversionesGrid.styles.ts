@@ -9,6 +9,11 @@ interface InversionesGridStyles {
   subtotal: SxProps;
   subtotalValor: SxProps;
   gridToolbar: SxProps;
+  totalCarteraInline: SxProps;
+  totalCarteraLabel: SxProps;
+  totalCarteraValue: SxProps;
+  totalCarteraDeltaUp: SxProps;
+  totalCarteraDeltaDown: SxProps;
   groupByField: SxProps;
   groupByMenuItem: SxProps;
   emptyRows: SxProps;
@@ -72,6 +77,44 @@ export const styles: InversionesGridStyles = {
     minHeight: '56px',
     padding: '12px var(--gutter)',
     borderBottom: '1px solid var(--border-soft)',
+  },
+  /** Total cartera en la toolbar, junto a "Agrupar por" y el total seleccionado. */
+  totalCarteraInline: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    paddingRight: '14px',
+    marginRight: '6px',
+    borderRight: '1px solid var(--border-muted)',
+    whiteSpace: 'nowrap',
+  },
+  totalCarteraLabel: {
+    fontFamily: 'var(--font-body)',
+    fontSize: '11.5px',
+    color: 'var(--text-tertiary)',
+  },
+  totalCarteraValue: {
+    fontFamily: 'var(--font-mono)',
+    fontVariantNumeric: 'tabular-nums',
+    fontSize: '15px',
+    fontWeight: 500,
+    color: 'var(--accent)',
+  },
+  totalCarteraDeltaUp: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '3px',
+    fontFamily: 'var(--font-body)',
+    fontSize: '11.5px',
+    color: 'var(--success)',
+  },
+  totalCarteraDeltaDown: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '3px',
+    fontFamily: 'var(--font-body)',
+    fontSize: '11.5px',
+    color: 'var(--danger)',
   },
   groupByField: {
     minWidth: 90,

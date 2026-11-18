@@ -1,4 +1,6 @@
 interface ComposicionInversionesStyles {
+  block: Record<string, unknown>;
+  blockTitle: Record<string, unknown>;
   table: Record<string, unknown>;
   row: Record<string, unknown>;
   tipo: Record<string, unknown>;
@@ -15,6 +17,19 @@ interface ComposicionInversionesStyles {
  * mockup): filas densas con barra relativa al tipo más grande.
  */
 export const styles: ComposicionInversionesStyles = {
+  block: {
+    paddingBlock: '12px',
+    '& + &': { borderTop: '1px solid var(--border-muted)' },
+    '&:first-of-type': { paddingTop: 0 },
+    '&:last-of-type': { paddingBottom: 0 },
+  },
+  blockTitle: {
+    marginBottom: '6px',
+    fontFamily: 'var(--font-body)',
+    fontSize: '12px',
+    fontWeight: 500,
+    color: 'var(--text-secondary)',
+  },
   table: {
     inlineSize: '100%',
     borderCollapse: 'collapse',

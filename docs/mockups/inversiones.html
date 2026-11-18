@@ -11,20 +11,21 @@
   .date-input { width: auto; min-width: 210px; cursor: pointer; white-space: nowrap; }
   #historyBanner:not(.is-open) { display: none; }
   #historyBanner.is-open { display: flex; }
-  .stat .delta.t-success { color: var(--success); }
-  .stats .stat { min-width: 140px; padding-right: 24px; margin-right: 24px; }
-  .stats .stat--wide { min-width: 220px; }
-  .stat .legend .pct { font-family: var(--font-mono); color: var(--text-primary); margin-left: 2px; }
   .date-input .val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-primary); }
   .alerts { display: flex; flex-direction: column; gap: 8px; padding-bottom: 14px; }
   .alerts .alert .btn { margin-left: auto; align-self: center; }
   .alerts .alert.info { align-items: center; }
   .currency-bar { min-height: 48px; padding-top: 8px; padding-bottom: 8px; border-top: 1px solid var(--border-soft); }
-  .stack100 { display: flex; gap: 2px; height: 8px; border-radius: 3px; overflow: hidden; }
-  .stack100 > i { display: block; height: 100%; }
-  .stack100 > i:first-child { border-radius: 3px 0 0 3px; }
-  .stack100 > i:last-child { border-radius: 0 3px 3px 0; }
-  .stat--wide .label { margin-bottom: 0; }
+
+  /* Total cartera, en la misma barra que "Agrupar por" y el total seleccionado */
+  .toolbar .stat-inline { display: inline-flex; align-items: center; gap: 8px; padding-right: 14px; margin-right: 6px; border-right: 1px solid var(--border-muted); white-space: nowrap; }
+  .toolbar .stat-inline .label { font-size: 11.5px; color: var(--text-tertiary); }
+  .toolbar .stat-inline .value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 500; color: var(--accent); }
+  .toolbar .stat-inline .value.accent { color: var(--accent); }
+  .toolbar .stat-inline .delta { font-size: 11.5px; color: var(--text-tertiary); display: inline-flex; align-items: center; gap: 3px; }
+  .toolbar .stat-inline .delta .icon { width: 12px; height: 12px; }
+  .toolbar .stat-inline .delta.t-success { color: var(--success); }
+  .toolbar .stat-inline .delta.t-danger { color: var(--danger); }
   .charts { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; padding: 16px var(--gutter) 20px; border-bottom: 1px solid var(--border-soft); }
   .charts .panel-body .legend { margin-top: 10px; }
   .comp-title { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin: 0 0 6px; }
@@ -52,6 +53,46 @@
   .tb-divider { width: 1px; height: 20px; background: var(--border-muted); margin: 0 4px; }
   .btn.danger.filled { background: var(--danger-emphasis); border-color: var(--danger-emphasis); color: #fff; }
   .btn.danger.filled .icon { color: #fff; }
+
+  /* ── Grupos Evolución / Composición (propuesta) ─────── */
+  /* Cuatro colores extra sólo para este mockup: hasta 12 instrumentos. */
+  :root { --series-9: #00a6a6; --series-10: #a855f7; --series-11: #e0703a; --series-12: #7aa92f; }
+  .group-panel .panel-header { flex-wrap: wrap; row-gap: 10px; }
+  .group-head-left, .group-head-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .group-head-right { margin-left: auto; }
+  .custom-range { display: none; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border-soft); background: var(--bg-inset); font-size: 12px; color: var(--text-secondary); }
+  .custom-range.is-visible { display: flex; }
+  .custom-range .input { width: auto; min-width: 170px; }
+  .chart-subhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .chart-subhead h4 { font-size: 12.5px; font-weight: 600; color: var(--text-primary); margin: 0; }
+  .chart-subhead .hint { font-size: 11px; color: var(--text-tertiary); }
+  .chart-subhead .spacer { flex: 1; }
+  .chart-divider { height: 1px; background: var(--border-muted); margin: 18px 0 16px; }
+  .group-panel .panel-footer { gap: 10px; flex-wrap: wrap; }
+  .group-panel .panel-footer .summary { font-size: 12px; color: var(--text-tertiary); }
+  .group-panel .panel-footer .btn { margin-left: auto; }
+  .price-caption { font-size: 11.5px; color: var(--text-tertiary); margin-bottom: 6px; }
+  #preciosChart { min-height: 250px; }
+  #preciosChart .empty-inline { display: flex; align-items: center; justify-content: center; min-height: 220px; color: var(--text-tertiary); font-size: 13px; border: 1px dashed var(--border-soft); border-radius: var(--radius); }
+  #preciosLegend { margin-top: 12px; }
+  #preciosLegend .legend .tipo { font-size: 10.5px; color: var(--text-tertiary); font-family: var(--font-mono); }
+  .precios-popover { min-width: 400px; max-width: 440px; max-height: min(70vh, 480px); overflow-y: auto; }
+  .precios-popover .filter-group-title { display: flex; align-items: center; gap: 6px; }
+  .precios-popover .type-dot { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 auto; }
+  .precios-popover .group-count { margin-left: auto; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-tertiary); }
+  .precios-popover .filter-options { flex-direction: column; gap: 2px; }
+  .precios-popover .filter-options .checkbox { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+  .precios-popover .line-dot { width: 14px; height: 2px; border-radius: 1px; flex: 0 0 auto; }
+  .precios-popover .tick { font-family: var(--font-mono); color: var(--text-primary); min-width: 118px; }
+  .precios-popover .nombre { color: var(--text-tertiary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+  .precios-popover .popover-footer { position: sticky; bottom: 0; padding: 8px 12px; border-top: 1px solid var(--border-muted); background: var(--bg-overlay); font-size: 11.5px; color: var(--text-tertiary); }
+  .precios-popover .demo-switch { margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .precios-popover .demo-switch .btn.is-on { border-color: var(--accent); color: var(--accent); }
+  /* Composición: tres bloques dentro del mismo panel */
+  .comp-block { padding: 12px 0; }
+  .comp-block + .comp-block { border-top: 1px solid var(--border-muted); }
+  .comp-block:first-child { padding-top: 0; }
+  .comp-block:last-child { padding-bottom: 0; }
 </style>
 </head>
 <body data-page="inversiones">
@@ -94,71 +135,129 @@
 
   <section id="charts" class="collapsible is-open">
     <div class="charts">
-      <div class="panel">
+      <div class="panel group-panel" id="evolucionPanel">
         <div class="panel-header">
-          <h3>Evolución del total <span class="hint">cierre semanal</span></h3>
-          <div class="segmented sm" role="group" aria-label="Rango">
-            <button type="button" class="is-active">3 m</button>
-            <button type="button">6 m</button>
-            <button type="button">1 a</button>
-            <button type="button"><i data-icon="calendar" class="sm"></i> Otro</button>
+          <div class="group-head-left">
+            <h3>Evolución <span class="hint" id="evolucionRangoHint">cierre semanal · 3 m</span></h3>
+          </div>
+          <div class="group-head-right">
+            <div class="segmented sm" role="group" aria-label="Rango del histórico">
+              <button type="button" class="is-active" data-rango="3">3 m</button>
+              <button type="button" data-rango="6">6 m</button>
+              <button type="button" data-rango="12">1 a</button>
+              <button type="button" data-rango="otro"><i data-icon="calendar" class="sm"></i> Otro</button>
+            </div>
           </div>
         </div>
+        <div class="custom-range" id="rangoCustom">
+          <i data-icon="calendar" class="sm"></i>
+          <label class="input sm"><span class="prefix">Desde</span><input type="text" value="30/06/2026" aria-label="Desde"></label>
+          <label class="input sm"><span class="prefix">Hasta</span><input type="text" value="22/09/2026" aria-label="Hasta"></label>
+          <button class="btn sm" type="button" data-rango-aplicar>Aplicar</button>
+        </div>
         <div class="panel-body">
+          <div class="chart-subhead">
+            <h4>Evolución del total</h4>
+            <span class="hint">cierre semanal · mismo período para ambos gráficos</span>
+          </div>
           <div class="viz" id="totalChart"></div>
           <div class="comp-title" style="margin-top: 14px">Variación vs. período anterior</div>
           <div class="viz" id="deltaChart"></div>
+
+          <div class="chart-divider"></div>
+
+          <div class="chart-subhead">
+            <h4>Evolución de precios</h4>
+            <span class="hint" id="preciosResumen">6 de 6 instrumentos del histórico</span>
+            <span class="spacer"></span>
+            <div class="segmented sm" role="group" aria-label="Métrica del gráfico">
+              <button type="button" class="is-active" data-metrica="variacion">Variación %</button>
+              <button type="button" data-metrica="precio">Precio</button>
+            </div>
+            <div class="popover-anchor">
+              <button class="btn sm filter-trigger is-on" type="button" data-popover="#preciosPopover" aria-haspopup="dialog" aria-expanded="true">
+                <i data-icon="filter"></i> Filtros
+                <span class="badge accent" id="preciosFilterCount">6</span>
+                <i data-icon="chevron-down" class="caret"></i>
+              </button>
+              <div class="popover precios-popover is-open" id="preciosPopover" role="dialog" aria-label="Instrumentos del gráfico de precios">
+                <div class="popover-header">
+                  <span><b>Instrumentos</b> · tipos según el histórico consultado</span>
+                  <span class="flex gap-1">
+                    <button class="btn xs ghost" type="button" data-precios-all>Todos</button>
+                    <button class="btn xs ghost" type="button" data-precios-clear>Limpiar</button>
+                  </span>
+                </div>
+                <div id="preciosFacetas"></div>
+                <div class="popover-footer">
+                  <div>Solo aparecen los instrumentos devueltos por la búsqueda del histórico.</div>
+                  <div class="demo-switch"><span>Demo:</span>
+                    <button class="btn xs is-on" type="button" data-demo="6">6 instrumentos</button>
+                    <button class="btn xs" type="button" data-demo="2">2 instrumentos</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="price-caption" id="preciosCaption">Variación acumulada desde el primer día del período · precios convertidos a la moneda elegida arriba.</div>
+          <div class="viz" id="preciosChart"></div>
+          <div class="legend" id="preciosLegend"></div>
+        </div>
+        <div class="panel-footer">
+          <span class="summary" id="filtrosAplicados">Filtros aplicados: ninguno · período 3 m</span>
+          <button class="btn sm primary" type="button" data-aplicar-filtros><i data-icon="filter"></i> Aplicar filtros actuales</button>
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel group-panel" id="composicionPanel">
         <div class="panel-header">
           <h3>Composición</h3>
           <span class="hint num">$ 81.955.264</span>
         </div>
         <div class="panel-body">
-          <div class="comp-title">Por tipo de instrumento</div>
-          <table class="table dense type-table">
-            <tbody>
-              <tr><td class="dim">CEDEAR</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 100%"></i></span></span></td><td class="num">41 %</td><td class="num faint">$ 33,6 M</td></tr>
-              <tr><td class="dim">FCI</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 66%"></i></span></span></td><td class="num">27 %</td><td class="num faint">$ 22,1 M</td></tr>
-              <tr><td class="dim">BONO</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 44%"></i></span></span></td><td class="num">18 %</td><td class="num faint">$ 14,7 M</td></tr>
-              <tr><td class="dim">ON</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 17%"></i></span></span></td><td class="num">7 %</td><td class="num faint">$ 5,7 M</td></tr>
-              <tr><td class="dim">CRIPTO</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 12%"></i></span></span></td><td class="num">5 %</td><td class="num faint">$ 4,1 M</td></tr>
-              <tr><td class="dim">ACCIÓN</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 5%"></i></span></span></td><td class="num">2 %</td><td class="num faint">$ 1,7 M</td></tr>
-            </tbody>
-          </table>
+          <div class="comp-block">
+            <div class="comp-title">Por tipo de instrumento</div>
+            <table class="table dense type-table">
+              <tbody>
+                <tr><td class="dim">CEDEAR</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 100%"></i></span></span></td><td class="num">41 %</td><td class="num faint">$ 33,6 M</td></tr>
+                <tr><td class="dim">FCI</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 66%"></i></span></span></td><td class="num">27 %</td><td class="num faint">$ 22,1 M</td></tr>
+                <tr><td class="dim">BONO</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 44%"></i></span></span></td><td class="num">18 %</td><td class="num faint">$ 14,7 M</td></tr>
+                <tr><td class="dim">ON</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 17%"></i></span></span></td><td class="num">7 %</td><td class="num faint">$ 5,7 M</td></tr>
+                <tr><td class="dim">CRIPTO</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 12%"></i></span></span></td><td class="num">5 %</td><td class="num faint">$ 4,1 M</td></tr>
+                <tr><td class="dim">ACCIÓN</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 5%"></i></span></span></td><td class="num">2 %</td><td class="num faint">$ 1,7 M</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="comp-block">
+            <div class="comp-title">Por renta</div>
+            <table class="table dense type-table">
+              <tbody>
+                <tr><td class="dim">Variable</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 100%"></i></span></span></td><td class="num">58 %</td><td class="num faint">$ 47,5 M</td></tr>
+                <tr><td class="dim">Fija</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 43%"></i></span></span></td><td class="num">25 %</td><td class="num faint">$ 20,5 M</td></tr>
+                <tr><td class="dim">Mixta</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 29%"></i></span></span></td><td class="num">17 %</td><td class="num faint">$ 13,9 M</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="comp-block">
+            <div class="comp-title">Por broker</div>
+            <table class="table dense type-table">
+              <tbody>
+                <tr><td class="dim">PPI</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 100%"></i></span></span></td><td class="num">65,5 %</td><td class="num faint">$ 53,7 M</td></tr>
+                <tr><td class="dim">Balanz</td><td class="bar"><span class="hbar"><span class="track"><i style="width: 53%"></i></span></span></td><td class="num">34,5 %</td><td class="num faint">$ 28,3 M</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="stats">
-    <div class="stat">
-      <div class="label">Total cartera</div>
-      <div class="value accent">$ 81.955.264</div>
-      <div class="delta t-success"><i data-icon="arrow-up-right"></i> +2,4 % vs. 19/09</div>
-    </div>
-    <div class="stat stat--wide">
-      <div class="label">Composición por renta</div>
-      <div class="stack100" role="img" aria-label="Variable 58 %, Fija 25 %, Mixta 17 %"><i style="width: 58%; background: var(--series-1)"></i><i style="width: 25%; background: var(--series-3)"></i><i style="width: 17%; background: var(--series-4)"></i></div>
-      <div class="legend">
-        <span class="item"><span class="swatch" style="background: var(--series-1)"></span>Variable <span class="pct">58 % ($ 47.533.540)</span></span>
-        <span class="item"><span class="swatch" style="background: var(--series-3)"></span>Fija <span class="pct">25 % ($ 20.489.900)</span></span>
-        <span class="item"><span class="swatch" style="background: var(--series-4)"></span>Mixta <span class="pct">17 % ($ 13.931.824)</span></span>
-      </div>
-    </div>
-    <div class="stat stat--wide">
-      <div class="label">Composición por broker</div>
-      <div class="stack100" role="img" aria-label="PPI 65,5 %, Balanz 34,5 %"><i style="width: 65.5%; background: var(--series-1)"></i><i style="width: 34.5%; background: var(--series-2)"></i></div>
-      <div class="legend">
-        <span class="item"><span class="swatch" style="background: var(--series-1)"></span>PPI <span class="pct">65,5 % ($ 53.680.969)</span></span>
-        <span class="item"><span class="swatch" style="background: var(--series-2)"></span>Balanz <span class="pct">34,5 % ($ 28.274.295)</span></span>
-      </div>
-    </div>
-  </section>
-
   <div class="toolbar group-toolbar">
+    <div class="stat-inline" title="Variación contra el primer Total del histórico consultado">
+      <span class="label">Total cartera</span>
+      <span class="value accent">$ 81.955.264</span>
+      <span class="delta t-success" id="totalCarteraDelta"><i data-icon="arrow-up-right"></i> +21,5 % vs. primer Total del histórico (07/07)</span>
+    </div>
     <span class="select sm inline groupby" title="Agrupar por">
       <span class="groupby-label">Agrupar por</span>
       <span>Broker</span>
@@ -625,71 +724,346 @@
 </script>
 <script>
 (function () {
-  const W = 620;
-  const weeks = ['07/07', '14/07', '21/07', '28/07', '04/08', '11/08', '18/08', '25/08', '01/09', '08/09', '15/09', '22/09'];
-  const ppi = [45.1, 45.8, 46.4, 46.0, 47.3, 48.9, 49.6, 50.2, 51.4, 52.0, 52.6, 53.7];
-  const balanz = [22.4, 22.9, 23.1, 23.6, 24.2, 24.8, 25.3, 25.9, 26.6, 27.2, 27.7, 28.3];
-  const total = ppi.map((v, i) => v + balanz[i]);
-  const fmt = (v) => v.toFixed(1).replace('.', ',');
+  const pop = document.getElementById('preciosPopover');
+  const trigger = document.querySelector('[data-popover="#preciosPopover"]');
+  const facetas = document.getElementById('preciosFacetas');
+  const chart = document.getElementById('preciosChart');
+  const legend = document.getElementById('preciosLegend');
+  const caption = document.getElementById('preciosCaption');
+  const resumen = document.getElementById('preciosResumen');
+  const count = document.getElementById('preciosFilterCount');
+  const totalChart = document.getElementById('totalChart');
+  const deltaChart = document.getElementById('deltaChart');
+  const rangoHint = document.getElementById('evolucionRangoHint');
+  const totalDelta = document.getElementById('totalCarteraDelta');
+  const customRange = document.getElementById('rangoCustom');
+  const applied = document.getElementById('filtrosAplicados');
+  if (!pop || !chart || !totalChart || !facetas || !customRange) return;
 
-  // Total: línea con el eje ajustado al rango real.
-  const H1 = 200, m1 = { t: 12, r: 20, b: 4, l: 60 };
-  const iw1 = W - m1.l - m1.r, ih1 = H1 - m1.t - m1.b;
-  const minT = Math.min(...total), maxT = Math.max(...total);
-  const padT = (maxT - minT) * 0.1 || 1;
-  const yMinT = Math.max(0, minT - padT), yMaxT = maxT + padT;
-  const x1 = (i) => m1.l + (iw1 / (weeks.length - 1)) * i;
-  const y1 = (v) => m1.t + (1 - (v - yMinT) / (yMaxT - yMinT)) * ih1;
-  let s1 = '<svg viewBox="0 0 ' + W + ' ' + H1 + '" role="img" aria-label="Total de la cartera, cierre semanal de julio a septiembre">';
-  s1 += '<g class="grid">';
-  [0, 1, 2, 3, 4].forEach((t) => {
-    const v = yMinT + ((yMaxT - yMinT) * t) / 4;
-    s1 += '<line x1="' + m1.l + '" x2="' + (W - m1.r) + '" y1="' + y1(v) + '" y2="' + y1(v) + '"/>';
-    s1 += '<text class="num-t" x="' + (m1.l - 8) + '" y="' + (y1(v) + 4) + '" text-anchor="end">' + fmt(v) + ' M</text>';
-  });
-  s1 += '</g>';
-  s1 += '<polyline points="' + total.map((v, i) => x1(i) + ',' + y1(v)).join(' ') + '" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
-  total.forEach((v, i) => {
-    s1 += '<circle cx="' + x1(i) + '" cy="' + y1(v) + '" r="2.5" fill="var(--series-1)"><title>' + weeks[i] + ' · Total $ ' + fmt(v) + ' M</title></circle>';
-  });
-  s1 += '<text class="end-label strong num-t" x="' + x1(weeks.length - 1) + '" y="' + (y1(total[total.length - 1]) - 8) + '" text-anchor="middle">$ ' + fmt(total[total.length - 1]) + ' M</text>';
-  s1 += '</svg>';
-  document.getElementById('totalChart').innerHTML = s1;
+  // Catálogo de ejemplo. En la app, esto viene de por_fecha[].inversiones[].instrumento
+  // del mismo fetch que alimenta "Evolución del total".
+  const CATALOGO = [
+    { id: 'qqq',     tick: 'QQQ',             nombre: 'Invesco QQQ Trust',        tipo: 'CEDEAR', color: 'var(--series-1)',  base: 59625,    drift:  0.006, vol: 0.030 },
+    { id: 'dia',     tick: 'DIA',             nombre: 'SPDR Dow Jones',           tipo: 'CEDEAR', color: 'var(--series-2)',  base: 41400,    drift:  0.003, vol: 0.022 },
+    { id: 'xlf',     tick: 'XLF',             nombre: 'Financial Select Sector',  tipo: 'CEDEAR', color: 'var(--series-3)',  base: 43980,    drift: -0.001, vol: 0.026 },
+    { id: 'aapl',    tick: 'AAPL',            nombre: 'Apple Inc.',               tipo: 'CEDEAR', color: 'var(--series-4)',  base: 18410,    drift:  0.009, vol: 0.034 },
+    { id: 'msft',    tick: 'MSFT',            nombre: 'Microsoft Corp.',          tipo: 'CEDEAR', color: 'var(--series-5)',  base: 45200,    drift:  0.005, vol: 0.028 },
+    { id: 'allaria', tick: 'Allaria Latam A', nombre: 'Allaria Fondos',           tipo: 'FCI',    color: 'var(--series-6)',  base: 1810,     drift:  0.004, vol: 0.008 },
+    { id: 'balanz',  tick: 'Balanz Acciones', nombre: 'Balanz Capital',           tipo: 'FCI',    color: 'var(--series-7)',  base: 2845,     drift:  0.003, vol: 0.010 },
+    { id: 'al30',    tick: 'AL30',            nombre: 'Bonar 2030',               tipo: 'BONO',   color: 'var(--series-8)',  base: 1047,     drift:  0.002, vol: 0.018 },
+    { id: 'gd35',    tick: 'GD35',            nombre: 'Global 2035',              tipo: 'BONO',   color: 'var(--series-9)',  base: 750,      drift: -0.003, vol: 0.020 },
+    { id: 'tlc5o',   tick: 'TLC5O',           nombre: 'Telecom ON 2031',          tipo: 'ON',     color: 'var(--series-10)', base: 1142,     drift:  0.001, vol: 0.012 },
+    { id: 'btc',     tick: 'BTC',             nombre: 'Bitcoin',                  tipo: 'CRIPTO', color: 'var(--series-11)', base: 159600000, drift:  0.012, vol: 0.055 },
+    { id: 'ypfd',    tick: 'YPFD',            nombre: 'YPF S.A.',                 tipo: 'ACCIÓN', color: 'var(--series-12)', base: 41250,    drift: -0.004, vol: 0.030 }
+  ].map((inst, idx) => Object.assign({ seed: idx + 1 }, inst));
 
-  // Variación: barras verdes/rojas contra el período anterior.
-  const H2 = 150, m2 = { t: 8, r: 20, b: 24, l: 60 };
-  const iw2 = W - m2.l - m2.r, ih2 = H2 - m2.t - m2.b;
-  const deltas = total.map((v, i) => (i === 0 ? null : v - total[i - 1]));
-  const validos = deltas.filter((d) => d != null);
-  const minD = Math.min(0, ...validos), maxD = Math.max(0, ...validos);
-  const padD = (maxD - minD) * 0.15 || 1;
-  const yMinD = minD - (minD < 0 ? padD : 0), yMaxD = maxD + (maxD > 0 ? padD : 0);
-  const step2 = iw2 / weeks.length;
-  const bw = Math.min(22, step2 - 12);
-  const cx2 = (i) => m2.l + step2 * i + step2 / 2;
-  const y2 = (v) => m2.t + (1 - (v - yMinD) / (yMaxD - yMinD)) * ih2;
-  let s2 = '<svg viewBox="0 0 ' + W + ' ' + H2 + '" role="img" aria-label="Variación del total contra el período anterior">';
-  s2 += '<g class="grid">';
-  [0, 1, 2, 3, 4].forEach((t) => {
-    const v = yMinD + ((yMaxD - yMinD) * t) / 4;
-    s2 += '<line x1="' + m2.l + '" x2="' + (W - m2.r) + '" y1="' + y2(v) + '" y2="' + y2(v) + '"/>';
-    s2 += '<text class="num-t" x="' + (m2.l - 8) + '" y="' + (y2(v) + 4) + '" text-anchor="end">' + (v > 0 ? '+' : '') + fmt(v) + ' M</text>';
+  // Demostración del requisito: los tipos/instrumentos del filtro salen del fetch.
+  const BUSQUEDAS = {
+    '6': ['qqq', 'aapl', 'allaria', 'al30', 'btc', 'ypfd'],
+    '2': ['qqq', 'al30']
+  };
+  const RANGOS = {
+    '3': { n: 13, label: '3 m' },
+    '6': { n: 26, label: '6 m' },
+    '12': { n: 53, label: '1 a' },
+    otro: { n: 13, label: 'Otro' }
+  };
+  let demo = '6';
+  let rango = '3';
+  let metrica = 'variacion';
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function fechas(n) {
+    const fin = new Date(2026, 8, 22);
+    const out = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(fin.getTime() - i * 7 * 86400000);
+      out.push(String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0'));
+    }
+    return out;
+  }
+
+  function generar(cfg, n, seed) {
+    const rnd = mulberry32(seed * 7919);
+    const out = [];
+    let v = cfg.base;
+    for (let i = 0; i < n; i++) {
+      if (i > 0) {
+        const shock = (rnd() - 0.5) * cfg.vol;
+        const ciclo = Math.sin(i / 3 + seed) * cfg.vol * 0.25;
+        v = Math.max(v * 0.2, v * (1 + cfg.drift + shock + ciclo));
+      }
+      out.push(v);
+    }
+    return out;
+  }
+
+  function instrumentosDelFetch() {
+    return CATALOGO.filter((inst) => BUSQUEDAS[demo].indexOf(inst.id) !== -1);
+  }
+  function seleccionados() {
+    return instrumentosDelFetch().filter((inst) => pop.querySelector('input[data-inst="' + inst.id + '"]')?.checked);
+  }
+  function fmtPct(v) {
+    return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1).replace('.', ',') + ' %';
+  }
+  function fmtPrecio(v) {
+    return '$ ' + Math.round(v).toLocaleString('es-AR');
+  }
+  function fmtValor(v) {
+    return metrica === 'variacion' ? fmtPct(v) : fmtPrecio(v);
+  }
+  function fmtM(v) {
+    return '$ ' + (v / 1000000).toFixed(1).replace('.', ',') + ' M';
+  }
+
+  // Los tipos del filtro se construyen desde los instrumentos devueltos por el fetch.
+  function buildFacetas() {
+    const grupos = [];
+    instrumentosDelFetch().forEach((inst) => {
+      let grupo = grupos.find((g) => g.tipo === inst.tipo);
+      if (!grupo) { grupo = { tipo: inst.tipo, items: [] }; grupos.push(grupo); }
+      grupo.items.push(inst);
+    });
+    facetas.innerHTML = grupos.map((g) =>
+      '<div class="filter-group">'
+      + '<div class="filter-group-title"><span class="type-dot" style="background:' + g.items[0].color + '"></span>'
+      + g.tipo + ' <span class="group-count">' + g.items.length + '</span></div>'
+      + '<div class="filter-options">'
+      + g.items.map((i) =>
+          '<label class="checkbox"><input type="checkbox" data-inst="' + i.id + '" checked>'
+          + '<span class="line-dot" style="background:' + i.color + '"></span>'
+          + '<span class="tick">' + i.tick + '</span><span class="nombre">' + i.nombre + '</span></label>'
+        ).join('')
+      + '</div></div>'
+    ).join('');
+  }
+
+  function serieTotal(n) {
+    const a = generar({ base: 45.1e6, drift: 0.006, vol: 0.025 }, n, 91);
+    const b = generar({ base: 22.4e6, drift: 0.005, vol: 0.022 }, n, 37);
+    const total = a.map((v, i) => v + b[i]);
+    const factor = 81955264 / total[total.length - 1];
+    return total.map((v) => v * factor);
+  }
+
+  function renderTotal(fechasArr, total) {
+    const n = total.length;
+    const W = 620, H1 = 190, m1 = { t: 12, r: 20, b: 4, l: 60 };
+    const iw1 = W - m1.l - m1.r, ih1 = H1 - m1.t - m1.b;
+    const minT = Math.min.apply(null, total), maxT = Math.max.apply(null, total);
+    const padT = (maxT - minT) * 0.1 || 1;
+    const yMinT = Math.max(0, minT - padT), yMaxT = maxT + padT;
+    const x1 = (i) => m1.l + (iw1 / (n - 1)) * i;
+    const y1 = (v) => m1.t + (1 - (v - yMinT) / (yMaxT - yMinT)) * ih1;
+    let s1 = '<svg viewBox="0 0 ' + W + ' ' + H1 + '" role="img" aria-label="Total de la cartera en el período consultado">';
+    s1 += '<g class="grid">';
+    [0, 1, 2, 3, 4].forEach((t) => {
+      const v = yMinT + ((yMaxT - yMinT) * t) / 4;
+      s1 += '<line x1="' + m1.l + '" x2="' + (W - m1.r) + '" y1="' + y1(v) + '" y2="' + y1(v) + '"/>';
+      s1 += '<text class="num-t" x="' + (m1.l - 8) + '" y="' + (y1(v) + 4) + '" text-anchor="end">' + fmtM(v) + '</text>';
+    });
+    s1 += '</g>';
+    s1 += '<polyline points="' + total.map((v, i) => x1(i) + ',' + y1(v)).join(' ') + '" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    total.forEach((v, i) => {
+      s1 += '<circle cx="' + x1(i) + '" cy="' + y1(v) + '" r="2.5" fill="var(--series-1)"><title>' + fechasArr[i] + ' · Total ' + fmtM(v) + '</title></circle>';
+    });
+    s1 += '<text class="end-label strong num-t" x="' + x1(n - 1) + '" y="' + (y1(total[n - 1]) - 8) + '" text-anchor="middle">' + fmtM(total[n - 1]) + '</text>';
+    s1 += '</svg>';
+    totalChart.innerHTML = s1;
+
+    const H2 = 130, m2 = { t: 8, r: 20, b: 24, l: 60 };
+    const iw2 = W - m2.l - m2.r, ih2 = H2 - m2.t - m2.b;
+    const deltas = total.map((v, i) => (i === 0 ? null : v - total[i - 1]));
+    const validos = deltas.filter((d) => d != null);
+    const minD = Math.min(0, Math.min.apply(null, validos));
+    const maxD = Math.max(0, Math.max.apply(null, validos));
+    const padD = (maxD - minD) * 0.15 || 1;
+    const yMinD = minD - (minD < 0 ? padD : 0), yMaxD = maxD + (maxD > 0 ? padD : 0);
+    const step2 = iw2 / n;
+    const bw = Math.min(22, Math.max(3, step2 - 6));
+    const cx2 = (i) => m2.l + step2 * i + step2 / 2;
+    const y2 = (v) => m2.t + (1 - (v - yMinD) / (yMaxD - yMinD)) * ih2;
+    let s2 = '<svg viewBox="0 0 ' + W + ' ' + H2 + '" role="img" aria-label="Variación del total contra el período anterior">';
+    s2 += '<g class="grid">';
+    [0, 1, 2, 3, 4].forEach((t) => {
+      const v = yMinD + ((yMaxD - yMinD) * t) / 4;
+      s2 += '<line x1="' + m2.l + '" x2="' + (W - m2.r) + '" y1="' + y2(v) + '" y2="' + y2(v) + '"/>';
+      s2 += '<text class="num-t" x="' + (m2.l - 8) + '" y="' + (y2(v) + 4) + '" text-anchor="end">' + (v > 0 ? '+' : '') + fmtM(v) + '</text>';
+    });
+    s2 += '</g>';
+    s2 += '<line x1="' + m2.l + '" x2="' + (W - m2.r) + '" y1="' + y2(0) + '" y2="' + y2(0) + '" stroke="var(--border-soft)"/>';
+    deltas.forEach((d, i) => {
+      if (d == null) return;
+      const x = cx2(i) - bw / 2;
+      const y = Math.min(y2(0), y2(d));
+      const h = Math.abs(y2(d) - y2(0));
+      const color = d >= 0 ? 'var(--success)' : 'var(--danger)';
+      const label = (d >= 0 ? '+' : '−') + fmtM(Math.abs(d));
+      s2 += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(h, 1) + '" fill="' + color + '" rx="2"><title>' + fechasArr[i] + ' · ' + label + '</title></rect>';
+      const paso = Math.max(1, Math.ceil(n / 8));
+      if (i % paso === 0 || i === n - 1) s2 += '<text class="num-t" x="' + cx2(i) + '" y="' + (H2 - 6) + '" text-anchor="middle">' + fechasArr[i] + '</text>';
+    });
+    s2 += '</svg>';
+    deltaChart.innerHTML = s2;
+  }
+
+  function renderTotalCartera(fechasArr, total) {
+    const pct = (total[total.length - 1] / total[0] - 1) * 100;
+    const positivo = pct >= 0;
+    totalDelta.className = 'delta ' + (positivo ? 't-success' : 't-danger');
+    totalDelta.innerHTML = '<i data-icon="' + (positivo ? 'arrow-up-right' : 'arrow-down-right') + '"></i> '
+      + fmtPct(pct) + ' vs. primer Total del histórico (' + fechasArr[0] + ')';
+    if (window.MG) window.MG.hydrateIcons(totalDelta);
+  }
+
+  function renderPrecios(fechasArr, n) {
+    const delFetch = instrumentosDelFetch();
+    const activos = seleccionados();
+    count.textContent = String(activos.length);
+    resumen.textContent = activos.length + ' de ' + delFetch.length + ' instrumentos del histórico';
+    caption.textContent = metrica === 'variacion'
+      ? 'Variación acumulada desde el primer día del período · precios convertidos a la moneda elegida arriba.'
+      : 'Precio de cierre en la moneda elegida arriba · escala compartida (los precios bajos se comprimen; usá Variación % para comparar).';
+    legend.innerHTML = '';
+    if (activos.length === 0) {
+      chart.innerHTML = '<div class="empty-inline">Marcá instrumentos en <b>Filtros</b> para ver la evolución de sus precios.</div>';
+      return;
+    }
+
+    const series = activos.map((inst) => {
+      const crudos = generar(inst, n, inst.seed);
+      const p0 = crudos[0];
+      return Object.assign({}, inst, {
+        vals: crudos.map((v) => (metrica === 'variacion' ? (v / p0 - 1) * 100 : v))
+      });
+    });
+    const todos = series.reduce((acc, s) => acc.concat(s.vals), []);
+    let lo = Math.min.apply(null, todos);
+    let hi = Math.max.apply(null, todos);
+    if (metrica === 'variacion') { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+    const pad = (hi - lo) * 0.1 || 1;
+    lo -= pad;
+    hi += pad;
+
+    const W = 1080, H = 260, m = { t: 14, r: 104, b: 26, l: 64 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const X = (i) => m.l + (iw / (n - 1)) * i;
+    const Y = (v) => m.t + (1 - (v - lo) / (hi - lo)) * ih;
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Evolución de precios de los instrumentos del histórico">';
+    s += '<g class="grid">';
+    [0, 1, 2, 3, 4].forEach((t) => {
+      const v = lo + ((hi - lo) * t) / 4;
+      const lbl = metrica === 'variacion'
+        ? (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(0).replace('.', ',') + ' %'
+        : '$ ' + Math.round(v).toLocaleString('es-AR');
+      s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/>';
+      s += '<text class="num-t" x="' + (m.l - 8) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + lbl + '</text>';
+    });
+    s += '</g>';
+    if (metrica === 'variacion') {
+      s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(0) + '" y2="' + Y(0) + '" stroke="var(--border-soft)"/>';
+    }
+    const paso = Math.max(1, Math.ceil(n / 10));
+    fechasArr.forEach((f, i) => {
+      if (i % paso === 0 || i === n - 1) {
+        s += '<text class="num-t" x="' + X(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + f + '</text>';
+      }
+    });
+    const etiquetas = [];
+    series.forEach((ser) => {
+      const d = ser.vals.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
+      s += '<path class="line" d="' + d + '" stroke="' + ser.color + '"/>';
+      ser.vals.forEach((v, i) => {
+        s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="2" fill="' + ser.color + '"><title>'
+          + ser.tick + ' · ' + fechasArr[i] + ' · ' + fmtValor(v) + '</title></circle>';
+      });
+      etiquetas.push({ y: Y(ser.vals[n - 1]), color: ser.color, tick: ser.tick, valor: ser.vals[n - 1] });
+    });
+    etiquetas.sort((a, b) => a.y - b.y);
+    let anterior = -Infinity;
+    etiquetas.forEach((et) => {
+      const y = Math.max(et.y, anterior + 13);
+      s += '<text class="end-label num-t" style="fill:' + et.color + '" x="' + (W - m.r + 8) + '" y="' + (y + 3) + '">'
+        + et.tick + ' ' + fmtValor(et.valor) + '</text>';
+      anterior = y;
+    });
+    s += '</svg>';
+    chart.innerHTML = s;
+    series.forEach((ser) => {
+      const item = document.createElement('span');
+      item.className = 'item';
+      item.innerHTML = '<span class="swatch line" style="background:' + ser.color + '"></span>' + ser.tick
+        + ' <span class="tipo">' + ser.tipo + '</span> <span class="value">' + fmtValor(ser.vals[n - 1]) + '</span>';
+      legend.appendChild(item);
+    });
+  }
+
+  function render() {
+    const n = RANGOS[rango].n;
+    const fechasArr = fechas(n);
+    const total = serieTotal(n);
+    rangoHint.textContent = 'cierre semanal · ' + RANGOS[rango].label;
+    renderTotal(fechasArr, total);
+    renderTotalCartera(fechasArr, total);
+    renderPrecios(fechasArr, n);
+  }
+
+  pop.addEventListener('change', (event) => {
+    if (event.target.matches('input[data-inst]')) render();
   });
-  s2 += '</g>';
-  s2 += '<line x1="' + m2.l + '" x2="' + (W - m2.r) + '" y1="' + y2(0) + '" y2="' + y2(0) + '" stroke="var(--border-soft)"/>';
-  deltas.forEach((d, i) => {
-    if (d == null) return;
-    const x = cx2(i) - bw / 2;
-    const y = Math.min(y2(0), y2(d));
-    const h = Math.abs(y2(d) - y2(0));
-    const color = d >= 0 ? 'var(--success)' : 'var(--danger)';
-    const label = (d >= 0 ? '+' : '−') + '$ ' + fmt(Math.abs(d)) + ' M';
-    s2 += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + h + '" fill="' + color + '" rx="2"><title>' + weeks[i] + ' · ' + label + '</title></rect>';
-    if (i % 2 === 1 || i === weeks.length - 1) s2 += '<text class="num-t" x="' + cx2(i) + '" y="' + (H2 - 6) + '" text-anchor="middle">' + weeks[i] + '</text>';
+  pop.addEventListener('click', (event) => {
+    const demoBtn = event.target.closest('[data-demo]');
+    if (demoBtn) {
+      demo = demoBtn.dataset.demo;
+      pop.querySelectorAll('[data-demo]').forEach((b) => b.classList.toggle('is-on', b === demoBtn));
+      buildFacetas();
+      render();
+      return;
+    }
+    const inputs = Array.from(pop.querySelectorAll('input[data-inst]'));
+    if (event.target.closest('[data-precios-all]')) inputs.forEach((input) => { input.checked = true; });
+    else if (event.target.closest('[data-precios-clear]')) inputs.forEach((input) => { input.checked = false; });
+    else return;
+    render();
   });
-  s2 += '</svg>';
-  document.getElementById('deltaChart').innerHTML = s2;
+  document.querySelectorAll('#evolucionPanel [data-metrica]').forEach((btn) => {
+    btn.addEventListener('click', () => { metrica = btn.dataset.metrica; render(); });
+  });
+  document.querySelectorAll('#evolucionPanel [data-rango]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      rango = btn.dataset.rango;
+      customRange.classList.toggle('is-visible', rango === 'otro');
+      render();
+    });
+  });
+  document.querySelector('[data-rango-aplicar]')?.addEventListener('click', () => {
+    const inputs = customRange.querySelectorAll('input');
+    rangoHint.textContent = 'período ' + inputs[0].value + ' — ' + inputs[1].value;
+    applied.textContent = 'Filtros aplicados: ' + (seleccionados().length || 'ninguno') + ' · ' + rangoHint.textContent;
+  });
+  document.querySelector('[data-aplicar-filtros]')?.addEventListener('click', () => {
+    const activos = seleccionados();
+    applied.textContent = 'Filtros aplicados: '
+      + (activos.length ? activos.map((a) => a.tick).join(', ') : 'ninguno')
+      + ' · ' + rangoHint.textContent;
+  });
+  new MutationObserver(() => {
+    trigger.setAttribute('aria-expanded', String(pop.classList.contains('is-open')));
+  }).observe(pop, { attributes: true, attributeFilter: ['class'] });
+
+  buildFacetas();
+  render();
 })();
 </script>
+
 </body>
 </html>
