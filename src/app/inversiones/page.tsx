@@ -246,6 +246,14 @@ const InversionesPage = () => {
     return construirCotizacionesDolar(cotizacionesDolarQuery.data) ?? null;
   }, [viendoHistorial, dolarHistoricoQuery.data, cotizacionesDolarQuery.data]);
 
+  // Los gráficos siempre incluyen el punto de hoy, incluso cuando la grilla
+  // muestra un snapshot: por eso usan las cotizaciones vivas, no las del día
+  // seleccionado.
+  const cotizacionesDolarHoy = useMemo(
+    () => construirCotizacionesDolar(cotizacionesDolarQuery.data) ?? null,
+    [cotizacionesDolarQuery.data],
+  );
+
   // Tasas para mostrar en la barra: no dependen de que estén las cuatro
   // cotizaciones (el objeto completo solo se usa para convertir instrumentos).
   const tasasDolar = useMemo<TasasDolar>(() => {
@@ -324,6 +332,7 @@ const InversionesPage = () => {
 
   const {
     precioPorInstrumento,
+    precioPorInstrumentoHoy,
     totalValor,
     cantidadSeleccionada,
     totalSeleccionado,
@@ -850,6 +859,8 @@ const InversionesPage = () => {
             moneda={moneda}
             tipoDolar={tipoDolar}
             filtros={filtros}
+            preciosHoy={precioPorInstrumentoHoy}
+            cotizacionesDolarHoy={cotizacionesDolarHoy}
             onResumenHistorial={setResumenHistorial}
           />
           <ComposicionInversiones
@@ -944,6 +955,6 @@ const InversionesPage = () => {
       <Notificacion configuracionProp={configNotificacion} />
     </Box>
   );
-};
+};;
 
 export default InversionesPage;

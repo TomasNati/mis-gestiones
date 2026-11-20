@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { MRT_RowSelectionState } from 'material-react-table';
 import {
   DolarCotizaciones,
@@ -12,7 +12,7 @@ import { createPrecio } from '@/lib/api';
 import { PRECIO_FETCHERS, findTodayPrecio, todayISO } from '@/lib/inversiones/precios';
 import { transformNumberToCurrenty } from '@/lib/helpers';
 
-interface PrecioInstrumento {
+export interface PrecioInstrumento {
   simbolo: string;
   precio: string;
   monto: number;
@@ -84,6 +84,7 @@ interface UseInversionesParams {
 
 interface UseInversionesResult {
   precioPorInstrumento: Map<string, PrecioInstrumento>;
+  precioPorInstrumentoHoy: Map<string, PrecioInstrumento>;
   /** Total de la cartera completa; `null` si falta la cotización del dólar. */
   totalValor: number | null;
   totalDisplay: string;
@@ -154,35 +155,45 @@ export const useInversiones = ({
     };
   }, [instrumentos]);
 
-  const precioPorInstrumento = useMemo(() => {
-    const map = new Map<string, PrecioInstrumento>();
-    instrumentos?.forEach((inst) => {
-      const simboloMoneda = MONEDAS_DOLAR.includes(inst.moneda) ? 'US$' : '$';
+  const construirPrecios = useCallback(
+    (preciosDelDia: Map<string, number> | null): Map<string, PrecioInstrumento> => {
+      const map = new Map<string, PrecioInstrumento>();
+      instrumentos?.forEach((inst) => {
+        const simboloMoneda = MONEDAS_DOLAR.includes(inst.moneda) ? 'US$' : '$';
 
-      if (preciosHistoricos) {
-        const monto = preciosHistoricos.get(inst.id);
+        if (preciosDelDia) {
+          const monto = preciosDelDia.get(inst.id);
+          map.set(inst.id, {
+            simbolo: simboloMoneda,
+            precio: monto != null ? transformNumberToCurrenty(monto) || '-' : '-',
+            monto: monto ?? 0,
+            loading: false,
+          });
+          return;
+        }
+
+        const precio = preciosPorInstrumento.get(inst.id) ?? findTodayPrecio(inst.precios);
+        const monto = precio?.monto ?? 0;
+        const hasFetcher = PRECIO_FETCHERS.some((f) => f.tipos.includes(inst.tipo || ''));
+        const loading = !precio && hasFetcher && !precioFetchFailed.has(inst.id);
         map.set(inst.id, {
           simbolo: simboloMoneda,
-          precio: monto != null ? transformNumberToCurrenty(monto) || '-' : '-',
-          monto: monto ?? 0,
-          loading: false,
+          precio: precio ? transformNumberToCurrenty(monto) || '-' : '-',
+          monto,
+          loading,
         });
-        return;
-      }
-
-      const precio = preciosPorInstrumento.get(inst.id) ?? findTodayPrecio(inst.precios);
-      const monto = precio?.monto ?? 0;
-      const hasFetcher = PRECIO_FETCHERS.some((f) => f.tipos.includes(inst.tipo || ''));
-      const loading = !precio && hasFetcher && !precioFetchFailed.has(inst.id);
-      map.set(inst.id, {
-        simbolo: simboloMoneda,
-        precio: precio ? transformNumberToCurrenty(monto) || '-' : '-',
-        monto,
-        loading,
       });
-    });
-    return map;
-  }, [instrumentos, preciosPorInstrumento, precioFetchFailed, preciosHistoricos]);
+      return map;
+    },
+    [instrumentos, preciosPorInstrumento, precioFetchFailed],
+  );
+
+  const precioPorInstrumento = useMemo(
+    () => construirPrecios(preciosHistoricos),
+    [construirPrecios, preciosHistoricos],
+  );
+
+  const precioPorInstrumentoHoy = useMemo(() => construirPrecios(null), [construirPrecios]);
 
   // Valor de cada inversión en la moneda de visualización. Se calcula siempre
   // sobre TODAS las inversiones de la página: la tira de stats (total y
@@ -266,6 +277,7 @@ export const useInversiones = ({
 
   return {
     precioPorInstrumento,
+    precioPorInstrumentoHoy,
     totalValor,
     totalDisplay,
     cantidadSeleccionada,
