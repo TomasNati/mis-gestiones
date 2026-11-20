@@ -18,11 +18,20 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
-import { obtenerHistorialInversiones } from '@/lib/api';
-import type { HistorialInversionesPayload, InstrumentoMoneda, TipoDolar, ValorInversion } from '@/lib/definitions';
+import { obtenerHistorialInversiones, obtenerInversiones } from '@/lib/api';
+import type {
+  DolarCotizaciones,
+  HistorialInversionesPayload,
+  InstrumentoMoneda,
+  Inversion,
+  TipoDolar,
+  ValorInversion,
+} from '@/lib/definitions';
 import { INSTRUMENTO_MONEDA, TIPO_DOLAR, TIPO_DOLAR_LABEL } from '@/lib/definitions';
+import type { PrecioInstrumento } from '@/hooks/inversiones/useInversiones';
 import {
   ETIQUETA_TIPO_INSTRUMENTO,
+  conFechaHoy,
   extraerInstrumentosDelHistorial,
   totalesDelHistorial,
   type InstrumentoDelHistorial,
@@ -106,6 +115,8 @@ interface EvolucionInversionesProps {
   moneda: InstrumentoMoneda;
   tipoDolar: TipoDolar;
   filtros: FiltrosInversiones;
+  preciosHoy: Map<string, PrecioInstrumento>;
+  cotizacionesDolarHoy: DolarCotizaciones | null;
   onResumenHistorial: (resumen: ResumenHistorialInversiones | null) => void;
 }
 
@@ -114,6 +125,8 @@ export const EvolucionInversiones = ({
   moneda,
   tipoDolar,
   filtros,
+  preciosHoy,
+  cotizacionesDolarHoy,
   onResumenHistorial,
 }: EvolucionInversionesProps) => {
   const [rango, setRango] = useState<RangoHistorial>(RANGO_INICIAL);
@@ -137,7 +150,35 @@ export const EvolucionInversiones = ({
     enabled: solicitado != null,
   });
 
-  const instrumentos = useMemo(() => extraerInstrumentosDelHistorial(historicoQuery.data), [historicoQuery.data]);
+  const inversionesHoyQuery = useQuery({
+    queryKey: ['inversiones', null],
+    queryFn: () => obtenerInversiones(),
+  });
+
+  const datosGrafico = useMemo(
+    () =>
+      conFechaHoy({
+        data: historicoQuery.data,
+        fecha: maxFecha,
+        desde: solicitado?.desde,
+        hasta: solicitado?.hasta,
+        inversiones: inversionesHoyQuery.data,
+        precios: preciosHoy,
+        cotizaciones: cotizacionesDolarHoy,
+        filtros: filtrosAplicados,
+      }),
+    [
+      historicoQuery.data,
+      maxFecha,
+      solicitado,
+      inversionesHoyQuery.data,
+      preciosHoy,
+      cotizacionesDolarHoy,
+      filtrosAplicados,
+    ],
+  );
+
+  const instrumentos = useMemo(() => extraerInstrumentosDelHistorial(datosGrafico), [datosGrafico]);
 
   const firmaInstrumentos = instrumentos.map((inst) => inst.id).join('|');
   // Cada fetch nuevo arranca sin instrumentos marcados: el gráfico queda vacío
@@ -163,14 +204,14 @@ export const EvolucionInversiones = ({
   const rangoTexto = `cierre semanal · ${RANGO_LABEL[rango]}`;
 
   const resumenHistorial = useMemo<ResumenHistorialInversiones | null>(() => {
-    const filas = totalesDelHistorial(historicoQuery.data, monedaValor);
+    const filas = totalesDelHistorial(datosGrafico, monedaValor);
     if (filas.length < 2 || filas[0].total === 0) return null;
     return {
       fechaInicial: filas[0].fecha,
       totalInicial: filas[0].total,
       totalFinal: filas[filas.length - 1].total,
     };
-  }, [historicoQuery.data, monedaValor]);
+  }, [datosGrafico, monedaValor]);
 
   useEffect(() => {
     onResumenHistorial(resumenHistorial);
@@ -251,7 +292,7 @@ export const EvolucionInversiones = ({
         </Box>
       );
     }
-    if (!historicoQuery.data) {
+    if (!datosGrafico) {
       return (
         <Box sx={styles.placeholder}>
           <Typography variant="body2" color="text.secondary">
@@ -260,7 +301,7 @@ export const EvolucionInversiones = ({
         </Box>
       );
     }
-    return <HistorialInversionesGrafico data={historicoQuery.data} moneda={monedaValor} simbolo={simbolo} />;
+    return <HistorialInversionesGrafico data={datosGrafico} moneda={monedaValor} simbolo={simbolo} />;
   };
 
   return (
@@ -474,14 +515,14 @@ export const EvolucionInversiones = ({
               </Box>
             );
           })}
-          <Box sx={styles.popoverFooter}>Solo aparecen los instrumentos devueltos por la búsqueda del histórico.</Box>
+          <Box sx={styles.popoverFooter}>Incluye instrumentos del histórico y de las inversiones vigentes de hoy.</Box>
         </Popover>
       </Box>
 
       <Box sx={styles.caption}>
         {metrica === 'variacion'
-          ? 'Variación acumulada desde el primer día del período · precio de cierre de cada instrumento.'
-          : 'Precio de cierre de cada instrumento devuelto por el histórico consultado.'}
+          ? 'Variación acumulada desde el primer día del período · precio de cierre de cada instrumento, incluido hoy.'
+          : 'Precio de cierre de cada instrumento del período, incluido hoy.'}
       </Box>
       <Box sx={styles.priceChartWrap}>
         {instrumentosVisibles.length === 0 ? (
@@ -490,7 +531,7 @@ export const EvolucionInversiones = ({
           </Box>
         ) : (
           <EvolucionPreciosGrafico
-            data={historicoQuery.data}
+            data={datosGrafico}
             instrumentos={instrumentosVisibles}
             metrica={metrica}
             simbolo={simbolo}
@@ -510,4 +551,4 @@ export const EvolucionInversiones = ({
       </Box>
     </ChartPanel>
   );
-};
+};;
